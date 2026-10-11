@@ -1332,9 +1332,8 @@ dialog::backdrop { background: rgba(8, 18, 13, 0.55); }
       <div class="side-foot">${yearSelect('')}<div class="save" data-s="${S.save}">${statusText()}</div></div>`;
   }
   function renderBanner() {
-    const msg = S.mode === 'local' ? (S.notice || 'Seus dados estão salvos apenas neste navegador. Abra o app pela sua conta do Claude para guardá-los com segurança.') : '';
-    $('#banner').innerHTML = msg ? `<div class="notice">${esc(msg)}</div>` : '';
-  }
+  $('#banner').innerHTML = '';
+}
   function viewHtml() {
     if (!S.loaded) return '<div class="loading">Carregando seus dados…</div>';
     if (!S.plan) return emptyState();
