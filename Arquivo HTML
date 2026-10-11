@@ -1,0 +1,1527 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<title>Fluxo — Administração financeira</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Instrument+Sans:wght@400..700&display=swap">
+<style>
+:root {
+  --bg: #EEF2EC;
+  --surface: #F8FAF6;
+  --surface-2: #E8EEE5;
+  --surface-3: #DCE5D8;
+  --line: #D2DACF;
+  --line-2: #BFCABB;
+  --ink: #1D2B24;
+  --ink-2: #4B5C52;
+  --ink-3: #6F8076;
+  --invest: #0E6F52;
+  --on-invest: #FFFFFF;
+  --invest-2: #7CC9A8;
+  --spend: #3347B0;
+  --meta: #B9820B;
+  --neg: #BE2F45;
+  --neg-soft: #F7E1E5;
+  --warn-soft: #F6ECCB;
+  --cur: rgba(14, 111, 82, 0.075);
+  --side: #14281F;
+  --side-ink: #DCE8DF;
+  --side-ink-2: #9DB2A4;
+  --side-hover: rgba(255, 255, 255, 0.07);
+  --side-accent: #5ADBA8;
+  --shadow: 0 18px 50px rgba(16, 36, 26, 0.22);
+  --f-display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+  --f-body: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0D1511;
+    --surface: #131F19;
+    --surface-2: #1A2A22;
+    --surface-3: #223529;
+    --line: #25382E;
+    --line-2: #32483C;
+    --ink: #E4EEE7;
+    --ink-2: #A5B7AC;
+    --ink-3: #7F9387;
+    --invest: #4FD1A1;
+    --on-invest: #072117;
+    --invest-2: #2C8A69;
+    --spend: #8EA1FF;
+    --meta: #E5B53F;
+    --neg: #FF8397;
+    --neg-soft: #3A1E26;
+    --warn-soft: #3A3318;
+    --cur: rgba(79, 209, 161, 0.08);
+    --side: #09100D;
+    --shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0D1511;
+  --surface: #131F19;
+  --surface-2: #1A2A22;
+  --surface-3: #223529;
+  --line: #25382E;
+  --line-2: #32483C;
+  --ink: #E4EEE7;
+  --ink-2: #A5B7AC;
+  --ink-3: #7F9387;
+  --invest: #4FD1A1;
+  --on-invest: #072117;
+  --invest-2: #2C8A69;
+  --spend: #8EA1FF;
+  --meta: #E5B53F;
+  --neg: #FF8397;
+  --neg-soft: #3A1E26;
+  --warn-soft: #3A3318;
+  --cur: rgba(79, 209, 161, 0.08);
+  --side: #09100D;
+  --shadow: 0 18px 50px rgba(0, 0, 0, 0.55);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { height: 100%; scroll-padding-top: env(safe-area-inset-top, 0px); -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; min-height: 100%; display: flex; flex-direction: column;
+  background: var(--bg); color: var(--ink);
+  font: 15px/1.5 var(--f-body);
+}
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--invest); outline-offset: 2px; }
+
+.app { flex: 1; display: grid; grid-template-columns: 236px minmax(0, 1fr); }
+
+/* ---------- Barra lateral ---------- */
+.side {
+  position: sticky; top: env(safe-area-inset-top, 0px); align-self: start;
+  height: calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+  background: var(--side); color: var(--side-ink);
+  display: flex; flex-direction: column; padding: 22px 14px 16px;
+}
+.brand { display: flex; align-items: center; gap: 11px; padding: 0 8px 22px; }
+.bname { font: 700 22px/1 var(--f-display); letter-spacing: -0.02em; }
+.bsub { font-size: 12px; color: var(--side-ink-2); margin-top: 4px; }
+.nav { display: flex; flex-direction: column; gap: 2px; }
+.nav button {
+  display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+  padding: 10px 12px; border: 0; border-radius: 10px; background: transparent;
+  color: var(--side-ink); font-weight: 500; font-size: 14.5px; transition: background .15s;
+}
+.nav button:hover { background: var(--side-hover); }
+.nav button[aria-current="page"] { background: var(--side-hover); box-shadow: inset 3px 0 0 var(--side-accent); font-weight: 600; }
+.nav svg { width: 19px; height: 19px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; opacity: .9; }
+.side-foot { margin-top: auto; padding: 14px 8px 0; border-top: 1px solid rgba(255, 255, 255, 0.1); display: grid; gap: 10px; }
+.side-foot label { display: grid; gap: 4px; font-size: 12.5px; color: var(--side-ink-2); }
+.side-foot select {
+  width: 100%; padding: 8px 10px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06); color: var(--side-ink); font-weight: 600;
+}
+.side-foot select option { color: #1D2B24; }
+.save { font-size: 12.5px; color: var(--side-ink-2); min-height: 18px; display: flex; align-items: center; gap: 7px; }
+.save::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--side-ink-2); opacity: .6; }
+.save[data-s="saved"]::before { background: var(--side-accent); opacity: 1; }
+.save[data-s="error"]::before { background: #FF8397; opacity: 1; }
+.save[data-s="saving"]::before, .save[data-s="pending"]::before { background: #E5B53F; opacity: 1; }
+.save:empty { display: none; }
+
+/* ---------- Conteúdo ---------- */
+.main { padding: 30px clamp(16px, 3.2vw, 44px) 56px; min-width: 0; }
+.page-h { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px 24px; flex-wrap: wrap; margin-bottom: 18px; }
+h2.title { margin: 0; font: 650 28px/1.12 var(--f-display); letter-spacing: -0.02em; }
+.sub { margin: 6px 0 0; color: var(--ink-2); max-width: 62ch; }
+.acts { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+.lede {
+  margin: 0; max-width: 34ch; font: 600 clamp(26px, 3.4vw, 38px)/1.16 var(--f-display); letter-spacing: -0.022em;
+  text-wrap: balance;
+}
+.lede u { text-decoration-thickness: 3px; text-underline-offset: 6px; }
+.lede .u-spend { text-decoration-color: var(--spend); }
+.lede .u-invest { text-decoration-color: var(--invest); }
+.split { display: flex; gap: 3px; height: 16px; margin: 22px 0 8px; max-width: 760px; }
+.split i { display: block; height: 100%; min-width: 0; }
+.split .s-spend { background: var(--spend); border-radius: 8px 3px 3px 8px; }
+.split .s-invest { background: var(--invest); border-radius: 3px 8px 8px 3px; flex: 1; }
+.split.empty i { background: var(--surface-3); flex: 1; border-radius: 8px; }
+.split-l { display: flex; justify-content: space-between; max-width: 760px; font-size: 13px; color: var(--ink-2); gap: 12px; }
+.split-l b { color: var(--ink); font-weight: 600; }
+
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); margin: 26px 0 22px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.stat { padding: 16px 20px 16px 0; }
+.stat + .stat { padding-left: 20px; border-left: 1px solid var(--line); }
+.stat .k { font-size: 13px; color: var(--ink-2); }
+.stat .v { font: 650 26px/1.2 var(--f-display); letter-spacing: -0.015em; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.stat .n { font-size: 12.5px; color: var(--ink-3); margin-top: 2px; }
+.bar { height: 6px; background: var(--surface-3); border-radius: 3px; margin-top: 9px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--invest); border-radius: 3px; }
+@media (max-width: 720px) {
+  .stat, .stat + .stat { padding: 14px 0; border-left: 0; }
+  .stat + .stat { border-top: 1px solid var(--line); }
+}
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+.charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; margin-bottom: 22px; }
+.chart-p { padding: 16px 16px 8px; position: relative; }
+.chart-h { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+.chart-h h3 { margin: 0; font: 600 16.5px/1.2 var(--f-display); }
+.legend { display: flex; gap: 14px; font-size: 12.5px; color: var(--ink-2); flex-wrap: wrap; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.legend i.mk { height: 3px; width: 14px; border-radius: 2px; }
+.chart { width: 100%; height: 250px; }
+.chart svg { display: block; overflow: visible; }
+.chart text { font-family: var(--f-body); font-size: 11.5px; fill: var(--ink-3); }
+.chart .cur-l { fill: var(--ink); font-weight: 700; }
+.tip {
+  position: fixed; z-index: 60; pointer-events: none; background: var(--ink); color: var(--bg);
+  padding: 9px 11px; border-radius: 9px; font-size: 12.5px; line-height: 1.45; box-shadow: var(--shadow); white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.tip b { font-weight: 650; }
+
+.sec-h { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; margin: 26px 0 10px; flex-wrap: wrap; }
+.sec-h h3 { margin: 0; font: 600 19px/1.2 var(--f-display); letter-spacing: -0.01em; }
+.sec-h p { margin: 3px 0 0; color: var(--ink-2); font-size: 13.5px; }
+
+/* ---------- Tabelas ---------- */
+.tablewrap { overflow: auto; max-height: min(72vh, 860px); border: 1px solid var(--line); border-radius: 14px; background: var(--surface); }
+.grid { border-collapse: separate; border-spacing: 0; width: 100%; min-width: 1200px; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+.grid th, .grid td { height: 35px; padding: 0 10px; border-bottom: 1px solid var(--line); white-space: nowrap; background: var(--rowbg, transparent); }
+.grid thead th { position: sticky; top: 0; z-index: 3; background: var(--surface-2); text-align: right; font-weight: 600; color: var(--ink-2); font-size: 13px; }
+.grid thead th.lab { text-align: left; z-index: 5; }
+.grid th.tot, .grid td.tot { border-left: 1px solid var(--line); font-weight: 600; }
+.grid .lab { position: sticky; left: 0; z-index: 2; text-align: left; min-width: 250px; max-width: 330px; width: 290px; background: var(--rowbg, var(--surface)); border-right: 1px solid var(--line); overflow: hidden; text-overflow: ellipsis; }
+.grid td.num { text-align: right; position: relative; }
+.grid td.z { color: var(--ink-3); }
+.grid td.neg { color: var(--neg); }
+.grid th.cur, .grid td.cur { box-shadow: inset 0 0 0 999px var(--cur); }
+.grid th.cur { color: var(--ink); font-weight: 700; }
+.grid tbody tr:last-child td { border-bottom: 0; }
+.grid .in { display: flex; align-items: center; gap: 6px; padding-left: calc(var(--d, 0) * 18px); min-width: 0; }
+.grid .in > span, .grid .in > .lnk { overflow: hidden; text-overflow: ellipsis; }
+.grid td.ed { cursor: cell; }
+.grid td.ed:hover { background: var(--surface-2); }
+.grid td.ed:focus { outline: 2px solid var(--invest); outline-offset: -2px; background: var(--surface); }
+.grid td.editing { padding: 0; }
+.cell-input { width: 100%; height: 100%; min-height: 34px; border: 0; background: var(--surface); text-align: right; padding: 0 10px; outline: 2px solid var(--invest); outline-offset: -2px; font: inherit; font-variant-numeric: tabular-nums; color: var(--ink); }
+.cell-input.bad { outline-color: var(--neg); background: var(--neg-soft); }
+
+.r-g { --rowbg: var(--surface); font-weight: 600; }
+.r-g.d0 { --rowbg: var(--surface-3); font-weight: 650; }
+.r-g.d1 { --rowbg: var(--surface-2); }
+.r-gh { --rowbg: var(--surface-2); font-weight: 650; }
+.r-gh td { color: var(--ink-2); font-size: 13px; }
+.r-total { --rowbg: var(--surface-2); font-weight: 700; }
+.r-total td { border-top: 2px solid var(--line-2); }
+.r-ratio { font-size: 13px; color: var(--ink-2); }
+.r-note td { color: var(--ink-3); font-size: 13px; }
+.r-add td { height: 32px; }
+.chev { width: 22px; height: 22px; flex: none; display: inline-grid; place-items: center; border: 0; border-radius: 6px; background: transparent; color: var(--ink-2); padding: 0; }
+.chev:hover { background: var(--line); }
+.chev svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; transition: transform .15s; }
+.chev[aria-expanded="true"] svg { transform: rotate(90deg); }
+.chev-sp { width: 22px; flex: none; }
+.lnk { border: 0; background: transparent; padding: 0; text-align: left; color: inherit; font: inherit; font-weight: inherit; }
+.lnk:hover { text-decoration: underline; text-decoration-color: var(--ink-3); text-underline-offset: 3px; }
+.lnk.add { color: var(--invest); font-weight: 600; }
+.lnk.lanc { color: var(--ink-2); font-weight: 400; }
+.grid td.empty { background: var(--rowbg, transparent); }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 7px; padding: 8px 14px; border-radius: 10px;
+  border: 1px solid var(--line-2); background: var(--surface); font-weight: 600; font-size: 14px; transition: background .15s;
+}
+.btn:hover { background: var(--surface-2); }
+.btn.primary { background: var(--invest); color: var(--on-invest); border-color: transparent; }
+.btn.primary:hover { filter: brightness(1.08); background: var(--invest); }
+.btn.danger { color: var(--neg); border-color: var(--neg); background: transparent; }
+.btn.danger:hover { background: var(--neg-soft); }
+.btn.ghost { border-color: transparent; background: transparent; }
+.btn:disabled { opacity: .55; cursor: default; }
+.btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; }
+.search { padding: 8px 12px; border-radius: 10px; border: 1px solid var(--line-2); background: var(--surface); min-width: 190px; }
+
+/* ---------- Painéis e estados ---------- */
+.reading { padding: 18px 20px; }
+.reading p { margin: 0 0 10px; max-width: 72ch; }
+.reading p:last-child { margin-bottom: 0; }
+.reading .cap { color: var(--ink-3); font-size: 12.5px; margin-top: 12px; }
+.notice { margin: 0 0 18px; padding: 11px 14px; border-radius: 10px; background: var(--warn-soft); font-size: 13.5px; }
+.empty-state { max-width: 560px; margin: 8vh auto 0; text-align: left; }
+.empty-state h2 { font: 650 30px/1.15 var(--f-display); letter-spacing: -0.02em; margin: 0 0 10px; }
+.empty-state p { color: var(--ink-2); margin: 0 0 18px; }
+.loading { padding: 12vh 0; color: var(--ink-2); text-align: center; }
+
+.settings { display: grid; gap: 18px; max-width: 760px; }
+.set-block { padding: 20px 22px; }
+.set-block h3 { margin: 0 0 4px; font: 600 17px/1.25 var(--f-display); }
+.set-block > p { margin: 0 0 14px; color: var(--ink-2); font-size: 13.5px; }
+.field-row { display: grid; grid-template-columns: minmax(0, 1fr) 150px; gap: 14px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
+.field-row:first-of-type { border-top: 0; }
+.field-row small { display: block; color: var(--ink-3); font-size: 12.5px; }
+.in-s {
+  width: 100%; padding: 8px 10px; border-radius: 9px; border: 1px solid var(--line-2); background: var(--surface);
+  text-align: right; font-variant-numeric: tabular-nums;
+}
+.btn-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* ---------- Modal ---------- */
+dialog { border: 0; border-radius: 16px; padding: 0; background: var(--surface); color: var(--ink); box-shadow: var(--shadow); width: min(500px, calc(100vw - 28px)); max-height: calc(100vh - 40px); }
+dialog::backdrop { background: rgba(8, 18, 13, 0.55); }
+.mform { display: flex; flex-direction: column; max-height: inherit; }
+.mform header { padding: 20px 22px 4px; }
+.mform h3 { margin: 0; font: 650 20px/1.2 var(--f-display); letter-spacing: -0.01em; }
+.mbody { padding: 12px 22px 6px; overflow: auto; display: grid; gap: 13px; }
+.mform footer { display: flex; gap: 8px; align-items: center; padding: 14px 22px 20px; }
+.mform footer .sp { flex: 1; }
+.fld { display: grid; gap: 5px; font-size: 13.5px; font-weight: 600; }
+.fld span small { font-weight: 400; color: var(--ink-3); }
+.fld input, .fld select { width: 100%; padding: 9px 11px; border-radius: 9px; border: 1px solid var(--line-2); background: var(--bg); font-weight: 400; }
+.fld-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.merr { color: var(--neg); font-size: 13px; min-height: 0; }
+.mmsg { color: var(--ink-2); margin: 0; }
+
+.toast {
+  position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%) translateY(20px);
+  background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 10px; font-size: 14px; opacity: 0; pointer-events: none;
+  transition: opacity .2s, transform .2s; z-index: 80; max-width: calc(100vw - 32px);
+}
+.toast.on { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ---------- Celular ---------- */
+@media (max-width: 900px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .side {
+    position: fixed; top: auto; bottom: 0; left: 0; right: 0; height: auto; z-index: 40; flex-direction: row;
+    padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .brand, .side-foot { display: none; }
+  .nav { flex-direction: row; width: 100%; justify-content: space-between; }
+  .nav button { flex-direction: column; gap: 3px; padding: 6px 2px; font-size: 11px; text-align: center; justify-content: center; flex: 1; min-width: 0; }
+  .nav button span { overflow: hidden; text-overflow: ellipsis; max-width: 100%; white-space: nowrap; }
+  .nav button[aria-current="page"] { box-shadow: inset 0 3px 0 var(--side-accent); }
+  .main { padding: 20px 14px calc(96px + env(safe-area-inset-bottom, 0px)); }
+  .grid .lab { min-width: 168px; width: 168px; max-width: 168px; }
+  .mob-bar { display: flex !important; }
+}
+.mob-bar { display: none; gap: 8px; align-items: center; margin-bottom: 14px; }
+.mob-bar select { padding: 7px 10px; border-radius: 9px; border: 1px solid var(--line-2); background: var(--surface); font-weight: 600; }
+.mob-bar .save { color: var(--ink-2); margin-left: auto; }
+.mob-bar .save::before { background: var(--ink-3); }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <aside class="side" id="side"></aside>
+  <main class="main"><div id="banner"></div><div id="view"></div></main>
+</div>
+<dialog id="modal"></dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="tip" id="tip" hidden></div>
+<script>
+/* Fluxo — motor de cálculo (puro, sem DOM). Reproduz as fórmulas da planilha "Administração Financeira". */
+(function (root) {
+  'use strict';
+  const MES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+  const z = () => new Array(12).fill(0);
+  const add = (a, b) => a.map((x, i) => x + (+b[i] || 0));
+  const sub = (a, b) => a.map((x, i) => x - (+b[i] || 0));
+  const sum = (a) => a.reduce((s, x) => s + x, 0);
+  const r2 = (x) => Math.round(x * 100) / 100;
+
+  // Taxonomia sugerida (estrutura das abas INVESTIMENTOS / PROVENTOS)
+  const TAXONOMIA = {
+    'RENDA FIXA': { "CDB's": {}, 'Tesouro Direto': {} },
+    'BOLSA DE VALORES': {
+      'Ações BR': { Financeiro: [], Utilities: [], Commodities: [] },
+      'Ações EUA': {},
+      Criptoativos: {},
+      "ETF's": {},
+      'Fundos Imobiliários': {
+        'Fundo de Papel (CRI)': ['High Yield', 'High Grade'],
+        'Fundo de Tijolo': ['Shoppings Centers', 'Lajes Corporativas', 'Galpões Logísticos'],
+        'Híbridos': [],
+        FoFs: [],
+      },
+    },
+  };
+
+  const ASSET_LEVELS = ['tipo', 'classe', 'grupo', 'subgrupo'];
+
+  function compute(plan) {
+    const S = plan.settings || {};
+    const pct = S.propostoPct == null ? 0.12 : +S.propostoPct;
+    const metaBase = S.metaBase == null ? 2000 : +S.metaBase;
+
+    let rendaFixa = z(), rendaExtra = z();
+    for (const r of plan.rendas) {
+      if (r.cat === 'FIXA') rendaFixa = add(rendaFixa, r.v); else rendaExtra = add(rendaExtra, r.v);
+    }
+
+    let dividendos = z(), rentab = z(), aplicado = z();
+    for (const a of plan.ativos) {
+      aplicado = add(aplicado, a.ap);
+      if (a.tipo === 'RENDA FIXA') rentab = add(rentab, a.pr); else dividendos = add(dividendos, a.pr);
+    }
+
+    const outros = plan.outros.map((x) => +x || 0);
+    const receita = add(add(add(rendaFixa, dividendos), rendaExtra), outros);
+
+    let despVar = z(), despFix = z();
+    for (const d of plan.despesas) {
+      const v = lancMeses(d);
+      if (d.cat === 'FIXA') despFix = add(despFix, v); else despVar = add(despVar, v);
+    }
+    const despesas = add(despVar, despFix);
+    const investAlocado = sub(receita, despesas);
+
+    const proposto = rendaFixa.map((x) => x * pct);
+    const difProposto = sub(proposto, despesas);
+    const pctReceita = despesas.map((d, i) => (receita[i] > 0 ? d / receita[i] : null));
+
+    const aportes = sub(aplicado, dividendos);
+    const diferenca = sub(investAlocado, aportes);
+    const meta = dividendos.map((d) => metaBase + d);
+    const faturamento = add(dividendos, rentab);
+
+    const out = { rendaFixa, rendaExtra, dividendos, rentab, outros, receita, despVar, despFix, despesas, investAlocado,
+      proposto, difProposto, pctReceita, aplicado, aportes, diferenca, meta, faturamento };
+    const T = {};
+    for (const k of Object.keys(out)) if (k !== 'pctReceita') T[k] = sum(out[k]);
+    T.pctReceita = T.receita > 0 ? T.despesas / T.receita : null;
+    out.T = T;
+    return out;
+  }
+
+  function lancMeses(d) {
+    const v = z();
+    for (const l of d.lanc) v[l.m] += +l.v || 0;
+    return v;
+  }
+
+  // Árvore hierárquica de ativos: tipo > classe > grupo > subgrupo > ativo
+  function buildAssetTree(ativos, field) {
+    const root = { children: [], map: new Map() };
+    for (const a of ativos) {
+      let node = root, key = '';
+      for (const lv of ASSET_LEVELS) {
+        const lab = a[lv];
+        if (!lab) continue;
+        key += '/' + lab;
+        let ch = node.map.get(lab);
+        if (!ch) {
+          ch = { key, label: lab, level: lv, depth: ASSET_LEVELS.indexOf(lv), children: [], map: new Map(), v: z() };
+          node.map.set(lab, ch);
+          node.children.push(ch);
+        }
+        ch.v = add(ch.v, a[field]);
+        node = ch;
+      }
+      node.children.push({ leaf: true, key: key + '/#' + a.id, label: a.nome, asset: a, v: a[field] });
+    }
+    return root.children;
+  }
+
+  // Aceita "1.234,56", "1234.56", "-10", "=100,50+20" (soma/subtração simples, como nas fórmulas da planilha)
+  function parseValor(str) {
+    if (typeof str === 'number') return isFinite(str) ? str : NaN;
+    let s = String(str == null ? '' : str).replace(/R\$|\s/g, '').replace(/^=/, '');
+    if (s === '' || s === '-') return 0;
+    const parts = s.split(/(?=[+-])/).filter(Boolean);
+    let total = 0;
+    for (const p of parts) {
+      let t = p;
+      if (t.includes(',')) t = t.replace(/\./g, '').replace(',', '.');
+      else if ((t.match(/\./g) || []).length > 1) t = t.replace(/\./g, '');
+      const n = Number(t);
+      if (!isFinite(n) || t === '' || t === '+' || t === '-') return NaN;
+      total += n;
+    }
+    return r2(total);
+  }
+
+  const api = { MES, TAXONOMIA, ASSET_LEVELS, compute, lancMeses, buildAssetTree, parseValor, sum, add, z, r2 };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.FluxoEngine = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+/* Fluxo — administração financeira. Interface e persistência. */
+(function () {
+  'use strict';
+  const E = window.FluxoEngine;
+  const { MES, TAXONOMIA } = E;
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const uid = () => Math.random().toString(36).slice(2, 9);
+  const clone = (o) => JSON.parse(JSON.stringify(o));
+  const z12 = () => new Array(12).fill(0);
+  const NOW = new Date();
+  const NOW_M = NOW.getMonth();
+  const NOW_Y = NOW.getFullYear();
+
+  const nf = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const bf = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+  const fmt = (v) => (Math.abs(v) < 0.005 ? '–' : nf.format(v));
+  const brl = (v) => bf.format(Math.abs(v) < 0.005 ? 0 : v);
+  const pct = (v, d = 1) => (v == null || !isFinite(v) ? '–' : (v * 100).toLocaleString('pt-BR', { maximumFractionDigits: d }) + '%');
+
+  const ic = (d) => `<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
+  const I = {
+    geral: ic('<rect x="3" y="3" width="7.5" height="7.5" rx="1.8"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.8"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.8"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.8"/>'),
+    rendas: ic('<path d="M12 3v12m0 0l-4.5-4.5M12 15l4.5-4.5M4 18v2.5h16V18"/>'),
+    despesas: ic('<rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M3 10h18M7 15h3"/>'),
+    inv: ic('<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>'),
+    pro: ic('<circle cx="12" cy="12" r="9"/><path d="M14.7 9.4c-.4-.9-1.4-1.4-2.7-1.4-1.5 0-2.6.7-2.6 1.8 0 2.6 5.4 1.2 5.4 3.8 0 1.1-1.1 1.9-2.8 1.9-1.4 0-2.5-.6-2.9-1.6M12 6.2V8M12 16v1.8"/>'),
+    cfg: ic('<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>'),
+    chev: ic('<path d="M9 6l6 6-6 6"/>'),
+    plus: ic('<path d="M12 5v14M5 12h14"/>'),
+  };
+  const LOGO = '<svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><rect width="30" height="30" rx="9" fill="#5ADBA8"/><path d="M8 20h14M8 15h9.5M8 10h5" stroke="#14281F" stroke-width="2.6" stroke-linecap="round"/></svg>';
+
+  const S = {
+    view: 'geral', lastView: null, year: null, years: [], docs: {}, plan: null, C: null,
+    mode: 'loading', loaded: false, uid: null, db: null, sample: null, downloads: null,
+    save: 'idle', dirty: false, saving: false, saveTimer: null, stale: false, needsRender: false,
+    pendingCreate: null, pendingFocus: null, notice: '',
+    openDesp: new Set(), closed: { inv: new Set(), pro: new Set() }, filter: { inv: '', pro: '' },
+    reading: { state: 'idle', text: '', error: '' }, theme: 'auto',
+  };
+  let RI = 0;
+  let FIRST_ED = true;
+
+  /* ================= armazenamento local seguro ================= */
+  const lsGet = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  const lsSet = (k, v) => { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } };
+
+  /* ================= plano: criação e normalização ================= */
+  function hydrate(p) {
+    const fix12 = (a) => { a = Array.isArray(a) ? a.slice(0, 12) : []; while (a.length < 12) a.push(0); return a.map((x) => +x || 0); };
+    p.settings = Object.assign({ propostoPct: 0.12, metaBase: 2000 }, p.settings || {});
+    p.outros = fix12(p.outros);
+    p.rendas = (p.rendas || []).map((r) => Object.assign({}, r, { id: r.id || uid(), v: fix12(r.v) }));
+    p.despesas = (p.despesas || []).map((d) => Object.assign({}, d, {
+      id: d.id || uid(),
+      lanc: (d.lanc || []).map((l) => Object.assign({}, l, { id: l.id || uid(), m: Math.min(11, Math.max(0, l.m | 0)), v: +l.v || 0 })),
+    }));
+    p.ativos = (p.ativos || []).map((a) => Object.assign({}, a, { id: a.id || uid(), grupo: a.grupo || null, subgrupo: a.subgrupo || null, ap: fix12(a.ap), pr: fix12(a.pr) }));
+    p.year = p.year || S.year || NOW_Y;
+    p.updatedAt = p.updatedAt || 0;
+    return p;
+  }
+
+  function blankPlan(year, base) {
+    const p = { v: 1, year, settings: { propostoPct: 0.12, metaBase: 2000 }, outros: z12(), rendas: [], despesas: [], ativos: [], updatedAt: Date.now() };
+    if (base) {
+      p.settings = clone(base.settings);
+      p.rendas = base.rendas.map((r) => Object.assign({}, r, { id: uid(), v: z12() }));
+      p.despesas = base.despesas.map((d) => Object.assign({}, d, { id: uid(), lanc: [] }));
+      p.ativos = base.ativos.map((a) => Object.assign({}, a, { id: uid(), ap: z12(), pr: z12() }));
+    } else {
+      p.rendas = [
+        { id: uid(), cat: 'FIXA', area: 'Empregador', detalhe: 'Salário', v: z12() },
+        { id: uid(), cat: 'FIXA', area: 'Empregador', detalhe: 'Vale-refeição', v: z12() },
+        { id: uid(), cat: 'EXTRA', area: 'Serviços', detalhe: 'Projeto avulso', v: z12() },
+      ];
+      const dv = (area, nome) => ({ id: uid(), cat: 'VARIAVEL', area, nome, lanc: [] });
+      p.despesas = [dv('Pessoal', 'Vestuário'), dv('Pessoal', 'Itens'), dv('Pessoal', 'Outros'), dv('Relacionamento', 'Presentes'), dv('Relacionamento', 'Encontros'), dv('Relacionamento', 'Outros')];
+    }
+    return p;
+  }
+
+  function pickYear() {
+    if (S.years.includes(NOW_Y)) return NOW_Y;
+    return S.years.length ? S.years[S.years.length - 1] : NOW_Y;
+  }
+
+  /* ================= persistência ================= */
+  const planPath = (y) => 'data/users/' + S.uid + '/plan-' + y;
+
+  function statusText() {
+    switch (S.save) {
+      case 'pending': return 'Alterações pendentes…';
+      case 'saving': return 'Salvando…';
+      case 'saved': return S.mode === 'cloud' ? 'Salvo na sua conta' : 'Salvo neste navegador';
+      case 'error': return 'Não foi possível salvar';
+      default: return '';
+    }
+  }
+  function setStatus(s) {
+    S.save = s;
+    $$('.save').forEach((el) => { el.dataset.s = s; el.textContent = statusText(); });
+  }
+
+  function touch() {
+    if (!S.plan) return;
+    S.plan.updatedAt = Date.now();
+    S.dirty = true;
+    setStatus('pending');
+    clearTimeout(S.saveTimer);
+    S.saveTimer = setTimeout(flush, 700);
+  }
+
+  async function persist(p) {
+    if (S.mode === 'cloud') {
+      await S.db.doc(planPath(p.year)).set(p);
+    } else {
+      if (!lsSet('fluxo:plan:' + p.year, JSON.stringify(p))) throw new Error('storage');
+      S.docs[p.year] = clone(p);
+      if (!S.years.includes(p.year)) { S.years.push(p.year); S.years.sort(); }
+    }
+  }
+
+  async function flush() {
+    clearTimeout(S.saveTimer);
+    if (S.saving || !S.dirty || !S.plan) return;
+    S.saving = true; S.dirty = false;
+    setStatus('saving');
+    const snap = clone(S.plan);
+    let failed = false;
+    try {
+      await persist(snap);
+      setStatus(S.dirty ? 'pending' : 'saved');
+    } catch (e) {
+      failed = true;
+      S.dirty = true;
+      if (S.mode === 'cloud' && e && e.code === 'invalid_argument') {
+        S.mode = 'local';
+        S.notice = 'Sua conta não permite salvar dados nesta página. Os dados ficarão apenas neste navegador.';
+        renderBanner();
+        S.saveTimer = setTimeout(flush, 100);
+      } else {
+        setStatus('error');
+        S.saveTimer = setTimeout(flush, 5000);
+      }
+    } finally {
+      S.saving = false;
+      if (!failed && S.dirty) S.saveTimer = setTimeout(flush, 250);
+    }
+  }
+
+  function subscribe() {
+    S.db.collection('data/users/' + S.uid).onSnapshot((snap) => {
+      const docs = {};
+      snap.docs.forEach((d) => {
+        const m = /^plan-(\d{4})$/.exec(d.id);
+        if (m && d.exists) docs[+m[1]] = d.data();
+      });
+      S.docs = docs;
+      S.years = Object.keys(docs).map(Number).sort();
+      if (S.pendingCreate && docs[S.pendingCreate]) S.pendingCreate = null;
+      if (S.year == null || (!docs[S.year] && S.pendingCreate !== S.year)) S.year = pickYear();
+      const remote = docs[S.year];
+      if (remote) {
+        const cur = S.plan;
+        const newer = !cur || cur.year !== S.year || (remote.updatedAt || 0) > (cur.updatedAt || 0);
+        if (newer && !S.dirty && !S.saving) S.plan = hydrate(clone(remote));
+      } else if (!S.dirty && !S.saving && S.pendingCreate !== S.year) {
+        S.plan = null;
+      }
+      S.loaded = true;
+      render();
+    }, (err) => {
+      console.error(err);
+      goLocal('Não foi possível conectar ao armazenamento da sua conta. Os dados ficarão apenas neste navegador.');
+    });
+  }
+
+  function loadLocal() {
+    const years = [];
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const m = /^fluxo:plan:(\d{4})$/.exec(localStorage.key(i) || '');
+        if (m) years.push(+m[1]);
+      }
+    } catch (e) { /* sem armazenamento */ }
+    years.sort();
+    S.years = years; S.docs = {};
+    years.forEach((y) => { try { S.docs[y] = JSON.parse(lsGet('fluxo:plan:' + y)); } catch (e) { /* ignora */ } });
+    S.year = pickYear();
+    S.plan = S.docs[S.year] ? hydrate(clone(S.docs[S.year])) : null;
+    S.loaded = true;
+  }
+
+  function goLocal(msg) {
+    S.mode = 'local'; S.notice = msg || '';
+    loadLocal(); render();
+  }
+
+  async function switchYear(y) {
+    if (S.dirty) await flush();
+    S.year = y;
+    S.plan = S.docs[y] ? hydrate(clone(S.docs[y])) : null;
+    S.openDesp = new Set();
+    render();
+  }
+
+  function createPlan(year, base) {
+    S.plan = blankPlan(year, base);
+    S.year = year; S.pendingCreate = year;
+    S.dirty = true;
+    flush();
+    render();
+  }
+
+  async function deletePlan(year) {
+    clearTimeout(S.saveTimer);
+    S.dirty = false;
+    try {
+      if (S.mode === 'cloud') await S.db.doc(planPath(year)).delete();
+      else { try { localStorage.removeItem('fluxo:plan:' + year); } catch (e) { /* ignora */ } }
+    } catch (e) { toast('Não foi possível excluir agora. Tente de novo.'); return; }
+    delete S.docs[year];
+    S.years = S.years.filter((y) => y !== year);
+    S.year = pickYear();
+    S.plan = S.docs[S.year] ? hydrate(clone(S.docs[S.year])) : null;
+    setStatus('idle');
+    render();
+  }
+
+  /* ================= edição de células ================= */
+  const findCell = (ri, m) => document.querySelector(`td.ed[data-ri="${ri}"][data-m="${m}"]`);
+  const findAny = (ri) => document.querySelector(`td.ed[data-ri="${ri}"]`);
+  const isEditing = () => !!document.querySelector('.cell-input') || !!(document.getElementById('modal') && document.getElementById('modal').open);
+
+  function neighbor(ri, m, dir) {
+    if (dir === 'left' || dir === 'right') {
+      const dm = dir === 'right' ? 1 : -1;
+      for (let mm = m + dm; mm >= 0 && mm < 12; mm += dm) if (findCell(ri, mm)) return { ri, m: mm };
+      return null;
+    }
+    const dr = dir === 'down' ? 1 : -1;
+    for (let rr = ri + dr; rr >= 0 && rr < RI; rr += dr) {
+      const c = findCell(rr, m) || findAny(rr);
+      if (c) return { ri: rr, m: +c.dataset.m };
+    }
+    return null;
+  }
+
+  function applyCell(ds, val) {
+    const p = S.plan; const m = +ds.m;
+    if (ds.k === 'ou') p.outros[m] = val;
+    else if (ds.k === 'rd') { const r = p.rendas.find((x) => x.id === ds.id); if (r) r.v[m] = val; }
+    else if (ds.k === 'ap' || ds.k === 'pr') { const a = p.ativos.find((x) => x.id === ds.id); if (a) a[ds.k][m] = val; }
+    else if (ds.k === 'lv') {
+      const [di, li] = ds.id.split('|');
+      const d = p.despesas.find((x) => x.id === di);
+      const l = d && d.lanc.find((x) => x.id === li);
+      if (l) l.v = val;
+    }
+  }
+
+  function paintCell(td, val) {
+    td.classList.remove('editing', 'z', 'neg');
+    if (Math.abs(val) < 0.005) td.classList.add('z');
+    if (val < -0.004) td.classList.add('neg');
+    td.dataset.v = String(val);
+    td.textContent = fmt(val);
+  }
+
+  function startEdit(td, seed) {
+    if (td.classList.contains('editing')) return;
+    const cur = +td.dataset.v || 0;
+    const inp = document.createElement('input');
+    inp.className = 'cell-input';
+    inp.setAttribute('inputmode', 'decimal');
+    inp.setAttribute('autocomplete', 'off');
+    inp.setAttribute('aria-label', 'Valor em reais');
+    inp.value = seed != null ? seed : (Math.abs(cur) < 0.005 ? '' : String(cur).replace('.', ','));
+    td.classList.add('editing');
+    td.textContent = '';
+    td.appendChild(inp);
+    inp.focus();
+    if (seed == null) inp.select(); else inp.setSelectionRange(inp.value.length, inp.value.length);
+    let done = false;
+    const finish = (mode, dir) => {
+      if (done) return;
+      const ri = +td.dataset.ri; const m = +td.dataset.m;
+      if (mode === 'cancel') { done = true; paintCell(td, cur); td.focus(); return; }
+      const val = E.parseValor(inp.value);
+      if (Number.isNaN(val)) {
+        if (dir) { inp.classList.add('bad'); inp.select(); toast('Valor inválido. Use números como 1.234,56'); return; }
+        done = true; paintCell(td, cur); toast('Valor inválido. A edição foi descartada.'); return;
+      }
+      done = true;
+      const changed = Math.abs(val - cur) >= 0.005;
+      if (changed) { applyCell(td.dataset, val); touch(); }
+      if (dir) {
+        const nxt = neighbor(ri, m, dir);
+        S.pendingFocus = nxt || { ri, m };
+        S.stale = false;
+        paintCell(td, val);
+        render();
+      } else {
+        paintCell(td, val);
+        if (changed) S.stale = true;
+      }
+    };
+    inp.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); finish('commit', e.shiftKey ? 'up' : 'down'); }
+      else if (e.key === 'Tab') { e.preventDefault(); finish('commit', e.shiftKey ? 'left' : 'right'); }
+      else if (e.key === 'Escape') { e.preventDefault(); finish('cancel'); }
+    });
+    inp.addEventListener('blur', () => finish('commit', null));
+  }
+
+  /* ================= helpers de tabela ================= */
+  const curCls = (m) => (S.year === NOW_Y && m === NOW_M ? 'cur' : '');
+  const cellCls = (v, m, extra) => ['num', curCls(m), Math.abs(v) < 0.005 ? 'z' : '', v < -0.004 ? 'neg' : '', extra || ''].filter(Boolean).join(' ');
+
+  function cell(v, m, o) {
+    o = o || {};
+    if (o.k) {
+      const ti = FIRST_ED ? 0 : -1; FIRST_ED = false;
+      return `<td class="${cellCls(v, m, 'ed')}" data-k="${o.k}" data-id="${esc(o.id || '')}" data-m="${m}" data-ri="${o.ri}" data-v="${v}" tabindex="${ti}">${fmt(v)}</td>`;
+    }
+    return `<td class="${cellCls(v, m)}">${fmt(v)}</td>`;
+  }
+  function cells(v, o) {
+    o = o || {};
+    let h = '';
+    for (let m = 0; m < 12; m++) h += cell(v[m], m, o);
+    const t = E.sum(v);
+    h += `<td class="${cellCls(t, -1, 'tot')}">${fmt(t)}</td>`;
+    return h;
+  }
+  function pctRow(label, arr, total, depth) {
+    let h = `<tr class="r-ratio"><td class="lab"><div class="in" style="--d:${depth || 0}"><span>${esc(label)}</span></div></td>`;
+    for (let m = 0; m < 12; m++) h += `<td class="num ${curCls(m)}${arr[m] == null ? ' z' : ''}">${pct(arr[m])}</td>`;
+    return h + `<td class="num tot">${pct(total)}</td></tr>`;
+  }
+  const headRow = (first) => `<thead><tr><th class="lab">${esc(first)}</th>${MES.map((m, i) => `<th class="${curCls(i)}">${m}</th>`).join('')}<th class="tot">Total</th></tr></thead>`;
+  const labRow = (label, v, o) => `<tr class="${(o && o.cls) || ''}"><td class="lab"><div class="in" style="--d:${(o && o.d) || 0}"><span>${esc(label)}</span></div></td>${cells(v, o)}</tr>`;
+  const sectionRow = (label) => `<tr class="r-gh"><td class="lab">${esc(label)}</td><td colspan="13"></td></tr>`;
+  const chevBtn = (kind, key, open, label) => `<button class="chev" data-act="toggle" data-kind="${kind}" data-key="${esc(key)}" aria-expanded="${open}" aria-label="${open ? 'Recolher' : 'Expandir'} ${esc(label)}">${I.chev}</button>`;
+  function groupRow(o) {
+    const chev = o.kind ? chevBtn(o.kind, o.key, o.open, o.label) : '';
+    const name = o.act ? `<button class="lnk" data-act="${o.act}" data-id="${esc(o.id)}">${esc(o.label)}</button>` : `<span>${esc(o.label)}</span>`;
+    return `<tr class="r-g d${Math.min(o.depth, 2)}"><td class="lab"><div class="in" style="--d:${o.depth}">${chev}${name}</div></td>${cells(o.v)}</tr>`;
+  }
+  const pageHead = (title, sub, acts) => `<div class="page-h"><div><h2 class="title">${esc(title)}</h2>${sub ? `<p class="sub">${esc(sub)}</p>` : ''}</div><div class="acts">${acts || ''}</div></div>`;
+  const addBtn = (act, label, extra) => `<button class="btn primary" data-act="${act}" ${extra || ''}>${I.plus}${esc(label)}</button>`;
+
+  function yearSelect(cls) {
+    const ys = S.years.slice();
+    if (S.year != null && !ys.includes(S.year)) { ys.push(S.year); ys.sort(); }
+    return `<label class="${cls || ''}"><span>Ano</span><select data-year-select aria-label="Ano do planejamento">${ys.map((y) => `<option value="${y}" ${y === S.year ? 'selected' : ''}>${y}</option>`).join('')}<option value="__new">Novo ano…</option></select></label>`;
+  }
+
+  /* ================= telas ================= */
+  function viewGeral() {
+    const p = S.plan; const C = S.C; const T = C.T;
+    let lede; let split;
+    if (T.receita <= 0) {
+      lede = `Ainda não há entradas em ${p.year}. Comece lançando suas fontes de renda.`;
+      split = '<div class="split empty"><i></i></div>';
+    } else {
+      const ds = Math.min(1, Math.max(0, T.despesas / T.receita));
+      const inv = T.investAlocado;
+      lede = `Em ${p.year}, entraram ${brl(T.receita)}. <u class="u-spend">${brl(T.despesas)}</u> foram para despesas e ${inv >= 0 ? `<u class="u-invest">${brl(inv)}</u> para investimentos.` : `as despesas superaram as entradas em <u class="u-invest">${brl(-inv)}</u>.`}`;
+      split = `<div class="split" role="img" aria-label="Despesas ${pct(ds, 0)} das entradas"><i class="s-spend" style="flex:0 0 ${(ds * 100).toFixed(2)}%"></i>${inv > 0 ? '<i class="s-invest"></i>' : ''}</div>
+        <div class="split-l"><span><b>Despesas</b> ${pct(ds)}</span><span>${inv >= 0 ? `<b>Investimentos</b> ${pct(1 - ds)}` : ''}</span></div>`;
+    }
+    const mesesDiv = C.dividendos.filter((x) => x > 0).length;
+    const prog = T.meta > 0 ? Math.min(1, Math.max(0, T.aplicado / T.meta)) : 0;
+    const stats = `<div class="stats">
+      <div class="stat"><div class="k">Dividendos recebidos</div><div class="v">${brl(T.dividendos)}</div><div class="n">${mesesDiv ? `em ${mesesDiv} ${mesesDiv === 1 ? 'mês' : 'meses'}` : 'nenhum lançado'}</div></div>
+      <div class="stat"><div class="k">Aplicado no ano</div><div class="v">${brl(T.aplicado)}</div><div class="n">${brl(T.aportes)} de aportes e ${brl(T.dividendos)} de dividendos</div></div>
+      <div class="stat"><div class="k">Meta de investimento</div><div class="v">${brl(T.meta)}</div><div class="bar" role="img" aria-label="${pct(prog, 0)} da meta"><i style="width:${(prog * 100).toFixed(1)}%"></i></div><div class="n">${pct(prog, 0)} atingido</div></div>
+      <div class="stat"><div class="k">Despesas sobre as entradas</div><div class="v">${pct(T.pctReceita)}</div><div class="n">proposto para o ano: ${brl(T.proposto)}</div></div>
+    </div>`;
+
+    RI = 0; FIRST_ED = true;
+    const nav = (view, label) => `<button class="lnk" data-act="nav" data-view="${view}">${esc(label)}</button>`;
+    const linkRow = (view, label, v) => `<tr><td class="lab"><div class="in" style="--d:1">${nav(view, label)}</div></td>${cells(v)}</tr>`;
+    const ri = RI++;
+    const body = [
+      sectionRow('Entradas'),
+      linkRow('rendas', 'Salário (renda fixa)', C.rendaFixa),
+      linkRow('pro', 'Dividendos', C.dividendos),
+      linkRow('rendas', 'Serviços (renda extra)', C.rendaExtra),
+      `<tr><td class="lab"><div class="in" style="--d:1"><span>Outros</span></div></td>${cells(C.outros, { k: 'ou', id: 'outros', ri })}</tr>`,
+      labRow('Total de entradas', C.receita, { cls: 'r-total' }),
+      sectionRow('Alocação'),
+      linkRow('inv', 'Investimentos', C.investAlocado),
+      linkRow('despesas', 'Conta corrente', C.despesas),
+      labRow('Totais', C.receita, { cls: 'r-total' }),
+      pctRow('Despesas sobre as entradas', C.pctReceita, T.pctReceita, 0),
+    ].join('');
+
+    return `${mobBar()}<div class="page-h"><div><h1 class="lede">${lede}</h1></div></div>${split}${stats}
+      <div class="charts">
+        <div class="panel chart-p"><div class="chart-h"><h3>Para onde foi cada mês</h3><div class="legend"><span><i style="background:var(--spend)"></i>Despesas</span><span><i style="background:var(--invest)"></i>Investimentos</span></div></div><div class="chart" id="ch1"></div></div>
+        <div class="panel chart-p"><div class="chart-h"><h3>Aplicado e meta</h3><div class="legend"><span><i style="background:var(--invest)"></i>Aportes</span><span><i style="background:var(--invest-2)"></i>Dividendos</span><span><i class="mk" style="background:var(--meta)"></i>Meta</span></div></div><div class="chart" id="ch2"></div></div>
+      </div>
+      <div class="sec-h"><div><h3>Alocação mensal</h3><p>Entradas do mês e como foram divididas. Só a linha “Outros” é digitada aqui; o resto vem das demais telas.</p></div></div>
+      <div class="tablewrap"><table class="grid">${headRow('Mês')}<tbody>${body}</tbody></table></div>
+      ${readingHtml()}`;
+  }
+
+  function mobBar() {
+    return `<div class="mob-bar">${yearSelect('')}<span class="save" data-s="${S.save}">${statusText()}</span></div>`;
+  }
+
+  function viewRendas() {
+    const p = S.plan; const C = S.C;
+    RI = 0; FIRST_ED = true;
+    let b = '';
+    for (const [cat, title, total] of [['FIXA', 'Renda fixa', C.rendaFixa], ['EXTRA', 'Renda extra', C.rendaExtra]]) {
+      b += sectionRow(title);
+      const rows = p.rendas.filter((r) => r.cat === cat);
+      const areas = [...new Set(rows.map((r) => r.area))];
+      if (!rows.length) b += `<tr class="r-note"><td class="lab"><div class="in" style="--d:1"><span>Nenhuma fonte cadastrada</span></div></td><td colspan="13"></td></tr>`;
+      for (const area of areas) {
+        const ar = rows.filter((r) => r.area === area);
+        b += `<tr class="r-g d1"><td class="lab"><div class="in" style="--d:0"><span>${esc(area)}</span></div></td>${cells(ar.reduce((s, r) => E.add(s, r.v), E.z()))}</tr>`;
+        for (const r of ar) {
+          const ri = RI++;
+          b += `<tr><td class="lab"><div class="in" style="--d:1"><button class="lnk" data-act="edit-renda" data-id="${r.id}">${esc(r.detalhe)}</button></div></td>${cells(r.v, { k: 'rd', id: r.id, ri })}</tr>`;
+        }
+      }
+      b += `<tr class="r-add"><td class="lab"><div class="in" style="--d:1"><button class="lnk add" data-act="add-renda" data-cat="${cat}">Adicionar fonte de ${cat === 'FIXA' ? 'renda fixa' : 'renda extra'}</button></div></td><td colspan="13"></td></tr>`;
+      b += labRow('Total de ' + title.toLowerCase(), total, { cls: 'r-total' });
+    }
+    b += labRow('Resultado total', E.add(C.rendaFixa, C.rendaExtra), { cls: 'r-total' });
+    return `${mobBar()}${pageHead('Rendas', 'De onde vem o dinheiro. Dividendos entram automaticamente a partir da tela Proventos.', addBtn('add-renda', 'Nova fonte', 'data-cat="FIXA"'))}
+      <div class="tablewrap"><table class="grid">${headRow('Categoria, área e detalhamento')}<tbody>${b}</tbody></table></div>`;
+  }
+
+  function viewDespesas() {
+    const p = S.plan; const C = S.C; const T = C.T;
+    RI = 0; FIRST_ED = true;
+    let b = sectionRow('Orçamento do mês');
+    b += labRow(`Valor proposto (${pct(p.settings.propostoPct, 2)} do salário)`, C.proposto, { d: 1 });
+    b += labRow('Gasto', C.despesas, { d: 1 });
+    b += labRow('Diferença (proposto menos gasto)', C.difProposto, { d: 1 });
+    b += pctRow('Gasto sobre as entradas', C.pctReceita, T.pctReceita, 1);
+    for (const [cat, title] of [['VARIAVEL', 'Despesas variáveis'], ['FIXA', 'Despesas fixas']]) {
+      const ds = p.despesas.filter((d) => d.cat === cat);
+      b += groupRow({ label: title, depth: 0, v: ds.reduce((s, d) => E.add(s, E.lancMeses(d)), E.z()) });
+      if (!ds.length) b += `<tr class="r-note"><td class="lab"><div class="in" style="--d:1"><span>Nenhuma despesa cadastrada</span></div></td><td colspan="13"></td></tr>`;
+      const areas = [...new Set(ds.map((d) => d.area))];
+      for (const area of areas) {
+        const ar = ds.filter((d) => d.area === area);
+        b += groupRow({ label: area, depth: 1, v: ar.reduce((s, d) => E.add(s, E.lancMeses(d)), E.z()) });
+        for (const d of ar) {
+          const open = S.openDesp.has(d.id);
+          const sub = E.lancMeses(d);
+          b += `<tr class="r-g d2"><td class="lab"><div class="in" style="--d:2">${chevBtn('desp', d.id, open, d.nome)}<button class="lnk" data-act="edit-desp" data-id="${d.id}">${esc(d.nome)}</button></div></td>${cells(sub)}</tr>`;
+          if (open) {
+            const ls = d.lanc.slice().sort((a, c) => a.m - c.m);
+            for (const l of ls) {
+              const ri = RI++;
+              let tds = '';
+              for (let m = 0; m < 12; m++) tds += m === l.m ? cell(l.v, m, { k: 'lv', id: d.id + '|' + l.id, ri }) : `<td class="num empty ${curCls(m)}"></td>`;
+              tds += `<td class="${cellCls(l.v, -1, 'tot')}">${fmt(l.v)}</td>`;
+              b += `<tr><td class="lab"><div class="in" style="--d:3"><button class="lnk lanc" data-act="edit-lanc" data-did="${d.id}" data-id="${l.id}" title="Editar lançamento">${esc(l.d)}</button></div></td>${tds}</tr>`;
+            }
+            b += `<tr class="r-add"><td class="lab"><div class="in" style="--d:3"><button class="lnk add" data-act="add-lanc" data-did="${d.id}">Adicionar lançamento</button></div></td><td colspan="13"></td></tr>`;
+          }
+        }
+      }
+      b += labRow('Total de ' + title.toLowerCase(), cat === 'FIXA' ? C.despFix : C.despVar, { cls: 'r-total' });
+    }
+    b += labRow('Resultado: despesas do mês', C.despesas, { cls: 'r-total' });
+    const acts = `<button class="btn" data-act="expand-all" data-kind="desp">Expandir tudo</button><button class="btn" data-act="collapse-all" data-kind="desp">Recolher tudo</button><button class="btn" data-act="add-desp">Nova despesa</button>${addBtn('add-lanc', 'Novo lançamento')}`;
+    return `${mobBar()}${pageHead('Conta corrente', 'Despesas por categoria e área. Abra uma despesa para ver e editar cada lançamento; os totais se atualizam sozinhos.', acts)}
+      <div class="tablewrap"><table class="grid">${headRow('Categoria, área e despesa')}<tbody>${b}</tbody></table></div>`;
+  }
+
+  function assetRows(nodes, kind, field, flt, depth) {
+    let h = '';
+    for (const n of nodes) {
+      if (n.leaf) {
+        if (flt && !n.label.toLowerCase().includes(flt)) continue;
+        const ri = RI++;
+        h += `<tr><td class="lab"><div class="in" style="--d:${depth}"><span class="chev-sp"></span><button class="lnk" data-act="edit-ativo" data-id="${n.asset.id}">${esc(n.label)}</button></div></td>${cells(n.v, { k: field, id: n.asset.id, ri })}</tr>`;
+      } else {
+        const inner = assetRows(n.children, kind, field, flt, depth + 1);
+        if (flt && !inner) continue;
+        const open = flt ? true : !S.closed[kind].has(n.key);
+        h += groupRow({ label: n.label, depth, v: n.v, kind, key: n.key, open }) + (open ? inner : '');
+      }
+    }
+    return h;
+  }
+  function groupKeys(nodes, out) {
+    for (const n of nodes) if (!n.leaf) { out.push(n.key); groupKeys(n.children, out); }
+    return out;
+  }
+
+  function viewAssets(kind) {
+    const p = S.plan; const C = S.C;
+    const field = kind === 'inv' ? 'ap' : 'pr';
+    const flt = (S.filter[kind] || '').trim().toLowerCase();
+    const tree = E.buildAssetTree(p.ativos, field);
+    RI = 0; FIRST_ED = true;
+    let b = '';
+    if (kind === 'inv') b += labRow('Alocado na visão geral', C.investAlocado, { cls: 'r-note' });
+    b += assetRows(tree, kind, field, flt, 0);
+    if (!p.ativos.length) b += `<tr class="r-note"><td class="lab" colspan="14"><div class="in" style="--d:0"><span>Nenhum ativo ainda. Adicione CDBs, títulos do Tesouro, ações, FIIs e outros.</span></div></td></tr>`;
+    if (flt && p.ativos.length && !assetRows(tree, kind, field, flt, 0)) b += `<tr class="r-note"><td class="lab" colspan="14"><div class="in" style="--d:0"><span>Nenhum ativo encontrado para “${esc(S.filter[kind])}”.</span></div></td></tr>`;
+    if (kind === 'inv') {
+      b += labRow('Aportes', C.aportes, { cls: 'r-g' });
+      b += labRow('Dividendos', C.dividendos, { cls: 'r-g' });
+      b += labRow('Saldo final (total aplicado no mês)', C.aplicado, { cls: 'r-total' });
+      b += labRow('Diferença estimada (alocado menos aportes)', C.diferenca, { cls: 'r-g' });
+      b += labRow('Meta', C.meta, { cls: 'r-total' });
+    } else {
+      b += labRow('Rentabilidade acumulada (renda fixa)', C.rentab, { cls: 'r-g' });
+      b += labRow('Dividendos acumulados', C.dividendos, { cls: 'r-g' });
+      b += labRow('Faturamento total', C.faturamento, { cls: 'r-total' });
+    }
+    const title = kind === 'inv' ? 'Investimentos' : 'Proventos';
+    const sub = kind === 'inv' ? 'Quanto foi aplicado em cada ativo, mês a mês. Valores negativos são resgates.' : 'Dividendos e rendimentos recebidos de cada ativo. Em renda fixa, o valor conta como rentabilidade.';
+    const acts = `<input class="search" type="search" data-filter="${kind}" placeholder="Buscar ativo" value="${esc(S.filter[kind])}" aria-label="Buscar ativo"><button class="btn" data-act="expand-all" data-kind="${kind}">Expandir tudo</button><button class="btn" data-act="collapse-all" data-kind="${kind}">Recolher tudo</button>${addBtn('add-ativo', 'Adicionar ativo')}`;
+    return `${mobBar()}${pageHead(title, sub, acts)}<div class="tablewrap"><table class="grid">${headRow('Tipo, classe e ativo')}<tbody>${b}</tbody></table></div>`;
+  }
+
+  function viewCfg() {
+    const p = S.plan;
+    const next = (S.years.length ? Math.max(...S.years) : p.year) + 1;
+    const dl = S.downloads
+      ? `<div class="btn-row"><button class="btn" data-act="export-json">Exportar tudo (JSON)</button><button class="btn" data-act="export-csv-geral">Visão geral (CSV)</button><button class="btn" data-act="export-csv-lanc">Lançamentos (CSV)</button></div>`
+      : '<p>A exportação não está disponível neste ambiente.</p>';
+    const themeLabel = { auto: 'Automático', light: 'Claro', dark: 'Escuro' }[S.theme];
+    return `${mobBar()}${pageHead('Ajustes', 'Parâmetros do planejamento, anos, exportação e aparência.')}
+      <div class="settings">
+        <section class="panel set-block"><h3>Parâmetros de ${p.year}</h3><p>Estes valores alimentam o orçamento da Conta corrente e a meta de investimento.</p>
+          <div class="field-row"><div>Percentual do salário para despesas<small>Define o valor proposto de cada mês.</small></div><input class="in-s" data-setting="propostoPct" inputmode="decimal" value="${String(+(p.settings.propostoPct * 100).toFixed(2)).replace('.', ',')}%" aria-label="Percentual do salário para despesas"></div>
+          <div class="field-row"><div>Meta mensal de aportes<small>A meta de cada mês é este valor mais os dividendos recebidos.</small></div><input class="in-s" data-setting="metaBase" inputmode="decimal" value="${nf.format(p.settings.metaBase)}" aria-label="Meta mensal de aportes em reais"></div>
+        </section>
+        <section class="panel set-block"><h3>Anos</h3><p>Planejamentos existentes: ${S.years.join(', ') || p.year}. Um novo ano copia a estrutura (rendas, despesas e ativos) com os valores zerados.</p>
+          <div class="btn-row"><button class="btn" data-act="new-year" data-year="${next}">Criar planejamento de ${next}</button><button class="btn danger" data-act="del-year">Excluir planejamento de ${p.year}</button></div>
+        </section>
+        <section class="panel set-block"><h3>Exportar</h3><p>Leve seus dados para uma planilha ou guarde uma cópia.</p>${dl}</section>
+        <section class="panel set-block"><h3>Dados e aparência</h3><p>${S.mode === 'cloud' ? 'Seus dados ficam na sua conta e só você os enxerga.' : 'Seus dados estão salvos apenas neste navegador.'}</p>
+          <div class="btn-row"><button class="btn" data-act="theme">Tema: ${themeLabel}</button><button class="btn danger" data-act="reset">Zerar valores de ${p.year}</button></div>
+        </section>
+      </div>`;
+  }
+
+  function emptyState() {
+    const y = S.year || NOW_Y;
+    return `${mobBar()}<div class="empty-state"><h2>Seu planejamento de ${y} está vazio</h2>
+      <p>Comece com a estrutura da planilha: rendas fixas e extras, despesas por categoria, investimentos e proventos. Você preenche os valores mês a mês e o Fluxo calcula o resto.</p>
+      <div class="btn-row">${addBtn('create-blank', 'Começar planejamento de ' + y)}</div></div>`;
+  }
+
+  /* ================= leitura com Claude ================= */
+  const paras = (t) => String(t || '').split(/\n{2,}/).map((s) => s.trim()).filter(Boolean).map((s) => `<p>${esc(s)}</p>`).join('');
+  function readingHtml() {
+    if (!S.sample) return '';
+    const r = S.reading; let inner;
+    if (r.state === 'idle') inner = `<p>Peça ao Claude uma leitura dos números do ano: o que se destaca, o que merece atenção e uma pergunta para você pensar.</p><div class="btn-row"><button class="btn primary" data-act="reading">Gerar leitura do ano</button></div><p class="cap">Os totais mensais do ano são enviados ao Claude para escrever o texto.</p>`;
+    else if (r.state === 'loading') inner = `<div id="reading-body">${paras(r.text) || '<p>Lendo seus números…</p>'}</div>`;
+    else if (r.state === 'done') inner = `<div id="reading-body">${paras(r.text)}</div><div class="btn-row" style="margin-top:12px"><button class="btn" data-act="reading">Gerar de novo</button></div>`;
+    else inner = `<p>${esc(r.error || 'Não foi possível gerar a leitura agora.')}</p><div class="btn-row"><button class="btn" data-act="reading">Tentar de novo</button></div>`;
+    return `<div class="sec-h"><div><h3>Leitura do ano</h3></div></div><div class="panel reading">${inner}</div>`;
+  }
+  async function askReading() {
+    if (!S.sample || S.reading.state === 'loading') return;
+    const C = S.C; const p = S.plan; const r2 = E.r2;
+    const data = {
+      ano: p.year, mes_atual: p.year === NOW_Y ? MES[NOW_M] : null,
+      meses: MES.map((m, i) => ({ mes: m, entradas: r2(C.receita[i]), despesas: r2(C.despesas[i]), investimentos_alocados: r2(C.investAlocado[i]), aplicado: r2(C.aplicado[i]), dividendos: r2(C.dividendos[i]), meta_aplicacao: r2(C.meta[i]), despesas_propostas: r2(C.proposto[i]) })),
+      despesas_por_item: p.despesas.map((d) => ({ area: d.area, item: d.nome, total: r2(E.sum(E.lancMeses(d))) })).filter((x) => x.total !== 0),
+    };
+    const prompt = `Você é um assistente de finanças pessoais. Abaixo estão os números mensais do planejamento do usuário, em reais.\n\n${JSON.stringify(data)}\n\nEscreva em português do Brasil, em no máximo 150 palavras e em até três parágrafos curtos, uma leitura objetiva: o que se destaca, o que merece atenção e uma pergunta útil para o usuário refletir. Meses com tudo zerado costumam ser meses futuros. Não recomende produtos ou ativos específicos e não use listas nem títulos.`;
+    S.reading = { state: 'loading', text: '', error: '' };
+    render();
+    try {
+      const res = await S.sample(prompt, { modelTier: 'quick', onText: (u) => { S.reading.text = u.text; const el = $('#reading-body'); if (el) el.innerHTML = paras(u.text) || '<p>Lendo seus números…</p>'; } });
+      S.reading = { state: 'done', text: res.text, error: '' };
+    } catch (e) {
+      const msg = e && e.code === 'not_granted' ? 'A permissão para usar o Claude foi negada.' : e && e.code === 'rate_limited' ? 'Muitos pedidos seguidos. Espere um pouco e tente de novo.' : 'Não foi possível gerar a leitura agora.';
+      S.reading = { state: 'error', text: '', error: msg };
+    }
+    render();
+  }
+
+  /* ================= gráficos (SVG próprio) ================= */
+  const niceStep = (raw) => {
+    if (!(raw > 0)) return 1;
+    const pow = Math.pow(10, Math.floor(Math.log10(raw))); const f = raw / pow;
+    return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * pow;
+  };
+  const tick = (v) => (Math.abs(v) >= 1000 ? (v / 1000).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' mil' : String(v));
+
+  function showTip(html, x, y) {
+    const t = $('#tip'); t.innerHTML = html; t.hidden = false;
+    const w = t.offsetWidth; const h = t.offsetHeight;
+    let left = x + 14; if (left + w > window.innerWidth - 8) left = x - w - 14;
+    let top = y - h - 12; if (top < 8) top = y + 16;
+    t.style.left = Math.max(8, left) + 'px'; t.style.top = top + 'px';
+  }
+  const hideTip = () => { const t = $('#tip'); if (t) t.hidden = true; };
+
+  function drawBars(el, cfg) {
+    if (!el) return;
+    const W = Math.max(300, Math.floor(el.clientWidth || 640)); const H = 250;
+    const m = { t: 12, r: 6, b: 26, l: 46 };
+    const iw = W - m.l - m.r; const ih = H - m.t - m.b; const band = iw / 12;
+    const pos = []; const neg = [];
+    for (let i = 0; i < 12; i++) {
+      let up = 0; let dn = 0;
+      cfg.bars.forEach((s) => { const v = s.values[i]; if (v > 0) up += v; else dn += v; });
+      pos.push(up); neg.push(dn);
+    }
+    const marks = cfg.marks || [];
+    const hiV = Math.max(1, ...pos, ...marks.flatMap((k) => k.values));
+    const loV = Math.min(0, ...neg);
+    const step = niceStep((hiV - loV) / 4);
+    const hi = Math.ceil(hiV / step) * step; const lo = Math.floor(loV / step) * step;
+    const y = (v) => m.t + ih * (1 - (v - lo) / (hi - lo));
+    let g = '';
+    const n = Math.round((hi - lo) / step);
+    for (let k = 0; k <= n; k++) {
+      const v = lo + k * step; const yy = y(v);
+      g += `<line x1="${m.l}" x2="${W - m.r}" y1="${yy}" y2="${yy}" stroke="${Math.abs(v) < 1e-9 ? 'var(--line-2)' : 'var(--line)'}"/><text x="${m.l - 8}" y="${yy + 4}" text-anchor="end">${tick(+v.toFixed(2))}</text>`;
+    }
+    const bw = Math.min(38, band * 0.62);
+    let bars = ''; let mk = ''; let lab = '';
+    for (let i = 0; i < 12; i++) {
+      const x0 = m.l + band * i + (band - bw) / 2; let up = 0; let dn = 0;
+      cfg.bars.forEach((s) => {
+        const v = s.values[i]; if (Math.abs(v) < 0.005) return;
+        let y1; let y2;
+        if (v > 0) { y1 = y(up + v); y2 = y(up); up += v; } else { y1 = y(dn); y2 = y(dn + v); dn += v; }
+        bars += `<rect x="${x0.toFixed(1)}" y="${Math.min(y1, y2).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(1, Math.abs(y2 - y1)).toFixed(1)}" rx="3" fill="${s.color}" stroke="var(--surface)" stroke-width="1.5"/>`;
+      });
+      marks.forEach((k) => { if (k.values[i] > 0) mk += `<line x1="${(x0 - 5).toFixed(1)}" x2="${(x0 + bw + 5).toFixed(1)}" y1="${y(k.values[i]).toFixed(1)}" y2="${y(k.values[i]).toFixed(1)}" stroke="${k.color}" stroke-width="3" stroke-linecap="round"/>`; });
+      lab += `<text x="${(m.l + band * i + band / 2).toFixed(1)}" y="${H - 7}" text-anchor="middle" class="${S.year === NOW_Y && i === NOW_M ? 'cur-l' : ''}">${MES[i]}</text>`;
+    }
+    el.innerHTML = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(cfg.aria)}">${g}${bars}${mk}${lab}<rect id="hv-${el.id}" x="0" y="${m.t}" width="${band}" height="${ih}" fill="var(--ink)" opacity="0" pointer-events="none"/></svg>`;
+    const svg = el.firstChild; const hv = svg.querySelector('rect[id^="hv-"]');
+    svg.addEventListener('pointermove', (e) => {
+      const r = svg.getBoundingClientRect(); const i = Math.floor((e.clientX - r.left - m.l) / band);
+      if (i < 0 || i > 11) { hideTip(); hv.setAttribute('opacity', '0'); return; }
+      hv.setAttribute('x', (m.l + band * i).toFixed(1)); hv.setAttribute('opacity', '0.06');
+      showTip(cfg.tip(i), e.clientX, e.clientY);
+    });
+    svg.addEventListener('pointerleave', () => { hideTip(); hv.setAttribute('opacity', '0'); });
+  }
+
+  function drawCharts() {
+    if (S.view !== 'geral' || !S.plan) return;
+    const C = S.C;
+    drawBars($('#ch1'), {
+      aria: 'Barras mensais empilhadas de despesas e investimentos',
+      bars: [{ name: 'Despesas', color: 'var(--spend)', values: C.despesas }, { name: 'Investimentos', color: 'var(--invest)', values: C.investAlocado }],
+      tip: (i) => `<b>${MES[i]}</b><br>Entradas: ${brl(C.receita[i])}<br>Despesas: ${brl(C.despesas[i])} (${pct(C.pctReceita[i], 0)})<br>Investimentos: ${brl(C.investAlocado[i])}`,
+    });
+    drawBars($('#ch2'), {
+      aria: 'Barras mensais de aportes e dividendos comparadas com a meta de investimento',
+      bars: [{ name: 'Aportes', color: 'var(--invest)', values: C.aportes }, { name: 'Dividendos', color: 'var(--invest-2)', values: C.dividendos }],
+      marks: [{ name: 'Meta', color: 'var(--meta)', values: C.meta }],
+      tip: (i) => `<b>${MES[i]}</b><br>Aportes: ${brl(C.aportes[i])}<br>Dividendos: ${brl(C.dividendos[i])}<br>Aplicado: ${brl(C.aplicado[i])}<br>Meta: ${brl(C.meta[i])}`,
+    });
+  }
+
+  /* ================= modais ================= */
+  function openModal(o) {
+    const d = $('#modal');
+    if (d.open) d.close();
+    d.innerHTML = `<form class="mform" id="mform" novalidate><header><h3>${esc(o.title)}</h3></header><div class="mbody">${o.body || ''}<div class="merr" id="merr" role="alert"></div></div><footer>${o.danger ? `<button type="button" class="btn danger" id="m-danger">${esc(o.danger)}</button>` : ''}<span class="sp"></span><button type="button" class="btn" id="m-cancel">Cancelar</button><button type="submit" class="btn primary">${esc(o.ok || 'Salvar')}</button></footer></form>`;
+    const f = $('#mform');
+    const err = (msg) => { $('#merr').textContent = msg; };
+    f.addEventListener('submit', (ev) => {
+      ev.preventDefault();
+      const data = Object.fromEntries(new FormData(f).entries());
+      if (o.onOk(data, err) !== false) closeModal();
+    });
+    $('#m-cancel').onclick = closeModal;
+    if (o.danger) $('#m-danger').onclick = () => { if (o.onDanger() !== false) closeModal(); };
+    d.showModal();
+    const first = f.querySelector('input,select'); if (first) first.focus();
+    return f;
+  }
+  const closeModal = () => { const d = $('#modal'); if (d.open) d.close(); };
+  function confirmBox(title, msg, okLabel, onYes) {
+    openModal({ title, body: `<p class="mmsg">${esc(msg)}</p>`, ok: okLabel, onOk: () => { onYes(); } });
+  }
+  const commit = () => { touch(); render(); };
+  const sel = (name, opts, cur) => `<select name="${name}">${opts.map(([v, l]) => `<option value="${esc(v)}" ${v === cur ? 'selected' : ''}>${esc(l)}</option>`).join('')}</select>`;
+  const dlist = (id, arr) => `<datalist id="${id}">${[...new Set(arr)].filter(Boolean).map((x) => `<option value="${esc(x)}"></option>`).join('')}</datalist>`;
+
+  function openRenda(id, catArg) {
+    const p = S.plan; const r = id ? p.rendas.find((x) => x.id === id) : null;
+    const cat = r ? r.cat : (catArg || 'FIXA');
+    openModal({
+      title: r ? 'Editar fonte de renda' : 'Nova fonte de renda',
+      body: `<label class="fld"><span>Categoria</span>${sel('cat', [['FIXA', 'Renda fixa'], ['EXTRA', 'Renda extra']], cat)}</label>
+        <label class="fld"><span>Área <small>(empresa, cliente ou tipo de serviço)</small></span><input name="area" list="dl-area" value="${esc(r ? r.area : '')}" required></label>
+        <label class="fld"><span>Detalhamento <small>(salário, vale-refeição, projeto…)</small></span><input name="detalhe" value="${esc(r ? r.detalhe : '')}" required></label>${dlist('dl-area', p.rendas.map((x) => x.area))}`,
+      danger: r ? 'Excluir' : null,
+      onDanger: () => { confirmBox('Excluir fonte de renda?', `“${r.detalhe}” e todos os valores lançados nela serão removidos.`, 'Excluir', () => { p.rendas = p.rendas.filter((x) => x.id !== r.id); commit(); }); return false; },
+      onOk: (d, err) => {
+        const area = (d.area || '').trim(); const det = (d.detalhe || '').trim();
+        if (!area || !det) { err('Preencha a área e o detalhamento.'); return false; }
+        if (r) Object.assign(r, { cat: d.cat, area, detalhe: det });
+        else p.rendas.push({ id: uid(), cat: d.cat, area, detalhe: det, v: z12() });
+        commit();
+      },
+    });
+  }
+
+  function openDespesa(id) {
+    const p = S.plan; const d0 = id ? p.despesas.find((x) => x.id === id) : null;
+    openModal({
+      title: d0 ? 'Editar despesa' : 'Nova despesa',
+      body: `<label class="fld"><span>Categoria</span>${sel('cat', [['VARIAVEL', 'Despesas variáveis'], ['FIXA', 'Despesas fixas']], d0 ? d0.cat : 'VARIAVEL')}</label>
+        <label class="fld"><span>Área <small>(pessoal, relacionamento, moradia…)</small></span><input name="area" list="dl-area" value="${esc(d0 ? d0.area : '')}" required></label>
+        <label class="fld"><span>Nome da despesa</span><input name="nome" value="${esc(d0 ? d0.nome : '')}" required></label>${dlist('dl-area', p.despesas.map((x) => x.area))}`,
+      danger: d0 ? 'Excluir' : null,
+      onDanger: () => {
+        const n = d0.lanc.length;
+        confirmBox('Excluir despesa?', `“${d0.nome}” será removida${n ? ` junto com ${n}${n === 1 ? 'lançamento' : 'lançamentos'}` : ''}.`, 'Excluir', () => { p.despesas = p.despesas.filter((x) => x.id !== d0.id); commit(); });
+        return false;
+      },
+      onOk: (d, err) => {
+        const area = (d.area || '').trim(); const nome = (d.nome || '').trim();
+        if (!area || !nome) { err('Preencha a área e o nome.'); return false; }
+        if (d0) Object.assign(d0, { cat: d.cat, area, nome });
+        else { const nd = { id: uid(), cat: d.cat, area, nome, lanc: [] }; p.despesas.push(nd); S.openDesp.add(nd.id); }
+        commit();
+      },
+    });
+  }
+
+  function openLanc(did, lid) {
+    const p = S.plan;
+    if (!p.despesas.length) { toast('Cadastre uma despesa antes de lançar valores.'); openDespesa(); return; }
+    const d0 = did ? p.despesas.find((x) => x.id === did) : null;
+    const l0 = d0 && lid ? d0.lanc.find((x) => x.id === lid) : null;
+    const groups = [['VARIAVEL', 'Despesas variáveis'], ['FIXA', 'Despesas fixas']].map(([c, t]) => {
+      const ds = p.despesas.filter((d) => d.cat === c); if (!ds.length) return '';
+      return `<optgroup label="${t}">${ds.map((d) => `<option value="${d.id}" ${d0 && d0.id === d.id ? 'selected' : ''}>${esc(d.area)}:${esc(d.nome)}</option>`).join('')}</optgroup>`;
+    }).join('');
+    const mSel = `<select name="m">${MES.map((m, i) => `<option value="${i}" ${(l0 ? l0.m : (S.year === NOW_Y ? NOW_M : 0)) === i ? 'selected' : ''}>${m}</option>`).join('')}</select>`;
+    openModal({
+      title: l0 ? 'Editar lançamento' : 'Novo lançamento',
+      body: `<label class="fld"><span>Despesa</span><select name="did">${groups}</select></label>
+        <label class="fld"><span>Descrição</span><input name="d" value="${esc(l0 ? l0.d : '')}" required></label>
+        <div class="fld-2"><label class="fld"><span>${l0 ? 'Valor' : 'Valor <small>(de cada parcela)</small>'}</span><input name="v" inputmode="decimal" value="${l0 ? esc(String(l0.v).replace('.', ',')) : ''}" required></label>
+        <label class="fld"><span>${l0 ? 'Mês' : 'Mês da primeira parcela'}</span>${mSel}</label></div>
+        ${l0 ? '' : '<label class="fld"><span>Parcelas <small>(1 para pagamento único; parcelas além de dezembro não entram neste ano)</small></span><input name="n" type="number" min="1" max="36" value="1"></label>'}`,
+      danger: l0 ? 'Excluir' : null,
+      onDanger: () => { d0.lanc = d0.lanc.filter((x) => x.id !== l0.id); commit(); },
+      onOk: (d, err) => {
+        const v = E.parseValor(d.v); const desc = (d.d || '').trim(); const m = +d.m;
+        if (!desc) { err('Informe uma descrição.'); return false; }
+        if (Number.isNaN(v)) { err('Valor inválido. Use números como 1.234,56'); return false; }
+        const target = p.despesas.find((x) => x.id === d.did);
+        if (l0) {
+          const src = d0;
+          if (src.id !== target.id) { src.lanc = src.lanc.filter((x) => x.id !== l0.id); target.lanc.push(l0); }
+          Object.assign(l0, { d: desc, v, m });
+        } else {
+          const n = Math.max(1, Math.min(36, parseInt(d.n, 10) || 1));
+          let made = 0;
+          for (let i = 0; i < n && m + i <= 11; i++) { target.lanc.push({ id: uid(), m: m + i, d: n > 1 ? `${desc} (Parcela ${i + 1}/${n})` : desc, v }); made++; }
+          if (made < n) toast(`${made} de ${n} parcelas lançadas; as demais passam de dezembro.`);
+        }
+        S.openDesp.add(target.id);
+        commit();
+      },
+    });
+  }
+
+  function suggest(level, a) {
+    const own = new Set();
+    const T = TAXONOMIA;
+    if (level === 'tipo') Object.keys(T).forEach((k) => own.add(k));
+    if (level === 'classe' && T[a.tipo]) Object.keys(T[a.tipo]).forEach((k) => own.add(k));
+    if (level === 'grupo' && T[a.tipo] && T[a.tipo][a.classe] && !Array.isArray(T[a.tipo][a.classe])) Object.keys(T[a.tipo][a.classe]).forEach((k) => own.add(k));
+    if (level === 'subgrupo' && T[a.tipo] && T[a.tipo][a.classe] && Array.isArray(T[a.tipo][a.classe][a.grupo])) T[a.tipo][a.classe][a.grupo].forEach((k) => own.add(k));
+    S.plan.ativos.forEach((x) => {
+      if (level === 'tipo') own.add(x.tipo);
+      else if (x.tipo === a.tipo && level === 'classe') own.add(x.classe);
+      else if (x.tipo === a.tipo && x.classe === a.classe && level === 'grupo' && x.grupo) own.add(x.grupo);
+      else if (x.tipo === a.tipo && x.classe === a.classe && x.grupo === a.grupo && level === 'subgrupo' && x.subgrupo) own.add(x.subgrupo);
+    });
+    return [...own];
+  }
+  const matchCase = (val, list) => { const t = (val || '').trim(); const f = list.find((x) => x.toLowerCase() === t.toLowerCase()); return f || t; };
+
+  function openAtivo(id) {
+    const p = S.plan; const a0 = id ? p.ativos.find((x) => x.id === id) : null;
+    const form = openModal({
+      title: a0 ? 'Editar ativo' : 'Novo ativo',
+      body: `<div class="fld-2"><label class="fld"><span>Tipo</span><input name="tipo" list="dl-tipo" value="${esc(a0 ? a0.tipo : 'BOLSA DE VALORES')}" required></label>
+        <label class="fld"><span>Classe</span><input name="classe" list="dl-classe" value="${esc(a0 ? a0.classe : '')}" required></label></div>
+        <div class="fld-2"><label class="fld"><span>Grupo <small>(opcional)</small></span><input name="grupo" list="dl-grupo" value="${esc(a0 && a0.grupo ? a0.grupo : '')}"></label>
+        <label class="fld"><span>Subgrupo <small>(opcional)</small></span><input name="subgrupo" list="dl-sub" value="${esc(a0 && a0.subgrupo ? a0.subgrupo : '')}"></label></div>
+        <label class="fld"><span>Nome do ativo <small>(código, banco ou título)</small></span><input name="nome" value="${esc(a0 ? a0.nome : '')}" required></label>
+        <p class="mmsg" style="font-size:13px">Em renda fixa, os valores de Proventos contam como rentabilidade; nos demais tipos, como dividendos.</p>
+        <datalist id="dl-tipo"></datalist><datalist id="dl-classe"></datalist><datalist id="dl-grupo"></datalist><datalist id="dl-sub"></datalist>`,
+      danger: a0 ? 'Excluir' : null,
+      onDanger: () => { confirmBox('Excluir ativo?', `“${a0.nome}” e seus valores de investimentos e proventos serão removidos.`, 'Excluir', () => { p.ativos = p.ativos.filter((x) => x.id !== a0.id); commit(); }); return false; },
+      onOk: (d, err) => {
+        const tipo = matchCase(d.tipo, suggest('tipo', {})).toUpperCase();
+        const a = { tipo };
+        a.classe = matchCase(d.classe, suggest('classe', a));
+        a.grupo = d.grupo && d.grupo.trim() ? matchCase(d.grupo, suggest('grupo', a)) : null;
+        a.subgrupo = d.subgrupo && d.subgrupo.trim() ? matchCase(d.subgrupo, suggest('subgrupo', Object.assign({}, a))) : null;
+        const nome = (d.nome || '').trim();
+        if (!tipo || !a.classe || !nome) { err('Preencha tipo, classe e nome do ativo.'); return false; }
+        if (a.subgrupo && !a.grupo) { err('Para usar um subgrupo, informe também o grupo.'); return false; }
+        if (a0) Object.assign(a0, a, { nome });
+        else {
+          const na = Object.assign({ id: uid(), nome, ap: z12(), pr: z12() }, a);
+          const same = (x, lv) => lv.every((k) => (x[k] || null) === (na[k] || null));
+          let at = -1;
+          for (const lv of [['tipo', 'classe', 'grupo', 'subgrupo'], ['tipo', 'classe', 'grupo'], ['tipo', 'classe'], ['tipo']]) {
+            for (let i = p.ativos.length - 1; i >= 0; i--) if (same(p.ativos[i], lv)) { at = i; break; }
+            if (at >= 0) break;
+          }
+          p.ativos.splice(at >= 0 ? at + 1 : p.ativos.length, 0, na);
+        }
+        commit();
+      },
+    });
+    const refresh = () => {
+      const g = (n) => form.elements[n].value.trim();
+      const a = { tipo: matchCase(g('tipo'), suggest('tipo', {})) };
+      a.classe = matchCase(g('classe'), suggest('classe', a)); a.grupo = matchCase(g('grupo'), suggest('grupo', Object.assign({}, a)));
+      const fill = (id, arr) => { $('#' + id).innerHTML = arr.map((x) => `<option value="${esc(x)}"></option>`).join(''); };
+      fill('dl-tipo', suggest('tipo', {})); fill('dl-classe', suggest('classe', a)); fill('dl-grupo', suggest('grupo', a)); fill('dl-sub', suggest('subgrupo', a));
+    };
+    form.addEventListener('input', refresh); refresh();
+  }
+
+  /* ================= exportação ================= */
+  const csvNum = (v) => String(E.r2(v)).replace('.', ',');
+  const csvCell = (s) => '"' + String(s).replace(/"/g, '""') + '"';
+  async function save(filename, data) {
+    try { await S.downloads.save({ filename, data }); toast('Arquivo pronto para salvar.'); }
+    catch (e) { if (!e || e.code !== 'declined') toast('Não foi possível exportar agora.'); }
+  }
+  function exportGeral() {
+    const C = S.C;
+    const rows = [['Salário (renda fixa)', C.rendaFixa], ['Dividendos', C.dividendos], ['Serviços (renda extra)', C.rendaExtra], ['Outros', C.outros], ['Total de entradas', C.receita],
+      ['Investimentos', C.investAlocado], ['Conta corrente', C.despesas], ['Aportes', C.aportes], ['Saldo final (aplicado)', C.aplicado], ['Meta', C.meta], ['Valor proposto', C.proposto]];
+    const lines = [['Linha', ...MES, 'Total'].map(csvCell).join(';')];
+    rows.forEach(([l, v]) => lines.push([csvCell(l), ...v.map(csvNum), csvNum(E.sum(v))].join(';')));
+    save(`fluxo-${S.plan.year}-visao-geral.csv`, '\ufeff' + lines.join('\r\n'));
+  }
+  function exportLanc() {
+    const lines = [['Mês', 'Categoria', 'Área', 'Despesa', 'Descrição', 'Valor'].map(csvCell).join(';')];
+    S.plan.despesas.forEach((d) => d.lanc.slice().sort((a, b) => a.m - b.m).forEach((l) => lines.push([MES[l.m], d.cat === 'FIXA' ? 'Fixa' : 'Variável', d.area, d.nome, l.d].map(csvCell).concat(csvNum(l.v)).join(';'))));
+    save(`fluxo-${S.plan.year}-lancamentos.csv`, '\ufeff' + lines.join('\r\n'));
+  }
+
+  /* ================= renderização ================= */
+  function renderSide() {
+    const items = [['geral', 'Visão geral'], ['rendas', 'Rendas'], ['despesas', 'Conta corrente'], ['inv', 'Investimentos'], ['pro', 'Proventos'], ['cfg', 'Ajustes']];
+    $('#side').innerHTML = `<div class="brand">${LOGO}<div><div class="bname">Fluxo</div><div class="bsub">Administração financeira</div></div></div>
+      <nav class="nav" aria-label="Seções">${items.map(([k, l]) => `<button data-act="nav" data-view="${k}" ${S.view === k ? 'aria-current="page"' : ''}>${I[k]}<span>${l}</span></button>`).join('')}</nav>
+      <div class="side-foot">${yearSelect('')}<div class="save" data-s="${S.save}">${statusText()}</div></div>`;
+  }
+  function renderBanner() {
+    const msg = S.mode === 'local' ? (S.notice || 'Seus dados estão salvos apenas neste navegador. Abra o app pela sua conta do Claude para guardá-los com segurança.') : '';
+    $('#banner').innerHTML = msg ? `<div class="notice">${esc(msg)}</div>` : '';
+  }
+  function viewHtml() {
+    if (!S.loaded) return '<div class="loading">Carregando seus dados…</div>';
+    if (!S.plan) return emptyState();
+    switch (S.view) {
+      case 'rendas': return viewRendas();
+      case 'despesas': return viewDespesas();
+      case 'inv': return viewAssets('inv');
+      case 'pro': return viewAssets('pro');
+      case 'cfg': return viewCfg();
+      default: return viewGeral();
+    }
+  }
+  function render() {
+    if (isEditing()) { S.needsRender = true; return; }
+    S.needsRender = false;
+    const sameView = S.lastView === S.view;
+    const y = window.scrollY; const tw = $('.tablewrap'); const tws = tw ? [tw.scrollLeft, tw.scrollTop] : null;
+    S.C = S.plan ? E.compute(S.plan) : null;
+    renderSide(); renderBanner();
+    hideTip();
+    $('#view').innerHTML = viewHtml();
+    const tw2 = $('.tablewrap');
+    if (tw2 && tws && sameView) { tw2.scrollLeft = tws[0]; tw2.scrollTop = tws[1]; }
+    window.scrollTo(window.scrollX, sameView ? y : 0);
+    S.lastView = S.view;
+    drawCharts();
+    if (S.pendingFocus) { const c = findCell(S.pendingFocus.ri, S.pendingFocus.m); if (c) c.focus({ preventScroll: false }); S.pendingFocus = null; }
+  }
+
+  let toastT = null;
+  function toast(msg) {
+    const t = $('#toast'); t.textContent = msg; t.classList.add('on');
+    clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 3200);
+  }
+
+  /* ================= tema ================= */
+  function applyTheme(t) {
+    S.theme = t === 'light' || t === 'dark' ? t : 'auto';
+    if (S.theme === 'auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', S.theme);
+  }
+
+  /* ================= eventos ================= */
+  function onClick(e) {
+    const tgt = e.target;
+    const td = tgt.closest && tgt.closest('td.ed');
+    if (td && !td.classList.contains('editing')) {
+      let cellEl = td;
+      if (S.stale) { const ri = +td.dataset.ri; const m = +td.dataset.m; S.stale = false; render(); cellEl = findCell(ri, m); }
+      if (cellEl) startEdit(cellEl);
+      return;
+    }
+    const el = tgt.closest && tgt.closest('[data-act]');
+    if (el) {
+      const act = el.dataset.act; const p = S.plan;
+      switch (act) {
+        case 'nav': S.view = el.dataset.view; S.stale = false; render(); break;
+        case 'toggle': {
+          const set = el.dataset.kind === 'desp' ? S.openDesp : S.closed[el.dataset.kind];
+          const k = el.dataset.key;
+          if (set.has(k)) set.delete(k); else set.add(k);
+          S.stale = false; render(); break;
+        }
+        case 'expand-all': case 'collapse-all': {
+          const kind = el.dataset.kind; const open = act === 'expand-all';
+          if (kind === 'desp') S.openDesp = open ? new Set(p.despesas.map((d) => d.id)) : new Set();
+          else S.closed[kind] = open ? new Set() : new Set(groupKeys(E.buildAssetTree(p.ativos, kind === 'inv' ? 'ap' : 'pr'), []));
+          S.stale = false; render(); break;
+        }
+        case 'add-renda': openRenda(null, el.dataset.cat); break;
+        case 'edit-renda': openRenda(el.dataset.id); break;
+        case 'add-desp': openDespesa(); break;
+        case 'edit-desp': openDespesa(el.dataset.id); break;
+        case 'add-lanc': openLanc(el.dataset.did); break;
+        case 'edit-lanc': openLanc(el.dataset.did, el.dataset.id); break;
+        case 'add-ativo': openAtivo(); break;
+        case 'edit-ativo': openAtivo(el.dataset.id); break;
+        case 'create-blank': createPlan(S.year || NOW_Y, null); break;
+        case 'new-year': confirmNewYear(+el.dataset.year); break;
+        case 'del-year': confirmBox(`Excluir o planejamento de ${p.year}?`, 'Todos os valores e lançamentos deste ano serão apagados. Esta ação não pode ser desfeita.', 'Excluir', () => deletePlan(p.year)); break;
+        case 'reset': confirmBox(`Zerar os valores de ${p.year}?`, 'Rendas, lançamentos e valores de investimentos e proventos voltam a zero. A estrutura (fontes, despesas e ativos) é mantida.', 'Zerar valores', () => {
+          p.outros = z12(); p.rendas.forEach((r) => { r.v = z12(); }); p.despesas.forEach((d) => { d.lanc = []; }); p.ativos.forEach((a) => { a.ap = z12(); a.pr = z12(); }); commit();
+        }); break;
+        case 'theme': { const n = { auto: 'light', light: 'dark', dark: 'auto' }[S.theme]; applyTheme(n); lsSet('fluxo:theme', n); render(); break; }
+        case 'reading': askReading(); break;
+        case 'export-json': save(`fluxo-${p.year}.json`, JSON.stringify(p, null, 2)); break;
+        case 'export-csv-geral': exportGeral(); break;
+        case 'export-csv-lanc': exportLanc(); break;
+        default: break;
+      }
+    }
+    if (S.stale) { S.stale = false; render(); }
+  }
+
+  function confirmNewYear(year) {
+    const p = S.plan;
+    if (S.years.includes(year)) { toast(`O planejamento de ${year} já existe.`); return; }
+    confirmBox(`Criar o planejamento de ${year}?`, 'A estrutura deste ano (rendas, despesas e ativos) será copiada com os valores zerados.', 'Criar', async () => {
+      if (S.dirty) await flush();
+      createPlan(year, p);
+    });
+  }
+
+  function onChange(e) {
+    const t = e.target;
+    if (t.matches('[data-year-select]')) {
+      if (t.value === '__new') {
+        const next = (S.years.length ? Math.max(...S.years) : S.year || NOW_Y) + 1;
+        t.value = String(S.year);
+        if (S.plan) confirmNewYear(next); else createPlan(next, null);
+      } else switchYear(+t.value);
+      return;
+    }
+    if (t.matches('[data-setting]') && S.plan) {
+      const key = t.dataset.setting; const raw = E.parseValor(String(t.value).replace('%', ''));
+      if (Number.isNaN(raw) || raw < 0) { toast('Valor inválido.'); render(); return; }
+      S.plan.settings[key] = key === 'propostoPct' ? Math.min(100, raw) / 100 : raw;
+      commit();
+    }
+  }
+
+  let filterT = null;
+  function onInput(e) {
+    const t = e.target;
+    if (t.matches && t.matches('[data-filter]')) {
+      S.filter[t.dataset.filter] = t.value;
+      clearTimeout(filterT);
+      filterT = setTimeout(() => {
+        const pos = t.selectionStart; render();
+        const n = $(`[data-filter="${t.dataset.filter}"]`); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (er) { /* ignora */ } }
+      }, 160);
+    }
+  }
+
+  function onKey(e) {
+    const t = e.target;
+    if (!(t.matches && t.matches('td.ed')) || t.classList.contains('editing')) return;
+    const ri = +t.dataset.ri; const m = +t.dataset.m;
+    const go = (dir) => { const n = neighbor(ri, m, dir); if (n) { const c = findCell(n.ri, n.m); if (c) c.focus(); } };
+    switch (e.key) {
+      case 'Enter': case 'F2': e.preventDefault(); startEdit(t); return;
+      case 'ArrowRight': e.preventDefault(); go('right'); return;
+      case 'ArrowLeft': e.preventDefault(); go('left'); return;
+      case 'ArrowDown': e.preventDefault(); go('down'); return;
+      case 'ArrowUp': e.preventDefault(); go('up'); return;
+      case 'Delete': case 'Backspace': e.preventDefault(); applyCell(t.dataset, 0); touch(); S.pendingFocus = { ri, m }; render(); return;
+      default:
+        if (!e.ctrlKey && !e.metaKey && !e.altKey && /^[0-9,.\-=+]$/.test(e.key)) { e.preventDefault(); startEdit(t, e.key); }
+    }
+  }
+
+  let resizeT = null;
+  function bind() {
+    document.addEventListener('click', onClick);
+    document.addEventListener('change', onChange);
+    document.addEventListener('input', onInput);
+    document.addEventListener('keydown', onKey);
+    $('#modal').addEventListener('close', () => { if (S.needsRender) render(); });
+    window.addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(drawCharts, 150); });
+    window.addEventListener('pagehide', () => { if (S.dirty) flush(); });
+    document.addEventListener('visibilitychange', () => { if (document.hidden && S.dirty) flush(); });
+  }
+
+  /* ================= início ================= */
+  async function init() {
+    applyTheme(lsGet('fluxo:theme'));
+    bind();
+    render();
+    let db = null; let user = null;
+    try {
+      if (window.claude && typeof window.claude.use === 'function') {
+        [db, user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
+      }
+    } catch (e) { db = null; }
+    let id = null;
+    try { id = user && user.id ? await user.id() : null; } catch (e) { id = null; }
+    if (db && id) { S.db = db; S.uid = id; S.mode = 'cloud'; subscribe(); }
+    else { S.mode = 'local'; loadLocal(); render(); }
+    if (window.claude && typeof window.claude.use === 'function') {
+      window.claude.use('sample').then((x) => { S.sample = x; if (S.view === 'geral' && S.plan && !isEditing()) render(); }).catch(() => {});
+      window.claude.use('downloads').then((x) => { S.downloads = x; if (S.view === 'cfg' && !isEditing()) render(); }).catch(() => {});
+    }
+  }
+
+  window.__fluxo = { S, E, render };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+})();
+
+</script>
+</body>
+</html>
