@@ -1306,25 +1306,48 @@ dialog::backdrop { background: rgba(8, 18, 13, 0.55); }
     form.addEventListener('input', refresh); refresh();
   }
 
-  /* ================= exportação ================= */
+    /* ================= exportação ================= */
   const csvNum = (v) => String(E.r2(v)).replace('.', ',');
   const csvCell = (s) => '"' + String(s).replace(/"/g, '""') + '"';
-  async function save(filename, data) {
-    try { await S.downloads.save({ filename, data }); toast('Arquivo pronto para salvar.'); }
-    catch (e) { if (!e || e.code !== 'declined') toast('Não foi possível exportar agora.'); }
+
+  function downloadFile(content, filename, contentType) {
+    const blob = new Blob([content], { type: contentType });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast('Download concluído com sucesso!');
   }
-  function exportGeral() {
+
+  function exportJSON() {
+    const p = S.plan;
+    downloadFile(JSON.stringify(p, null, 2), `fluxo-${p.year}.json`, 'application/json');
+  }
+
+  function exportOverviewCSV() {
     const C = S.C;
-    const rows = [['Salário (renda fixa)', C.rendaFixa], ['Dividendos', C.dividendos], ['Serviços (renda extra)', C.rendaExtra], ['Outros', C.outros], ['Total de entradas', C.receita],
-      ['Investimentos', C.investAlocado], ['Conta corrente', C.despesas], ['Aportes', C.aportes], ['Saldo final (aplicado)', C.aplicado], ['Meta', C.meta], ['Valor proposto', C.proposto]];
+    const rows = [
+      ['Salário (renda fixa)', C.rendaFixa], ['Dividendos', C.dividendos], 
+      ['Serviços (renda extra)', C.rendaExtra], ['Outros', C.outros], 
+      ['Total de entradas', C.receita], ['Investimentos', C.investAlocado], 
+      ['Conta corrente', C.despesas], ['Aportes', C.aportes], 
+      ['Saldo final (aplicado)', C.aplicado], ['Meta', C.meta], ['Valor proposto', C.proposto]
+    ];
     const lines = [['Linha', ...MES, 'Total'].map(csvCell).join(';')];
     rows.forEach(([l, v]) => lines.push([csvCell(l), ...v.map(csvNum), csvNum(E.sum(v))].join(';')));
-    save(`fluxo-${S.plan.year}-visao-geral.csv`, '\ufeff' + lines.join('\r\n'));
+    downloadFile('\ufeff' + lines.join('\r\n'), `fluxo-${S.plan.year}-visao-geral.csv`, 'text/csv;charset=utf-8;');
   }
-  function exportLanc() {
+
+  function exportTransactionsCSV() {
     const lines = [['Mês', 'Categoria', 'Área', 'Despesa', 'Descrição', 'Valor'].map(csvCell).join(';')];
-    S.plan.despesas.forEach((d) => d.lanc.slice().sort((a, b) => a.m - b.m).forEach((l) => lines.push([MES[l.m], d.cat === 'FIXA' ? 'Fixa' : 'Variável', d.area, d.nome, l.d].map(csvCell).concat(csvNum(l.v)).join(';'))));
-    save(`fluxo-${S.plan.year}-lancamentos.csv`, '\ufeff' + lines.join('\r\n'));
+    S.plan.despesas.forEach((d) => d.lanc.slice().sort((a, b) => a.m - b.m).forEach((l) => {
+      lines.push([MES[l.m], d.cat === 'FIXA' ? 'Fixa' : 'Variável', d.area, d.nome, l.d].map(csvCell).concat(csvNum(l.v)).join(';'));
+    }));
+    downloadFile('\ufeff' + lines.join('\r\n'), `fluxo-${S.plan.year}-lancamentos.csv`, 'text/csv;charset=utf-8;');
   }
 
   /* ================= renderização ================= */
