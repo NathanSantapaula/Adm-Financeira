@@ -992,10 +992,8 @@ dialog::backdrop { background: rgba(8, 18, 13, 0.55); }
   function viewCfg() {
     const p = S.plan;
     const next = (S.years.length ? Math.max(...S.years) : p.year) + 1;
-        const dl = `<div class="btn-row">
-      <button class="btn" onclick="exportJSON()">Exportar tudo (JSON)</button>
-      <button class="btn" onclick="exportOverviewCSV()">Visão geral (CSV)</button>
-      <button class="btn" onclick="exportTransactionsCSV()">Lançamentos (CSV)</button>
+            const dl = `<div class="btn-row">
+      <button class="btn primary" type="button" onclick="exportAllCSV()">Exportar tudo (Excel/CSV)</button>
     </div>`;
 
     const themeLabel = { auto: 'Automático', light: 'Claro', dark: 'Escuro' }[S.theme];
