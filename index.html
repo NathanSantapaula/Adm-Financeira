@@ -992,9 +992,12 @@ dialog::backdrop { background: rgba(8, 18, 13, 0.55); }
   function viewCfg() {
     const p = S.plan;
     const next = (S.years.length ? Math.max(...S.years) : p.year) + 1;
-    const dl = S.downloads
-      ? `<div class="btn-row"><button class="btn" data-act="export-json">Exportar tudo (JSON)</button><button class="btn" data-act="export-csv-geral">Visão geral (CSV)</button><button class="btn" data-act="export-csv-lanc">Lançamentos (CSV)</button></div>`
-      : '<p>A exportação não está disponível neste ambiente.</p>';
+        const dl = `<div class="btn-row">
+      <button class="btn" onclick="exportJSON()">Exportar tudo (JSON)</button>
+      <button class="btn" onclick="exportOverviewCSV()">Visão geral (CSV)</button>
+      <button class="btn" onclick="exportTransactionsCSV()">Lançamentos (CSV)</button>
+    </div>`;
+
     const themeLabel = { auto: 'Automático', light: 'Claro', dark: 'Escuro' }[S.theme];
     return `${mobBar()}${pageHead('Ajustes', 'Parâmetros do planejamento, anos, exportação e aparência.')}
       <div class="settings">
