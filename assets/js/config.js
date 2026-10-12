@@ -2,16 +2,16 @@
    Nada aqui é segredo: a chave "anon" do Supabase é pública por projeto e protegida pelas regras de acesso (RLS) de supabase/schema.sql.
    Campos vazios simplesmente não aparecem no site. */
 window.FP_CONFIG = {
-  marca: 'Financial planning',
+  marca: 'Financial Planning',
   consultor: 'Nathan Santapaula',
   consultorCurto: 'Nathan',
 
   // Canais de contato do consultor (preencha ao menos um)
-  whatsapp: '', // só dígitos, com DDI e DDD. Exemplo: 5511999999999
-  email: '',
+  whatsapp: '+55 11 93487-5598',
+  email: 'nathansantapaula@gmail.com',
   xpUrl: '', // link opcional da assessoria na XP Inc.
-  agendaUrl: '', // link de agendamento (Calendly, Google Agenda, etc.) para o botão "Agendar conversa"
-  paymentUrl: '', // link de pagamento do plano completo (Pix, cartão, boleto)
+  agendaUrl: 'https://zcal.co/i/ioYEzB16',
+  paymentUrl: 'https://mpago.li/22BFXTT',
 
   // Oferta
   precoPor: 124.75,
