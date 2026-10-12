@@ -9,7 +9,7 @@ window.FP_CONFIG = {
   // Canais de contato do consultor (preencha ao menos um)
   whatsapp: '+55 11 93487-5598',
   email: 'nathansantapaula@gmail.com',
-  xpUrl: '', // link opcional da assessoria na XP Inc.
+  linkedinUrl: 'https://www.linkedin.com/in/nathansantapaula/',
   agendaUrl: 'https://zcal.co/i/ioYEzB16',
   paymentUrl: 'https://mpago.li/22BFXTT',
 
