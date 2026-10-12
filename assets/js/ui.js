@@ -46,7 +46,7 @@ function contactButtons(msg, subj, o) {
   if (CFG.agendaUrl) b.push(`<a class="btn primary" href="${esc(CFG.agendaUrl)}" ${ext}>Agendar conversa</a>`);
   const w = waLink(msg || baseMsg()); if (w) b.push(`<a class="btn ${CFG.agendaUrl ? '' : 'primary'}" href="${esc(w)}" ${ext}>WhatsApp</a>`);
   const m = mailLink(subj || 'Financial planning', msg || baseMsg()); if (m) b.push(`<a class="btn" href="${esc(m)}" ${ext}>E-mail</a>`);
-  if (CFG.xpUrl && !o.semXp) b.push(`<a class="btn" href="${esc(CFG.xpUrl)}" ${ext}>Assessoria na XP Inc.</a>`);
+  if (CFG.linkedinUrl) b.push(`<a class="btn" href="${esc(CFG.linkedinUrl)}" ${ext}>LinkedIn</a>`);
   if (!b.length) return `<p class="cap">Os canais de contato do ${esc(primeiroNome())} estão sendo configurados.</p>`;
   return `<div class="btn-row">${b.join('')}</div>`;
 }
