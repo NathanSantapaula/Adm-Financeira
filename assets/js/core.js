@@ -38,7 +38,7 @@ const f12 = (a, fill) => { a = Array.isArray(a) ? a.slice(0, 12) : []; while (a.
 function hydratePlan(raw) {
   const p = E.migratePlan(clone(raw), uid);
   p.year = +p.year;
-  p.settings = Object.assign({ metaAporte: 0, metaInvAno: 0, orcPadrao: 0 }, p.settings || {});
+  p.settings = Object.assign({ metaAporte: 0, metaInvAno: 0, orcPadrao: 0, patrimonioInicialAno: 0 }, p.settings || {});
   p.rendaCats = Array.isArray(p.rendaCats) ? p.rendaCats : E.CATS_RENDA();
   p.catsDesp = Array.isArray(p.catsDesp) ? p.catsDesp : E.CATS_DESP();
   p.rendas = (p.rendas || []).map((r) => Object.assign({ fonte: '' }, r, { id: r.id || uid(), valores: f12(r.valores, 0) }));
@@ -61,7 +61,7 @@ function hydrateProfile(p) {
   return p;
 }
 function blankPlan(year, base) {
-  const p = { v: 2, year, updatedAt: Date.now(), settings: { metaAporte: 0, metaInvAno: 0, orcPadrao: 0 }, rendaCats: E.CATS_RENDA(), rendas: [], catsDesp: E.CATS_DESP(), despesas: [], orcamento: new Array(12).fill(null), ativos: [] };
+  const p = { v: 2, year, updatedAt: Date.now(), settings: { metaAporte: 0, metaInvAno: 0, orcPadrao: 0, patrimonioInicialAno: 0 }, rendaCats: E.CATS_RENDA(), rendas: [], catsDesp: E.CATS_DESP(), despesas: [], orcamento: new Array(12).fill(null), ativos: [] };
   if (base) {
     p.settings = Object.assign({}, base.settings, { metaInvAno: 0 });
     p.rendaCats = clone(base.rendaCats); p.catsDesp = clone(base.catsDesp);
