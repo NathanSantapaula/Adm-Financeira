@@ -190,7 +190,9 @@
     const diferenca = sub(investAlocado, aportes);
     const meta = dividendos.map((d) => metaAporte + d);
     const faturamento = add(dividendos, rentab);
-    const base = (+ctx.patrimonioInicial || 0) + (+ctx.prevAplicado || 0);
+    const patrimonioAnoCustom = st.patrimonioInicialAno != null && st.patrimonioInicialAno !== '' ? (+st.patrimonioInicialAno || 0) : null;
+    const base = patrimonioAnoCustom !== null ? patrimonioAnoCustom : ((+ctx.patrimonioInicial || 0) + (+ctx.prevAplicado || 0));
+
     let acc = base; const patrimonio = aplicado.map((a) => (acc += a));
     const out = { rendaCat, rendas, dividendos, rentab, receita, despCat, despesas, orcamento, restante, usoOrc, investAlocado, poupanca, aplicado, aportes, diferenca, meta, faturamento, patrimonio, patrimonioBase: base };
     const T = {};
