@@ -38,7 +38,7 @@ const LOGO = '<svg width="28" height="28" viewBox="0 0 28 28" aria-hidden="true"
 const waDigits = () => String(CFG.whatsapp || '').replace(/\D/g, '');
 const waLink = (msg) => (waDigits() ? 'https://wa.me/' + waDigits() + (msg ? '?text=' + encodeURIComponent(msg) : '') : '');
 const mailLink = (subj, body) => (CFG.email ? 'mailto:' + CFG.email + '?subject=' + encodeURIComponent(subj) + '&body=' + encodeURIComponent(body || '') : '');
-const hasChannel = () => !!(waDigits() || CFG.email || CFG.xpUrl || CFG.agendaUrl);
+const hasChannel = () => !!(waDigits() || CFG.email || CFG.linkedinUrl || CFG.agendaUrl);
 const baseMsg = (extra) => `Olá, ${primeiroNome()}! ${S.profile && S.profile.nome ? 'Aqui é ' + S.profile.nome + '. ' : ''}${extra || 'Gostaria de conversar sobre o meu planejamento no Financial planning.'}`;
 const ext = 'target="_blank" rel="noopener noreferrer"';
 function contactButtons(msg, subj, o) {
