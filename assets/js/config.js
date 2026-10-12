@@ -26,7 +26,7 @@ window.FP_CONFIG = {
   depoimentos: [],
 
   // Banco de dados e login (Supabase). Deixe em branco para o modo demonstração (dados só no navegador).
-  supabase: { url: 'https://amvxhgjtsseeixhjwllkc.supabase.co', anonKey: 'sb_publishable_WmR5xrvOV5wzFBJ9eNcBOA_V8PDjClb' }
+  supabase: { url: 'https://amvxhgjtsseeixhjwllkc.supabase.co', anonKey: 'sb_publishable_WmR5xrvOV5wzFBJ9eNcBOA_V8PDjClb' },
 
   // Recursos exclusivos do plano completo (false libera para todos)
   gates: { cart: true, importar: true },
