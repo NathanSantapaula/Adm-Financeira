@@ -81,7 +81,7 @@ function wHistMini() {
 /* ---------- catálogo ---------- */
 const WIDGETS = [
   { id: 'patrimonio', nome: () => (inv() ? 'Patrimônio estimado' : 'Sobra para investir'), desc: 'Valor do ano com o gráfico mês a mês e os atalhos E se? e Histórico.', tam: 4, tams: [3, 4, 6], padrao: () => true, html: wPatrimonio },
-  { id: 'objetivos', nome: () => 'Objetivos', desc: 'Progresso do objetivo em foco, com troca entre as metas.', tam: 2, tams: [2, 3], padrao: () => true, html: () => objCardHtml(), disponivel: inv },
+  { id: 'objetivos', nome: () => 'Objetivos', desc: 'O objetivo em foco com a foto do seu sonho, o progresso e o prazo; troque entre as metas.', tam: 2, tams: [2, 3, 4, 6], padrao: () => true, html: () => objCardHtml(), disponivel: inv },
   { id: 'orcmes', nome: () => 'Orçamento do mês', desc: 'Quanto do orçamento do mês já foi usado.', tam: 2, tams: [2, 3], padrao: () => !inv(), html: wOrcMes },
   { id: 'indicadores', nome: () => 'Indicadores do ano', desc: 'Poupança, orçamento, aportes e dividendos (ou entradas e gastos).', tam: 6, tams: [6], padrao: () => true, html: wIndicadores },
   { id: 'fluxo', nome: () => 'Para onde foi cada mês', desc: 'Gastos e sobra para investir, mês a mês.', tam: 3, tams: [3, 4, 6], padrao: () => true, html: wFluxo },

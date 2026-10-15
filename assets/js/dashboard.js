@@ -54,7 +54,7 @@ function viewGeral() {
 function drawDashboard() {
   if (S.screen !== 'app' || S.view !== 'geral' || !S.plan) return;
   const C = S.C; const cur = S.year === NOW_Y ? NOW_M : -1; const sobra = C.investAlocado.map((v) => Math.max(0, v));
-  if (temRecurso('patrimonio')) chartLine($('#d-patr'), { height: 200, zoom: C.patrimonio[11] > 0 && C.patrimonio[0] > 0, labels: MES, aria: 'Evolução do patrimônio ao longo do ano', series: [{ color: 'var(--c1)', values: C.patrimonio, area: true }], tip: (i) => `<b>${MES[i]}</b><br>Patrimônio: ${brl0(C.patrimonio[i])}<br>Aportes no mês: ${brl0(C.aplicado[i])}` });
+  if (temRecurso('patrimonio')) chartLine($('#d-patr'), { height: 170, zoom: C.patrimonio[11] > 0 && C.patrimonio[0] > 0, labels: MES, aria: 'Evolução do patrimônio ao longo do ano', series: [{ color: 'var(--c1)', values: C.patrimonio, area: true }], tip: (i) => `<b>${MES[i]}</b><br>Patrimônio: ${brl0(C.patrimonio[i])}<br>Aportes no mês: ${brl0(C.aplicado[i])}` });
   else chartBars($('#d-patr'), { labels: MES, cur, height: 200, aria: 'Sobra para investir por mês', bars: [{ color: 'var(--c1)', values: C.investAlocado }], tip: (i) => `<b>${MES[i]}</b><br>Entradas: ${brl0(C.receita[i])}<br>Gastos: ${brl0(C.despesas[i])}<br>Sobra: ${brl0(C.investAlocado[i])}` });
   chartBars($('#d-flow'), { labels: MES, cur, aria: 'Gastos e sobra para investir por mês', bars: [{ color: 'var(--c2)', values: C.despesas }, { color: 'var(--c1)', values: sobra }], tip: (i) => `<b>${MES[i]}</b><br>Entradas: ${brl0(C.receita[i])}<br>Gastos: ${brl0(C.despesas[i])}<br>Sobra: ${brl0(C.investAlocado[i])}` });
   drawPainel2(); drawWidgetsExtras();

@@ -60,25 +60,47 @@ function objFrase(g) {
   }
 }
 
-/* ---------- Visão geral: card multi-metas ---------- */
+/* ---------- Visão geral: card do objetivo "com cara de sonho" ----------
+   Uma foto por tipo de objetivo (assets/img/objetivos/<tipo>.jpg, créditos em CREDITOS.md), título que conta a história
+   ("Próxima parada, Japão."), anel de progresso, valores e prazo. Troca de objetivo pelas pílulas, sem render(). */
+const OBJ_SONHO = {
+  independencia: 'Liberdade para escolher.', aposentadoria: 'Uma aposentadoria tranquila.', imovel: 'A chave da casa nova.', carro: 'O seu carro na estrada.',
+  viagem: 'Próxima parada: o mundo.', filhos: 'O futuro dos seus filhos.', educacao: 'Investir em conhecimento.', reserva: 'Tranquilidade para imprevistos.',
+  casamento: 'O grande dia.', negocio: 'O seu próprio negócio.', outro: 'O seu próximo objetivo.',
+};
+const OBJ_SONHO_ST = { concluido: 'Objetivo alcançado', 'no-prazo': 'Você está no caminho certo', atrasado: 'Precisa de um empurrão', fora: 'Fora de alcance no ritmo atual' };
+const OBJ_I_SETA = ic('<path d="M7 17 17 7M9 7h8v8"/>');
+const OBJ_I_CAL = ic('<rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/>');
+const objFoto = (t) => `assets/img/objetivos/${OBJ_SONHO[t] ? t : 'outro'}.jpg`;
+function objTitulo(g) {
+  const nome = (g.nome || '').trim().replace(/[.!]+$/, '');
+  if (g.tipo === 'viagem' && nome) return `Próxima parada, ${nome}.`;
+  return nome ? `${nome}.` : OBJ_SONHO[g.tipo] || OBJ_SONHO.outro;
+}
 function objCardHtml() {
   const A = objAnalise(); const g = objFoco(A);
-  const gerenciar = `<button class="hist-btn" data-act="objetivos-abrir">${OBJ_ICONES.outro}<span>Meus objetivos</span></button>`;
-  if (!g) return `<section class="card goal-card" id="obj-card"><div class="c-k hc-row"><span>Objetivos</span></div><div class="goal-cta"><p>Imóvel, carro, viagem, filhos, independência: cadastre seus objetivos com valor e prazo. Calculamos o progresso de cada um e liberamos o simulador “E se?”.</p><button class="btn primary" data-act="objetivo-definir">Definir meus objetivos</button></div></section>`;
-  const i = A.itens.indexOf(g); const st = OBJ_STATUS[g.status] || OBJ_STATUS['sem-valor'];
+  if (!g) return `<section class="card goal-card sonho vazio" id="obj-card"><span class="sonho-foto" aria-hidden="true" style="background-image:url('${objFoto('outro')}')"></span>
+    <div class="sonho-c"><p class="sonho-k">Sua próxima conquista</p><h3 class="sonho-t">Qual é o seu sonho?</h3>
+    <p class="sonho-txt">Imóvel, carro, viagem, filhos, independência: cadastre seus objetivos com valor e prazo e acompanhe cada um aqui.</p>
+    <button class="btn sonho-btn" data-act="objetivo-definir">Definir meus objetivos</button></div></section>`;
+  const st = OBJ_STATUS[g.status] || OBJ_STATUS['sem-valor']; const stTxt = OBJ_SONHO_ST[g.status] || st[0];
   const sw = A.itens.length > 1 ? `<div class="obj-sw" role="tablist" aria-label="Escolher objetivo">${A.itens.map((x, k) => `<button role="tab" class="obj-chip" data-act="objetivo-foco" data-id="${esc(x.id)}" aria-selected="${x.id === g.id}" title="${esc(objNomeDe(x))}">${objIcone(x, k)}<span>${esc(objNomeDe(x))}</span></button>`).join('')}</div>` : '';
-  const resumo = A.itens.length > 1 ? `<p class="obj-resumo">${A.itens.length} objetivos · ${A.noPrazo} no prazo${A.atrasados ? ` · ${A.atrasados} ${A.atrasados === 1 ? 'pede' : 'pedem'} atenção` : ''}${A.livre > 0 ? ` · ${A.livre}% sem destino` : ''}</p>` : '';
-  return `<section class="card goal-card multi" id="obj-card"><div class="c-k hc-row"><span>Objetivos</span>${gerenciar}</div>${sw}
-    <div class="obj-foco"><div class="goal-ring">${ring(g.progresso, { size: 124, stroke: 11, color: objCor(i), label: pct(g.progresso), sub: 'do objetivo', aria: `Progresso de ${objNomeDe(g)}` })}</div>
-      <div class="obj-foco-t"><b>${esc(objNomeDe(g))}</b><span class="obj-st ${st[1]}">${st[0]}</span><small>${brl0(g.saldo)} de ${brl0(g.valor)}${g.ano ? ' até ' + g.ano : ''}${A.itens.length > 1 ? ` · fatia de ${g.pct}%` : ''}</small></div></div>
-    <p class="obj-frase">${esc(objFrase(g))}</p>
-    ${g.status !== 'concluido' && g.valor > 0 && g.pct > 0 ? '<button class="lnk strong sim-link" data-act="sim-ir">E se eu aportar mais? Simular</button>' : ''}${resumo}
-    <p class="cap">Patrimônio a custo dividido pelas fatias de cada objetivo; retorno hipotético de ${fmtTaxa(+S.profile.retornoAnual || 10)} ao ano, sem promessa de resultado.</p></section>`;
+  const sim = g.status !== 'concluido' && g.valor > 0 && g.pct > 0 ? '<button class="sonho-sim" data-act="sim-ir">E se eu aportar mais?</button>' : '';
+  return `<section class="card goal-card sonho" id="obj-card"><span class="sonho-foto" aria-hidden="true" style="background-image:url('${objFoto(g.tipo)}')"></span>
+    <div class="sonho-c">
+      <div class="sonho-top"><span class="sonho-tag">${OBJ_ICONES[g.tipo] || OBJ_ICONES.outro}<span>${esc(objNome(g.tipo))}</span></span><button class="sonho-ger" data-act="objetivos-abrir" aria-label="Meus objetivos" title="Meus objetivos">${OBJ_I_SETA}</button></div>
+      <h3 class="sonho-t">${esc(objTitulo(g))}</h3>
+      <div class="sonho-meio"><div class="sonho-prog"><div class="sonho-ring">${ring(g.progresso, { size: 84, stroke: 7, color: '#fff', label: pct(g.progresso), sub: 'concluído', aria: `Progresso de ${objNomeDe(g)}` })}</div>
+        <div class="sonho-v"><b>${brl0(g.saldo)}</b><small>de ${brl0(g.valor)}</small><span class="sonho-st ${st[1]}"><i aria-hidden="true"></i>${esc(stTxt)}</span></div></div>
+      <div class="sonho-pe">${g.ano ? `<span class="sonho-prazo">${OBJ_I_CAL}<span><b>${g.previsto && g.status !== 'concluido' ? esc(MES_LONGO[g.previsto.mes]) + ' de ' + g.previsto.ano : 'Até ' + g.ano}</b><small>${g.status === 'concluido' ? 'meta coberta' : 'previsão no ritmo atual'}</small></span></span>` : ''}${sim}</div></div>
+      ${sw}
+      <p class="cap">${esc(objFrase(g))} Patrimônio a custo dividido pelas fatias de cada objetivo; retorno hipotético de ${fmtTaxa(+S.profile.retornoAnual || 10)} ao ano, sem promessa de resultado.</p>
+    </div></section>`;
 }
 // troca de objetivo em foco sem redesenhar a página: só o card e o simulador
 function objTrocarFoco(id) {
   S.profile.objetivoFoco = id; touch('profile'); S.sim = null;
-  const c = document.getElementById('obj-card'); if (c) c.outerHTML = objCardHtml();
+  const c = document.getElementById('obj-card'); if (c) { c.outerHTML = objCardHtml(); const n = document.getElementById('obj-card'); if (n) n.classList.add('troca'); } // a foto nova entra com um esmaecer curto
   if (S.simAberto) popSync(); // simulador aberto na janela (dashboard.js): passa a mostrar o novo objetivo
   const b = document.querySelector(`.obj-chip[data-id="${CSS.escape(id)}"]`); if (b) b.focus();
 }
