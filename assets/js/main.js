@@ -129,6 +129,7 @@ function onClick(e) {
       case 'checkout-back': S.screen = S.profile.onboarded ? 'app' : 'onboarding'; if (S.screen === 'onboarding' && !S.ob) initOb(); render(); break;
       case 'contact': S.maisOpen = false; openContact(); break;
       case 'terms': openTerms(); break;
+      case 'lp-confirma': case 'lp-set': lpAcao(act, el); break;
       case 'go-auth': if (S.user) { S.screen = S.profile.onboarded ? 'app' : 'onboarding'; if (S.screen === 'onboarding' && !S.ob) initOb(); render(); break; } S.authMode = ds.mode || 'signup'; S.authPlano = ds.plano === 'completo' || ds.plano === 'investidor' ? ds.plano : 'gratis'; S.authErr = ''; S.authDraft = null; S.screen = 'auth'; render(); break;
       case 'auth-mode': S.authMode = ds.mode; S.authErr = ''; S.authMsg = ''; render(); break;
       case 'goto-landing': closeAdmin(); S.screen = 'landing'; render(); break;
@@ -165,6 +166,7 @@ function onClick(e) {
 function onSubmit(e) {
   const f = e.target;
   if (f.id === 'f-auth') { e.preventDefault(); submitAuth(f); }
+  else if (f.id === 'lp-comeco') { e.preventDefault(); lpComecar(); }
   else if (f.id === 'f-ob') { e.preventDefault(); if (readOb(f)) { if (S.ob.step === OB_STEPS.length - 1) finishOb(); else obNext(); } }
   else if (f.dataset.form === 'year') { e.preventDefault(); const v = parseInt(new FormData(f).get('ano'), 10); if (!anoValido(v)) { const m = $('.merr', f); if (m) { m.textContent = 'Informe um ano entre 1990 e 2100.'; m.classList.add('show'); } toast('Informe um ano entre 1990 e 2100.'); return; } S.yearOpen = false; abrirAno(v); }
 }
@@ -192,6 +194,7 @@ function onInput(e) {
   const t = e.target; if (!(t.matches)) return;
   const refocus = (sel, pos) => { const n = $(sel); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (er) { /* ignora */ } } };
   if (t.matches('[data-sim]')) { simInput(t); return; }
+  if (t.matches('[data-lp]')) { lpInput(t); return; }
   if (t.matches('[data-filter]')) { S.filter[t.dataset.filter] = t.value; clearTimeout(filterT); filterT = setTimeout(() => { const pos = t.selectionStart; render(); refocus(`[data-filter="${t.dataset.filter}"]`, pos); }, 160); }
   if (t.matches('[data-clients-q]')) { S.clientsQ = t.value; clearTimeout(filterT); filterT = setTimeout(() => { const pos = t.selectionStart; render(); refocus('[data-clients-q]', pos); }, 160); }
 }

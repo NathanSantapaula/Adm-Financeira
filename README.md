@@ -12,7 +12,7 @@ assets/js/engine.js           cálculos, parcelamento, planos e permissões, reb
 assets/js/ingest.js           leitura de CSV/OFX, categorização, duplicidade, conciliação, payload de IA
 assets/js/ingest-ui.js        tela de importação (arrastar arquivo, prévia editável)
 assets/js/plans.js            permissões por plano na interface (bloqueios e upgrade)
-assets/js/prefs.js            temas (Light Apple, Dark OLED, Midnight Blue) e tom de voz
+assets/js/prefs.js            temas (Claro, Dark OLED, Midnight Blue) e tom de voz
 assets/js/report.js           visão do consultor, carteira recomendada e relatório
 assets/js/store.js            camada de dados (Supabase ou navegador)
 assets/js/*.js                demais telas e interface
@@ -206,7 +206,7 @@ O identificador interno dos backups continua `financial-planning`, para que back
 
 No **Painel administrativo**, seções **Aparência** e **Voz do painel**:
 
-- **Tema:** Automático (Light Apple de dia, Dark OLED à noite, conforme o aparelho), Light Apple, Dark OLED ou Midnight Blue. Aplicado antes da tela carregar, sem piscar.
+- **Tema:** Automático (Claro de dia, Dark OLED à noite, conforme o aparelho), Claro, Dark OLED ou Midnight Blue. Os três usam vidro e gradientes da marca (detalhes em `DESIGN.md`). Aplicado antes da tela carregar, sem piscar.
 - **Voz:** Consultivo, Executivo, Direto ou Acolhedor. Muda os textos de orientação e os alertas financeiros (orçamento, poupança, aporte, desvio da carteira). Os números nunca mudam, só a forma de dizer.
 
 A escolha fica salva no perfil do cliente. O sistema respeita a preferência de reduzir animações do dispositivo.

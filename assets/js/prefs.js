@@ -3,12 +3,12 @@
    Voz   = catálogo de frases com marcadores {assim}; o app inteiro fala pela função voz(). */
 'use strict';
 const TEMAS = {
-  auto: { nome: 'Automático', desc: 'Segue o seu aparelho: Light Apple de dia, Dark OLED à noite.', sw: ['#FBFBFD', '#FFFFFF', '#000000', '#0F0F11'] },
-  light: { nome: 'Light Apple', desc: 'Claro, limpo e luminoso.', sw: ['#FBFBFD', '#FFFFFF', '#0071E3', '#5E5CE6'] },
+  auto: { nome: 'Automático', desc: 'Segue o seu aparelho: Claro de dia, Dark OLED à noite.', sw: ['#F5F6F9', '#FFFFFF', '#000000', '#0F0F11'] },
+  light: { nome: 'Claro', desc: 'Vidro claro sobre luz azul, limpo e luminoso.', sw: ['#F5F6F9', '#FFFFFF', '#0A84FF', '#5E5CE6'] },
   oled: { nome: 'Dark OLED', desc: 'Preto verdadeiro. Elegante e econômico em telas OLED.', sw: ['#000000', '#0F0F11', '#2F9BFF', '#7D7AFF'] },
   midnight: { nome: 'Midnight Blue', desc: 'Azul profundo com vidro de brilho frio.', sw: ['#050A1A', '#0D1730', '#5AA7FF', '#8B7BFF'] },
 };
-const COR_BARRA = { light: '#FBFBFD', oled: '#000000', midnight: '#050A1A' };
+const COR_BARRA = { light: '#F5F6F9', oled: '#000000', midnight: '#050A1A' };
 const mqEscuro = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
 
 const temaResolvido = (pref) => (pref === 'light' || pref === 'oled' || pref === 'midnight' ? pref : mqEscuro && mqEscuro.matches ? 'oled' : 'light');
