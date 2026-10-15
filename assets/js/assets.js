@@ -269,13 +269,13 @@ function cartSeg(n) {
 // tocar numa fatia: fora de uma classe, entra nela; dentro, leva ao ativo no editor
 function cartCmpAbrir(n) {
   const f = CMP_SEGS[n]; if (!f) return;
-  if (f.k) { cedIrAtivo(f.k); return; }
+  if (f.k) { if (document.querySelector('.ced')) cedIrAtivo(f.k); else { S.view = 'cart'; render(); setTimeout(() => cedIrAtivo(f.k), 60); } return; } // na Visão geral, o ativo leva à Carteira
   S.cmpClasse = f.nome; cartCmpTrocar();
 }
 function cartCmpTrocar() {
   const velho = document.querySelector('.cmp'); if (!velho) return; const { K } = cartAnalise();
   const t = document.createElement('div'); t.innerHTML = cartComposicaoHtml(K); const novo = t.firstElementChild; novo.classList.add('troca');
-  velho.replaceWith(novo); drawCart(); const foco = novo.querySelector('.cmp-volta') || novo.querySelector('.cmp-li'); if (foco) foco.focus({ preventScroll: true });
+  velho.replaceWith(novo); cmpLigar(); const foco = novo.querySelector('.cmp-volta') || novo.querySelector('.cmp-li'); if (foco) foco.focus({ preventScroll: true });
 }
 
 function viewCart() {
@@ -358,6 +358,10 @@ function cartExpAplica() {
 function drawCart() {
   cartExpAplica();
   if (S.view !== 'cart' || !S.plan || !S.plan.ativos.length || gated('cart')) return;
+  cmpLigar();
+}
+// liga as interações da composição (Carteira e o widget da Visão geral usam a mesma)
+function cmpLigar() {
   const raiz = document.querySelector('.cmp'); if (!raiz || raiz.dataset.ligado) return; raiz.dataset.ligado = '1';
   // passar o mouse ou focar uma fatia (ou a linha da legenda) mostra os números dela no centro
   raiz.addEventListener('pointerover', (ev) => { const s = ev.target.closest && ev.target.closest('[data-cseg]'); if (s && ev.pointerType === 'mouse') cartSeg(+s.dataset.cseg); });

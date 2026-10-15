@@ -45,17 +45,60 @@ function proximosPassos() {
 }
 const btnAcao = (a, cls) => `<button class="${cls || 'lnk strong'}" data-act="${a[0]}"${a[1] ? ` data-view="${a[1]}"` : ''}>${esc(a[2])}</button>`;
 
+/* Período do card de patrimônio (só da sessão): S.periodo = { de, ate } em meses 0–11, ou null para o ano todo.
+   Atalhos de 3 e 6 meses terminam no mês atual (ou em dezembro, para outros anos); o calendário escolhe início e fim. */
+const PER_ATALHOS = [[3, 'Últimos 3 meses'], [6, 'Últimos 6 meses'], [12, 'Ano todo']];
+const perRef = () => (S.year === NOW_Y ? NOW_M : 11);
+function perIntervalo() { const p = S.periodo; return p ? [Math.min(p.de, p.ate), Math.max(p.de, p.ate)] : [0, 11]; }
+function perAtalho() { if (!S.periodo) return 12; const [de, ate] = perIntervalo(); const n = ate - de + 1; return ate === perRef() && n !== 12 && PER_ATALHOS.some((a) => a[0] === n) ? n : 0; }
+function perRotulo(curto) {
+  const n = perAtalho(); if (n) return curto && n < 12 ? n + ' meses' : PER_ATALHOS.find((a) => a[0] === n)[1];
+  const [de, ate] = perIntervalo(); return de === ate ? mesNome(de) : MES[de] + (curto ? '–' : ' a ') + MES[ate];
+}
+// "nos últimos 3 meses", "de março a maio", "em abril" ou "em 2026"
+function perFrase() { const n = perAtalho(); if (n === 12) return 'em ' + S.year; if (n) return 'nos ' + PER_ATALHOS.find((a) => a[0] === n)[1].toLowerCase(); const [de, ate] = perIntervalo(); return de === ate ? 'em ' + MES_LONGO[de] : 'de ' + MES_LONGO[de] + ' a ' + MES_LONGO[ate]; }
+const I_CAL = ic('<rect x="3" y="4.5" width="18" height="16.5" rx="2.5"/><path d="M8 2.5v4M16 2.5v4M3 10h18"/>');
+function periodoHtml() {
+  const [de, ate] = perIntervalo(); const ini = S.perIni; const at = perAtalho(); const ref = perRef();
+  const meses = MES.map((m, i) => {
+    const c = ini != null ? (i === ini ? ' ponta' : '') : (S.periodo && i >= de && i <= ate ? (i === de || i === ate ? ' ponta' : ' in') : '');
+    return `<button class="per-m${c}${S.year === NOW_Y && i > NOW_M ? ' fut' : ''}" data-act="per-mes" data-m="${i}" aria-pressed="${c ? 'true' : 'false'}" aria-label="${mesNome(i)}">${m}</button>`;
+  }).join('');
+  const dica = ini != null ? `Início em ${MES_LONGO[ini]}.` : 'Toque no mês inicial e depois no final.' + (S.year === NOW_Y && ref < 11 ? ` Os meses depois de ${MES_LONGO[ref]} ainda não aconteceram.` : '');
+  return `<div class="year per"><button class="year-pill per-pill" data-act="per-toggle" aria-haspopup="true" aria-expanded="${!!S.perOpen}" aria-label="Período do patrimônio: ${esc(perRotulo())}">${I_CAL}<span>${esc(perRotulo(true))}</span>${I.down}</button>
+    ${S.perOpen ? `<div class="popover per-pop" role="dialog" aria-label="Escolher o período"><div class="pop-t">Ver o crescimento em</div>
+      <div class="yr-list">${PER_ATALHOS.map((a) => `<button class="yr-opt${at === a[0] && ini == null ? ' on' : ''}" data-act="per-atalho" data-n="${a[0]}">${a[1]}</button>`).join('')}</div>
+      <div class="pop-t">${ini != null ? 'Agora toque no mês final' : 'Ou escolha no calendário de ' + S.year}</div><div class="per-cal">${meses}</div>
+      <p class="per-dica keep">${dica}</p></div>` : ''}</div>`;
+}
 function viewGeral() {
   const p = S.plan; const pr = S.profile; const nome = (pr.apelido || (pr.nome || '').split(' ')[0]) || 'por aqui';
-  const cab = `<div class="welcome"><div><p class="greet">${esc(voz('saudacao', { saud: saudacaoHora(), nome }))}</p><h1 class="wh">${esc(voz('titulo', { ano: p.year }))}</h1></div>${yearControl()}</div>`;
+  const cab = `<div class="welcome"><div><p class="greet">${esc(voz('saudacao', { saud: saudacaoHora(), nome }))}</p><h1 class="wh">${esc(voz('titulo', { ano: p.year }))}</h1></div>${yearControl(periodoHtml())}</div>`;
   return cab + widgetsHtml(); // widgets na ordem e no tamanho escolhidos pelo cliente (widgets.js)
 }
 
+/* Patrimônio estimado: linha do patrimônio (bolinha em cada mês, mês atual em destaque, ritmo da meta opcional)
+   ou barras dos aportes de cada mês contra a meta mensal. Os botões do card trocam só o gráfico, sem render(). */
+function drawPatr() {
+  const el = $('#d-patr'); if (!el) return; hideTip(); const C = S.C; const meta = C.metaAno > 0 ? C.metaAno : 0;
+  const [de, ate] = perIntervalo(); const ids = []; for (let i = de; i <= ate; i++) ids.push(i); const so = (arr) => ids.map((i) => arr[i]);
+  const curAbs = S.year === NOW_Y ? NOW_M : -1; const cur = curAbs >= de && curAbs <= ate ? curAbs - de : -1;
+  const base = C.patrimonioBase; const ritmo = MES.map((_, i) => base + (meta * (i + 1)) / 12); const comMeta = !!(S.patrMeta && meta);
+  const varia = (i) => { const ant = i ? C.patrimonio[i - 1] : base; const d = C.patrimonio[i] - ant; return Math.abs(d) < 0.5 ? 'sem variação' : `${d > 0 ? '+' : '−'} ${brl0(Math.abs(d))}${ant > 0 ? ` (${d > 0 ? '+' : '−'}${pct(Math.abs(d) / ant)})` : ''}`; };
+  if (S.patrModo === 'aportes') {
+    chartBars(el, { labels: so(MES), cur, height: 170, aria: 'Aportes de cada mês comparados com a meta mensal', bars: [{ color: 'var(--c1)', values: so(C.aplicado) }], marks: meta ? [{ color: 'var(--c4)', values: ids.map(() => meta / 12) }] : [],
+      tip: (j) => { const i = ids[j]; return `<b>${mesNome(i)}</b><br>Aporte: ${brl0(C.aplicado[i])}${meta ? `<br>Meta do mês: ${brl0(meta / 12)}` : ''}`; } });
+    return;
+  }
+  const series = [{ color: 'var(--c1)', values: so(C.patrimonio), area: true, w: 3 }]; if (comMeta) series.push({ color: 'var(--c4)', values: so(ritmo), dashed: true, w: 2 });
+  chartLine(el, { height: 170, suave: true, brilho: true, pontos: true, pontoFinal: true, teclado: true, cur, zoom: Math.min(...so(C.patrimonio)) > 0, labels: so(MES), aria: 'Evolução do patrimônio no período. Use as setas para percorrer os meses.', series,
+    tip: (j) => { const i = ids[j]; const dif = C.patrimonio[i] - ritmo[i]; return `<b>${mesNome(i)}${i === curAbs ? ' · hoje' : ''}</b><br>Patrimônio: ${brl0(C.patrimonio[i])}<br>No mês: ${varia(i)}<br>Aportes no mês: ${brl0(C.aplicado[i])}${comMeta ? `<br>Ritmo da meta: ${brl0(ritmo[i])} (${Math.abs(dif) < 0.5 ? 'em dia' : (dif > 0 ? 'acima ' : 'abaixo ') + brl0(Math.abs(dif))})` : ''}`; } });
+}
 function drawDashboard() {
   if (S.screen !== 'app' || S.view !== 'geral' || !S.plan) return;
   const C = S.C; const cur = S.year === NOW_Y ? NOW_M : -1; const sobra = C.investAlocado.map((v) => Math.max(0, v));
-  if (temRecurso('patrimonio')) chartLine($('#d-patr'), { height: 170, zoom: C.patrimonio[11] > 0 && C.patrimonio[0] > 0, labels: MES, aria: 'Evolução do patrimônio ao longo do ano', series: [{ color: 'var(--c1)', values: C.patrimonio, area: true }], tip: (i) => `<b>${MES[i]}</b><br>Patrimônio: ${brl0(C.patrimonio[i])}<br>Aportes no mês: ${brl0(C.aplicado[i])}` });
-  else chartBars($('#d-patr'), { labels: MES, cur, height: 200, aria: 'Sobra para investir por mês', bars: [{ color: 'var(--c1)', values: C.investAlocado }], tip: (i) => `<b>${MES[i]}</b><br>Entradas: ${brl0(C.receita[i])}<br>Gastos: ${brl0(C.despesas[i])}<br>Sobra: ${brl0(C.investAlocado[i])}` });
+  if (temRecurso('patrimonio')) drawPatr();
+  else { const [de, ate] = perIntervalo(); const ids = []; for (let i = de; i <= ate; i++) ids.push(i); chartBars($('#d-patr'), { labels: ids.map((i) => MES[i]), cur: cur >= de && cur <= ate ? cur - de : -1, height: 200, aria: 'Sobra para investir por mês', bars: [{ color: 'var(--c1)', values: ids.map((i) => C.investAlocado[i]) }], tip: (j) => { const i = ids[j]; return `<b>${MES[i]}</b><br>Entradas: ${brl0(C.receita[i])}<br>Gastos: ${brl0(C.despesas[i])}<br>Sobra: ${brl0(C.investAlocado[i])}`; } }); }
   chartBars($('#d-flow'), { labels: MES, cur, aria: 'Gastos e sobra para investir por mês', bars: [{ color: 'var(--c2)', values: C.despesas }, { color: 'var(--c1)', values: sobra }], tip: (i) => `<b>${MES[i]}</b><br>Entradas: ${brl0(C.receita[i])}<br>Gastos: ${brl0(C.despesas[i])}<br>Sobra: ${brl0(C.investAlocado[i])}` });
   drawPainel2(); drawWidgetsExtras();
   popSync(); // simulador ou histórico aberto na janela: acompanha os dados redesenhados
@@ -92,10 +135,8 @@ function simCalc(b, st) {
   return E.simularObjetivo({ patrimonio: b.patr, aporte: b.aporte, extra: st.extra, retornoBase: b.taxa, retorno: st.taxa, alvo: b.alvo, limite: SIM_LIMITE });
 }
 
-// botão "E se?" no card do patrimônio: abre e fecha o simulador (fechado por padrão, para a tela ficar limpa)
+// ícone do "E se?": o botão fica no card do objetivo (objetivos.js), ao lado da seta para Meus objetivos
 const I_SIM = ic('<path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/>');
-const simBtn = () => (temRecurso('patrimonio') && objLista().some((g) => g.valor > 0)
-  ? `<button class="hist-btn" data-act="sim-toggle" aria-expanded="${!!S.simAberto}" aria-controls="sim" aria-label="E se? Simulador do objetivo" title="E se? Simular cenários para o objetivo">${I_SIM}<span>E se?</span></button>` : '');
 const simFechar = `<button class="icon-btn" data-act="sim-toggle" aria-label="Fechar o simulador">${I.x}</button>`;
 function simHtml() {
   if (!temRecurso('patrimonio') || !S.simAberto) return '';
@@ -333,7 +374,7 @@ function drawPainel2() {
   if (temRecurso('investimentos')) {
     const D = painel2Dados();
     chartBars(el, { labels: MES, cur, height: 190, aria: 'Aportes de cada mês comparados com a meta mensal', bars: [{ color: 'var(--accent)', values: D.ap }], marks: D.meta > 0 ? [{ color: 'var(--c4)', values: MES.map(() => D.meta) }] : [],
-      tip: (i) => `<b>${MES_LONGO[i]}</b><br>Aporte: ${brl0(D.ap[i])}${D.meta > 0 ? `<br>Meta: ${brl0(D.meta)}<br>${D.ap[i] >= D.meta - 0.5 ? 'Na meta' : i <= (S.year === NOW_Y ? NOW_M : 11) ? `Faltaram ${brl0(D.meta - D.ap[i])}` : ''}` : ''}` });
+      tip: (i) => `<b>${MES_LONGO[i][0].toUpperCase() + MES_LONGO[i].slice(1)}</b><br>Aporte: ${brl0(D.ap[i])}${D.meta > 0 ? `<br>Meta: ${brl0(D.meta)}<br>${D.ap[i] >= D.meta - 0.5 ? 'Na meta' : i <= (S.year === NOW_Y ? NOW_M : 11) ? `Faltaram ${brl0(D.meta - D.ap[i])}` : ''}` : ''}` });
     return;
   }
   const cats = (S.plan.catsDesp || []).filter((c) => E.sum(C.despCat[c.id] || []) > 0); const cores = ['var(--c2)', 'var(--c4)', 'var(--c3)', 'var(--c5)', 'var(--c6)', 'var(--c1)'];
@@ -350,7 +391,7 @@ function popDialogo() {
     d = document.createElement('dialog'); d.id = 'wg-pop'; d.className = 'pop-dlg'; document.body.appendChild(d);
     d.addEventListener('close', () => { // fechou por Esc, toque fora ou botão: limpa o estado e devolve o foco
       const era = d.dataset.tipo; S.simAberto = false; if (S.hist) S.hist.aberto = false; d.dataset.tipo = ''; ['toast', 'infotip'].forEach((id) => { const n = document.getElementById(id); if (n && d.contains(n)) document.body.appendChild(n); }); d.innerHTML = ''; /* toast/dica podem estar hospedados no diálogo: voltam ao body antes de limpar */
-      popBotoes(); const b = document.querySelector(`.hero-card [data-act="${era === 'sim' ? 'sim-toggle' : 'hist-toggle'}"]`); if (b) b.focus({ preventScroll: true });
+      popBotoes(); const b = document.querySelector(era === 'sim' ? '#obj-card [data-act="sim-ir"], .hero-card [data-act="sim-toggle"]' : '.hero-card [data-act="hist-toggle"]'); if (b) b.focus({ preventScroll: true }); // o "E se?" agora mora no card do objetivo
     });
     d.addEventListener('click', (e) => { if (e.target === d) d.close(); }); // toque no fundo escurecido
   }

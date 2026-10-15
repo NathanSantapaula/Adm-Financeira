@@ -1,13 +1,25 @@
 /* Painel administrativo lateral, backup completo, importação .xlsx, anos e área do consultor. */
 'use strict';
-function openAdmin(pagina) { if (S.screen !== 'app' || !S.profile) return; S.adminOpen = true; S.adminPage = pagina === 'perfil' || pagina === 'objetivos' || pagina === 'painel' ? pagina : 'inicio'; renderAdmin(true); const d = $('#admin'); if (!d.open) d.showModal(); }
-/* página inicial do painel: cada seção vira um bloco que abre e fecha pela setinha (todas começam fechadas);
+function openAdmin(pagina) { if (S.screen !== 'app' || !S.profile) return; S.adminOpen = true; S.adminPage = pagina === 'perfil' || pagina === 'objetivos' || pagina === 'painel' || /^grupo:/.test(pagina || '') ? pagina : 'inicio'; renderAdmin(true); const d = $('#admin'); if (!d.open) d.showModal(); }
+/* painel em duas camadas: a página inicial lista os grupos (Planejamento, Personalizar o painel, Backup e planilhas) e cada um
+   abre uma página própria, como "Meu perfil". Lá, cada título vira um bloco que abre e fecha pela setinha (todos começam fechados);
    o estado fica em S.admSec durante a sessão e sobrevive aos redesenhos do painel */
-// descrição curta de cada seção, visível mesmo fechada (quando a seção não traz a sua própria)
+const ADM_GRUPOS = [
+  { id: 'planejamento', nome: 'Planejamento', desc: 'Metas, ponto de partida, objetivos e anos.', ic: 'M4 19V9M10 19V5M16 19v-7M22 19H2' },
+  { id: 'personalizar', nome: 'Personalizar o painel', desc: 'Telas, abas do menu, aparência e voz.', ic: 'M4 7h10M18 7h2M4 17h4M12 17h8M16 5v4M10 15v4' },
+  { id: 'dados', nome: 'Backup e planilhas', desc: 'Salve, restaure ou importe seus dados.', ic: 'M12 3v12M7 10l5 5 5-5M4 19h16' },
+];
+const admGrupo = () => (/^grupo:/.test(S.adminPage || '') ? ADM_GRUPOS.find((g) => 'grupo:' + g.id === S.adminPage) : null);
+// descrição curta de cada título, visível mesmo fechado
 const ADM_DESC = {
-  planejamento: 'Metas, ponto de partida, objetivos e anos.',
-  'personalizar-o-painel': 'Telas, abas do menu, aparência e voz.',
-  'backup-e-planilhas': 'Salve, restaure ou importe seus dados.',
+  'metas-e-ponto-de-partida': 'Meta de aportes, patrimônio inicial e seus objetivos.',
+  'anos-de-planejamento': 'Abra, crie ou exclua anos.',
+  telas: 'Escolha e organize os widgets de cada tela.',
+  'abas-do-menu': 'Quais abas aparecem no menu.',
+  aparencia: 'Tema e cor do painel.',
+  'voz-do-painel': 'O tom dos destaques e avisos.',
+  'backup-completo': 'Baixe ou restaure todos os seus dados.',
+  'importar-planilha-xlsx-': 'Traga dados de uma planilha, inclusive a carteira do assessor.',
 };
 const ADM_FIXAS = new Set(['plano', 'sessao']); // sempre abertas
 function admAcordeao(d) {
@@ -48,25 +60,23 @@ function adminHtml() {
   else plano = `<div class="plan-badge${planoAtual() !== 'gratis' ? ' on' : ''}">Plano ${esc(nPl)}</div>${pend ? `<p class="mmsg">Você pediu o plano ${esc(nomePlano(pend))}. Assim que o ${esc(primeiroNome())} confirmar o pagamento, ele é liberado na sua conta.</p><div class="btn-row"><button class="btn" data-act="upgrade" data-plano="${pend}">Ver como pagar</button></div>` : planoAtual() !== 'completo' ? `<p class="mmsg">${planoAtual() === 'gratis' ? 'Evolua para o Investidor (investimentos, proventos, patrimônio e carteira) ou para a Assessoria (com o ' + esc(primeiroNome()) + ').' : 'Evolua para a Assessoria: carteira recomendada, relatórios avançados e acompanhamento do ' + esc(primeiroNome()) + '.'}</p><div class="btn-row">${planoAtual() === 'gratis' ? '<button class="btn" data-act="upgrade" data-plano="investidor">Plano Investidor</button>' : ''}<button class="btn primary" data-act="upgrade" data-plano="completo">Plano Assessoria</button></div>` : `<p class="mmsg">Você conta com a assessoria exclusiva do ${esc(primeiroNome())}, a carteira recomendada, os relatórios avançados e todos os recursos.</p>`}`;
   const importBlock = gated('importar') ? lockedHtml('importar') : importHtml();
   const sub = [p.perfilInvestidor && p.perfilInvestidor.resultado ? 'Perfil ' + ob : '', planLabel()].filter(Boolean).join(' · ');
-  return `<button class="pf-card" data-act="perfil-abrir">${avatarHtml(p, 'lg')}<span class="pf-t"><b>${esc(p.nome || 'Minha conta')}</b><small>${esc(p.email || '')}</small><small>${esc(sub)}</small></span><span class="pf-go">Meu perfil${I.chev}</span></button>
-   <section class="dr-sec"><h3>Planejamento</h3>
-      <div class="dr-sub"><h4>Metas e ponto de partida</h4>
+  const G = admGrupo();
+  if (G && G.id === 'planejamento') return `<section class="dr-sec"><h3>Metas e ponto de partida</h3>
       ${pl ? `<div class="field-row"><div>Meta de aportes mensais<small>A meta de cada mês soma os dividendos recebidos.</small></div><input class="in-s" data-setting="metaAporte" inputmode="decimal" value="${pl.settings.metaAporte ? nf.format(pl.settings.metaAporte) : ''}" placeholder="0,00" aria-label="Meta de aportes mensais"></div>
       <div class="field-row"><div>Meta de investimento de ${pl.year}<small>Opcional. Se vazio, soma as metas mensais.</small></div><input class="in-s" data-setting="metaInvAno" inputmode="decimal" value="${pl.settings.metaInvAno ? nf.format(pl.settings.metaInvAno) : ''}" placeholder="—" aria-label="Meta de investimento do ano"></div>
       <div class="field-row"><div>Patrimônio inicial de ${pl.year}<small>O que você tinha investido no início deste ano. Vazio = automático (patrimônio informado mais os aportes dos anos anteriores).</small></div><input class="in-s" data-setting="patrimonioInicial" inputmode="decimal" value="${pl.settings.patrimonioInicial != null ? nf.format(pl.settings.patrimonioInicial) : ''}" placeholder="0,00" aria-label="Patrimônio inicial do ano"></div>` : ''}
-      ${objetivosLinkHtml()}</div>
-      <div class="dr-sub"><h4>Anos de planejamento</h4><ul class="yrs">${years.map((y) => `<li><b>${y}</b>${years.length > 1 ? `<button class="btn sm danger" data-act="del-year" data-year="${y}">Excluir</button>` : ''}</li>`).join('')}</ul>
-      <form data-form="year" class="yr-new"><label class="pop-t" for="yr-adm">Adicionar ou abrir outro ano</label><div class="act-row"><input id="yr-adm" name="ano" class="in-s left" inputmode="numeric" maxlength="4" placeholder="Ex.: ${NOW_Y + 1}" autocomplete="off"><button class="btn primary" type="submit">Abrir</button></div></form></div>
-    </section>
-    <section class="dr-sec"><h3>Personalizar o painel</h3>
-      <div class="dr-sub"><h4>Telas</h4>${['geral', 'gastos', 'rendas', 'invest', 'proventos', 'carteira'].filter((k) => !PAINEIS[k].recurso || temRecurso(PAINEIS[k].recurso)).map(painelLinkHtml).join('')}</div>
-      <div class="dr-sub"><h4>Abas do menu</h4><div class="abas">${abas.map(([k, l, d]) => `<label class="chk aba"><input type="checkbox" data-aba="${k}" ${p.abas.includes(k) ? 'checked' : ''} ${k === 'geral' ? 'disabled' : ''}><span><b>${l}</b><small>${d}</small></span></label>`).join('')}</div></div>
-      ${prefsHtml()}
-    </section>
-    <section class="dr-sec"><h3>Backup e planilhas</h3>
-      <div class="dr-sub"><h4>Backup completo</h4><div class="btn-row"><button class="btn primary" data-act="backup">Baixar backup</button><label class="btn" for="bk-file">Restaurar backup</label><input id="bk-file" type="file" accept=".json,application/json" hidden></div>${bkHtml()}</div>
-      <div class="dr-sub"><h4>Importar planilha (.xlsx)</h4>${importBlock}</div>
-    </section>
+      ${objetivosLinkHtml()}</section>
+    <section class="dr-sec"><h3>Anos de planejamento</h3><ul class="yrs">${years.map((y) => `<li><b>${y}</b>${years.length > 1 ? `<button class="btn sm danger" data-act="del-year" data-year="${y}">Excluir</button>` : ''}</li>`).join('')}</ul>
+      <form data-form="year" class="yr-new"><label class="pop-t" for="yr-adm">Adicionar ou abrir outro ano</label><div class="act-row"><input id="yr-adm" name="ano" class="in-s left" inputmode="numeric" maxlength="4" placeholder="Ex.: ${NOW_Y + 1}" autocomplete="off"><button class="btn primary" type="submit">Abrir</button></div></form></section>`;
+  if (G && G.id === 'personalizar') return `<section class="dr-sec"><h3>Telas</h3>${['geral', 'gastos', 'rendas', 'invest', 'proventos', 'carteira'].filter((k) => !PAINEIS[k].recurso || temRecurso(PAINEIS[k].recurso)).map(painelLinkHtml).join('')}</section>
+    <section class="dr-sec"><h3>Abas do menu</h3><div class="abas">${abas.map(([k, l, d]) => `<label class="chk aba"><input type="checkbox" data-aba="${k}" ${p.abas.includes(k) ? 'checked' : ''} ${k === 'geral' ? 'disabled' : ''}><span><b>${l}</b><small>${d}</small></span></label>`).join('')}</div></section>
+    ${prefsHtml()}`;
+  if (G && G.id === 'dados') return `<section class="dr-sec"><h3>Backup completo</h3><div class="btn-row"><button class="btn primary" data-act="backup">Baixar backup</button><label class="btn" for="bk-file">Restaurar backup</label><input id="bk-file" type="file" accept=".json,application/json" hidden></div>${bkHtml()}</section>
+    <section class="dr-sec"><h3>Importar planilha (.xlsx)</h3>${importBlock}</section>`;
+  // página inicial: perfil, os três grupos (cada um abre a sua página), plano e sessão
+  const grupos = ADM_GRUPOS.map((g) => `<button class="pf-card adm-grupo" data-act="adm-grupo" data-g="${g.id}"><span class="adm-gi" aria-hidden="true">${ic(`<path d="${g.ic}"/>`)}</span><span class="pf-t"><b>${esc(g.nome)}</b><small>${esc(g.desc)}</small></span><span class="pf-go">${I.chev}</span></button>`).join('');
+  return `<button class="pf-card" data-act="perfil-abrir">${avatarHtml(p, 'lg')}<span class="pf-t"><b>${esc(p.nome || 'Minha conta')}</b><small>${esc(p.email || '')}</small><small>${esc(sub)}</small></span><span class="pf-go">Meu perfil${I.chev}</span></button>
+    <div class="adm-grupos">${grupos}</div>
     <section class="dr-sec"><h3>Plano</h3>${plano}<div class="btn-row"><button class="btn" data-act="contact">Falar com o ${esc(primeiroNome())}</button></div></section>
     <section class="dr-sec"><h3>Sessão</h3><div class="btn-row"><button class="btn" data-act="goto-landing">Ver página inicial</button><button class="btn" data-act="terms">Termos e privacidade</button><button class="btn danger" data-act="sair">Sair</button></div></section>`;
 }
@@ -74,8 +84,10 @@ function renderAdmin(topo) {
   const d = $('#admin'); if (!d || !S.profile) return;
   const ae = document.activeElement; let foco = null;
   if (!topo && ae && d.contains(ae) && ae.dataset) { const at = ['act', 'id', 'd', 'tam', 'painelOn', 'objf'].filter((k) => ae.dataset[k] != null).map((k) => `[data-${k.replace(/[A-Z]/g, (c) => '-' + c.toLowerCase())}="${CSS.escape(ae.dataset[k])}"]`).join(''); if (at) foco = at; }
-  const sc = topo ? 0 : $('.dr-body', d) ? $('.dr-body', d).scrollTop : 0; const perfil = S.adminPage === 'perfil'; const objs = S.adminPage === 'objetivos'; const pnl = S.adminPage === 'painel';
-  const head = pnl
+  const sc = topo ? 0 : $('.dr-body', d) ? $('.dr-body', d).scrollTop : 0; const perfil = S.adminPage === 'perfil'; const objs = S.adminPage === 'objetivos'; const pnl = S.adminPage === 'painel'; const G = admGrupo();
+  const head = G
+    ? `<div class="dr-head"><div class="dr-back"><button class="btn ghost sm" data-act="adm-voltar" aria-label="Voltar ao painel"><span class="flip">${I.chev}</span>Painel</button><h2>${esc(G.nome)}</h2></div><button class="btn ghost" data-act="admin-close" aria-label="Fechar painel">${I.x}</button></div>`
+    : pnl
     ? `<div class="dr-head"><div class="dr-back"><button class="btn ghost sm" data-act="painel-voltar" aria-label="Voltar ao painel"><span class="flip">${I.chev}</span>Painel</button><h2>Personalizar ${nomeTela(alvoAtual())}</h2></div><button class="btn ghost" data-act="admin-close" aria-label="Fechar painel">${I.x}</button></div>`
     : objs
     ? `<div class="dr-head"><div class="dr-back"><button class="btn ghost sm" data-act="objetivos-voltar" aria-label="Voltar ao painel"><span class="flip">${I.chev}</span>Painel</button><h2>Meus objetivos</h2></div><button class="btn ghost" data-act="admin-close" aria-label="Fechar painel">${I.x}</button></div>`
@@ -83,7 +95,7 @@ function renderAdmin(topo) {
     ? `<div class="dr-head"><div class="dr-back"><button class="btn ghost sm" data-act="perfil-voltar" aria-label="Voltar ao painel"><span class="flip">${I.chev}</span>Painel</button><h2>Meu perfil</h2></div><button class="btn ghost" data-act="admin-close" aria-label="Fechar painel">${I.x}</button></div>`
     : `<div class="dr-head"><div><h2>Painel administrativo</h2><p>${esc(S.profile.nome || 'Minha conta')}, ${esc(planLabel().toLowerCase())}</p></div><button class="btn ghost" data-act="admin-close" aria-label="Fechar painel">${I.x}</button></div>`;
   const tst = $('#toast'); // o aviso pode estar dentro deste painel (ver toastHost): não deixa ele sumir no redesenho
-  d.innerHTML = `${head}<div class="dr-body${perfil ? ' pf-page' : objs ? ' obj-page' : pnl ? ' wg-page' : ''}">${pnl ? painelEditorHtml() : objs ? objetivosHtml() : perfil ? perfilHtml() : adminHtml()}</div>`;
+  d.innerHTML = `${head}<div class="dr-body${perfil ? ' pf-page' : objs ? ' obj-page' : pnl ? ' wg-page' : G ? ' adm-gpage' : ''}">${pnl ? painelEditorHtml() : objs ? objetivosHtml() : perfil ? perfilHtml() : adminHtml()}</div>`;
   if (!pnl && !objs && !perfil) admAcordeao(d);
   if (tst && !tst.isConnected) d.appendChild(tst);
   $('.dr-body', d).scrollTop = sc;

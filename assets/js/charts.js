@@ -17,6 +17,8 @@ function showTip(html, x, y) {
   t.style.left = Math.max(8, left) + 'px'; t.style.top = top + 'px';
 }
 const hideTip = () => { const t = document.getElementById('tip'); if (t) t.hidden = true; };
+// no toque o balão fica até tocar fora do gráfico
+document.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse' && !(e.target.closest && e.target.closest('.chart'))) hideTip(); }, true);
 
 /* Barras empilhadas por mês, com marcas opcionais (ex.: meta ou orçamento) */
 function chartBars(el, cfg) {
@@ -66,24 +68,63 @@ function chartLine(el, cfg) {
   const step = niceStep((hiV - loV) / 4); let hi = Math.ceil(hiV / step) * step; const lo = Math.floor(loV / step) * step; if (hi <= lo) hi = lo + step;
   const x = (i) => m.l + (n === 1 ? iw / 2 : (iw * i) / (n - 1)); const y = (v) => m.t + ih * (1 - (v - lo) / (hi - lo));
   let g = ''; const nt = Math.round((hi - lo) / step);
-  for (let k = 0; k <= nt; k++) { const v = lo + k * step; g += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(v)}" y2="${y(v)}" class="${Math.abs(v) < 1e-9 ? 'gz' : 'gl'}"/><text x="${m.l - 8}" y="${y(v) + 4}" text-anchor="end">${tickFmt(+v.toFixed(2))}</text>`; }
-  const gid = 'ga-' + (el.id || 'x'); let paths = ''; let defs = '';
+  for (let k = 0; k <= nt; k++) { const v = lo + k * step; g += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(v)}" y2="${y(v)}" class="${Math.abs(v) < 1e-9 ? 'gz' : 'gl'}"${cfg.suave ? ' stroke-dasharray="3 6"' : ''}/><text x="${m.l - 8}" y="${y(v) + 4}" text-anchor="end">${tickFmt(+v.toFixed(2))}</text>`; }
+  const gid = 'ga-' + (el.id || 'x'); let paths = ''; let defs = ''; let fim = '';
+  // cfg.suave: curva sem cantos (Catmull-Rom com os controles presos entre os pontos, para não "passar" do valor real)
+  const caminho = (pts) => {
+    if (!cfg.suave || pts.length < 3) return pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+    let d = `M${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[i - 1] || pts[i]; const p1 = pts[i]; const p2 = pts[i + 1]; const p3 = pts[i + 2] || p2;
+      const lo2 = Math.min(p1[1], p2[1]); const hi2 = Math.max(p1[1], p2[1]); const cl = (v) => Math.max(lo2, Math.min(hi2, v));
+      d += ` C${(p1[0] + (p2[0] - p0[0]) / 6).toFixed(1)} ${cl(p1[1] + (p2[1] - p0[1]) / 6).toFixed(1)} ${(p2[0] - (p3[0] - p1[0]) / 6).toFixed(1)} ${cl(p2[1] - (p3[1] - p1[1]) / 6).toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
+    }
+    return d;
+  };
+  if (cfg.brilho) defs += `<filter id="${gid}f" x="-5%" y="-40%" width="110%" height="180%"><feGaussianBlur stdDeviation="5"/></filter>`;
   cfg.series.forEach((s, si) => {
     const pts = s.values.map((v, i) => (v == null ? null : [x(i), y(v)])).filter(Boolean); if (!pts.length) return;
-    const d = pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
-    if (s.area) { defs += `<linearGradient id="${gid}${si}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${s.color}" stop-opacity=".28"/><stop offset="1" stop-color="${s.color}" stop-opacity="0"/></linearGradient>`; paths += `<path d="${d} L${pts[pts.length - 1][0].toFixed(1)} ${y(Math.max(lo, 0))} L${pts[0][0].toFixed(1)} ${y(Math.max(lo, 0))} Z" fill="url(#${gid}${si})"/>`; }
+    const d = caminho(pts);
+    if (s.area) { defs += `<linearGradient id="${gid}${si}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${s.color}" stop-opacity="${cfg.brilho ? '.36' : '.28'}"/>${cfg.brilho ? `<stop offset=".55" stop-color="${s.color}" stop-opacity=".1"/>` : ''}<stop offset="1" stop-color="${s.color}" stop-opacity="0"/></linearGradient>`; paths += `<path d="${d} L${pts[pts.length - 1][0].toFixed(1)} ${y(Math.max(lo, 0))} L${pts[0][0].toFixed(1)} ${y(Math.max(lo, 0))} Z" fill="url(#${gid}${si})"/>`; }
+    if (cfg.brilho && !s.dashed) paths += `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="${(s.w || 2.5) + 5}" stroke-linecap="round" opacity=".35" filter="url(#${gid}f)"/>`;
     paths += `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="${s.w || 2.5}" stroke-linecap="round" stroke-linejoin="round"${s.dashed ? ' stroke-dasharray="2 7"' : ''}/>`;
+    // cfg.pontoFinal: o último valor em destaque (ponto com halo)
+    // cfg.pontos: uma bolinha em cada mês; com cfg.cur, o mês atual ganha halo e os meses seguintes ficam mais claros
+    if (cfg.pontos && si === 0) {
+      s.values.forEach((v, i) => {
+        if (v == null) return; const cx = x(i).toFixed(1); const cy = y(v).toFixed(1); const fut = cfg.cur >= 0 && i > cfg.cur;
+        if (i === cfg.cur) fim += `<circle cx="${cx}" cy="${cy}" r="11" fill="${s.color}" opacity=".18"/><circle cx="${cx}" cy="${cy}" r="5" fill="${s.color}" stroke="var(--surface)" stroke-width="2.5"/>`;
+        else fim += `<circle class="lp${fut ? ' fut' : ''}" cx="${cx}" cy="${cy}" r="3.4" fill="var(--surface)" stroke="${s.color}" stroke-width="2"/>`;
+      });
+    }
+    if (cfg.pontoFinal && si === 0 && !(cfg.pontos && cfg.cur >= 0)) { const p = pts[pts.length - 1]; fim += `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="10" fill="${s.color}" opacity=".18"/><circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="4.5" fill="${s.color}" stroke="var(--surface)" stroke-width="2.5"/>`; }
   });
+  const cor0 = (cfg.series[0] && cfg.series[0].color) || 'var(--accent)';
   const goal = cfg.goal ? `<line x1="${m.l}" x2="${W - m.r}" y1="${y(cfg.goal)}" y2="${y(cfg.goal)}" stroke="var(--c4)" stroke-width="1.5" stroke-dasharray="5 5"/><text x="${cfg.goalLeft ? m.l + 6 : W - m.r}" y="${y(cfg.goal) - 6}" text-anchor="${cfg.goalLeft ? 'start' : 'end'}" class="goal-l">${escSvg(cfg.goalLabel || 'Objetivo')}</text>` : '';
   const sparse = cfg.labels.some((l) => l === ''); const stepL = sparse ? 1 : Math.max(1, Math.ceil(n / 12), Math.ceil(n / Math.max(2, Math.floor(iw / (Math.max(...cfg.labels.map((l) => String(l).length)) * 6 + 6))))); /* rótulos não se encostam em telas estreitas */ let lab = '';
-  for (let i = 0; i < n; i += stepL) if (cfg.labels[i] !== '') lab += `<text x="${x(i).toFixed(1)}" y="${H - 6}" text-anchor="middle">${escSvg(cfg.labels[i])}</text>`;
-  el.innerHTML = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${escSvg(cfg.aria)}"><defs>${defs}</defs>${g}${goal}${paths}${lab}<line class="hv" x1="0" x2="0" y1="${m.t}" y2="${m.t + ih}" stroke="var(--ink-3)" stroke-width="1" opacity="0"/></svg>`;
-  const svg = el.firstChild; const hv = svg.querySelector('.hv');
-  svg.addEventListener('pointermove', (e) => {
-    const r = svg.getBoundingClientRect(); const i = Math.max(0, Math.min(n - 1, Math.round(((e.clientX - r.left - m.l) / iw) * (n - 1))));
-    hv.setAttribute('x1', x(i)); hv.setAttribute('x2', x(i)); hv.setAttribute('opacity', '.5'); showTip(cfg.tip(i), e.clientX, e.clientY);
-  });
-  svg.addEventListener('pointerleave', () => { hideTip(); hv.setAttribute('opacity', '0'); });
+  for (let i = 0; i < n; i += stepL) if (cfg.labels[i] !== '') lab += `<text x="${x(i).toFixed(1)}" y="${H - 6}" text-anchor="middle"${cfg.cur === i ? ' class="cur-l"' : ''}>${escSvg(cfg.labels[i])}</text>`;
+  const hvp = cfg.suave ? `<circle class="hvp" r="5" fill="var(--surface)" stroke="${cor0}" stroke-width="2.5" opacity="0" pointer-events="none"/>` : '';
+  el.innerHTML = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${escSvg(cfg.aria)}"${cfg.teclado ? ' tabindex="0"' : ''}><defs>${defs}</defs>${g}${goal}${paths}${fim}${lab}<line class="hv" x1="0" x2="0" y1="${m.t}" y2="${m.t + ih}" stroke="var(--ink-3)" stroke-width="1" opacity="0"${cfg.suave ? ' stroke-dasharray="3 4"' : ''}/>${hvp}</svg>`;
+  const svg = el.firstChild; const hv = svg.querySelector('.hv'); const pt = svg.querySelector('.hvp'); const v0 = (cfg.series[0] && cfg.series[0].values) || [];
+  const marca = (i, cx, cy) => {
+    hv.setAttribute('x1', x(i)); hv.setAttribute('x2', x(i)); hv.setAttribute('opacity', '.5'); showTip(cfg.tip(i), cx, cy);
+    if (pt && v0[i] != null) { pt.setAttribute('cx', x(i).toFixed(1)); pt.setAttribute('cy', y(v0[i]).toFixed(1)); pt.setAttribute('opacity', '1'); }
+  };
+  const apaga = () => { hideTip(); hv.setAttribute('opacity', '0'); if (pt) pt.setAttribute('opacity', '0'); };
+  const mesDe = (e) => { const r = svg.getBoundingClientRect(); const esc0 = r.width / W; return Math.max(0, Math.min(n - 1, Math.round(((e.clientX - r.left) / esc0 - m.l) / iw * (n - 1)))); };
+  svg.addEventListener('pointermove', (e) => marca(mesDe(e), e.clientX, e.clientY));
+  svg.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse') marca(mesDe(e), e.clientX, e.clientY); }); // toque: mostra o mês tocado
+  svg.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') apaga(); });
+  // cfg.teclado: setas percorrem os meses com o balão junto do ponto
+  if (cfg.teclado) {
+    let k = cfg.cur >= 0 ? cfg.cur : n - 1;
+    const noPonto = () => { const r = svg.getBoundingClientRect(); const esc0 = r.width / W; marca(k, r.left + x(k) * esc0, r.top + y(v0[k] || 0) * esc0); };
+    svg.addEventListener('focus', noPonto); svg.addEventListener('blur', apaga);
+    svg.addEventListener('keydown', (e) => {
+      const d = { ArrowRight: 1, ArrowLeft: -1, Home: -n, End: n }[e.key]; if (d == null) { if (e.key === 'Escape') apaga(); return; }
+      e.preventDefault(); k = Math.max(0, Math.min(n - 1, k + d)); noPonto();
+    });
+  }
 }
 
 /* Rosca com título no centro */

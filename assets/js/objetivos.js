@@ -85,14 +85,15 @@ function objCardHtml() {
     <button class="btn sonho-btn" data-act="objetivo-definir">Definir meus objetivos</button></div></section>`;
   const st = OBJ_STATUS[g.status] || OBJ_STATUS['sem-valor']; const stTxt = OBJ_SONHO_ST[g.status] || st[0];
   const sw = A.itens.length > 1 ? `<div class="obj-sw" role="tablist" aria-label="Escolher objetivo">${A.itens.map((x, k) => `<button role="tab" class="obj-chip" data-act="objetivo-foco" data-id="${esc(x.id)}" aria-selected="${x.id === g.id}" title="${esc(objNomeDe(x))}">${objIcone(x, k)}<span>${esc(objNomeDe(x))}</span></button>`).join('')}</div>` : '';
-  const sim = g.status !== 'concluido' && g.valor > 0 && g.pct > 0 ? '<button class="sonho-sim" data-act="sim-ir">E se eu aportar mais?</button>' : '';
+  // "E se?" (simulador do objetivo) fica no topo do card, ao lado da seta para Meus objetivos
+  const sim = g.status !== 'concluido' && g.valor > 0 && g.pct > 0 ? `<button class="sonho-esse" data-act="sim-ir" aria-label="E se? Simular cenários para este objetivo" title="E se? Simular cenários para este objetivo">${typeof I_SIM !== 'undefined' ? I_SIM : ''}<span>E se?</span></button>` : '';
   return `<section class="card goal-card sonho" id="obj-card"><span class="sonho-foto" aria-hidden="true" style="background-image:url('${objFoto(g.tipo)}')"></span>
     <div class="sonho-c">
-      <div class="sonho-top"><span class="sonho-tag">${OBJ_ICONES[g.tipo] || OBJ_ICONES.outro}<span>${esc(objNome(g.tipo))}</span></span><button class="sonho-ger" data-act="objetivos-abrir" aria-label="Meus objetivos" title="Meus objetivos">${OBJ_I_SETA}</button></div>
+      <div class="sonho-top"><span class="sonho-tag">${OBJ_ICONES[g.tipo] || OBJ_ICONES.outro}<span>${esc(objNome(g.tipo))}</span></span><span class="sonho-acts">${sim}<button class="sonho-ger" data-act="objetivos-abrir" aria-label="Meus objetivos" title="Meus objetivos">${OBJ_I_SETA}</button></span></div>
       <h3 class="sonho-t">${esc(objTitulo(g))}</h3>
       <div class="sonho-meio"><div class="sonho-prog"><div class="sonho-ring">${ring(g.progresso, { size: 84, stroke: 7, color: '#fff', label: pct(g.progresso), sub: 'concluído', aria: `Progresso de ${objNomeDe(g)}` })}</div>
         <div class="sonho-v"><b>${brl0(g.saldo)}</b><small>de ${brl0(g.valor)}</small><span class="sonho-st ${st[1]}"><i aria-hidden="true"></i>${esc(stTxt)}</span></div></div>
-      <div class="sonho-pe">${g.ano ? `<span class="sonho-prazo">${OBJ_I_CAL}<span><b>${g.previsto && g.status !== 'concluido' ? esc(MES_LONGO[g.previsto.mes]) + ' de ' + g.previsto.ano : 'Até ' + g.ano}</b><small>${g.status === 'concluido' ? 'meta coberta' : 'previsão no ritmo atual'}</small></span></span>` : ''}${sim}</div></div>
+      <div class="sonho-pe">${g.ano ? `<span class="sonho-prazo">${OBJ_I_CAL}<span><b>${g.previsto && g.status !== 'concluido' ? esc(MES_LONGO[g.previsto.mes]) + ' de ' + g.previsto.ano : 'Até ' + g.ano}</b><small>${g.status === 'concluido' ? 'meta coberta' : 'previsão no ritmo atual'}</small></span></span>` : ''}</div></div>
       ${sw}
       <p class="cap">${esc(objFrase(g))} Patrimônio a custo dividido pelas fatias de cada objetivo; retorno hipotético de ${fmtTaxa(+S.profile.retornoAnual || 10)} ao ano, sem promessa de resultado.</p>
     </div></section>`;
@@ -152,11 +153,11 @@ function objAcao(act, ds) {
   const L = () => objLista();
   switch (act) {
     case 'objetivos-abrir': case 'objetivo-definir': {
-      S.maisOpen = false; if (!S.adminOpen) openAdmin('objetivos'); else { S.adminPage = 'objetivos'; renderAdmin(true); }
+      S.maisOpen = false; S.admAntes = S.adminOpen && /^grupo:/.test(S.adminPage || '') ? S.adminPage : 'inicio'; if (!S.adminOpen) openAdmin('objetivos'); else { S.adminPage = 'objetivos'; renderAdmin(true); }
       setTimeout(() => { const f = document.querySelector('#admin [data-objf="valor"]') || document.querySelector('#admin .obj-tipo'); if (f && act === 'objetivo-definir') f.focus(); }, 80);
       return true;
     }
-    case 'objetivos-voltar': S.adminPage = 'inicio'; renderAdmin(true); return true;
+    case 'objetivos-voltar': S.adminPage = S.admAntes || 'inicio'; S.admAntes = null; renderAdmin(true); return true;
     case 'objetivo-novo': objNovo(ds.tipo); return true;
     case 'objetivo-foco': objTrocarFoco(ds.id); return true;
     case 'objetivo-mover': {

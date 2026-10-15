@@ -7,10 +7,13 @@ const navItems = () => {
 };
 function renderSide() {
   const items = navItems(); const nome = (S.profile && S.profile.nome) || 'Minha conta';
-  const btn = ([k, l]) => `<button data-act="nav" data-view="${k}" ${S.view === k ? 'aria-current="page"' : ''}>${I[k] || I.geral}<span>${l}</span>${k !== 'clientes' && !abaLiberada(k) ? `<em class="lk" title="Plano ${esc(nomePlano(planoMinimoDe(E.ABA_RECURSO[k] || 'fluxo')))}">${I.lock}</em>` : ''}</button>`;
-  $('#side').innerHTML = `<div class="brand">${logoMarca()}</div>
+  const btn = ([k, l]) => `<button data-act="nav" data-view="${k}" title="${esc(l)}" ${S.view === k ? 'aria-current="page"' : ''}>${I[k] || I.geral}<span>${l}</span>${k !== 'clientes' && !abaLiberada(k) ? `<em class="lk" title="Plano ${esc(nomePlano(planoMinimoDe(E.ABA_RECURSO[k] || 'fluxo')))}">${I.lock}</em>` : ''}</button>`;
+  // no computador o menu recolhe para só o ícone "AV" e os ícones das abas (estado guardado no aparelho: html.side-mini)
+  const mini = document.documentElement.classList.contains('side-mini');
+  $('#side').innerHTML = `<div class="brand"><span class="brand-full">${logoMarca()}</span><span class="brand-mini" aria-hidden="true">${LOGO}</span>
+      <button class="side-tog" data-act="side-toggle" aria-expanded="${!mini}" aria-label="${mini ? 'Expandir o menu' : 'Recolher o menu'}" title="${mini ? 'Expandir o menu' : 'Recolher o menu'}">${I.chev}</button></div>
     <nav class="nav" aria-label="Seções">${items.map(btn).join('')}</nav>
-    <div class="side-foot"><button class="acct" data-act="admin-open" aria-label="Abrir painel administrativo">${avatarHtml(S.profile)}<span class="acct-t"><b>${esc(nome)}</b><small>${esc(planLabel())}</small></span>${I.mais}</button>
+    <div class="side-foot"><button class="acct" data-act="admin-open" aria-label="Abrir painel administrativo" title="Painel administrativo">${avatarHtml(S.profile)}<span class="acct-t"><b>${esc(nome)}</b><small>${esc(planLabel())}</small></span>${I.mais}</button>
       <div class="advisor"><div class="adv-t">Seu assessor<b>${esc(CFG.consultor)}</b></div><button class="btn" data-act="contact">Falar com o ${esc(primeiroNome())}</button></div><div class="save" data-s="${S.save}">${statusText()}</div></div>`;
   const prim = ['geral', 'despesas', 'inv', 'cart'].filter((k) => items.some((i) => i[0] === k));
   const rest = items.filter((i) => !prim.includes(i[0]));
@@ -61,7 +64,7 @@ function render(opts) {
   if (scr === 'app' && S.lastCount !== key + ':' + S.year) { S.lastCount = key + ':' + S.year; contarNumeros($('#view')); }
   if (scr === 'landing') initReveal();
   if (typeof notifTitulo === 'function') notifTitulo();
-  if (S.yearOpen) yearPopAjusta();
+  if (S.yearOpen || S.perOpen) yearPopAjusta();
   observarGraficos();
   if (S.pendingFocus) { const c = findCell(S.pendingFocus.ri, S.pendingFocus.m); if (c) c.focus(); S.pendingFocus = null; }
   const ad = $('#admin'); if (S.adminOpen && ad && ad.open) { const ae = document.activeElement; if (!(ae && ad.contains(ae) && /INPUT|SELECT|TEXTAREA/.test(ae.tagName))) renderAdmin(); }
@@ -73,6 +76,7 @@ function renderLater() { S.stale = true; clearTimeout(S.staleT); S.staleT = setT
 function onClick(e) {
   const tgt = e.target;
   if (S.yearOpen && !(tgt.closest && tgt.closest('.year'))) { S.yearOpen = false; render(); }
+  if (S.perOpen && !(tgt.closest && tgt.closest('.per'))) { S.perOpen = false; S.perIni = null; render(); }
   if (S.notifOpen && !(tgt.closest && tgt.closest('.notif'))) { S.notifOpen = false; notifRefresh(); }
   if (S.maisOpen && !(tgt.closest && (tgt.closest('.sheet') || tgt.closest('[data-act="mais-toggle"]')))) { S.maisOpen = false; render(); }
   const ed = tgt.closest && tgt.closest('.ed');
@@ -86,6 +90,10 @@ function onClick(e) {
     switch (act) {
       case 'nav': S.view = ds.view; S.stale = false; S.maisOpen = false; S.notifOpen = false; closeAdmin(); render(); break;
       case 'mais-toggle': S.maisOpen = !S.maisOpen; render(); break;
+      case 'patr-modo': S.patrModo = ds.m; { const ctl = el.closest('.pt-ctl'); if (ctl) { ctl.outerHTML = patrCtl(); const b = document.querySelector(`.pt-ctl [data-m="${ds.m}"]`); if (b) b.focus(); } } drawPatr(); break;
+      case 'patr-meta': S.patrMeta = !S.patrMeta; el.setAttribute('aria-pressed', String(S.patrMeta)); drawPatr(); break;
+      case 'side-toggle': { const m = document.documentElement.classList.toggle('side-mini'); try { localStorage.setItem('fp:sideMini', m ? '1' : '0'); } catch (e) { /* ignora */ }
+        renderSide(); const b = document.querySelector('.side-tog'); if (b) b.focus(); clearTimeout(resizeT); resizeT = setTimeout(drawAll, 300); break; } // gráficos acompanham a nova largura
       case 'toggle': { const set = S.closed[ds.kind]; if (set.has(ds.key)) set.delete(ds.key); else set.add(ds.key); S.stale = false; render(); break; }
       case 'expand-all': S.closed[ds.kind] = new Set(); render(); break;
       case 'planilha-toggle': S.planilha[ds.kind] = !S.planilha[ds.kind]; render(); if (S.planilha[ds.kind]) { const sec = document.querySelector('.sheet-sec'); if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' }); } break;
@@ -117,7 +125,15 @@ function onClick(e) {
       case 'cat-up': case 'cat-down': case 'cat-del': catAction(act, ds.id); break;
       case 'cat-add': { const inp = $('#modal [name=novacat]'); catAction('cat-add', null, inp ? inp.value : ''); break; }
       case 'orc-all': { const v = S.C.orcamento[ds.m != null ? +ds.m : S.mes]; p.settings.orcPadrao = v; p.orcamento = new Array(12).fill(null); commit(); toast('Orçamento aplicado a todos os meses.'); break; }
-      case 'year-toggle': S.yearOpen = !S.yearOpen; S.notifOpen = false; render(); break;
+      case 'year-toggle': S.yearOpen = !S.yearOpen; S.perOpen = false; S.notifOpen = false; render(); break;
+      case 'per-toggle': S.perOpen = !S.perOpen; S.perIni = null; S.yearOpen = false; S.notifOpen = false; render(); break;
+      case 'per-atalho': { const n = +ds.n; const ref = perRef(); S.periodo = n >= 12 ? null : { de: Math.max(0, ref - n + 1), ate: ref }; S.perOpen = false; S.perIni = null; render(); const b = document.querySelector('[data-act="per-toggle"]'); if (b) b.focus(); break; }
+      case 'per-mes': { // primeiro toque marca o início, o segundo fecha o período
+        const m = +ds.m;
+        if (S.perIni == null) { S.perIni = m; render(); const b = document.querySelector(`.per-m[data-m="${m}"]`); if (b) b.focus(); break; }
+        const de = Math.min(S.perIni, m); const ate = Math.max(S.perIni, m); S.periodo = de === 0 && ate === 11 ? null : { de, ate }; S.perIni = null; S.perOpen = false; render();
+        const b = document.querySelector('[data-act="per-toggle"]'); if (b) b.focus(); break;
+      }
       case 'year-pick': if (+ds.year !== S.year) switchYear(+ds.year); else { S.yearOpen = false; render(); } break;
       case 'create-plan': createPlan(S.year || NOW_Y, null); break;
       case 'add-ativo': openAtivo(); break;
@@ -156,6 +172,8 @@ function onClick(e) {
       case 'admin-close': closeAdmin(); break;
       case 'perfil-abrir': S.maisOpen = false; S.adminPage = 'perfil'; if (!S.adminOpen) openAdmin('perfil'); else renderAdmin(true); break;
       case 'perfil-voltar': S.adminPage = 'inicio'; renderAdmin(true); break;
+      case 'adm-grupo': S.adminPage = 'grupo:' + ds.g; renderAdmin(true); { const b = document.querySelector('#admin [data-act="adm-voltar"]'); if (b) b.focus(); } break;
+      case 'adm-voltar': { const era = S.adminPage; S.adminPage = 'inicio'; renderAdmin(true); const b = document.querySelector(`#admin [data-act="adm-grupo"][data-g="${era.replace('grupo:', '')}"]`); if (b) b.focus(); break; }
       case 'avatar': definirAvatar({ tipo: 'preset', id: ds.av }); break;
       case 'avatar-remover': definirAvatar(null); break;
       case 'backup': backupCompleto(); break;
@@ -216,6 +234,7 @@ function onInput(e) {
 function onKey(e) {
   if (e.key === 'Escape' && S.notifOpen) { S.notifOpen = false; notifRefresh('.bell'); return; }
   if (e.key === 'Escape' && S.yearOpen) { S.yearOpen = false; render(); return; }
+  if (e.key === 'Escape' && S.perOpen) { S.perOpen = false; S.perIni = null; render(); const b = document.querySelector('[data-act="per-toggle"]'); if (b) b.focus(); return; }
   if (e.key === 'Escape' && S.cartExp) { cartExpFechar(); return; }
   const t = e.target;
   if (!(t.matches && t.matches('.ed')) || t.classList.contains('editing')) return;

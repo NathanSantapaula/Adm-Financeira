@@ -138,9 +138,9 @@ function prefsHtml() {
   const custom = escolhido === 'custom' ? `<div class="ap-custom"><div class="ap-linha"><span>Fundo${auto ? ' <small>(segue o aparelho)</small>' : ''}</span><div class="seg" role="group" aria-label="Fundo do tema personalizado">${fundo}</div></div>
     <div class="ap-linha"><span>Cor de destaque</span><div class="ap-cores" role="group" aria-label="Cor de destaque">${cores}</div></div></div>` : '';
   const vozes = Object.keys(VOZES).map((v) => `<button class="ap-voz" data-act="voz" data-voz="${v}" aria-pressed="${p.voz === v}"><b>${VOZES[v].nome}</b><small>${VOZES[v].desc}</small></button>`).join('');
-  // dentro do bloco "Personalizar o painel" (admin.js): subtítulos curtos, sem parágrafo de explicação
-  return `<div class="dr-sub"><h4>Aparência</h4>
+  // dentro da página "Personalizar o painel" (admin.js): cada uma vira um título com setinha (admAcordeao)
+  return `<section class="dr-sec"><h3>Aparência</h3>
       <label class="ap-auto"><span><b>Automático</b><small>Claro de dia, escuro à noite, como o aparelho.</small></span><span class="wg-sw"><input type="checkbox" data-tema-auto ${auto ? 'checked' : ''} aria-label="Tema automático"><span></span></span></label>
-      <div class="ap-ops" role="group" aria-label="Tema">${opcoes}</div>${custom}</div>
-    <div class="dr-sub"><h4>Voz do painel</h4><div class="ap-vozes">${vozes}</div></div>`;
+      <div class="ap-ops" role="group" aria-label="Tema">${opcoes}</div>${custom}</section>
+    <section class="dr-sec"><h3>Voz do painel</h3><div class="ap-vozes">${vozes}</div></section>`;
 }

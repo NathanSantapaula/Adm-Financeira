@@ -2048,3 +2048,88 @@ html.sem-rolagem { overflow: hidden; }
   .sonho-sim { padding: 6px 11px; border-radius: 980px; font-size: 12px; }
   .sonho .obj-sw { margin-top: 2px; }
 }
+
+/* objetivo: foto mais escura por igual (fotos claras, como a das alianças, deixavam o texto difícil de ler) e sombra em textos e ícones */
+.sonho-foto::after { background: linear-gradient(rgba(4, 8, 18, .4), rgba(4, 8, 18, .4)),
+  linear-gradient(180deg, rgba(4, 8, 18, .35) 0%, rgba(4, 8, 18, .12) 30%, rgba(4, 8, 18, .5) 60%, rgba(4, 8, 18, .9) 100%), linear-gradient(90deg, rgba(4, 8, 18, .45), rgba(4, 8, 18, .05) 75%); }
+@container sonho (min-width: 440px) {
+  .sonho-foto::after { background: linear-gradient(rgba(4, 8, 18, .32), rgba(4, 8, 18, .32)),
+    linear-gradient(90deg, rgba(4, 8, 18, .9) 0%, rgba(4, 8, 18, .7) 38%, rgba(4, 8, 18, .25) 72%, rgba(4, 8, 18, .1) 100%), linear-gradient(180deg, rgba(4, 8, 18, .25) 0%, rgba(4, 8, 18, 0) 30%, rgba(4, 8, 18, .55) 100%); }
+}
+.sonho-c { text-shadow: 0 1px 2px rgba(0, 0, 0, .6), 0 2px 14px rgba(0, 0, 0, .45); }
+.sonho-c svg { filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .55)); }
+.sonho-ring svg { filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .5)); }
+.sonho .obj-chip[aria-selected="true"], .btn.sonho-btn { text-shadow: none; }
+.sonho .obj-chip[aria-selected="true"] svg { filter: none; }
+/* "E se?" no topo, ao lado da seta para Meus objetivos */
+.sonho-acts { display: inline-flex; align-items: center; gap: 6px; }
+.sonho-esse { display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px 0 10px; border-radius: 980px; color: #fff; font: 600 12.5px var(--font); cursor: pointer; border: 1px solid rgba(255, 255, 255, .22);
+  background: rgba(255, 255, 255, .14); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); transition: background-color 200ms ease, transform 140ms var(--ease-out); }
+.sonho-esse svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+@media (hover: hover) and (pointer: fine) { .sonho-esse:hover { background: rgba(255, 255, 255, .26); } }
+.sonho-esse:active { transform: scale(.96); }
+
+/* ---------- menu lateral recolhível (computador): só o "AV" e os ícones, para a tela ganhar largura ---------- */
+.app { transition: grid-template-columns 280ms var(--ease-out); }
+.brand { position: relative; }
+.brand-mini { display: none; } .brand-mini .logo-ic { width: 34px; height: 34px; display: block; }
+.side-tog { margin-left: auto; width: 28px; height: 28px; flex: none; display: grid; place-items: center; padding: 0; border: 0; border-radius: 9px; background: transparent; color: var(--ink-3); cursor: pointer; transition: background-color 160ms ease, color 160ms ease; }
+.side-tog svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; transform: rotate(180deg); transition: transform 280ms var(--ease-out); }
+@media (hover: hover) and (pointer: fine) { .side-tog:hover { background: var(--surface-3); color: var(--ink); } }
+@media (min-width: 901px) { html.side-mini .app { grid-template-columns: 78px minmax(0, 1fr); } }
+html.side-mini .side { padding-inline: 10px; overflow: hidden; }
+html.side-mini .brand { flex-direction: column; gap: 14px; padding: 0 0 18px; }
+html.side-mini .brand-full { display: none; } html.side-mini .brand-mini { display: block; }
+html.side-mini .side-tog { margin: 0; } html.side-mini .side-tog svg { transform: none; }
+html.side-mini .nav button { justify-content: center; padding: 11px 0; }
+html.side-mini .nav button > span, html.side-mini .nav em.lk { display: none; }
+html.side-mini .acct { justify-content: center; padding: 6px; border: 0; background: transparent; }
+html.side-mini .acct-t, html.side-mini .acct > svg, html.side-mini .advisor { display: none; }
+html.side-mini .save { justify-content: center; padding: 0; font-size: 0; }
+@media (prefers-reduced-motion: reduce) { .app, .side-tog svg { transition: none; } }
+
+/* ---------- Visão geral: ícone próprio à esquerda do título de cada widget; tocar leva à aba de origem ---------- */
+.wg-tit { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.wg-ic { flex: none; width: 30px; height: 30px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 10px; color: var(--accent); background: var(--accent-soft);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 16%, transparent); font: inherit;
+  transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms ease, transform 140ms var(--ease-out); }
+.wg-ic svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+button.wg-ic { cursor: pointer; }
+@media (hover: hover) and (pointer: fine) { button.wg-ic:hover { color: var(--on-accent); background: var(--accent); box-shadow: 0 6px 16px -6px var(--accent); } }
+button.wg-ic:active { transform: scale(.92); }
+.stat .c-k.wg-tit { gap: 8px; } .stat .wg-ic { width: 26px; height: 26px; border-radius: 8px; } .stat .wg-ic svg { width: 14px; height: 14px; }
+
+/* ---------- gráfico do patrimônio: modos, ritmo da meta, bolinhas por mês ---------- */
+.pt-ctl { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin: 10px 0 2px; }
+.pt-seg { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--surface-3); }
+.pt-seg button, .pt-meta { border: 0; font: inherit; font-size: 12.5px; font-weight: 600; padding: 5px 12px; border-radius: 999px; background: transparent; color: var(--ink-3); cursor: pointer; transition: background-color 160ms ease, color 160ms ease; }
+.pt-seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 4px rgba(0, 0, 0, .12); }
+.pt-meta { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--line); }
+.pt-meta i { width: 14px; height: 0; border-top: 2px dashed var(--c4); }
+.pt-meta[aria-pressed="true"] { color: var(--ink); border-color: color-mix(in srgb, var(--c4) 60%, var(--line)); background: color-mix(in srgb, var(--c4) 12%, transparent); }
+@media (hover: hover) and (pointer: fine) { .pt-seg button:hover, .pt-meta:hover { color: var(--ink); } }
+.chart .lp.fut { opacity: .45; }
+.chart svg:focus { outline: none; } .chart svg:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 8px; }
+
+/* ---------- painel: grupos na página inicial (cada um abre a sua página) ---------- */
+.adm-grupos { display: grid; gap: 8px; margin: 14px 0 6px; }
+.adm-grupo .adm-gi { flex: none; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 12px; background: var(--accent-soft); color: var(--accent); }
+.adm-grupo .adm-gi svg { width: 19px; height: 19px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.adm-grupo .pf-t small { white-space: normal; }
+.adm-grupos > .pf-card { margin: 0; }
+@media (max-width: 480px) { .pt-ctl { flex-wrap: nowrap; gap: 6px; } .pt-seg button, .pt-meta { padding: 5px 9px; font-size: 12px; } .pt-meta { gap: 5px; white-space: nowrap; } .pt-meta i { width: 10px; } }
+
+/* ---------- período do patrimônio (ao lado do ano): atalhos e calendário de meses ---------- */
+.per-pill { padding-left: 12px; }
+.per-pill > svg:first-child { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; color: var(--accent); }
+.per-pop { width: min(300px, calc(100vw - 24px)); }
+.per-pop .yr-opt { font-size: 13px; padding: 6px 12px; }
+.per-cal { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; }
+.per-m { border: 0; font: inherit; font-size: 13.5px; font-weight: 600; padding: 9px 0; border-radius: 10px; background: transparent; color: var(--ink); cursor: pointer; transition: background-color 140ms ease, color 140ms ease; }
+.per-m.fut { color: var(--ink-3); }
+.per-m.in { background: var(--accent-soft); color: var(--accent); border-radius: 6px; }
+.per-m.ponta { background: var(--accent); color: var(--on-accent); }
+@media (hover: hover) and (pointer: fine) { .per-m:not(.ponta):hover { background: var(--surface-3); } }
+.per-m:active { transform: scale(.95); }
+.per-dica { margin: 0; font-size: 12px; color: var(--ink-3); line-height: 1.4; }
+@media (max-width: 480px) { .htools { flex-wrap: wrap; } }

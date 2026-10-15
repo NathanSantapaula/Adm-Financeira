@@ -12,10 +12,19 @@ function wPatrimonio() {
   const p = S.plan; const C = S.C; const T = C.T; const pr = S.profile;
   if (inv()) {
     const ganho = C.patrimonio[11] - C.patrimonioBase; const custom = p.settings.patrimonioInicial != null;
-    return `<section class="card hero-card"><div class="c-k hc-row"><span>Patrimônio estimado</span><div class="hc-acts">${simBtn()}${histBtn()}</div></div><div class="c-big">${brl0(C.patrimonio[11])}</div>${Math.abs(ganho) < 1 ? `<div class="c-d">Nenhum aporte registrado em ${p.year}. <button class="lnk strong" data-act="nav" data-view="inv">Registrar aporte</button></div>` : `<div class="c-d ${ganho > 0 ? 'pos' : 'neg'}">${ganho > 0 ? '+' : '−'} ${brl0(Math.abs(ganho))} aportados em ${p.year}</div>`}<div class="chart" id="d-patr"></div>
+    // com um período escolhido (seletor ao lado do ano), o valor é o do fim do período e o crescimento é só dele
+    const [de, ate] = perIntervalo(); const ini = de ? C.patrimonio[de - 1] : C.patrimonioBase; const cres = C.patrimonio[ate] - ini;
+    const dPer = Math.abs(cres) < 1 ? `<div class="c-d">Sem crescimento ${perFrase()}.</div>` : `<div class="c-d ${cres > 0 ? 'pos' : 'neg'}">${cres > 0 ? '+' : '−'} ${brl0(Math.abs(cres))} ${perFrase()}${ini > 0 ? ` (${cres > 0 ? '+' : '−'}${pct(Math.abs(cres) / ini)})` : ''}</div>`;
+    return `<section class="card hero-card"><div class="c-k hc-row"><span>${S.periodo && ate < 11 ? 'Patrimônio no fim de ' + MES_LONGO[ate] : 'Patrimônio estimado'}</span><div class="hc-acts">${histBtn()}</div></div><div class="c-big">${brl0(C.patrimonio[ate])}</div>${S.periodo ? dPer : Math.abs(ganho) < 1 ? `<div class="c-d">Nenhum aporte registrado em ${p.year}. <button class="lnk strong" data-act="nav" data-view="inv">Registrar aporte</button></div>` : `<div class="c-d ${ganho > 0 ? 'pos' : 'neg'}">${ganho > 0 ? '+' : '−'} ${brl0(Math.abs(ganho))} aportados em ${p.year}</div>`}${patrCtl()}<div class="chart" id="d-patr"></div>
       <p class="cap">${custom ? `Patrimônio inicial de ${p.year} definido por você (${brl0(p.settings.patrimonioInicial)})` : (pr.patrimonioAno && p.year < pr.patrimonioAno ? `Estimado a partir do patrimônio informado no diagnóstico de ${pr.patrimonioAno} (${brl0(pr.patrimonioInicial)}), descontando os aportes registrados até lá` : `Patrimônio informado no diagnóstico (${brl0(pr.patrimonioInicial)}) mais os aportes registrados`)}. Valores a custo, sem a variação de mercado.</p></section>`;
   }
-  return `<section class="card hero-card"><div class="c-k hc-row"><span>Sobra para investir em ${p.year}</span><div class="hc-acts">${histBtn()}</div></div><div class="c-big">${brl0(T.investAlocado)}</div><div class="c-d">${brl0(T.receita)} de entradas e ${brl0(T.despesas)} de gastos</div><div class="chart" id="d-patr"></div><p class="cap">Entradas menos gastos, mês a mês.</p></section>`;
+  const [de, ate] = perIntervalo(); const soma = (arr) => { let s = 0; for (let i = de; i <= ate; i++) s += arr[i] || 0; return s; };
+  return `<section class="card hero-card"><div class="c-k hc-row"><span>Sobra para investir ${S.periodo ? perFrase() : 'em ' + p.year}</span><div class="hc-acts">${histBtn()}</div></div><div class="c-big">${brl0(soma(C.investAlocado))}</div><div class="c-d">${brl0(soma(C.receita))} de entradas e ${brl0(soma(C.despesas))} de gastos</div><div class="chart" id="d-patr"></div><p class="cap">Entradas menos gastos, mês a mês.</p></section>`;
+}
+// botões do gráfico do patrimônio: o que mostrar e a linha do ritmo da meta
+function patrCtl() {
+  const m = S.patrModo === 'aportes' ? 'aportes' : 'patr'; const b = (id, txt) => `<button data-act="patr-modo" data-m="${id}" aria-pressed="${m === id}">${txt}</button>`;
+  return `<div class="pt-ctl"><div class="pt-seg" role="group" aria-label="O que o gráfico mostra">${b('patr', 'Patrimônio')}${b('aportes', 'Aportes')}</div>${S.C.metaAno > 0 && m === 'patr' ? `<button class="pt-meta" data-act="patr-meta" aria-pressed="${!!S.patrMeta}"><i></i>Ritmo da meta</button>` : ''}</div>`;
 }
 function wOrcMes() {
   const C = S.C; const m = mesRef(); const u = C.usoOrc[m]; const tom = u == null ? '' : u > 1 ? 'neg' : u > 0.85 ? 'warn' : '';
@@ -24,22 +33,25 @@ function wOrcMes() {
 }
 function wIndicadores() {
   const p = S.plan; const C = S.C; const T = C.T; const m = mesRef(); const u = C.usoOrc[m]; const tom = u == null ? '' : u > 1 ? 'neg' : u > 0.85 ? 'warn' : '';
-  const orc = ['Orçamento de ' + MES_LONGO[m], u == null ? '–' : pct(u), tom, C.orcamento[m] > 0 ? (C.restante[m] >= 0 ? `Restam ${brl0(C.restante[m])}` : `${brl0(-C.restante[m])} acima do orçado`) : 'Sem orçamento definido', u || 0];
+  const orc = ['Orçamento de ' + MES_LONGO[m], u == null ? '–' : pct(u), tom, C.orcamento[m] > 0 ? (C.restante[m] >= 0 ? `Restam ${brl0(C.restante[m])}` : `${brl0(-C.restante[m])} acima do orçado`) : 'Sem orçamento definido', u || 0, WG_IC.orcmes, 'despesas'];
+  const IP = '<path d="M12 3v18M16.5 7c0-1.7-2-3-4.5-3S7.5 5.3 7.5 7s2 2.6 4.5 3.1 4.5 1.4 4.5 3.4-2 3.5-4.5 3.5-4.5-1.5-4.5-3.5"/>';
   let k;
   if (inv()) {
     const progMeta = C.metaAno > 0 ? Math.min(1, T.aplicado / C.metaAno) : 0; const md = C.dividendos.filter((x) => x > 0).length;
-    k = [['Taxa de poupança em ' + p.year, T.poupanca == null ? '–' : pct(T.poupanca), '', T.receita <= 0 ? 'Cadastre rendas ou importe um extrato' : T.investAlocado >= 0 ? `${brl0(T.investAlocado)} sobraram para investir` : `Gastos ${brl0(-T.investAlocado)} acima das entradas`], orc,
-      ['Aportes na meta do ano', C.metaAno > 0 ? pct(progMeta) : '–', '', `${brl0(T.aplicado)} de ${brl0(C.metaAno)}`, progMeta], ['Dividendos em ' + p.year, brl0(T.dividendos), '', md ? `média de ${brl0(T.dividendos / md)} por mês com pagamento` : 'Nenhum provento registrado']];
+    k = [['Taxa de poupança em ' + p.year, T.poupanca == null ? '–' : pct(T.poupanca), '', T.receita <= 0 ? 'Cadastre rendas ou importe um extrato' : T.investAlocado >= 0 ? `${brl0(T.investAlocado)} sobraram para investir` : `Gastos ${brl0(-T.investAlocado)} acima das entradas`, null, IP, 'rendas'], orc,
+      ['Aportes na meta do ano', C.metaAno > 0 ? pct(progMeta) : '–', '', `${brl0(T.aplicado)} de ${brl0(C.metaAno)}`, progMeta, WG_IC.patrimonio, 'inv'], ['Dividendos em ' + p.year, brl0(T.dividendos), '', md ? `média de ${brl0(T.dividendos / md)} por mês com pagamento` : 'Nenhum provento registrado', null, WG_IC.proventos, 'pro']];
   } else {
-    k = [['Taxa de poupança em ' + p.year, T.poupanca == null ? '–' : pct(T.poupanca), '', T.receita <= 0 ? 'Cadastre rendas ou importe um extrato' : T.investAlocado >= 0 ? `${brl0(T.investAlocado)} sobraram` : `Gastos ${brl0(-T.investAlocado)} acima das entradas`], orc,
-      ['Entradas em ' + p.year, brl0(T.receita), '', `média de ${brl0(T.receita / 12)} por mês`], ['Gastos em ' + p.year, brl0(T.despesas), '', `média de ${brl0(T.despesas / 12)} por mês`]];
+    k = [['Taxa de poupança em ' + p.year, T.poupanca == null ? '–' : pct(T.poupanca), '', T.receita <= 0 ? 'Cadastre rendas ou importe um extrato' : T.investAlocado >= 0 ? `${brl0(T.investAlocado)} sobraram` : `Gastos ${brl0(-T.investAlocado)} acima das entradas`, null, IP, 'rendas'], orc,
+      ['Entradas em ' + p.year, brl0(T.receita), '', `média de ${brl0(T.receita / 12)} por mês`, null, '<path d="M12 3v12M7 10l5 5 5-5M4 20h16"/>', 'rendas'], ['Gastos em ' + p.year, brl0(T.despesas), '', `média de ${brl0(T.despesas / 12)} por mês`, null, '<rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6.5 15h4"/>', 'despesas']];
   }
-  return `<div class="stats4">${k.map((x) => `<div class="stat"><div class="c-k">${esc(x[0])}</div><div class="c-num ${x[2] || ''}">${esc(x[1])}</div>${x[4] != null ? `<div class="bar ${x[2] || ''}"><i style="width:${Math.min(100, x[4] * 100).toFixed(1)}%"></i></div>` : ''}<div class="c-n">${esc(x[3])}</div></div>`).join('')}</div>`;
+  return `<div class="stats4">${k.map((x) => `<div class="stat"><div class="c-k wg-tit">${wgIco(x[5], x[6])}<span>${esc(x[0])}</span></div><div class="c-num ${x[2] || ''}">${esc(x[1])}</div>${x[4] != null ? `<div class="bar ${x[2] || ''}"><i style="width:${Math.min(100, x[4] * 100).toFixed(1)}%"></i></div>` : ''}<div class="c-n">${esc(x[3])}</div></div>`).join('')}</div>`;
 }
 const wFluxo = () => `<section class="card"><div class="c-h"><h3>Para onde foi cada mês</h3><div class="legend"><span><i style="background:var(--c2)"></i>Gastos</span><span><i style="background:var(--c1)"></i>Sobra para investir</span></div></div><div class="chart" id="d-flow"></div></section>`;
 const wOrcamento = () => `<section class="card"><div class="c-h"><h3>Orçamento e gastos</h3><div class="legend"><span><i style="background:var(--c2)"></i>Gasto</span><span><i class="mk" style="background:var(--c4)"></i>Orçado</span></div></div><div class="chart" id="d-orc"></div></section>`;
 function wCarteira() {
   if (!inv()) return `<section class="card"><div class="c-h"><h3>Evolua para o plano Investidor</h3></div><p class="mmsg">Acompanhe patrimônio, aportes e proventos e saiba onde investir a cada aporte para manter a carteira equilibrada.</p><div class="btn-row"><button class="btn primary" data-act="upgrade" data-plano="investidor">Conhecer o plano Investidor</button></div></section>`;
+  // com a Carteira liberada, a mesma composição interativa da aba Carteira (passar o mouse, entrar na classe, ir ao ativo)
+  if (temRecurso('carteira') && S.plan && S.plan.ativos.length) { const { K } = cartAnalise(); if (K.total > 0) return `<section class="card"><div class="c-h"><h3>Composição da carteira</h3></div>${cartComposicaoHtml(K)}</section>`; }
   const comp = composicao(); const tot = comp.reduce((a, b) => a + b.value, 0);
   return `<section class="card"><div class="c-h"><h3>Composição da carteira</h3></div>${tot > 0 ? `<div class="comp"><div class="donut" id="d-donut"></div><ul class="comp-l">${comp.map((c, i) => `<li><i style="background:${PALETA[i % 6]}"></i><span>${esc(c.label)}</span><b>${pct(c.value / tot)}</b></li>`).join('')}</ul></div>` : '<p class="empty-s">Registre aportes em Investimentos para ver a composição da carteira.</p>'}</section>`;
 }
@@ -80,18 +92,18 @@ function wHistMini() {
 
 /* ---------- catálogo ---------- */
 const WIDGETS = [
-  { id: 'patrimonio', nome: () => (inv() ? 'Patrimônio estimado' : 'Sobra para investir'), desc: 'Valor do ano com o gráfico mês a mês e os atalhos E se? e Histórico.', tam: 4, tams: [3, 4, 6], padrao: () => true, html: wPatrimonio },
+  { id: 'patrimonio', nome: () => (inv() ? 'Patrimônio estimado' : 'Sobra para investir'), desc: 'Valor do ano com o gráfico mês a mês (patrimônio ou aportes, com o ritmo da meta) e o Histórico.', tam: 4, tams: [3, 4, 6], padrao: () => true, html: wPatrimonio, aba: () => (inv() ? 'inv' : 'despesas') },
   { id: 'objetivos', nome: () => 'Objetivos', desc: 'O objetivo em foco com a foto do seu sonho, o progresso e o prazo; troque entre as metas.', tam: 2, tams: [2, 3, 4, 6], padrao: () => true, html: () => objCardHtml(), disponivel: inv },
-  { id: 'orcmes', nome: () => 'Orçamento do mês', desc: 'Quanto do orçamento do mês já foi usado.', tam: 2, tams: [2, 3], padrao: () => !inv(), html: wOrcMes },
+  { id: 'orcmes', nome: () => 'Orçamento do mês', desc: 'Quanto do orçamento do mês já foi usado.', tam: 2, tams: [2, 3], padrao: () => !inv(), html: wOrcMes, aba: () => 'despesas' },
   { id: 'indicadores', nome: () => 'Indicadores do ano', desc: 'Poupança, orçamento, aportes e dividendos (ou entradas e gastos).', tam: 6, tams: [6], padrao: () => true, html: wIndicadores },
-  { id: 'fluxo', nome: () => 'Para onde foi cada mês', desc: 'Gastos e sobra para investir, mês a mês.', tam: 3, tams: [3, 4, 6], padrao: () => true, html: wFluxo },
-  { id: 'constancia', nome: () => (temRecurso('investimentos') ? 'Constância dos aportes' : 'Gastos fixos e variáveis'), desc: 'Aportes de cada mês contra a meta (ou o peso dos gastos fixos).', tam: 3, tams: [3, 4, 6], padrao: () => true, html: () => painel2Html() },
-  { id: 'carteira', nome: () => (inv() ? 'Composição da carteira' : 'Plano Investidor'), desc: 'Peso de cada classe de ativo na carteira.', tam: 3, tams: [2, 3, 4], padrao: () => true, html: wCarteira },
-  { id: 'areas', nome: () => 'Onde você mais gasta', desc: 'Ranking das áreas de gasto do ano.', tam: 3, tams: [2, 3, 4, 6], padrao: () => true, html: wAreas },
+  { id: 'fluxo', nome: () => 'Para onde foi cada mês', desc: 'Gastos e sobra para investir, mês a mês.', tam: 3, tams: [3, 4, 6], padrao: () => true, html: wFluxo, aba: () => 'despesas' },
+  { id: 'constancia', nome: () => (temRecurso('investimentos') ? 'Constância dos aportes' : 'Gastos fixos e variáveis'), desc: 'Aportes de cada mês contra a meta (ou o peso dos gastos fixos).', tam: 3, tams: [3, 4, 6], padrao: () => true, html: () => painel2Html(), aba: () => (temRecurso('investimentos') ? 'inv' : 'despesas') },
+  { id: 'carteira', nome: () => (inv() ? 'Composição da carteira' : 'Plano Investidor'), desc: 'Peso de cada classe de ativo na carteira.', tam: 3, tams: [2, 3, 4], padrao: () => true, html: wCarteira, aba: () => (inv() ? 'cart' : '') },
+  { id: 'areas', nome: () => 'Onde você mais gasta', desc: 'Ranking das áreas de gasto do ano.', tam: 3, tams: [2, 3, 4, 6], padrao: () => true, html: wAreas, aba: () => 'despesas' },
   { id: 'destaques', nome: () => 'O que o painel está vendo', desc: 'Leituras automáticas do mês: orçamento, poupança, aportes e carteira.', tam: 3, tams: [3, 4, 6], padrao: () => true, html: wDestaques },
   { id: 'assessor', nome: () => 'Assessor e próximos passos', desc: 'Recomendação do assessor ou os próximos passos sugeridos.', tam: 3, tams: [2, 3, 4], padrao: () => true, html: wAssessor },
-  { id: 'orcamento', nome: () => 'Orçamento e gastos', desc: 'Gasto de cada mês contra o orçamento.', tam: 3, tams: [3, 4, 6], padrao: () => false, html: wOrcamento },
-  { id: 'proventos', nome: () => 'Proventos mês a mês', desc: 'Dividendos e rendimentos recebidos em cada mês.', tam: 3, tams: [3, 4, 6], padrao: () => false, html: wProventos, disponivel: () => temRecurso('investimentos') },
+  { id: 'orcamento', nome: () => 'Orçamento e gastos', desc: 'Gasto de cada mês contra o orçamento.', tam: 3, tams: [3, 4, 6], padrao: () => false, html: wOrcamento, aba: () => 'despesas' },
+  { id: 'proventos', nome: () => 'Proventos mês a mês', desc: 'Dividendos e rendimentos recebidos em cada mês.', tam: 3, tams: [3, 4, 6], padrao: () => false, html: wProventos, aba: () => 'pro', disponivel: () => temRecurso('investimentos') },
   { id: 'objlista', nome: () => 'Todos os objetivos', desc: 'Lista com o progresso e a situação de cada objetivo.', tam: 3, tams: [2, 3, 4, 6], padrao: () => false, html: wObjLista, disponivel: inv },
   { id: 'avisos', nome: () => 'Avisos', desc: 'Os três avisos mais importantes da central de notificações.', tam: 3, tams: [2, 3, 4, 6], padrao: () => false, html: wAvisos },
   { id: 'atalhos', nome: () => 'Atalhos', desc: 'Botões para as tarefas mais comuns.', tam: 3, tams: [2, 3, 4, 6], padrao: () => false, html: wAtalhos },
@@ -165,7 +177,42 @@ function tamMedio(sp) {
 }
 const I_AJUSTE = ic('<rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><path d="M17 14v6M14 17h6"/>');
 // gráficos dos widgets novos (os antigos continuam em drawDashboard)
+/* ícone próprio de cada widget, à esquerda do título: tocar leva à aba de origem (ou abre o que o widget resume) */
+const WG_IC = {
+  patrimonio: '<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
+  orcmes: '<path d="M3.5 16a9 9 0 1 1 17 0"/><path d="m12 13 4-4"/>',
+  fluxo: '<path d="M6 20V11M12 20V5M18 20v-6M3 20h18"/>',
+  constancia: '<rect x="3" y="4.5" width="18" height="16.5" rx="2.5"/><path d="M8 2.5v4M16 2.5v4M3 10h18M9 15.5l2 2 4-4"/>',
+  carteira: '<path d="M21 12a9 9 0 1 1-9-9v9z"/><path d="M15 3.6A9 9 0 0 1 20.4 9H15z"/>',
+  areas: '<path d="M4 6h16M4 12h11M4 18h6"/>',
+  destaques: '<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/>',
+  assessor: '<path d="M21 14.5a2 2 0 0 1-2 2H8l-4.5 4V5a2 2 0 0 1 2-2H19a2 2 0 0 1 2 2z"/><path d="M8 8.5h9M8 12h6"/>',
+  orcamento: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/>',
+  proventos: '<circle cx="9" cy="9" r="6"/><path d="M15.6 9.3A6 6 0 1 1 9.3 15.6"/>',
+  objlista: '<path d="M5 21V4M5 4h12l-2.2 4L17 12H5"/>',
+  avisos: '<path d="M6 9a6 6 0 0 1 12 0c0 6.5 2.5 8.5 2.5 8.5h-17S6 15.5 6 9"/><path d="M10.3 20.5a2 2 0 0 0 3.4 0"/>',
+  atalhos: '<path d="M13 2.5 4 13.5h7.5l-1 8 9-11H12z"/>',
+  histmini: '<path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1L3.5 8.5"/><path d="M3.5 3.5v5h5M12 7.5V12l3 2"/>',
+};
+const WG_ACAO = { objlista: ['objetivos-abrir', 'Abrir Meus objetivos'], avisos: ['notif-toggle', 'Abrir a central de avisos'], histmini: ['hist-toggle', 'Abrir o histórico'] };
+const abaNome = (aba) => (ABAS.find((a) => a[0] === aba) || [])[1] || 'aba';
+const abaAberta = (aba) => !!aba && visibleTabs().includes(aba) && abaLiberada(aba);
+// devolve o ícone como botão (com destino) ou como enfeite (sem destino)
+function wgIco(path, aba, acao) {
+  const svg = ic(path);
+  if (abaAberta(aba)) return `<button class="wg-ic" data-act="nav" data-view="${aba}" aria-label="Abrir ${esc(abaNome(aba))}" title="Abrir ${esc(abaNome(aba))}">${svg}</button>`;
+  if (acao) return `<button class="wg-ic" data-act="${acao[0]}" aria-label="${esc(acao[1])}" title="${esc(acao[1])}">${svg}</button>`;
+  return `<span class="wg-ic" aria-hidden="true">${svg}</span>`;
+}
+function wgIcones() {
+  document.querySelectorAll('#view .wg-grid > .wg[data-wg]').forEach((wg) => {
+    const id = wg.dataset.wg; const path = WG_IC[id]; const card = wg.firstElementChild; if (!path || !card) return;
+    const alvo = card.querySelector(':scope > .c-h > h3') || card.querySelector(':scope > .c-k > span'); if (!alvo || alvo.querySelector('.wg-ic')) return;
+    const w = widgetDe(id); alvo.classList.add('wg-tit'); alvo.insertAdjacentHTML('afterbegin', wgIco(path, w && w.aba ? w.aba() : '', WG_ACAO[id]));
+  });
+}
 function drawWidgetsExtras() {
+  wgIcones(); if (S.view === 'geral' && typeof cmpLigar === 'function') cmpLigar();
   const C = S.C; const cur = S.year === NOW_Y ? NOW_M : -1;
   chartBars($('#d-orc'), { labels: MES, cur, aria: 'Gastos comparados com o orçamento de cada mês', bars: [{ color: 'var(--c2)', values: C.despesas }], marks: [{ color: 'var(--c4)', values: C.orcamento }], tip: (i) => `<b>${MES[i]}</b><br>Gasto: ${brl0(C.despesas[i])}<br>Orçado: ${C.orcamento[i] > 0 ? brl0(C.orcamento[i]) : 'sem orçamento'}` });
   chartBars($('#d-prov'), { labels: MES, cur, height: 190, aria: 'Proventos recebidos em cada mês', bars: [{ color: 'var(--c3)', values: C.dividendos }, { color: 'var(--c5)', values: C.rentab }], tip: (i) => `<b>${MES_LONGO[i]}</b><br>Dividendos: ${brl0(C.dividendos[i])}<br>Renda fixa: ${brl0(C.rentab[i])}` });
@@ -204,8 +251,8 @@ function painelRender(foco, reserva) {
 function painelAcao(act, ds) {
   const alvo = alvoAtual(); const L = painelLayout(alvo); const i = L.findIndex((x) => x.id === ds.id); const salvar = (lista) => painelSalvar(lista, false, alvo);
   switch (act) {
-    case 'painel-abrir': S.painelAlvo = PAINEIS[ds.alvo] ? ds.alvo : 'geral'; S.maisOpen = false; if (!S.adminOpen) openAdmin('painel'); else { S.adminPage = 'painel'; renderAdmin(true); } return true;
-    case 'painel-voltar': S.adminPage = 'inicio'; renderAdmin(true); return true;
+    case 'painel-abrir': S.painelAlvo = PAINEIS[ds.alvo] ? ds.alvo : 'geral'; S.maisOpen = false; S.admAntes = S.adminOpen && /^grupo:/.test(S.adminPage || '') ? S.adminPage : 'inicio'; if (!S.adminOpen) openAdmin('painel'); else { S.adminPage = 'painel'; renderAdmin(true); } return true;
+    case 'painel-voltar': S.adminPage = S.admAntes || 'inicio'; S.admAntes = null; renderAdmin(true); return true;
     case 'painel-mover': { const n = L.filter((x) => x.on).length; const j = i + (+ds.d); if (i < 0 || j < 0 || j >= n) return true; [L[i], L[j]] = [L[j], L[i]]; salvar(L); painelRender(`[data-act="painel-mover"][data-id="${ds.id}"][data-d="${ds.d}"]:not([disabled])`, `[data-act="painel-mover"][data-id="${ds.id}"]:not([disabled])`); return true; }
     case 'painel-add': { if (i < 0) return true; const [x] = L.splice(i, 1); x.on = true; L.splice(L.filter((y) => y.on).length, 0, x); salvar(L); painelRender(`[data-painel-on="${x.id}"]`); toast(`${widgetDe(x.id, alvo).nome()} adicionado ao fim de ${painelDe(alvo).nome}.`); return true; }
     case 'painel-tam': if (i >= 0) { L[i].tam = +ds.tam; salvar(L); painelRender(`[data-act="painel-tam"][data-id="${ds.id}"][data-tam="${ds.tam}"]`); } return true;
