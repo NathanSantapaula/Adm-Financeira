@@ -195,7 +195,7 @@ body[data-screen="auth"] .main, body[data-screen="onboarding"] .main, body[data-
 
 /* ---------- gráficos ---------- */
 .chart { width: 100%; }
-.chart svg { display: block; overflow: visible; }
+.chart svg { display: block; overflow: visible; max-width: 100%; height: auto; } /* se o cartão encolher antes do redesenho, o gráfico diminui inteiro, sem distorcer */
 .chart text, .ring text, .donut text { font-family: var(--font); font-size: 11.5px; fill: var(--ink-3); }
 .chart .cur-l { fill: var(--ink); font-weight: 700; }
 .chart .goal-l { fill: var(--c4); font-weight: 600; }
@@ -491,6 +491,8 @@ dialog.drawer[open] { display: flex; animation: drin .22s ease-out; }
 @media (hover: hover) and (pointer: fine) {
   .hp-btn:hover { filter: brightness(1.06); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .4), 0 16px 34px -12px var(--glow); }
   .hp-btn.vidro:hover, .hp-btn.ghost:hover { filter: none; background: linear-gradient(var(--surface-2), var(--surface-2)) padding-box, var(--rim) border-box; box-shadow: var(--shadow); }
+  /* nas seções escuras o texto é claro: o fundo do hover também precisa ser escuro (senão some, como no WhatsApp) */
+  .hp-dark .hp-btn.vidro:hover, .hp-dark .hp-btn.ghost:hover { background: linear-gradient(rgba(255, 255, 255, .16), rgba(255, 255, 255, .16)) padding-box, var(--rim) border-box; color: #fff; }
   .hp-lnk:hover svg { transform: translateX(3px); }
 }
 .hp :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
@@ -734,6 +736,8 @@ dialog.drawer[open] { display: flex; animation: drin .22s ease-out; }
 .hp-emp { display: flex; align-items: center; color: #fff; opacity: .66; transition: opacity 220ms ease; }
 .hp-logo-svg { display: block; height: 17px; } .hp-logo-svg svg { display: block; height: 100%; width: auto; overflow: visible; }
 .hp-logo-acc { fill: var(--b2); }
+.hp-logo-img { position: relative; display: block; height: 17px; overflow: hidden; }
+.hp-logo-img img { position: absolute; max-width: none; height: auto; filter: brightness(0) invert(1); }
 .hp-logo { display: block; height: 17px; width: auto; background: currentColor; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: contain; mask-size: contain; -webkit-mask-position: center; mask-position: center; }
 .hp-emp-n { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; white-space: nowrap; }
 @media (hover: hover) and (pointer: fine) { .hp-emp:hover { opacity: 1; } }
@@ -1667,7 +1671,7 @@ dialog.pop-dlg::backdrop { background: var(--scrim); }
 @media print { .card, .stat, .kpi, .macc, .lcat { background: #fff !important; border: 1px solid #ddd !important; } }
 
 /* ---------- Gastos (v4): período, números, análises e lista única de lançamentos ---------- */
-.g-per { position: sticky; top: calc(8px + env(safe-area-inset-top, 0px)); z-index: 7; display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; margin: 0 0 16px; padding: 8px; border-radius: 18px; border: 1px solid transparent;
+.g-per { position: relative; z-index: 7; display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; margin: 0 0 16px; padding: 8px; border-radius: 18px; border: 1px solid transparent;
   background: var(--sheen) padding-box, linear-gradient(var(--glass-strong), var(--glass-strong)) padding-box, var(--rim) border-box; box-shadow: var(--shadow);
   -webkit-backdrop-filter: blur(var(--blur)) saturate(var(--sat)); backdrop-filter: blur(var(--blur)) saturate(var(--sat)); }
 .g-meses { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; flex: 1 1 0; min-width: 0; padding: 2px; }
@@ -1736,7 +1740,7 @@ div.g-li { cursor: default; }
 .g-ent-v { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; } .g-ent-v.pos { color: var(--pos); }
 .g-mais { display: flex; justify-content: center; margin-top: 14px; }
 @media (max-width: 640px) {
-  .g-per { top: calc(4px + env(safe-area-inset-top, 0px)); border-radius: 16px; }
+  .g-per { border-radius: 16px; }
   .g-per > .seg { flex: 1 1 100%; } .g-per > .seg button { flex: 1; }
   .g-meses { flex: 1 1 100%; }
   .g-area { grid-template-columns: minmax(0, 1fr) auto; } .g-area-t { display: none; }
@@ -1924,3 +1928,46 @@ div.g-li { cursor: default; }
 
 /* cadastro: contato com o assessor quando o e-mail de confirmação não sai */
 .auth-ajuda { margin: -4px 0 14px; } .auth-ajuda .btn-row { justify-content: flex-start; }
+
+/* ---------- página inicial: "Seu futuro, em números" iluminado (luz da marca atrás e no cartão) ---------- */
+.hp-feat.luz { position: relative; }
+.hp-feat.luz::before { content: ""; position: absolute; right: -6%; top: 50%; width: min(760px, 80%); height: 120%; translate: 0 -50%; z-index: -1; pointer-events: none; border-radius: 50%;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--b2) 24%, transparent), color-mix(in srgb, var(--b3) 12%, transparent) 55%, transparent); filter: blur(24px); }
+.hp-vis.luz { background: radial-gradient(110% 80% at 100% 0%, color-mix(in srgb, var(--b2) 16%, transparent), transparent 60%) padding-box, radial-gradient(90% 70% at 0% 100%, color-mix(in srgb, var(--b1) 14%, transparent), transparent 65%) padding-box,
+  var(--sheen) padding-box, linear-gradient(var(--glass-strong), var(--glass-strong)) padding-box, linear-gradient(150deg, color-mix(in srgb, var(--b1) 75%, transparent), var(--glass-edge) 45%, color-mix(in srgb, var(--b3) 60%, transparent)) border-box;
+  box-shadow: var(--shadow), 0 40px 90px -40px color-mix(in srgb, var(--b2) 65%, transparent); }
+.hp-vis.luz .chart path[stroke] { filter: drop-shadow(0 6px 12px color-mix(in srgb, var(--b2) 55%, transparent)); }
+.hp-proj-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; margin-bottom: 4px; }
+.hp-proj-h small { flex: 1 1 100%; }
+.hp-proj-k { display: inline-flex; align-items: baseline; gap: 6px; color: var(--ink-3); font-size: 13px; }
+.hp-proj-k b { color: var(--ink); font-size: clamp(20px, 2.2vw, 26px); font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.hp-proj-k + .hp-proj-k b { background: var(--g-marca); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+
+/* ---------- página inicial no celular: sem o título "Tudo o que importa" e planos em carrossel (Assessoria primeiro) ---------- */
+.hp-planos-dica { display: none; }
+@media (max-width: 760px) {
+  #produto > .hp-w > .hp-head { display: none; }
+  .hp-planos { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: none;
+    margin-inline: calc(-1 * var(--gut)); padding: 22px var(--gut) 26px; scroll-padding-inline: var(--gut); }
+  .hp-planos::-webkit-scrollbar { display: none; }
+  .hp-planos > .hp-plano { flex: 0 0 min(86%, 340px); margin-top: 0; scroll-snap-align: center; }
+  .hp-plano.n3 { order: 1; } .hp-plano.n2 { order: 2; } .hp-plano.n1 { order: 3; }
+  .hp-planos-dica { display: block; margin-top: 4px; }
+}
+
+/* ---------- Carteira: listas longas com rolagem e o cartão expandido por cima da tela ---------- */
+.cart-exp-card .c-h { align-items: center; flex-wrap: nowrap; } .cart-exp-card .c-h h3 { min-width: 0; }
+.cart-exp { flex: none; }
+.cart-exp-card:not(.expandido) .cart-sug, .cart-exp-card:not(.expandido) .cmp-l { max-height: 360px; overflow-y: auto; overscroll-behavior: contain;
+  -webkit-mask-image: linear-gradient(180deg, #000 88%, transparent); mask-image: linear-gradient(180deg, #000 88%, transparent); }
+.cart-exp-lugar { border-radius: var(--radius); background: color-mix(in srgb, var(--surface-2) 50%, transparent); }
+html.sem-rolagem { overflow: hidden; }
+.cart-exp-host { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; padding: calc(16px + env(safe-area-inset-top, 0px)) 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  background: var(--scrim); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); animation: exp-fundo 200ms ease both; }
+.cart-exp-host > .card.cart-exp-card.expandido { width: min(100%, 1000px); max-height: 100%; overflow: auto; overscroll-behavior: contain; margin: 0; background: var(--surface); box-shadow: var(--shadow-lg); animation: exp-in 240ms var(--ease-out) both; }
+.expandido .cmp { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); align-items: start; justify-items: stretch; }
+.expandido .cmp-g { width: min(100%, 360px); justify-self: center; } .expandido .cmp > .cmp-volta { grid-column: 1 / -1; }
+@keyframes exp-fundo { from { opacity: 0; } }
+@keyframes exp-in { from { opacity: 0; transform: scale(.97) translateY(8px); } }
+@media (max-width: 760px) { .expandido .cmp { grid-template-columns: minmax(0, 1fr); } .cart-exp-host { padding-inline: 8px; } }
+@media (prefers-reduced-motion: reduce) { .cart-exp-host, .cart-exp-host > .card.expandido { animation: none; } }

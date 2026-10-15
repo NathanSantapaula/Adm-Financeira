@@ -21,7 +21,7 @@ const hideTip = () => { const t = document.getElementById('tip'); if (t) t.hidde
 /* Barras empilhadas por mês, com marcas opcionais (ex.: meta ou orçamento) */
 function chartBars(el, cfg) {
   if (!el) return;
-  const W = Math.max(280, Math.floor(el.clientWidth || 640)); const H = cfg.height || 240;
+  const W = Math.max(200, Math.floor(el.clientWidth || 640)); const H = cfg.height || 240;
   const m = { t: 10, r: 6, b: 24, l: 44 };
   const n = cfg.labels.length; const iw = W - m.l - m.r; const ih = H - m.t - m.b; const band = iw / n;
   const pos = []; const neg = [];
@@ -57,7 +57,7 @@ function chartBars(el, cfg) {
 /* Linha/área: várias séries (a tracejada serve para projeção) e linha de meta opcional */
 function chartLine(el, cfg) {
   if (!el) return;
-  const W = Math.max(280, Math.floor(el.clientWidth || 640)); const H = cfg.height || 240;
+  const W = Math.max(200, Math.floor(el.clientWidth || 640)); const H = cfg.height || 240;
   const m = { t: 14, r: 12, b: 24, l: 50 };
   const n = cfg.labels.length; const iw = W - m.l - m.r; const ih = H - m.t - m.b;
   const all = cfg.series.flatMap((s) => s.values.filter((v) => v != null)); if (cfg.goal) all.push(cfg.goal);
@@ -114,7 +114,7 @@ function hbars(items, fmtv) {
 function chartHistorico(el, cfg) {
   if (!el) return;
   const P = cfg.pontos || []; const n = P.length; if (!n) { el.innerHTML = ''; return; }
-  const W = Math.max(280, Math.floor(el.clientWidth || 640)); const H = cfg.height || 260; const cor = cfg.color || 'var(--accent)';
+  const W = Math.max(200, Math.floor(el.clientWidth || 640)); const H = cfg.height || 260; const cor = cfg.color || 'var(--accent)';
   const m = { t: 26, r: 18, b: 26, l: 52 }; const iw = W - m.l - m.r; const ih = H - m.t - m.b;
   const vals = P.map((p) => +p.v || 0); const hiV = Math.max(100, ...vals); const mn = Math.min(...vals);
   let loV = Math.min(0, mn); if (mn > 0 && hiV - mn < hiV * 0.6) loV = Math.max(0, mn - (hiV - mn) * 0.5); // aproxima quando a curva é estreita
@@ -158,7 +158,7 @@ function chartHistorico(el, cfg) {
    cfg: { labels, series: [{ nome, color, values }], height, aria, tip(i), parcial: índice do ano em andamento } */
 function chartAnos(el, cfg) {
   if (!el) return;
-  const W = Math.max(280, Math.floor(el.clientWidth || 640)); const H = cfg.height || 240;
+  const W = Math.max(200, Math.floor(el.clientWidth || 640)); const H = cfg.height || 240;
   const m = { t: 12, r: 8, b: 26, l: 52 }; const n = cfg.labels.length; const k = cfg.series.length;
   const iw = W - m.l - m.r; const ih = H - m.t - m.b; const band = iw / Math.max(1, n);
   const all = cfg.series.flatMap((s) => s.values.map((v) => +v || 0)); const hiV = Math.max(100, ...all); const loV = Math.min(0, ...all);

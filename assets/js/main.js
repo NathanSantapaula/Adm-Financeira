@@ -62,6 +62,7 @@ function render(opts) {
   if (scr === 'landing') initReveal();
   if (typeof notifTitulo === 'function') notifTitulo();
   if (S.yearOpen) yearPopAjusta();
+  observarGraficos();
   if (S.pendingFocus) { const c = findCell(S.pendingFocus.ri, S.pendingFocus.m); if (c) c.focus(); S.pendingFocus = null; }
   const ad = $('#admin'); if (S.adminOpen && ad && ad.open) { const ae = document.activeElement; if (!(ae && ad.contains(ae) && /INPUT|SELECT|TEXTAREA/.test(ae.tagName))) renderAdmin(); }
 }
@@ -128,6 +129,7 @@ function onClick(e) {
       case 'cart-auto': S.cart.aporte = null; render(); break;
       case 'cart-valor-auto': { const e = cartEntry(ds.k, false); if (e) { e.valor = null; touch('profile'); render(); } break; }
       case 'cart-seg': cartCmpAbrir(+ds.cseg); break;
+      case 'cart-expandir': cartExpandir(ds.w); break;
       case 'cart-cmp-volta': S.cmpClasse = null; cartCmpTrocar(); break;
       case 'ced-g': cedAlternar(el); break;
       case 'cart-alvos': { const sec = document.getElementById('cart-alvos'); if (sec) sec.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }); break; }
@@ -214,6 +216,7 @@ function onInput(e) {
 function onKey(e) {
   if (e.key === 'Escape' && S.notifOpen) { S.notifOpen = false; notifRefresh('.bell'); return; }
   if (e.key === 'Escape' && S.yearOpen) { S.yearOpen = false; render(); return; }
+  if (e.key === 'Escape' && S.cartExp) { cartExpFechar(); return; }
   const t = e.target;
   if (!(t.matches && t.matches('.ed')) || t.classList.contains('editing')) return;
   const ri = +t.dataset.ri; const m = +t.dataset.m;
@@ -228,6 +231,13 @@ function onKey(e) {
 }
 
 let resizeT = null;
+/* gráficos acompanham a largura do próprio cartão (não só da janela): mudou a largura de um widget, redesenha */
+const graficoRO = 'ResizeObserver' in window ? new ResizeObserver((es) => {
+  if (S.wgArrastando) return;
+  const mudou = es.some((e) => { const svg = e.target.querySelector('svg'); const w = Math.floor(e.contentRect.width); return w > 0 && svg && Math.abs((+svg.getAttribute('width') || 0) - Math.max(200, w)) > 6; });
+  if (mudou) { clearTimeout(resizeT); resizeT = setTimeout(drawAll, 120); }
+}) : null;
+function observarGraficos() { if (!graficoRO) return; graficoRO.disconnect(); document.querySelectorAll('#view .chart').forEach((c) => graficoRO.observe(c)); }
 function bind() {
   document.addEventListener('click', onClick); document.addEventListener('change', onChange); document.addEventListener('input', onInput);
   document.addEventListener('keydown', onKey); document.addEventListener('submit', onSubmit);

@@ -295,8 +295,8 @@ function viewCart() {
         return `<li><span class="cart-sug-n"><b>${esc(i.nome)}</b><small>${esc(i.classe)} · hoje ${fmtPct(i.pctAtual)}, depois ${fmtPct(i.pctDepois)}, alvo ${fmtPct(i.pctAlvo)}</small>${barraCart(i.pctAtual, i.pctDepois, i.pctAlvo, mx)}</span>
           <span class="cart-sug-v"><b>${brl(i.sug)}</b>${i.cotas != null ? `<small>≈ ${i.cotas} ${i.cotas === 1 ? 'cota' : 'cotas'}</small>` : ''}</span></li>`; }).join('')}</ol>
       <div class="cart-sug-f"><button class="btn primary" data-act="cart-register">Registrar em Investimentos (${MES[M.mes]})</button><p class="cap">O aporte vai primeiro para o que está mais abaixo do alvo, sem vender nada. Barra clara: hoje; escura: depois do aporte; traço: alvo.</p></div>`;
-  html.aporte = `<section class="card"><div class="c-h"><h3>Onde investir ${brl(M.aporte)} em ${MES_LONGO[M.mes]}</h3></div>${entrada}${lista}</section>`;
-  html.composicao = `<section class="card"><div class="c-h"><h3>Composição da carteira</h3></div>${cartComposicaoHtml(K)}</section>`;
+  html.aporte = `<section class="card cart-exp-card" data-exp="aporte"><div class="c-h"><h3>Onde investir ${brl(M.aporte)} em ${MES_LONGO[M.mes]}</h3>${cartExpBtn('aporte')}</div>${entrada}${lista}</section>`;
+  html.composicao = `<section class="card cart-exp-card" data-exp="composicao"><div class="c-h"><h3>Composição da carteira</h3>${cartExpBtn('composicao')}</div>${cartComposicaoHtml(K)}</section>`;
   // cada investimento
   const tile = (i) => { const prog = i.pctAlvo > 0 ? Math.min(1, i.pctAtual / i.pctAlvo) : 0; const d = i.desvio;
     const st = semAlvo ? '' : i.pctAlvo <= 0 ? '<span class="ca-st">Sem alvo</span>' : Math.abs(d) < 0.5 ? '<span class="ca-st ok">No alvo</span>' : d < 0 ? `<span class="ca-st under">${fmtPpS(d)} abaixo</span>` : `<span class="ca-st over">${fmtPpS(d)} acima</span>`;
@@ -335,7 +335,28 @@ function cartCampoGravar(t) {
   else if (campo === 'preco') { if (!txt) e.preco = null; else { const v = parseReais(txt); if (Number.isNaN(v) || v < 0) { toast('Preço inválido.'); render(); return; } e.preco = v > 0 ? E.r2(v) : null; } }
   touch('profile'); renderLater();
 }
+/* expandir "Onde investir" e "Composição" na tela: o cartão vai para uma camada por cima da página (#cart-exp),
+   fora da grade de widgets (que tem contenção de layout). Cada desenho recoloca o cartão novo lá; fechar volta ao normal. */
+const CART_I_EXP = ic('<path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/>');
+const cartExpBtn = (id) => { const on = S.cartExp === id;
+  return `<button type="button" class="icon-btn cart-exp" data-act="cart-expandir" data-w="${id}" aria-label="${on ? 'Fechar' : 'Expandir na tela'}" title="${on ? 'Fechar' : 'Expandir na tela'}">${on ? I.x : CART_I_EXP}</button>`; };
+function cartExpandir(id) { S.cartExp = S.cartExp === id ? null : id; render(); const b = document.querySelector(`.cart-exp[data-w="${id}"]`); if (b) b.focus({ preventScroll: true }); }
+function cartExpFechar() { if (!S.cartExp) return; const id = S.cartExp; S.cartExp = null; render(); const b = document.querySelector(`.cart-exp[data-w="${id}"]`); if (b) b.focus({ preventScroll: true }); }
+function cartExpAplica() {
+  const velho = document.getElementById('cart-exp'); const ativo = !!S.cartExp && S.view === 'cart' && S.screen === 'app';
+  const card = ativo ? document.querySelector(`#view [data-exp="${S.cartExp}"]`) : null;
+  // atualização parcial (ex.: entrar numa classe da composição): o cartão já está na camada e a página não foi redesenhada
+  if (ativo && !card && velho && velho.querySelector(`[data-exp="${S.cartExp}"]`)) return;
+  if (velho) velho.remove();
+  document.documentElement.classList.toggle('sem-rolagem', !!card); if (!card) { S.cartExp = null; return; }
+  const host = document.createElement('div'); host.id = 'cart-exp'; host.className = 'cart-exp-host'; host.setAttribute('role', 'dialog'); host.setAttribute('aria-modal', 'true');
+  host.setAttribute('aria-label', card.querySelector('h3') ? card.querySelector('h3').textContent : 'Cartão expandido');
+  host.addEventListener('click', (e) => { if (e.target === host) cartExpFechar(); });
+  const lugar = document.createElement('div'); lugar.className = 'cart-exp-lugar'; lugar.style.height = card.offsetHeight + 'px'; card.replaceWith(lugar); // segura o espaço na grade
+  card.classList.add('expandido'); host.appendChild(card); document.body.appendChild(host);
+}
 function drawCart() {
+  cartExpAplica();
   if (S.view !== 'cart' || !S.plan || !S.plan.ativos.length || gated('cart')) return;
   const raiz = document.querySelector('.cmp'); if (!raiz || raiz.dataset.ligado) return; raiz.dataset.ligado = '1';
   // passar o mouse ou focar uma fatia (ou a linha da legenda) mostra os números dela no centro

@@ -27,6 +27,12 @@ const LP_SVG = {
 function lpLogo(e) {
   if (e.svg && LP_SVG[e.svg]) return `<span class="hp-logo-svg" role="img" aria-label="${esc(e.nome)}"${+e.altura > 0 ? ` style="height:${+e.altura}px"` : ''}>${LP_SVG[e.svg]}</span>`;
   if (!e.logo) return `<span class="hp-emp-n">${esc(e.nome)}</span>`;
+  // imagem (PNG): <img> é reduzida com boa qualidade no computador (a máscara serrilha); o filtro deixa o desenho na cor do texto (branco)
+  if (/\.(png|jpe?g|webp)$/i.test(e.logo)) {
+    const k = Array.isArray(e.caixa) && e.caixa.length === 6 ? e.caixa : null;
+    const im = k ? `width:${((k[4] / k[2]) * 100).toFixed(3)}%;left:${((-k[0] / k[2]) * 100).toFixed(3)}%;top:${((-k[1] / k[3]) * 100).toFixed(3)}%` : 'width:100%;left:0;top:0';
+    return `<span class="hp-logo-img" role="img" aria-label="${esc(e.nome)}" style="aspect-ratio:${k ? `${k[2]} / ${k[3]}` : '4 / 1'}${+e.altura > 0 ? `;height:${+e.altura}px` : ''}"><img src="${esc(e.logo)}" alt="" loading="lazy" decoding="async" style="${im}"></span>`;
+  }
   const u = `url('${String(e.logo).replace(/['()\\\s]/g, '')}')`; const k = Array.isArray(e.caixa) && e.caixa.length === 6 ? e.caixa : null;
   const pos = k ? `;-webkit-mask-size:${((k[4] / k[2]) * 100).toFixed(2)}% ${((k[5] / k[3]) * 100).toFixed(2)}%;mask-size:${((k[4] / k[2]) * 100).toFixed(2)}% ${((k[5] / k[3]) * 100).toFixed(2)}%;-webkit-mask-position:${k[4] > k[2] ? ((k[0] / (k[4] - k[2])) * 100).toFixed(2) : 50}% ${k[5] > k[3] ? ((k[1] / (k[5] - k[3])) * 100).toFixed(2) : 50}%;mask-position:${k[4] > k[2] ? ((k[0] / (k[4] - k[2])) * 100).toFixed(2) : 50}% ${k[5] > k[3] ? ((k[1] / (k[5] - k[3])) * 100).toFixed(2) : 50}%` : '';
   const p = Math.min(1.5, +e.peso || 0); // traço fino: sombras sem desfoque da mesma cor engrossam o desenho já recortado
@@ -66,6 +72,10 @@ function lpLanc(estado, vivo) {
   return `<li class="hp-lanc${feito ? ' feito' : ''}${vivo ? ' vivo' : ''}"><span class="hp-lanc-n"><b>${nomeL}</b><small>${sub}</small></span>
     <span class="hp-lanc-v">−${brl(vivo ? 210 : feito ? 386.4 : 92.9)}</span>${cat}${acao}</li>`;
 }
+
+// projeção ilustrativa da seção "Seu futuro": mesmos números do gráfico (R$ 180 mil, R$ 4.500 por mês, 10% ao ano, 10 anos)
+const lpProj = () => E.projetar(180000, 4500, 10, 120);
+const lpProjAno = () => { const p = lpProj(); const i = p.findIndex((v) => v >= 1000000); return i < 0 ? NOW_Y + 10 : NOW_Y + Math.floor(i / 12) + 1; };
 
 /* objetivo da prévia: o visitante escolhe qual (os mesmos tipos do app, E.OBJ_TIPOS); valores ilustrativos por tipo:
    [meta em reais, progresso de 0 a 1, anos até a previsão] */
@@ -232,9 +242,9 @@ function landingHtml() {
       <div class="hp-feat-t"><h3>Do extrato ao mês, sem digitar.</h3><p>Envie o extrato em CSV ou OFX. Cada lançamento chega com uma categoria sugerida e dá baixa no que você planejou. Nada é gravado sem você conferir: experimente confirmar o do meio.</p></div>
       <div class="hp-card hp-vis"><small>Importação de outubro</small><ul class="hp-lancs">${lpLanc('chega')}</ul><ul class="hp-lancs" id="lp-vivo-w">${lpLanc(st.ok ? 'pronto' : 'chega', true)}</ul><ul class="hp-lancs">${lpLanc('pronto')}</ul></div>
     </div>
-    <div class="hp-feat" data-rv>
+    <div class="hp-feat luz" data-rv>
       <div class="hp-feat-t"><h3>Seu futuro, em números.</h3><p>Projete o patrimônio até o seu objetivo, seja aposentadoria, imóvel ou independência financeira, e veja o efeito de cada aporte no prazo.</p></div>
-      <div class="hp-card hp-vis"><small>Projeção ilustrativa</small><div class="chart" id="hp-proj"></div></div>
+      <div class="hp-card hp-vis luz"><div class="hp-proj-h"><small>Projeção ilustrativa</small><span class="hp-proj-k"><b>${brl0(1000000)}</b> objetivo</span><span class="hp-proj-k"><b>${lpProjAno()}</b> previsão</span></div><div class="chart" id="hp-proj"></div></div>
     </div>
   </div></section>
 
@@ -258,6 +268,7 @@ function landingHtml() {
   <section class="hp-sec" id="planos"><div class="hp-w">
     <div class="hp-head" data-rv><h2 class="hp-h2">Escolha como começar.</h2><p class="hp-lead">Comece grátis e mude de plano quando quiser.</p></div>
     <div class="hp-grid3 hp-planos">${['gratis', 'investidor', 'completo'].map(plano).join('')}</div>
+    <p class="hp-cap hp-planos-dica">Arraste para o lado para ver os outros planos.</p>
     <p class="hp-cap">Depois do cadastro, você conclui o pagamento e o ${esc(nome)} confirma a ativação do plano na sua conta.</p>
   </div></section>
 
@@ -288,8 +299,8 @@ function drawLanding() {
   chartLine($('#hp-line'), { height: 168, zoom: true, labels: meses, aria: 'Evolução ilustrativa do patrimônio', series: [{ color: 'var(--c1)', values: patr, area: true, w: 3 }], tip: (i) => `<b>${meses[i]}</b><br>${brl0(patr[i])}` });
   chartDonut($('#hp-donut'), { aria: 'Composição ilustrativa da carteira', title: '3 classes', sub: 'diversificada', items: [{ label: 'Renda fixa', value: 54, color: 'var(--c1)' }, { label: 'Ações', value: 28, color: 'var(--c2)' }, { label: 'Fundos imobiliários', value: 18, color: 'var(--c3)' }] });
   lpObjAtualiza();
-  const proj = E.projetar(180000, 4500, 10, 120); const lab = proj.map((_, i) => (i % 12 === 11 ? String(NOW_Y + Math.floor(i / 12) + 1) : ''));
-  chartLine($('#hp-proj'), { height: 220, labels: lab, aria: 'Projeção ilustrativa do patrimônio até o objetivo', goal: 1000000, goalLabel: 'Objetivo: R$ 1 milhão', series: [{ color: 'var(--c1)', values: proj, area: true }], tip: (i) => `<b>${NOW_Y + Math.floor(i / 12)}</b><br>${brl0(proj[i])}` });
+  const proj = lpProj(); const lab = proj.map((_, i) => (i % 12 === 11 ? String(NOW_Y + Math.floor(i / 12) + 1) : ''));
+  chartLine($('#hp-proj'), { height: 220, labels: lab, aria: 'Projeção ilustrativa do patrimônio até o objetivo', goal: 1000000, goalLabel: 'Objetivo: R$ 1 milhão', series: [{ color: 'var(--c1)', values: proj, area: true, w: 3 }], tip: (i) => `<b>${NOW_Y + Math.floor(i / 12)}</b><br>${brl0(proj[i])}` });
   lpHeroVivo(); lpCarrossel();
 }
 
