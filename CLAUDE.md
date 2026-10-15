@@ -8,6 +8,7 @@ Sistema web de planejamento financeiro de Nathan Santapaula (assessoria XP Inc.)
 - `npm test` roda `tests/engine.test.js` e `tests/ingest.test.js` (Node puro, sem framework). Deve fechar com código 0 e nenhum `✗`. Rode antes de todo commit.
 - `npx serve .` ou abrir `index.html` roda o site. Sem Supabase configurado ele entra em **modo demonstração** (dados no navegador, todos os recursos liberados).
 - Depois de editar JS, `node --check assets/js/<arquivo>.js` pega erro de sintaxe rápido.
+- Mudou CSS ou JS? Troque a versão `?v=` em **todas** as linhas de `assets/` do `index.html` (ex.: `?v=20261015a` vira `?v=20261016a`). Sem isso, o navegador do computador continua usando os arquivos antigos do cache e o cliente não vê a atualização.
 
 ## Arquitetura
 
