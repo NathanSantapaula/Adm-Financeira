@@ -153,20 +153,7 @@ function gWidgets(G) {
     <p class="g-foot"><b>${brl0(G.parcelasMes)}</b> por mês em parcelas; ainda faltam <b>${brl0(G.parcelasRestante)}</b>.</p>` : gVazio('Nenhum parcelamento correndo neste período.'), `<button class="lnk strong" data-act="add-item" data-kind="desp">Novo parcelamento</button>`));
   // dia da semana
   add('semana', gCard('semana', 'Por dia da semana', G.semana.some((v) => v > 0) ? `<div class="chart" id="g-semana"></div>` : gVazio('Aparece quando houver lançamentos reais com data.')));
-  // mesma marcação da Visão geral (.wg-grid > .wg): o modo "Organizar a tela" de widgets.js funciona aqui também
-  const ed = !!S.wgEdit; const itens = L.filter((x) => html[x.id]).map((x) => ({ x, h: html[x.id] }));
-  const sp = gEncaixe(itens.map((i) => i.x.tam), 6); const spm = gEncaixe(itens.map((i) => (i.x.tam === 2 ? 3 : i.x.tam === 4 ? 6 : i.x.tam)), 6);
-  const cel = itens.map((i, k) => { const w = widgetDe(i.x.id, 'gastos');
-    return `<div class="wg" data-wg="${i.x.id}" data-tam="${i.x.tam}" style="--i:${k % 4};--sp:${sp[k]};--spm:${spm[k]}"${ed ? ` aria-label="${esc(w.nome())}"` : ''}>${ed ? wgControles(w, i.x) : ''}${i.h}</div>`; }).join('');
-  const pe = ed ? '' : `<div class="wg-foot"><button class="btn ghost sm" data-act="wg-editar">${I_AJUSTE}Organizar a tela</button><button class="lnk" data-act="painel-abrir" data-alvo="gastos">Mais opções</button></div>`;
-  return `${ed ? wgBarraHtml() : ''}<div class="g-wrap"><div class="wg-grid g-enc${ed ? ' editando' : ''}">${cel}</div></div>${pe}`;
-}
-/* encaixe sem buracos: quando o próximo widget não cabe no resto da linha, o último da linha cresce até a borda */
-function gEncaixe(tams, cols) {
-  const out = []; let usado = 0; let ultimo = -1;
-  tams.forEach((t, i) => { t = Math.min(cols, t); if (usado + t > cols) { if (ultimo >= 0) out[ultimo] += cols - usado; usado = 0; } out.push(t); usado += t; ultimo = i; if (usado === cols) usado = 0; });
-  if (usado > 0 && ultimo >= 0) out[ultimo] += cols - usado;
-  return out;
+  return telaWidgetsHtml('gastos', html);
 }
 const gAcaoEnt = (e) => (e.tipo === 'real' ? `data-act="edit-lanc" data-id="${esc(e.id)}"` : e.herdado ? `data-act="year-pick" data-year="${e.herdado}"` : `data-act="edit-item" data-kind="desp" data-id="${esc(e.id)}"`);
 
@@ -272,7 +259,14 @@ function drawGastos() {
     tip: (i) => `<b>${DIA_SEM[i]}</b><br>${brl0(G.semana[i])} em ${G.semanaQtd[i]} ${G.semanaQtd[i] === 1 ? 'compra' : 'compras'}` });
 }
 
-/* ---------------- Rendas: painel de estudo + detalhe recolhível ---------------- */
+/* ---------------- Rendas: painel de estudo (widgets organizáveis) + detalhe recolhível ---------------- */
+const R_WIDGETS = [
+  { id: 'indicadores', nome: () => 'Indicadores da renda', desc: 'Entradas, previsibilidade, taxa de poupança e renda passiva.', tam: 6, tams: [6], padrao: () => true },
+  { id: 'mensal', nome: () => 'Entradas mês a mês', desc: 'Entradas de cada mês por categoria, com o total de gastos marcado.', tam: 4, tams: [3, 4, 6], padrao: () => true },
+  { id: 'estab', nome: () => 'Estabilidade', desc: 'Menor, maior e média dos meses, com os meses abaixo da média.', tam: 2, tams: [2, 3, 4, 6], padrao: () => true },
+  { id: 'fontes', nome: () => 'De onde vem', desc: 'Ranking das fontes de renda, recorrentes ou eventuais.', tam: 3, tams: [2, 3, 4, 6], padrao: () => true },
+  { id: 'estudar', nome: () => 'Para estudar', desc: 'Leituras automáticas: dependência de uma fonte, oscilação, gastos fixos e poupança.', tam: 3, tams: [2, 3, 4, 6], padrao: () => true },
+];
 function analiseRendaAtual() { return E.analiseRenda({ C: S.C, meses: mesesDecorridos(), rendas: S.plan.rendas, rendaCats: S.plan.rendaCats }); }
 function detalheRendas() {
   const p = S.plan; const C = S.C; const m = S.mes;
@@ -329,14 +323,14 @@ function viewRendas() {
   if (R.comprometimento != null) ins.push([R.comprometimento > 0.5 ? 'warn' : 'ok', `Os gastos fixos (${brl0(R.fixosMes)} por mês) consomem ${pct(R.comprometimento)} da sua renda recorrente. Uma referência usada em educação financeira é deixar até 50% para as necessidades.`]);
   if (R.poupanca != null) ins.push(R.poupanca >= 0.2 ? ['ok', `Você guarda ${pct(R.poupanca)} do que entra, acima da referência de 20%. É esse excedente que vira aporte em Investimentos.`] : ['info', `Sobram ${pct(Math.max(0, R.poupanca))} do que entra. Chegar a 20% significaria guardar cerca de ${brl0(Math.max(0, R.mediaMes * 0.2 - Math.max(0, R.sobraMes)))} a mais por mês.`]);
   if (R.coberturaPassiva) ins.push(['info', `Os proventos já pagam ${pct(R.coberturaPassiva, 1)} dos seus gastos. Em Proventos, o "número da independência" mostra quanto falta para pagarem tudo.`]);
-  return `${pageHead('Rendas', sub, acts)}<div class="kpis">${k1}${k2}${k3}${k4}</div>
-    <div class="dgrid">
-      <section class="card"><div class="c-h"><h3>Entradas mês a mês</h3>${leg}</div><div class="chart" id="r-chart"></div><p class="cap">A marca vermelha é o total de gastos do mês: barra acima da marca é mês em que sobrou dinheiro.</p></section>
-      <section class="card"><div class="c-h"><h3>Estabilidade</h3></div>${estab}</section></div>
-    <div class="dgrid two">
-      <section class="card"><div class="c-h"><h3>De onde vem</h3><small class="c-note">${S.year === NOW_Y ? 'até ' + MES_LONGO[NOW_M] : 'no ano'}</small></div>${fontes}</section>
-      <section class="card study"><div class="c-h"><h3>Para estudar</h3></div><ul class="insights">${ins.map(([t, x]) => `<li class="${t}">${x}</li>`).join('')}</ul></section></div>
-    ${detalheRendas()}`;
+  const html = {
+    indicadores: `<div class="kpis">${k1}${k2}${k3}${k4}</div>`,
+    mensal: `<section class="card"><div class="c-h"><h3>Entradas mês a mês</h3>${leg}</div><div class="chart" id="r-chart"></div><p class="cap">A marca vermelha é o total de gastos do mês: barra acima da marca é mês em que sobrou dinheiro.</p></section>`,
+    estab: `<section class="card"><div class="c-h"><h3>Estabilidade</h3></div>${estab}</section>`,
+    fontes: `<section class="card"><div class="c-h"><h3>De onde vem</h3><small class="c-note">${S.year === NOW_Y ? 'até ' + MES_LONGO[NOW_M] : 'no ano'}</small></div>${fontes}</section>`,
+    estudar: `<section class="card study"><div class="c-h"><h3>Para estudar</h3></div><ul class="insights">${ins.map(([t, x]) => `<li class="${t}">${x}</li>`).join('')}</ul></section>`,
+  };
+  return `${pageHead('Rendas', sub, acts)}${telaWidgetsHtml('rendas', html)}${detalheRendas()}`;
 }
 
 function drawLedger() {

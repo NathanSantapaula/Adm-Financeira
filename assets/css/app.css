@@ -1539,15 +1539,16 @@ dialog.pop-dlg::backdrop { background: var(--scrim); }
 .g-orc .big .cell-input { width: 130px; font-size: 15px; }
 .g-orc-all { display: inline-block; margin-top: 6px; font-size: 12.5px; }
 .kpi-v .neg, .kpi-v.neg .num { color: var(--neg); } .kpi-v .pos { color: var(--pos); }
-/* mesma grade da Visão geral; fora do modo organizar, as larguras vêm já encaixadas (gEncaixe, sem buracos).
+/* telas com widgets (Gastos, Rendas, Investimentos, Proventos): mesma grade da Visão geral; fora do modo organizar, as larguras vêm já encaixadas (gEncaixe, sem buracos).
    A grade reage à largura da área de conteúdo (container query), não à da tela: com o menu lateral aberto, cartões
    estreitos demais para o gráfico passam para a largura toda. */
-.g-wrap { container: gw / inline-size; margin-bottom: 8px; }
-.wg-grid.g-enc:not(.editando) > .wg { grid-column: span var(--sp, 6); }
-@container gw (max-width: 1000px) { .wg-grid.g-enc:not(.editando) > .wg { grid-column: span var(--spm, 6); } .wg-grid.g-enc > .wg[data-tam="2"] { grid-column: span 3; } .wg-grid.g-enc > .wg[data-tam="4"] { grid-column: span 6; } }
-@container gw (max-width: 720px) { .wg-grid.g-enc > .wg, .wg-grid.g-enc:not(.editando) > .wg { grid-column: span 6; } }
-.g-enc > .wg > .card > .g-foot { margin-top: auto; }
-.g-enc > .wg > .card { display: flex; flex-direction: column; }
+.tw-wrap { container: tw / inline-size; margin-bottom: 8px; }
+.wg-grid.tw:not(.editando) > .wg { grid-column: span var(--sp, 6); }
+@container tw (max-width: 1000px) { .wg-grid.tw:not(.editando) > .wg { grid-column: span var(--spm, 6); } .wg-grid.tw > .wg[data-tam="2"] { grid-column: span 3; } .wg-grid.tw > .wg[data-tam="4"] { grid-column: span 6; } }
+@container tw (max-width: 720px) { .wg-grid.tw > .wg, .wg-grid.tw:not(.editando) > .wg { grid-column: span 6; } }
+.tw > .wg > .card > .g-foot { margin-top: auto; }
+.tw > .wg > .kpis { margin-bottom: 0; }
+.tw > .wg > .card { display: flex; flex-direction: column; }
 .g-w { min-width: 0; }
 .g-lanc { margin-top: 8px; }
 .g-lanc-c { padding: 0 18px 18px; }

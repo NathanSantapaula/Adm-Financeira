@@ -39,8 +39,8 @@ function render(opts) {
   if (isEditing() || (soft && isTyping())) { S.needsRender = true; return; }
   const scr = S.screen;
   if (scr === 'app' && !navItems().some((i) => i[0] === S.view)) S.view = 'geral';
-  if (scr !== 'app' || (S.view !== 'geral' && S.view !== 'despesas') || S.view !== S.wgView) { S.wgEdit = false; S.wgAdd = false; }
-  S.wgView = S.view; // organizar vale na Visão geral e em Gastos, e sai ao trocar de tela
+  if (scr !== 'app' || !alvoDaTela() || S.view !== S.wgView) { S.wgEdit = false; S.wgAdd = false; }
+  S.wgView = S.view; // organizar vale nas telas com widgets e sai ao trocar de tela
   const key = scr + ':' + (scr === 'app' ? S.view : scr === 'onboarding' && S.ob ? S.ob.step + '.' + S.ob.q : scr === 'auth' ? S.authMode : '');
   const same = S.lastKey === key;
   if (soft && scr !== 'app' && same) return;

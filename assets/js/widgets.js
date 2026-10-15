@@ -101,7 +101,12 @@ const WIDGETS = [
 const PAINEIS = {
   geral: { defs: () => WIDGETS, chave: 'painel', nome: 'Visão geral', view: 'geral' },
   gastos: { defs: () => G_WIDGETS, chave: 'painelGastos', nome: 'Gastos', view: 'despesas' },
+  rendas: { defs: () => R_WIDGETS, chave: 'painelRendas', nome: 'Rendas', view: 'rendas' },
+  invest: { defs: () => INV_WIDGETS, chave: 'painelInvest', nome: 'Investimentos', view: 'inv', recurso: 'investimentos' },
+  proventos: { defs: () => PRO_WIDGETS, chave: 'painelProventos', nome: 'Proventos', view: 'pro', recurso: 'proventos' },
 };
+const alvoDaTela = () => Object.keys(PAINEIS).find((k) => PAINEIS[k].view === S.view) || null; // tela com widgets aberta agora
+const nomeTela = (alvo) => (alvo && alvo !== 'geral' ? 'a aba ' + painelDe(alvo).nome : 'a Visão geral');
 const painelDe = (alvo) => PAINEIS[alvo] || PAINEIS.geral;
 const alvoAtual = () => (PAINEIS[S.painelAlvo] ? S.painelAlvo : 'geral');
 const widgetDe = (id, alvo) => painelDe(alvo).defs().find((w) => w.id === id);
@@ -132,6 +137,24 @@ function widgetsHtml() {
   const pe = ed ? '' : `<div class="wg-foot"><button class="btn ghost sm" data-act="wg-editar">${I_AJUSTE}Organizar a tela</button><button class="lnk" data-act="painel-abrir">Mais opções</button></div>`;
   return `${barra}<div class="wg-grid${ed ? ' editando' : ''}">${h}</div>${pe}`;
 }
+/* telas com widgets (Gastos, Rendas, Investimentos, Proventos): mesma marcação da Visão geral (.wg-grid > .wg),
+   então "Organizar a tela" funciona igual; fora do modo organizar, as larguras são encaixadas sem buracos (encaixeLinhas).
+   html: { idDoWidget: htmlDoCartão }; widgets sem html (sem dado ou fora do período) não aparecem. */
+function telaWidgetsHtml(alvo, html) {
+  const ed = !!S.wgEdit && alvoDaTela() === alvo; const L = painelLayout(alvo).filter((x) => x.on && html[x.id]);
+  const sp = encaixeLinhas(L.map((x) => x.tam)); const spm = encaixeLinhas(L.map((x) => (x.tam === 2 ? 3 : x.tam === 4 ? 6 : x.tam)));
+  const cel = L.map((x, k) => { const w = widgetDe(x.id, alvo);
+    return `<div class="wg" data-wg="${x.id}" data-tam="${x.tam}" style="--i:${k % 4};--sp:${sp[k]};--spm:${spm[k]}"${ed ? ` aria-label="${esc(w.nome())}"` : ''}>${ed ? wgControles(w, x) : ''}${html[x.id]}</div>`; }).join('');
+  const pe = ed ? '' : `<div class="wg-foot"><button class="btn ghost sm" data-act="wg-editar">${I_AJUSTE}Organizar a tela</button><button class="lnk" data-act="painel-abrir" data-alvo="${alvo}">Mais opções</button></div>`;
+  return `${ed ? wgBarraHtml() : ''}<div class="tw-wrap"><div class="wg-grid tw${ed ? ' editando' : ''}">${cel}</div></div>${pe}`;
+}
+/* encaixe sem buracos numa grade de 6: quando o próximo widget não cabe no resto da linha, o último da linha cresce até a borda */
+function encaixeLinhas(tams, cols) {
+  cols = cols || 6; const out = []; let usado = 0; let ultimo = -1;
+  tams.forEach((t, i) => { t = Math.min(cols, t); if (usado + t > cols) { if (ultimo >= 0) out[ultimo] += cols - usado; usado = 0; } out.push(t); usado += t; ultimo = i; if (usado === cols) usado = 0; });
+  if (usado > 0 && ultimo >= 0) out[ultimo] += cols - usado;
+  return out;
+}
 const I_AJUSTE = ic('<rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><path d="M17 14v6M14 17h6"/>');
 // gráficos dos widgets novos (os antigos continuam em drawDashboard)
 function drawWidgetsExtras() {
@@ -145,7 +168,7 @@ function drawWidgetsExtras() {
 /* ---------- painel: Personalizar a Visão geral ---------- */
 function painelLinkHtml(alvo) {
   const L = painelLayout(alvo); const n = L.filter((x) => x.on).length;
-  return `<button class="pf-card obj-link" data-act="painel-abrir" data-alvo="${alvo || 'geral'}"><span class="obj-stack"><span class="obj-ic" style="--cor:var(--accent)">${I_AJUSTE}</span></span><span class="pf-t"><b>Personalizar ${alvo === 'gastos' ? 'a aba Gastos' : 'a Visão geral'}</b><small>${n} de ${L.length} widgets na tela</small></span><span class="pf-go">Abrir${I.chev}</span></button>`;
+  return `<button class="pf-card obj-link" data-act="painel-abrir" data-alvo="${alvo || 'geral'}"><span class="obj-stack"><span class="obj-ic" style="--cor:var(--accent)">${I_AJUSTE}</span></span><span class="pf-t"><b>Personalizar ${nomeTela(alvo)}</b><small>${n} de ${L.length} widgets na tela</small></span><span class="pf-go">Abrir${I.chev}</span></button>`;
 }
 function painelEditorHtml() {
   const alvo = alvoAtual(); const L = painelLayout(alvo); const on = L.filter((x) => x.on); const off = L.filter((x) => !x.on);
@@ -215,7 +238,7 @@ function painelDnD() {
 /* ---------- Organizar na própria tela (como no celular) ----------
    Toque e segure um widget (ou "Organizar a tela") para soltar os widgets: eles balançam, ganham botões de remover e de
    largura, e podem ser arrastados com o dedo ou o mouse. Os vizinhos abrem espaço enquanto arrasta. "Concluir" ou Esc fecha. */
-const wgAlvo = () => (S.view === 'despesas' ? 'gastos' : 'geral'); // a tela que está sendo organizada
+const wgAlvo = () => alvoDaTela() || 'geral'; // a tela que está sendo organizada
 const I_MENOS = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 12h10"/></svg>';
 function wgControles(w, x) {
   const tam = w.tams.length > 1 ? `<button class="wg-tam" data-act="wg-tam" data-id="${x.id}" aria-label="Largura de ${esc(w.nome())}: ${TAM_NOME[x.tam]}. Tocar troca.">${TAM_NOME[x.tam]}</button>` : '';
@@ -306,7 +329,7 @@ function wgGestos() {
   const ignorar = (t) => t.closest('input, select, textarea, .wg-ctl, .info-i, .hist-btn, a, [contenteditable], .sld, .obj-sw');
   const limpar = () => { if (G) { clearTimeout(G.t); if (G.raf) cancelAnimationFrame(G.raf); } G = null; S.wgArrastando = false; };
   document.addEventListener('pointerdown', (e) => {
-    if (S.screen !== 'app' || (S.view !== 'geral' && S.view !== 'despesas') || e.button !== 0) return;
+    if (S.screen !== 'app' || !alvoDaTela() || e.button !== 0) return;
     const el = e.target.closest && e.target.closest('.wg-grid > .wg[data-wg]:not([data-wg="extras"])'); if (!el || ignorar(e.target)) return;
     G = { el, id: el.dataset.wg, x: e.clientX, y: e.clientY, px: e.clientX, py: e.clientY, tipo: e.pointerType, armado: false, arrastando: false, suprimir: false };
     if (!S.wgEdit) {

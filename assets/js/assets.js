@@ -54,6 +54,21 @@ function vazioInvest(kind) {
     <div class="cc-empty-acts"><button class="btn primary lg" data-act="ingest-open" data-modo="corretora">Importar da corretora</button><button class="btn ghost" data-act="add-ativo">Adicionar ativo manualmente</button></div></section>`;
 }
 
+/* widgets organizáveis de Investimentos e Proventos (mesmo sistema da Visão geral; ver telaWidgetsHtml) */
+const INV_WIDGETS = [
+  { id: 'indicadores', nome: () => 'Indicadores dos investimentos', desc: 'Aportado no ano, ritmo da meta, constância e diversificação.', tam: 6, tams: [6], padrao: () => true },
+  { id: 'aportes', nome: () => 'Aportes mês a mês', desc: 'Aportes e dividendos reinvestidos de cada mês, com a meta.', tam: 4, tams: [3, 4, 6], padrao: () => true },
+  { id: 'onde', nome: () => 'Onde está o dinheiro', desc: 'Composição por classe e renda fixa contra a referência do perfil.', tam: 2, tams: [2, 3, 4], padrao: () => true },
+  { id: 'posicoes', nome: () => 'Maiores posições', desc: 'Os ativos com mais dinheiro, a custo.', tam: 3, tams: [2, 3, 4, 6], padrao: () => true },
+  { id: 'estudar', nome: () => 'Para estudar', desc: 'Concentração, desvio do perfil, projeção ilustrativa e meses sem aporte.', tam: 3, tams: [2, 3, 4, 6], padrao: () => true },
+];
+const PRO_WIDGETS = [
+  { id: 'indicadores', nome: () => 'Indicadores dos proventos', desc: 'Recebido no ano, média por mês, yield on cost e cobertura dos gastos.', tam: 6, tams: [6], padrao: () => true },
+  { id: 'mensal', nome: () => 'Proventos mês a mês', desc: 'Dividendos e renda fixa de cada mês.', tam: 4, tams: [3, 4, 6], padrao: () => true },
+  { id: 'independencia', nome: () => 'Número da independência', desc: 'Quanto precisaria estar investido para os proventos pagarem seus gastos.', tam: 2, tams: [2, 3, 4], padrao: () => true },
+  { id: 'pagadores', nome: () => 'Quem mais paga', desc: 'Ranking dos ativos que mais pagaram proventos no ano.', tam: 3, tams: [2, 3, 4, 6], padrao: () => true },
+  { id: 'calendario', nome: () => 'Calendário de pagamentos', desc: 'Em que meses cada ativo pagou.', tam: 3, tams: [3, 4, 6], padrao: () => true },
+];
 function painelInvest(A) {
   const ap = A.aporte; const ca = A.carteira; const pr = S.profile; const ret = +pr.retornoAnual || 0;
   const k1 = kpi(`Aportado em ${S.year}`, `<span class="num">${brl0(ap.ano)}</span>`, ap.ano > 0 ? `Média de ${brl0(ap.mediaMes)} por mês${ateMes()}.` : 'Nenhum aporte registrado ainda.');
@@ -74,13 +89,13 @@ function painelInvest(A) {
   if (perfil && ca.total > 0) { const dif = (ca.pesoRF * 100) - perfil.alvo.rendaFixa; ins.push([Math.abs(dif) > 10 ? 'warn' : 'ok', `Perfil ${esc(perfil.nome)}: referência de ${perfil.alvo.rendaFixa}% em renda fixa. Você está com ${pct(ca.pesoRF)}${Math.abs(dif) > 10 ? `, ${fmt1(Math.abs(dif))} pontos percentuais ${dif > 0 ? 'acima' : 'abaixo'}. A aba Carteira mostra onde colocar o próximo aporte para reequilibrar.` : ', dentro da faixa.'}`]); }
   if (ap.mediaMes > 0) { const fv = E.projetar(ca.total, ap.mediaMes, ret, 120).pop(); ins.push(['info', `Mantendo ${brl0(ap.mediaMes)} por mês e retorno hipotético de ${fmt1(ret)}% ao ano, a carteira chegaria a <b>${brl0(fv)}</b> em 10 anos, sendo ${brl0(ca.total + ap.mediaMes * 120)} de dinheiro aportado. O resto é efeito dos juros compostos. Ilustração, não promessa.`]); }
   if (ap.meses - ap.mesesComAporte >= 2) ins.push(['info', `${ap.meses - ap.mesesComAporte} meses sem aporte em ${S.year}. Um aporte automático no dia do salário costuma resolver.`]);
-  return `<div class="kpis">${k1}${k2}${k3}${k4}</div>
-    <div class="dgrid">
-      <section class="card"><div class="c-h"><h3>Aportes mês a mês</h3>${leg}</div><div class="chart" id="inv-aportes"></div></section>
-      <section class="card"><div class="c-h"><h3>Onde está o dinheiro</h3></div>${comp}${rfBar}</section></div>
-    <div class="dgrid two">
-      <section class="card"><div class="c-h"><h3>Maiores posições</h3><small class="c-note">a custo</small></div>${top.length ? `<ul class="rank">${top.map((i, n) => `<li><span class="rk-n">${n + 1}</span><span class="rk-l"><b title="${esc(i.nome)}">${esc(i.nome)}</b><small>${esc(i.classe)}</small></span><span class="rk-t"><i style="width:${((i.valor / top[0].valor) * 100).toFixed(1)}%;background:${PAL[ca.porClasse.findIndex((c) => c.label === i.classe) % 6]}"></i></span><span class="rk-v">${brl0(i.valor)}<small>${pct(i.peso, 1)}</small></span></li>`).join('')}</ul>` : '<p class="empty-s">Sem posições.</p>'}</section>
-      <section class="card study"><div class="c-h"><h3>Para estudar</h3></div><ul class="insights">${ins.map(([t, x]) => `<li class="${t}">${x}</li>`).join('')}</ul></section></div>`;
+  return telaWidgetsHtml('invest', {
+    indicadores: `<div class="kpis">${k1}${k2}${k3}${k4}</div>`,
+    aportes: `<section class="card"><div class="c-h"><h3>Aportes mês a mês</h3>${leg}</div><div class="chart" id="inv-aportes"></div></section>`,
+    onde: `<section class="card"><div class="c-h"><h3>Onde está o dinheiro</h3></div>${comp}${rfBar}</section>`,
+    posicoes: `<section class="card"><div class="c-h"><h3>Maiores posições</h3><small class="c-note">a custo</small></div>${top.length ? `<ul class="rank">${top.map((i, n) => `<li><span class="rk-n">${n + 1}</span><span class="rk-l"><b title="${esc(i.nome)}">${esc(i.nome)}</b><small>${esc(i.classe)}</small></span><span class="rk-t"><i style="width:${((i.valor / top[0].valor) * 100).toFixed(1)}%;background:${PAL[ca.porClasse.findIndex((c) => c.label === i.classe) % 6]}"></i></span><span class="rk-v">${brl0(i.valor)}<small>${pct(i.peso, 1)}</small></span></li>`).join('')}</ul>` : '<p class="empty-s">Sem posições.</p>'}</section>`,
+    estudar: `<section class="card study"><div class="c-h"><h3>Para estudar</h3></div><ul class="insights">${ins.map(([t, x]) => `<li class="${t}">${x}</li>`).join('')}</ul></section>`,
+  });
 }
 
 function painelProventos(A) {
@@ -88,7 +103,7 @@ function painelProventos(A) {
   const k1 = kpi(`Recebido em ${S.year}`, `<span class="num">${brl0(pv.ano)}</span>`, `Dividendos ${brl0(pv.dividendos)} · Renda fixa ${brl0(pv.rentab)}.`);
   const k2 = kpi('Média por mês', `<span class="num">${brl0(pv.mediaMes)}</span>`, `Cerca de ${brl(pv.porDia)} por dia. ${pv.mesesComProvento} de ${ap.meses} meses com proventos.`);
   const k3 = kpi('Yield on cost', pv.yoc == null ? '–' : pct(pv.yoc, 1), pv.yoc == null ? 'Aparece quando houver aportes e proventos.' : 'Proventos anualizados sobre o valor investido (a custo). Mostra quanto o seu dinheiro rende em caixa.');
-  const k4 = kpi('Cobertura dos gastos', pv.cobertura == null ? '–' : pct(pv.cobertura, 1), pv.cobertura == null ? 'Registre gastos na Conta corrente para comparar.' : `dos seus gastos médios (${brl0(pv.gastoMedio)} por mês) já são pagos pelos proventos.`, pv.cobertura == null ? '' : barra(pv.cobertura, pv.cobertura >= 1 ? 'ok' : ''));
+  const k4 = kpi('Cobertura dos gastos', pv.cobertura == null ? '–' : pct(pv.cobertura, 1), pv.cobertura == null ? 'Registre gastos na aba Gastos para comparar.' : `dos seus gastos médios (${brl0(pv.gastoMedio)} por mês) já são pagos pelos proventos.`, pv.cobertura == null ? '' : barra(pv.cobertura, pv.cobertura >= 1 ? 'ok' : ''));
   const top = pv.pagadores.slice(0, 8); const heat = pv.pagadores.slice(0, 10); const max = Math.max(1, ...heat.flatMap((p) => p.pr));
   const rank = top.length ? `<ul class="rank">${top.map((p, n) => `<li><span class="rk-n">${n + 1}</span><span class="rk-l"><b title="${esc(p.nome)}">${esc(p.nome)}</b><small>Pagou em ${p.mesesPagos} ${p.mesesPagos === 1 ? 'mês' : 'meses'}${p.yoc != null ? ` · yield ${pct(p.yoc, 1)}` : ''}</small></span><span class="rk-t"><i style="width:${((p.recebido / top[0].recebido) * 100).toFixed(1)}%;background:${p.tipo === 'RENDA FIXA' ? 'var(--c1)' : 'var(--c3)'}"></i></span><span class="rk-v">${brl0(p.recebido)}<small>${pct(pv.ano > 0 ? p.recebido / pv.ano : 0)}</small></span></li>`).join('')}</ul>` : '<p class="empty-s">Nenhum provento registrado neste ano.</p>';
   const cal = heat.length ? `<div class="heat" role="table" aria-label="Calendário de proventos por ativo"><div class="heat-r heat-h" role="row"><span role="columnheader"></span>${MES.map((m) => `<span role="columnheader">${m[0]}</span>`).join('')}</div>${heat.map((p) => `<div class="heat-r" role="row"><span class="heat-n" role="rowheader">${esc(p.nome)}</span>${p.pr.map((v, m) => `<span role="cell" class="heat-c${v > 0 ? ' on' : ''}" style="--a:${v > 0 ? (0.25 + 0.75 * (v / max)).toFixed(2) : 0}" title="${esc(p.nome)}, ${MES_LONGO[m]}: ${v > 0 ? brl(v) : 'sem pagamento'}"></span>`).join('')}</div>`).join('')}</div><p class="cap">Cada quadrado é um mês. Quanto mais forte, maior o valor. FIIs costumam pagar todo mês; ações concentram em poucos meses.</p>` : '';
@@ -99,13 +114,13 @@ function painelProventos(A) {
       <p>Com o yield atual de ${pct(pv.yoc, 1)}, esse é o valor investido para os proventos pagarem seus gastos médios de ${brl0(pv.gastoMedio)} por mês. Você tem ${brl0(ca.total)} (${pct(f, 1)}).${ap.mediaMes > 0 && f < 1 ? ` No ritmo atual de ${brl0(ap.mediaMes)} por mês e retorno hipotético de ${fmt1(ret)}% ao ano, levaria ${n == null ? '<b>mais de 100 anos</b>' : `cerca de <b>${fmt1(n / 12)} anos</b>`}.` : ''}</p>
       <p class="cap">Estudo ilustrativo: supõe yield e gastos constantes, sem inflação e sem promessa de rentabilidade.</p></section>`;
   }
-  return `<div class="kpis">${k1}${k2}${k3}${k4}</div>
-    <div class="dgrid">
-      <section class="card"><div class="c-h"><h3>Proventos mês a mês</h3>${legenda([['var(--c3)', 'Dividendos e rendimentos'], ['var(--c1)', 'Renda fixa']])}</div><div class="chart" id="pro-mes"></div></section>
-      ${lib || `<section class="card"><div class="c-h"><h3>Seu número da independência</h3></div><p class="empty-s">Aparece quando houver proventos, posições e gastos registrados: mostra quanto você precisaria investido para os proventos pagarem seus gastos.</p></section>`}</div>
-    <div class="dgrid two">
-      <section class="card"><div class="c-h"><h3>Quem mais paga</h3></div>${rank}</section>
-      <section class="card"><div class="c-h"><h3>Calendário de pagamentos</h3></div>${cal || '<p class="empty-s">O calendário aparece quando houver proventos registrados.</p>'}</section></div>`;
+  return telaWidgetsHtml('proventos', {
+    indicadores: `<div class="kpis">${k1}${k2}${k3}${k4}</div>`,
+    mensal: `<section class="card"><div class="c-h"><h3>Proventos mês a mês</h3>${legenda([['var(--c3)', 'Dividendos e rendimentos'], ['var(--c1)', 'Renda fixa']])}</div><div class="chart" id="pro-mes"></div></section>`,
+    independencia: lib || `<section class="card"><div class="c-h"><h3>Seu número da independência</h3></div><p class="empty-s">Aparece quando houver proventos, posições e gastos registrados: mostra quanto você precisaria investido para os proventos pagarem seus gastos.</p></section>`,
+    pagadores: `<section class="card"><div class="c-h"><h3>Quem mais paga</h3></div>${rank}</section>`,
+    calendario: `<section class="card"><div class="c-h"><h3>Calendário de pagamentos</h3></div>${cal || '<p class="empty-s">O calendário aparece quando houver proventos registrados.</p>'}</section>`,
+  });
 }
 
 function viewAssets(kind) {

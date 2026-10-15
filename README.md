@@ -96,6 +96,8 @@ Depois, em `assets/js/config.js`, troque `ingestao.iaAtiva` para `true`. A funç
 
 ## 5. Rendas, Investimentos e Proventos como painel de estudo
 
+Os indicadores e cada cartão dessas três abas são widgets, como na Visão geral e em Gastos: **Organizar a tela** (no fim dos widgets, ou segurando um deles) permite arrastar, mudar a largura, tirar e adicionar, e **Mais opções** abre a lista completa (também em Painel › Telas). A escolha fica no perfil e os widgets se encaixam sem deixar espaços vazios. A planilha mês a mês continua fixa no fim de cada aba.
+
 A planilha mês a mês continua disponível, recolhida no fim da página. Acima dela:
 
 - **Investimentos:** aportado no ano e média mensal, ritmo em relação à meta de aporte, constância (meses com aporte), diversificação (número efetivo de ativos e maior posição), aportes mês a mês contra a meta, composição por classe, renda fixa contra renda variável comparada à referência do perfil, maiores posições e uma lista "Para estudar" (risco de concentração, desvio do perfil, projeção ilustrativa de 10 anos).
