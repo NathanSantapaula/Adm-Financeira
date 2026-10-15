@@ -2,7 +2,7 @@
 'use strict';
 const mesRef = () => (S.year === NOW_Y ? NOW_M : S.mes);
 
-function areasDoAno() { return areasDe2(S.plan, planCtx().carry, S.year).slice(0, 6); }
+function areasDoAno() { const [de, ate] = perIntervalo(); return areasDe2(S.plan, planCtx().carry, S.year, de, ate).slice(0, 6); }
 function composicao() {
   if (!S.plan.ativos.length) return [];
   const M = cartModel(); const map = new Map();
@@ -50,6 +50,14 @@ const btnAcao = (a, cls) => `<button class="${cls || 'lnk strong'}" data-act="${
 const PER_ATALHOS = [[3, 'Últimos 3 meses'], [6, 'Últimos 6 meses'], [12, 'Ano todo']];
 const perRef = () => (S.year === NOW_Y ? NOW_M : 11);
 function perIntervalo() { const p = S.periodo; return p ? [Math.min(p.de, p.ate), Math.max(p.de, p.ate)] : [0, 11]; }
+const perIds = () => { const [de, ate] = perIntervalo(); const r = []; for (let i = de; i <= ate; i++) r.push(i); return r; };
+const perSoma = (arr) => perIds().reduce((a, i) => a + (+arr[i] || 0), 0);
+// barras mês a mês só nos meses do período: cfg traz arrays de 12 meses, e cur/tip/onPick usam o mês do ano
+function chartBarsPer(el, cfg) {
+  const ids = perIds(); const so = (a) => ids.map((i) => a[i]);
+  chartBars(el, Object.assign({}, cfg, { labels: so(cfg.labels), cur: ids.indexOf(cfg.cur), bars: cfg.bars.map((b) => Object.assign({}, b, { values: so(b.values) })),
+    marks: (cfg.marks || []).map((k) => Object.assign({}, k, { values: so(k.values) })), tip: (j) => cfg.tip(ids[j]), onPick: cfg.onPick ? (j) => cfg.onPick(ids[j]) : undefined }));
+}
 function perAtalho() { if (!S.periodo) return 12; const [de, ate] = perIntervalo(); const n = ate - de + 1; return ate === perRef() && n !== 12 && PER_ATALHOS.some((a) => a[0] === n) ? n : 0; }
 function perRotulo(curto) {
   const n = perAtalho(); if (n) return curto && n < 12 ? n + ' meses' : PER_ATALHOS.find((a) => a[0] === n)[1];
@@ -65,8 +73,8 @@ function periodoHtml() {
     return `<button class="per-m${c}${S.year === NOW_Y && i > NOW_M ? ' fut' : ''}" data-act="per-mes" data-m="${i}" aria-pressed="${c ? 'true' : 'false'}" aria-label="${mesNome(i)}">${m}</button>`;
   }).join('');
   const dica = ini != null ? `Início em ${MES_LONGO[ini]}.` : 'Toque no mês inicial e depois no final.' + (S.year === NOW_Y && ref < 11 ? ` Os meses depois de ${MES_LONGO[ref]} ainda não aconteceram.` : '');
-  return `<div class="year per"><button class="year-pill per-pill" data-act="per-toggle" aria-haspopup="true" aria-expanded="${!!S.perOpen}" aria-label="Período do patrimônio: ${esc(perRotulo())}">${I_CAL}<span>${esc(perRotulo(true))}</span>${I.down}</button>
-    ${S.perOpen ? `<div class="popover per-pop" role="dialog" aria-label="Escolher o período"><div class="pop-t">Ver o crescimento em</div>
+  return `<div class="year per"><button class="year-pill per-pill" data-act="per-toggle" aria-haspopup="true" aria-expanded="${!!S.perOpen}" aria-label="Período da Visão geral: ${esc(perRotulo())}">${I_CAL}<span>${esc(perRotulo(true))}</span>${I.down}</button>
+    ${S.perOpen ? `<div class="popover per-pop" role="dialog" aria-label="Escolher o período"><div class="pop-t">Mostrar a Visão geral de</div>
       <div class="yr-list">${PER_ATALHOS.map((a) => `<button class="yr-opt${at === a[0] && ini == null ? ' on' : ''}" data-act="per-atalho" data-n="${a[0]}">${a[1]}</button>`).join('')}</div>
       <div class="pop-t">${ini != null ? 'Agora toque no mês final' : 'Ou escolha no calendário de ' + S.year}</div><div class="per-cal">${meses}</div>
       <p class="per-dica keep">${dica}</p></div>` : ''}</div>`;
@@ -99,7 +107,7 @@ function drawDashboard() {
   const C = S.C; const cur = S.year === NOW_Y ? NOW_M : -1; const sobra = C.investAlocado.map((v) => Math.max(0, v));
   if (temRecurso('patrimonio')) drawPatr();
   else { const [de, ate] = perIntervalo(); const ids = []; for (let i = de; i <= ate; i++) ids.push(i); chartBars($('#d-patr'), { labels: ids.map((i) => MES[i]), cur: cur >= de && cur <= ate ? cur - de : -1, height: 200, aria: 'Sobra para investir por mês', bars: [{ color: 'var(--c1)', values: ids.map((i) => C.investAlocado[i]) }], tip: (j) => { const i = ids[j]; return `<b>${MES[i]}</b><br>Entradas: ${brl0(C.receita[i])}<br>Gastos: ${brl0(C.despesas[i])}<br>Sobra: ${brl0(C.investAlocado[i])}`; } }); }
-  chartBars($('#d-flow'), { labels: MES, cur, aria: 'Gastos e sobra para investir por mês', bars: [{ color: 'var(--c2)', values: C.despesas }, { color: 'var(--c1)', values: sobra }], tip: (i) => `<b>${MES[i]}</b><br>Entradas: ${brl0(C.receita[i])}<br>Gastos: ${brl0(C.despesas[i])}<br>Sobra: ${brl0(C.investAlocado[i])}` });
+  chartBarsPer($('#d-flow'), { labels: MES, cur, aria: 'Gastos e sobra para investir por mês', bars: [{ color: 'var(--c2)', values: C.despesas }, { color: 'var(--c1)', values: sobra }], tip: (i) => `<b>${MES[i]}</b><br>Entradas: ${brl0(C.receita[i])}<br>Gastos: ${brl0(C.despesas[i])}<br>Sobra: ${brl0(C.investAlocado[i])}` });
   drawPainel2(); drawWidgetsExtras();
   popSync(); // simulador ou histórico aberto na janela: acompanha os dados redesenhados
   if (temRecurso('investimentos')) { const comp = composicao(); const tot = comp.reduce((a, b) => a + b.value, 0); const palette = ['var(--c1)', 'var(--c2)', 'var(--c3)', 'var(--c4)', 'var(--c5)', 'var(--c6)']; if (tot > 0) chartDonut($('#d-donut'), { aria: 'Composição da carteira por classe de ativo', title: brl0(tot), sub: 'em ativos', items: comp.map((c, i) => ({ label: c.label, value: c.value, color: palette[i % 6] })) }); }
@@ -345,10 +353,10 @@ function histAcao(act, ds) {
    Planos com investimentos: constância dos aportes contra a meta mensal. Plano Organização: gastos fixos e variáveis. */
 function painel2Dados() {
   const C = S.C; const ult = S.year === NOW_Y ? NOW_M : S.year < NOW_Y ? 11 : -1; const meta = metaDoAporte();
-  const ap = C.aportes.map((v) => Math.max(0, +v || 0)); const meses = ult + 1;
-  const dentro = ap.slice(0, meses).map((v) => meta > 0 && v >= meta - 0.5);
-  let seq = 0; for (let i = ult; i >= 0 && dentro[i]; i--) seq++;
-  const comAporte = ap.slice(0, meses).filter((v) => v > 0).length; const media = meses > 0 ? ap.slice(0, meses).reduce((a, v) => a + v, 0) / meses : 0;
+  const ap = C.aportes.map((v) => Math.max(0, +v || 0)); const [de, ate] = perIntervalo(); const fim = Math.min(ate, ult); const meses = Math.max(0, fim - de + 1);
+  const trecho = ap.slice(de, de + meses); const dentro = trecho.map((v) => meta > 0 && v >= meta - 0.5);
+  let seq = 0; for (let i = dentro.length - 1; i >= 0 && dentro[i]; i--) seq++;
+  const comAporte = trecho.filter((v) => v > 0).length; const media = meses > 0 ? trecho.reduce((a, v) => a + v, 0) / meses : 0;
   return { ap, meta, meses, naMeta: dentro.filter(Boolean).length, seq, comAporte, media };
 }
 function painel2Html() {
@@ -373,12 +381,12 @@ function drawPainel2() {
   const el = $('#d-p2'); if (!el) return; const C = S.C; const cur = S.year === NOW_Y ? NOW_M : -1;
   if (temRecurso('investimentos')) {
     const D = painel2Dados();
-    chartBars(el, { labels: MES, cur, height: 190, aria: 'Aportes de cada mês comparados com a meta mensal', bars: [{ color: 'var(--accent)', values: D.ap }], marks: D.meta > 0 ? [{ color: 'var(--c4)', values: MES.map(() => D.meta) }] : [],
+    chartBarsPer(el, { labels: MES, cur, height: 190, aria: 'Aportes de cada mês comparados com a meta mensal', bars: [{ color: 'var(--accent)', values: D.ap }], marks: D.meta > 0 ? [{ color: 'var(--c4)', values: MES.map(() => D.meta) }] : [],
       tip: (i) => `<b>${MES_LONGO[i][0].toUpperCase() + MES_LONGO[i].slice(1)}</b><br>Aporte: ${brl0(D.ap[i])}${D.meta > 0 ? `<br>Meta: ${brl0(D.meta)}<br>${D.ap[i] >= D.meta - 0.5 ? 'Na meta' : i <= (S.year === NOW_Y ? NOW_M : 11) ? `Faltaram ${brl0(D.meta - D.ap[i])}` : ''}` : ''}` });
     return;
   }
   const cats = (S.plan.catsDesp || []).filter((c) => E.sum(C.despCat[c.id] || []) > 0); const cores = ['var(--c2)', 'var(--c4)', 'var(--c3)', 'var(--c5)', 'var(--c6)', 'var(--c1)'];
-  chartBars(el, { labels: MES, cur, height: 190, aria: 'Gastos de cada mês divididos entre fixos e variáveis', bars: cats.map((c, i) => ({ color: cores[i % 6], values: C.despCat[c.id] })),
+  chartBarsPer(el, { labels: MES, cur, height: 190, aria: 'Gastos de cada mês divididos entre fixos e variáveis', bars: cats.map((c, i) => ({ color: cores[i % 6], values: C.despCat[c.id] })),
     tip: (i) => `<b>${MES_LONGO[i]}</b><br>` + cats.map((c) => `${esc(c.nome)}: ${brl0(C.despCat[c.id][i])}`).join('<br>') });
 }
 

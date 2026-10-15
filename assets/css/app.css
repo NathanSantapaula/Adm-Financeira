@@ -2133,3 +2133,20 @@ button.wg-ic:active { transform: scale(.92); }
 .per-m:active { transform: scale(.95); }
 .per-dica { margin: 0; font-size: 12px; color: var(--ink-3); line-height: 1.4; }
 @media (max-width: 480px) { .htools { flex-wrap: wrap; } }
+
+/* ---------- composição compacta na Visão geral (a completa abre no botão de expandir) ---------- */
+.card:not(.expandido) > .cmp.mini { grid-template-columns: 148px minmax(0, 1fr); align-items: center; justify-items: stretch; gap: 14px 18px; }
+.card:not(.expandido) > .cmp.mini > .cmp-volta { grid-column: 1 / -1; }
+.card:not(.expandido) > .cmp.mini .cmp-g { width: 148px; }
+.card:not(.expandido) > .cmp.mini .cmp-trilho, .card:not(.expandido) > .cmp.mini .cmp-seg { stroke-width: 22; }
+.card:not(.expandido) > .cmp.mini .cmp-seg.on { stroke-width: 30; }
+.card:not(.expandido) > .cmp.mini .cmp-c { inset: 22%; }
+.card:not(.expandido) > .cmp.mini .cmp-c b { font-size: 15px; }
+.card:not(.expandido) > .cmp.mini .cmp-c span { display: none; }
+.card:not(.expandido) > .cmp.mini .cmp-l { max-height: none; overflow: visible; }
+.card:not(.expandido) > .cmp.mini .cmp-li { padding: 5px 6px; grid-template-columns: 10px minmax(0, 1fr) auto; font-size: 13px; }
+.card:not(.expandido) > .cmp.mini .cmp-li small, .card:not(.expandido) > .cmp.mini .cmp-ir { display: none; }
+.card:not(.expandido) > .cmp.mini .cmp-li i { width: 10px; height: 10px; border-radius: 3px; }
+.card:not(.expandido) > .cmp.mini .cmp-l > li:nth-child(n+6):not(.cmp-mais) { display: none; }
+.cmp-mais { padding: 4px 6px 0; } .expandido .cmp-mais { display: none; }
+@media (max-width: 420px) { .card:not(.expandido) > .cmp.mini { grid-template-columns: 120px minmax(0, 1fr); gap: 12px; } .card:not(.expandido) > .cmp.mini .cmp-g { width: 120px; } .card:not(.expandido) > .cmp.mini .cmp-c small { display: none; } }

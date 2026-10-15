@@ -9,10 +9,10 @@ function carteiraDe(perfil, plans, plan) {
   itens.forEach((i) => { i.pctAlvo = W > 0 ? (i.alvo / W) * 100 : 0; i.pctAtual = tot > 0 ? (i.valor / tot) * 100 : 0; i.desvio = i.pctAtual - i.pctAlvo; });
   return { itens, W, tot };
 }
-function areasDe2(plan, carry, ano) {
+function areasDe2(plan, carry, ano, de = 0, ate = 11) {
   const map = new Map(); const add = (a, v) => { if (v > 0) map.set(a, (map.get(a) || 0) + v); };
-  plan.despesas.concat(carry).forEach((it) => add(it.area || 'Outros', E.sum(E.itemValores(it, ano))));
-  (plan.lancamentos || []).forEach((l) => { const d = E.parseDataISO(l.data); if (d && d.ano === ano) add(l.area || 'Outros', +l.valor); });
+  plan.despesas.concat(carry).forEach((it) => add(it.area || 'Outros', E.sum(E.itemValores(it, ano).slice(de, ate + 1))));
+  (plan.lancamentos || []).forEach((l) => { const d = E.parseDataISO(l.data); if (d && d.ano === ano && d.mes >= de && d.mes <= ate) add(l.area || 'Outros', +l.valor); });
   return [...map.entries()].map(([label, value]) => ({ label, value })).sort((a, b) => b.value - a.value).slice(0, 8);
 }
 function montarRelatorio(o) {

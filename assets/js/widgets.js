@@ -27,22 +27,33 @@ function patrCtl() {
   return `<div class="pt-ctl"><div class="pt-seg" role="group" aria-label="O que o gráfico mostra">${b('patr', 'Patrimônio')}${b('aportes', 'Aportes')}</div>${S.C.metaAno > 0 && m === 'patr' ? `<button class="pt-meta" data-act="patr-meta" aria-pressed="${!!S.patrMeta}"><i></i>Ritmo da meta</button>` : ''}</div>`;
 }
 function wOrcMes() {
-  const C = S.C; const m = mesRef(); const u = C.usoOrc[m]; const tom = u == null ? '' : u > 1 ? 'neg' : u > 0.85 ? 'warn' : '';
+  const C = S.C; const m = S.periodo ? perIntervalo()[1] : mesRef(); const u = C.usoOrc[m]; const tom = u == null ? '' : u > 1 ? 'neg' : u > 0.85 ? 'warn' : '';
   return `<section class="card goal-card"><div class="c-k">Orçamento de ${MES_LONGO[m]}</div><div class="goal-ring">${ring(Math.min(1, u || 0), { size: 132, stroke: 12, color: tom === 'neg' ? 'var(--neg)' : tom === 'warn' ? 'var(--c4)' : 'var(--accent)', label: u == null ? '–' : pct(u), sub: u == null ? '' : 'usado', aria: 'Uso do orçamento' })}</div>
     <div class="c-d">${C.orcamento[m] > 0 ? `${brl0(C.despesas[m])} de ${brl0(C.orcamento[m])}` : 'Sem orçamento definido'}</div><p class="cap">${esc(voz(C.orcamento[m] > 0 ? (u > 1 ? 'orc_estourou' : 'orc_ok') : 'orc_definir', { mes: MES_LONGO[m], pct: pct(u), restante: brl0(C.restante[m]), valor: brl0(-C.restante[m]) }))}</p></section>`;
 }
 function wIndicadores() {
-  const p = S.plan; const C = S.C; const T = C.T; const m = mesRef(); const u = C.usoOrc[m]; const tom = u == null ? '' : u > 1 ? 'neg' : u > 0.85 ? 'warn' : '';
-  const orc = ['Orçamento de ' + MES_LONGO[m], u == null ? '–' : pct(u), tom, C.orcamento[m] > 0 ? (C.restante[m] >= 0 ? `Restam ${brl0(C.restante[m])}` : `${brl0(-C.restante[m])} acima do orçado`) : 'Sem orçamento definido', u || 0, WG_IC.orcmes, 'despesas'];
+  const C = S.C; const T = C.T; const ids = perIds(); const n = ids.length; const fr = perFrase();
+  // com um período escolhido, os totais são só dos meses dele; sem período, os do ano (C.T)
+  const TP = S.periodo ? { receita: perSoma(C.receita), despesas: perSoma(C.despesas), investAlocado: perSoma(C.investAlocado), aplicado: perSoma(C.aplicado), dividendos: perSoma(C.dividendos) } : T;
+  const poup = S.periodo ? (TP.receita > 0 ? TP.investAlocado / TP.receita : null) : T.poupanca;
+  let orc;
+  if (S.periodo && n > 1) {
+    const o = perSoma(C.orcamento); const u = o > 0 ? TP.despesas / o : null; const tom = u == null ? '' : u > 1 ? 'neg' : u > 0.85 ? 'warn' : '';
+    orc = ['Orçamento ' + fr, u == null ? '–' : pct(u), tom, o > 0 ? (o - TP.despesas >= 0 ? `Sobraram ${brl0(o - TP.despesas)}` : `${brl0(TP.despesas - o)} acima do orçado`) : 'Sem orçamento definido', u || 0, WG_IC.orcmes, 'despesas'];
+  } else {
+    const m = S.periodo ? ids[0] : mesRef(); const u = C.usoOrc[m]; const tom = u == null ? '' : u > 1 ? 'neg' : u > 0.85 ? 'warn' : '';
+    orc = ['Orçamento de ' + MES_LONGO[m], u == null ? '–' : pct(u), tom, C.orcamento[m] > 0 ? (C.restante[m] >= 0 ? `Restam ${brl0(C.restante[m])}` : `${brl0(-C.restante[m])} acima do orçado`) : 'Sem orçamento definido', u || 0, WG_IC.orcmes, 'despesas'];
+  }
   const IP = '<path d="M12 3v18M16.5 7c0-1.7-2-3-4.5-3S7.5 5.3 7.5 7s2 2.6 4.5 3.1 4.5 1.4 4.5 3.4-2 3.5-4.5 3.5-4.5-1.5-4.5-3.5"/>';
+  const poupTxt = TP.receita <= 0 ? 'Cadastre rendas ou importe um extrato' : TP.investAlocado >= 0 ? `${brl0(TP.investAlocado)} sobraram${inv() ? ' para investir' : ''}` : `Gastos ${brl0(-TP.investAlocado)} acima das entradas`;
   let k;
   if (inv()) {
-    const progMeta = C.metaAno > 0 ? Math.min(1, T.aplicado / C.metaAno) : 0; const md = C.dividendos.filter((x) => x > 0).length;
-    k = [['Taxa de poupança em ' + p.year, T.poupanca == null ? '–' : pct(T.poupanca), '', T.receita <= 0 ? 'Cadastre rendas ou importe um extrato' : T.investAlocado >= 0 ? `${brl0(T.investAlocado)} sobraram para investir` : `Gastos ${brl0(-T.investAlocado)} acima das entradas`, null, IP, 'rendas'], orc,
-      ['Aportes na meta do ano', C.metaAno > 0 ? pct(progMeta) : '–', '', `${brl0(T.aplicado)} de ${brl0(C.metaAno)}`, progMeta, WG_IC.patrimonio, 'inv'], ['Dividendos em ' + p.year, brl0(T.dividendos), '', md ? `média de ${brl0(T.dividendos / md)} por mês com pagamento` : 'Nenhum provento registrado', null, WG_IC.proventos, 'pro']];
+    const meta = S.periodo ? (C.metaAno * n) / 12 : C.metaAno; const progMeta = meta > 0 ? Math.min(1, TP.aplicado / meta) : 0; const md = ids.filter((i) => C.dividendos[i] > 0).length;
+    k = [['Taxa de poupança ' + fr, poup == null ? '–' : pct(poup), '', poupTxt, null, IP, 'rendas'], orc,
+      [S.periodo ? 'Aportes na meta do período' : 'Aportes na meta do ano', meta > 0 ? pct(progMeta) : '–', '', `${brl0(TP.aplicado)} de ${brl0(meta)}`, progMeta, WG_IC.patrimonio, 'inv'], ['Dividendos ' + fr, brl0(TP.dividendos), '', md ? `média de ${brl0(TP.dividendos / md)} por mês com pagamento` : 'Nenhum provento registrado', null, WG_IC.proventos, 'pro']];
   } else {
-    k = [['Taxa de poupança em ' + p.year, T.poupanca == null ? '–' : pct(T.poupanca), '', T.receita <= 0 ? 'Cadastre rendas ou importe um extrato' : T.investAlocado >= 0 ? `${brl0(T.investAlocado)} sobraram` : `Gastos ${brl0(-T.investAlocado)} acima das entradas`, null, IP, 'rendas'], orc,
-      ['Entradas em ' + p.year, brl0(T.receita), '', `média de ${brl0(T.receita / 12)} por mês`, null, '<path d="M12 3v12M7 10l5 5 5-5M4 20h16"/>', 'rendas'], ['Gastos em ' + p.year, brl0(T.despesas), '', `média de ${brl0(T.despesas / 12)} por mês`, null, '<rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6.5 15h4"/>', 'despesas']];
+    k = [['Taxa de poupança ' + fr, poup == null ? '–' : pct(poup), '', poupTxt, null, IP, 'rendas'], orc,
+      ['Entradas ' + fr, brl0(TP.receita), '', `média de ${brl0(TP.receita / n)} por mês`, null, '<path d="M12 3v12M7 10l5 5 5-5M4 20h16"/>', 'rendas'], ['Gastos ' + fr, brl0(TP.despesas), '', `média de ${brl0(TP.despesas / n)} por mês`, null, '<rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6.5 15h4"/>', 'despesas']];
   }
   return `<div class="stats4">${k.map((x) => `<div class="stat"><div class="c-k wg-tit">${wgIco(x[5], x[6])}<span>${esc(x[0])}</span></div><div class="c-num ${x[2] || ''}">${esc(x[1])}</div>${x[4] != null ? `<div class="bar ${x[2] || ''}"><i style="width:${Math.min(100, x[4] * 100).toFixed(1)}%"></i></div>` : ''}<div class="c-n">${esc(x[3])}</div></div>`).join('')}</div>`;
 }
@@ -51,7 +62,7 @@ const wOrcamento = () => `<section class="card"><div class="c-h"><h3>Orçamento 
 function wCarteira() {
   if (!inv()) return `<section class="card"><div class="c-h"><h3>Evolua para o plano Investidor</h3></div><p class="mmsg">Acompanhe patrimônio, aportes e proventos e saiba onde investir a cada aporte para manter a carteira equilibrada.</p><div class="btn-row"><button class="btn primary" data-act="upgrade" data-plano="investidor">Conhecer o plano Investidor</button></div></section>`;
   // com a Carteira liberada, a mesma composição interativa da aba Carteira (passar o mouse, entrar na classe, ir ao ativo)
-  if (temRecurso('carteira') && S.plan && S.plan.ativos.length) { const { K } = cartAnalise(); if (K.total > 0) return `<section class="card"><div class="c-h"><h3>Composição da carteira</h3></div>${cartComposicaoHtml(K)}</section>`; }
+  if (temRecurso('carteira') && S.plan && S.plan.ativos.length) { const { K } = cartAnalise(); if (K.total > 0) return `<section class="card cart-exp-card" data-exp="composicao"><div class="c-h"><h3>Composição da carteira</h3>${cartExpBtn('composicao')}</div>${cartComposicaoHtml(K, true)}</section>`; }
   const comp = composicao(); const tot = comp.reduce((a, b) => a + b.value, 0);
   return `<section class="card"><div class="c-h"><h3>Composição da carteira</h3></div>${tot > 0 ? `<div class="comp"><div class="donut" id="d-donut"></div><ul class="comp-l">${comp.map((c, i) => `<li><i style="background:${PALETA[i % 6]}"></i><span>${esc(c.label)}</span><b>${pct(c.value / tot)}</b></li>`).join('')}</ul></div>` : '<p class="empty-s">Registre aportes em Investimentos para ver a composição da carteira.</p>'}</section>`;
 }
@@ -65,10 +76,10 @@ function wAssessor() {
     <div class="adv-line"><p class="cap keep">Dúvidas sobre o seu momento financeiro?</p><div class="btn-row"><button class="btn" data-act="contact">Falar com o ${esc(primeiroNome())}</button></div></div></section>`;
 }
 function wProventos() {
-  const C = S.C; const tot = E.sum(C.faturamento); const md = C.faturamento.filter((v) => v > 0).length;
+  const C = S.C; const tot = perSoma(C.faturamento); const md = perIds().filter((i) => C.faturamento[i] > 0).length;
   return `<section class="card"><div class="c-h"><h3>Proventos mês a mês</h3><div class="legend"><span><i style="background:var(--c3)"></i>Dividendos</span><span><i style="background:var(--c5)"></i>Renda fixa</span></div></div>
     <p class="cap">Quanto os seus investimentos devolveram em caixa em cada mês: dividendos, JCP e rendimentos de renda fixa.</p>${tot > 0 ? '<div class="chart" id="d-prov"></div>' : '<p class="empty-s">Nenhum provento registrado neste ano.</p>'}
-    ${tot > 0 ? `<div class="p2-sts"><div class="p2-st"><small>No ano</small><b>${brl0(tot)}</b></div><div class="p2-st"><small>Meses com pagamento</small><b>${md}</b></div><div class="p2-st"><small>Média nesses meses</small><b>${brl0(md ? tot / md : 0)}</b></div></div>` : ''}</section>`;
+    ${tot > 0 ? `<div class="p2-sts"><div class="p2-st"><small>${S.periodo ? 'No período' : 'No ano'}</small><b>${brl0(tot)}</b></div><div class="p2-st"><small>Meses com pagamento</small><b>${md}</b></div><div class="p2-st"><small>Média nesses meses</small><b>${brl0(md ? tot / md : 0)}</b></div></div>` : ''}</section>`;
 }
 function wObjLista() {
   const A = objAnalise(); if (!A.itens.length) return `<section class="card"><div class="c-h"><h3>Todos os objetivos</h3></div><p class="empty-s">Cadastre seus objetivos para acompanhar o progresso de cada um.</p><div class="btn-row"><button class="btn" data-act="objetivo-definir">Definir objetivos</button></div></section>`;
@@ -214,8 +225,8 @@ function wgIcones() {
 function drawWidgetsExtras() {
   wgIcones(); if (S.view === 'geral' && typeof cmpLigar === 'function') cmpLigar();
   const C = S.C; const cur = S.year === NOW_Y ? NOW_M : -1;
-  chartBars($('#d-orc'), { labels: MES, cur, aria: 'Gastos comparados com o orçamento de cada mês', bars: [{ color: 'var(--c2)', values: C.despesas }], marks: [{ color: 'var(--c4)', values: C.orcamento }], tip: (i) => `<b>${MES[i]}</b><br>Gasto: ${brl0(C.despesas[i])}<br>Orçado: ${C.orcamento[i] > 0 ? brl0(C.orcamento[i]) : 'sem orçamento'}` });
-  chartBars($('#d-prov'), { labels: MES, cur, height: 190, aria: 'Proventos recebidos em cada mês', bars: [{ color: 'var(--c3)', values: C.dividendos }, { color: 'var(--c5)', values: C.rentab }], tip: (i) => `<b>${MES_LONGO[i]}</b><br>Dividendos: ${brl0(C.dividendos[i])}<br>Renda fixa: ${brl0(C.rentab[i])}` });
+  chartBarsPer($('#d-orc'), { labels: MES, cur, aria: 'Gastos comparados com o orçamento de cada mês', bars: [{ color: 'var(--c2)', values: C.despesas }], marks: [{ color: 'var(--c4)', values: C.orcamento }], tip: (i) => `<b>${MES[i]}</b><br>Gasto: ${brl0(C.despesas[i])}<br>Orçado: ${C.orcamento[i] > 0 ? brl0(C.orcamento[i]) : 'sem orçamento'}` });
+  chartBarsPer($('#d-prov'), { labels: MES, cur, height: 190, aria: 'Proventos recebidos em cada mês', bars: [{ color: 'var(--c3)', values: C.dividendos }, { color: 'var(--c5)', values: C.rentab }], tip: (i) => `<b>${MES_LONGO[i]}</b><br>Dividendos: ${brl0(C.dividendos[i])}<br>Renda fixa: ${brl0(C.rentab[i])}` });
   const hm = $('#d-histmini');
   if (hm) { const H = histDados(); const P = H.serie.map((p) => ({ ano: p.ano, mes: p.mes, v: p.patrimonio })); chartHistorico(hm, { pontos: P, height: 200, aria: 'Patrimônio de todos os anos', rotuloPonto: (v) => tickFmt(v), tip: (i) => `<b>${MES_LONGO[H.serie[i].mes]} de ${H.serie[i].ano}</b><br>Patrimônio: ${brl0(H.serie[i].patrimonio)}` }); }
 }

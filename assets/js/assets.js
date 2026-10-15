@@ -229,7 +229,7 @@ function cartEditorHtml(M, K) {
 /* ---- composição interativa: um anel por classe; tocar numa fatia entra na classe e mostra os ativos de dentro.
    Dentro da classe, tocar num ativo leva ao alvo dele no editor. Estado só da sessão em S.cmpClasse. ---- */
 let CMP_SEGS = []; // fatias desenhadas agora: { nome, valor, sub, k? }
-function cartComposicaoHtml(K) {
+function cartComposicaoHtml(K, mini) { // mini: versão compacta da Visão geral (anel menor e as 5 primeiras linhas; o resto ao expandir)
   if (!(K.total > 0)) return '<p class="empty-s">A composição aparece depois do primeiro aporte.</p>';
   const temAlvo = K.somaAlvo > 0; const nc = K.classes.findIndex((c) => c.classe === S.cmpClasse); const cls = nc >= 0 ? K.classes[nc] : null;
   if (!cls) S.cmpClasse = null;
@@ -251,11 +251,12 @@ function cartComposicaoHtml(K) {
   const total = cls ? cls.valor : K.total; const rotulo = cls ? cls.classe : 'Total hoje';
   const subTotal = cls ? `${fmtPct(cls.atual)} da carteira${temAlvo ? ` · alvo ${fmtPct(cls.alvo)}` : ''}` : `${K.classes.length} ${K.classes.length === 1 ? 'classe' : 'classes'} · toque para abrir`;
   const lista = fatias.map((f, n) => `<li><button class="cmp-li" data-act="cart-seg" data-cseg="${n}"${f.k ? ` data-k="${esc(f.k)}"` : ''}><i style="background:${f.cor}"></i><span>${esc(f.nome)}</span><b>${f.li}</b>${f.liSub ? `<small>${f.liSub}</small>` : ''}<span class="cmp-ir" aria-hidden="true">${I.chev}</span></button></li>`).join('');
-  return `<div class="cmp${cls ? ' dentro' : ''}" data-cmp-total="${esc(brl0(total))}" data-cmp-rot="${esc(rotulo)}" data-cmp-sub="${esc(subTotal)}">
+  const mais = mini && fatias.length > 5 ? `<li class="cmp-mais"><button class="lnk strong" data-act="cart-expandir" data-w="composicao">Ver ${cls ? 'todos os ' + fatias.length + ' ativos' : 'as ' + fatias.length + ' classes'}</button></li>` : '';
+  return `<div class="cmp${cls ? ' dentro' : ''}${mini ? ' mini' : ''}" data-cmp-total="${esc(brl0(total))}" data-cmp-rot="${esc(rotulo)}" data-cmp-sub="${esc(subTotal)}">
     ${cls ? `<button class="btn ghost sm cmp-volta" data-act="cart-cmp-volta">${I.chev} Todas as classes</button>` : ''}
     <div class="cmp-g"><svg viewBox="0 0 200 200" role="img" aria-label="${cls ? `Ativos de ${esc(cls.classe)}` : 'Composição da carteira por classe'}"><circle class="cmp-trilho" r="76" cx="100" cy="100"/><g transform="rotate(-90 100 100)">${segs}</g></svg>
       <div class="cmp-c" aria-live="polite"><small id="cmp-c-k">${esc(rotulo)}</small><b id="cmp-c-v">${brl0(total)}</b><span id="cmp-c-s">${subTotal}</span></div></div>
-    <ul class="cmp-l">${lista}</ul></div>`;
+    <ul class="cmp-l">${lista}${mais}</ul></div>`;
 }
 // destaca uma fatia (ou volta ao total quando n é null), sem redesenhar
 function cartSeg(n) {
@@ -274,7 +275,7 @@ function cartCmpAbrir(n) {
 }
 function cartCmpTrocar() {
   const velho = document.querySelector('.cmp'); if (!velho) return; const { K } = cartAnalise();
-  const t = document.createElement('div'); t.innerHTML = cartComposicaoHtml(K); const novo = t.firstElementChild; novo.classList.add('troca');
+  const t = document.createElement('div'); t.innerHTML = cartComposicaoHtml(K, velho.classList.contains('mini')); const novo = t.firstElementChild; novo.classList.add('troca');
   velho.replaceWith(novo); cmpLigar(); const foco = novo.querySelector('.cmp-volta') || novo.querySelector('.cmp-li'); if (foco) foco.focus({ preventScroll: true });
 }
 
@@ -343,7 +344,7 @@ const cartExpBtn = (id) => { const on = S.cartExp === id;
 function cartExpandir(id) { S.cartExp = S.cartExp === id ? null : id; render(); const b = document.querySelector(`.cart-exp[data-w="${id}"]`); if (b) b.focus({ preventScroll: true }); }
 function cartExpFechar() { if (!S.cartExp) return; const id = S.cartExp; S.cartExp = null; render(); const b = document.querySelector(`.cart-exp[data-w="${id}"]`); if (b) b.focus({ preventScroll: true }); }
 function cartExpAplica() {
-  const velho = document.getElementById('cart-exp'); const ativo = !!S.cartExp && S.view === 'cart' && S.screen === 'app';
+  const velho = document.getElementById('cart-exp'); const ativo = !!S.cartExp && (S.view === 'cart' || S.view === 'geral') && S.screen === 'app';
   const card = ativo ? document.querySelector(`#view [data-exp="${S.cartExp}"]`) : null;
   // atualização parcial (ex.: entrar numa classe da composição): o cartão já está na camada e a página não foi redesenhada
   if (ativo && !card && velho && velho.querySelector(`[data-exp="${S.cartExp}"]`)) return;
