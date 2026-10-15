@@ -235,12 +235,8 @@ async function notifIr(id) {
   if (c.acao !== 'nav') { render(); return; }
   if (S.year !== n.ano && S.plans[n.ano]) await switchYear(n.ano);
   S.view = c.view; S.maisOpen = false; if (typeof closeAdmin === 'function') closeAdmin();
-  if (c.mes != null) { S.mes = c.mes; if (S.mesesAbertos) S.mesesAbertos.add(c.mes); }
+  if (c.mes != null) { S.mes = c.mes; if (c.view === 'despesas') S.gPer = 'mes'; }
   render();
-  if (c.view === 'despesas' && c.mes != null) {
-    const el = document.getElementById('mes-' + c.mes); const alvo = el && (el.closest('.macc') || el);
-    if (alvo && alvo.scrollIntoView) alvo.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
-  }
 }
 // Atualiza só o sino e a lista, sem redesenhar a página (a tela não "pisca" a cada clique na central)
 function notifRefresh(foco) {

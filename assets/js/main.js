@@ -39,7 +39,8 @@ function render(opts) {
   if (isEditing() || (soft && isTyping())) { S.needsRender = true; return; }
   const scr = S.screen;
   if (scr === 'app' && !navItems().some((i) => i[0] === S.view)) S.view = 'geral';
-  if (scr !== 'app' || S.view !== 'geral') { S.wgEdit = false; S.wgAdd = false; } // organizar vale só na Visão geral
+  if (scr !== 'app' || (S.view !== 'geral' && S.view !== 'despesas') || S.view !== S.wgView) { S.wgEdit = false; S.wgAdd = false; }
+  S.wgView = S.view; // organizar vale na Visão geral e em Gastos, e sai ao trocar de tela
   const key = scr + ':' + (scr === 'app' ? S.view : scr === 'onboarding' && S.ob ? S.ob.step + '.' + S.ob.q : scr === 'auth' ? S.authMode : '');
   const same = S.lastKey === key;
   if (soft && scr !== 'app' && same) return;
@@ -93,8 +94,7 @@ function onClick(e) {
       case 'add-item': openItem(ds.kind, null, { cat: ds.cat, area: ds.area, mes: ds.presetMes != null ? +ds.presetMes : undefined }); break;
       case 'add-lanc': openLanc(null, { mes: ds.mes != null ? +ds.mes : undefined }); break;
       case 'edit-lanc': openLanc(ds.id); break;
-      case 'mes-toggle': { const sec = el.closest('.macc'); const ab = sec.dataset.open !== 'true'; sec.dataset.open = ab; el.setAttribute('aria-expanded', ab); if (ab) { S.mesesAbertos.add(+ds.m); S.mes = +ds.m; const pad = sec.querySelector('.macc-pad[data-lazy]'); if (pad) { indiceMeses(); pad.outerHTML = mesPadHtml(+ds.m); } } else S.mesesAbertos.delete(+ds.m); break; }
-      case 'mes-todos': S.mesesAbertos = ds.abrir === '1' ? new Set(MES.map((_, i) => i)) : new Set(); render(); break;
+      case 'g-per': case 'g-mes': case 'g-tipo': case 'g-agrup': case 'g-area': case 'g-busca': case 'g-limpa': case 'g-mais': case 'g-pers': gAcao(act, ds); break;
       case 'ingest-open': abrirIngestao(el.dataset.modo); break;
       case 'ing-edit': S.ing.editando = S.ing.editando === +ds.i ? null : +ds.i; renderIng(); break;
       case 'ing-filtro': S.ing.filtro = ds.f; renderIng(); break;
@@ -195,6 +195,7 @@ function onInput(e) {
   const refocus = (sel, pos) => { const n = $(sel); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (er) { /* ignora */ } } };
   if (t.matches('[data-sim]')) { simInput(t); return; }
   if (t.matches('[data-lp]')) { lpInput(t); return; }
+  if (t.matches('[data-gf]')) { gInput(t); return; }
   if (t.matches('[data-filter]')) { S.filter[t.dataset.filter] = t.value; clearTimeout(filterT); filterT = setTimeout(() => { const pos = t.selectionStart; render(); refocus(`[data-filter="${t.dataset.filter}"]`, pos); }, 160); }
   if (t.matches('[data-clients-q]')) { S.clientsQ = t.value; clearTimeout(filterT); filterT = setTimeout(() => { const pos = t.selectionStart; render(); refocus('[data-clients-q]', pos); }, 160); }
 }

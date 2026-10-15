@@ -241,4 +241,34 @@ ok(E.planoPermite('gratis', 'orcamento') && !E.planoPermite('gratis', 'carteira'
   ok(E.aporteNecessario(0, 1200, 0, 12) === 100 && E.aporteNecessario(500, 400, 10, 12) === 0 && E.aporteNecessario(100, 400, 10, 0) === 300, 'objetivos: aporte necessário sem juros, já atingido e prazo vencido');
 }
 
+// --- análise dos gastos (aba Gastos)
+{
+  const cats = E.CATS_DESP(); const fixa = cats.find((c) => c.id === 'fixa').id; const varia = cats.find((c) => c.id !== 'fixa').id;
+  const ents = [];
+  [0, 1, 2].forEach((m) => {
+    ents.push({ m, dia: 0, valor: 2000, cat: fixa, area: 'Moradia', nome: 'Aluguel', tipo: 'prev' });
+    ents.push({ m, dia: 5, valor: 39.9, cat: varia, area: 'Assinaturas', nome: `PAG*NETFLIX.COM ${m + 1}/12`, tipo: 'real' });
+    ents.push({ m, dia: m === 2 ? 3 : 10, valor: [500, 600, 1300][m], cat: varia, area: 'Mercado', nome: 'SUPERMERCADO BOA VISTA 0412', tipo: 'real' });
+  });
+  ents.push({ m: 2, dia: 20, valor: 300, cat: varia, area: 'Restaurantes', nome: 'RESTAURANTE SOL', tipo: 'real' });
+  ents.push({ m: 2, dia: 21, valor: -40, cat: varia, area: 'Mercado', nome: 'ESTORNO MERCADO', tipo: 'real' });
+  const orc = new Array(12).fill(0); orc[2] = 3000;
+  const G = E.analiseGastos({ ano: 2026, mes: 2, meses: 3, entradas: ents, catsDesp: cats, orcamento: orc, hoje: { mes: 2, dia: 10 },
+    parcelados: [{ nome: 'TV', cat: varia, parcel: { total: 1200, n: 12, ano: 2026, mes: 0 } }] });
+  ok(Math.abs(G.total - 3599.9) < 0.01 && Math.abs(G.restante - (3000 - 3599.9)) < 0.01 && G.uso > 1, `gastos: total do mês com estorno e orçamento (${G.total})`);
+  ok(Math.abs(G.base - 2589.9) < 0.01 && G.baseMeses === 2 && G.delta > 0.38 && G.delta < 0.40, 'gastos: comparação com a média dos meses anteriores');
+  ok(Math.abs(G.pctFixos - 2000 / 3599.9) < 1e-6 && G.porCat[0].k === fixa, 'gastos: peso dos fixos e categoria principal');
+  ok(G.ritmo.dias === 31 && Math.abs(G.ritmo.acum[30] - G.total) < 0.01 && Math.abs(G.ritmo.acum[0] - 2000) < 0.01 && G.ritmo.diaAtual === 10, 'gastos: acumulado dia a dia (previstos no dia 1)');
+  ok(Math.abs(G.ritmo.projecao - (2000 + (1599.9 / 10) * 31)) < 0.02 && G.ritmo.cabeDia === 0, 'gastos: projeção do mês e folga diária');
+  ok(G.mudou.some((x) => x.nome === 'Mercado' && x.dif > 600) && G.mudou.some((x) => x.nome === 'Restaurantes' && x.pct === null) && G.mudou.every((x) => x.dif > 0), 'gastos: o que mudou (só altas no mês corrente)');
+  ok(G.recorrentes.length === 1 && /NETFLIX/.test(G.recorrentes[0].nome) && G.recorrentes[0].meses === 3 && Math.abs(G.recorrentes[0].media - 39.9) < 0.01, 'gastos: assinatura detectada, mercado com valor variável não');
+  ok(E.nomeEstab('PAG*NETFLIX.COM 3/12') === E.nomeEstab('Compra cartão NETFLIX COM') && E.nomeEstab('PIX 123') === '', 'gastos: nome do estabelecimento normalizado');
+  ok(G.estab[0].k === E.nomeEstab('SUPERMERCADO BOA VISTA') && G.estab.length === 3, 'gastos: onde mais compra');
+  ok(G.parcelas.length === 1 && G.parcelas[0].i === 3 && Math.abs(G.parcelas[0].valor - 100) < 0.01 && Math.abs(G.parcelas[0].restante - 900) < 0.01, 'gastos: parcelamento em andamento');
+  ok(Math.abs(G.semana[new Date(2026, 2, 5).getDay()] - 39.9) < 0.01 && G.top[0].valor === 2000, 'gastos: dia da semana e maiores gastos');
+  const A = E.analiseGastos({ ano: 2026, mes: -1, meses: 3, entradas: ents, catsDesp: cats, orcamento: orc });
+  ok(Math.abs(A.total - (2539.9 + 2639.9 + 3599.9)) < 0.01 && Math.abs(A.mediaMes - A.total / 3) < 0.01 && A.ritmo === null && A.delta === null, 'gastos: visão do ano');
+  ok(Math.abs(E.sum(A.porMes) - A.total) < 0.01 && Math.abs(A.fixosMes[0] - 2000) < 0.01 && Math.abs(A.variaveisMes[2] - 1599.9) < 0.01, 'gastos: fixos e variáveis por mês');
+}
+
 process.exit(bad ? 1 : 0);

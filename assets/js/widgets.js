@@ -97,21 +97,29 @@ const WIDGETS = [
   { id: 'atalhos', nome: () => 'Atalhos', desc: 'Botões para as tarefas mais comuns.', tam: 3, tams: [2, 3, 4, 6], padrao: () => false, html: wAtalhos },
   { id: 'histmini', nome: () => 'Patrimônio ano a ano', desc: 'Evolução do patrimônio em todos os anos de planejamento.', tam: 3, tams: [3, 4, 6], padrao: () => false, html: wHistMini, disponivel: inv },
 ];
-const widgetDe = (id) => WIDGETS.find((w) => w.id === id);
+/* cada tela personalizável tem a sua lista de widgets e o seu lugar no perfil */
+const PAINEIS = {
+  geral: { defs: () => WIDGETS, chave: 'painel', nome: 'Visão geral', view: 'geral' },
+  gastos: { defs: () => G_WIDGETS, chave: 'painelGastos', nome: 'Gastos', view: 'despesas' },
+};
+const painelDe = (alvo) => PAINEIS[alvo] || PAINEIS.geral;
+const alvoAtual = () => (PAINEIS[S.painelAlvo] ? S.painelAlvo : 'geral');
+const widgetDe = (id, alvo) => painelDe(alvo).defs().find((w) => w.id === id);
 const widgetDisp = (w) => !w.disponivel || w.disponivel();
 
 /* ---------- layout ---------- */
-function painelLayout() {
-  const salvo = S.profile.painel && Array.isArray(S.profile.painel.itens) ? S.profile.painel.itens : null; const out = [];
-  (salvo || []).forEach((it) => { const w = widgetDe(it && it.id); if (w && widgetDisp(w) && !out.some((o) => o.id === w.id)) out.push({ id: w.id, on: !!it.on, tam: w.tams.includes(+it.tam) ? +it.tam : w.tam }); });
-  WIDGETS.forEach((w) => { if (widgetDisp(w) && !out.some((o) => o.id === w.id)) out.push({ id: w.id, on: salvo ? false : w.padrao(), tam: w.tam }); });
+function painelLayout(alvo) {
+  const P = painelDe(alvo); const reg = S.profile[P.chave]; const salvo = reg && Array.isArray(reg.itens) ? reg.itens : null; const out = [];
+  (salvo || []).forEach((it) => { const w = widgetDe(it && it.id, alvo); if (w && widgetDisp(w) && !out.some((o) => o.id === w.id)) out.push({ id: w.id, on: !!it.on, tam: w.tams.includes(+it.tam) ? +it.tam : w.tam }); });
+  P.defs().forEach((w) => { if (widgetDisp(w) && !out.some((o) => o.id === w.id)) out.push({ id: w.id, on: salvo ? false : w.padrao(), tam: w.tam }); });
   return out.filter((x) => x.on).concat(out.filter((x) => !x.on)); // na tela, em ordem; depois os desligados
 }
 // grava o layout visível sem perder a escolha dos widgets que o plano atual não mostra
-function painelSalvar(lista, semRender) {
-  const ant = (S.profile.painel && S.profile.painel.itens) || []; const fora = ant.filter((it) => it && widgetDe(it.id) && !widgetDisp(widgetDe(it.id)) && !lista.some((x) => x.id === it.id));
-  S.profile.painel = { itens: lista.map((x) => ({ id: x.id, on: !!x.on, tam: x.tam })).concat(fora) };
-  touch('profile'); if (S.view === 'geral' && !semRender) renderLater();
+function painelSalvar(lista, semRender, alvo) {
+  const P = painelDe(alvo); const reg = S.profile[P.chave];
+  const ant = (reg && reg.itens) || []; const fora = ant.filter((it) => it && widgetDe(it.id, alvo) && !widgetDisp(widgetDe(it.id, alvo)) && !lista.some((x) => x.id === it.id));
+  S.profile[P.chave] = { itens: lista.map((x) => ({ id: x.id, on: !!x.on, tam: x.tam })).concat(fora) };
+  touch('profile'); if (S.view === P.view && !semRender) renderLater();
 }
 function widgetsHtml() {
   const L = painelLayout().filter((x) => x.on); const ed = !!S.wgEdit; let h = '';
@@ -135,23 +143,23 @@ function drawWidgetsExtras() {
 }
 
 /* ---------- painel: Personalizar a Visão geral ---------- */
-function painelLinkHtml() {
-  const L = painelLayout(); const n = L.filter((x) => x.on).length;
-  return `<button class="pf-card obj-link" data-act="painel-abrir"><span class="obj-stack"><span class="obj-ic" style="--cor:var(--accent)">${I_AJUSTE}</span></span><span class="pf-t"><b>Personalizar a Visão geral</b><small>${n} de ${L.length} widgets na tela</small></span><span class="pf-go">Abrir${I.chev}</span></button>`;
+function painelLinkHtml(alvo) {
+  const L = painelLayout(alvo); const n = L.filter((x) => x.on).length;
+  return `<button class="pf-card obj-link" data-act="painel-abrir" data-alvo="${alvo || 'geral'}"><span class="obj-stack"><span class="obj-ic" style="--cor:var(--accent)">${I_AJUSTE}</span></span><span class="pf-t"><b>Personalizar ${alvo === 'gastos' ? 'a aba Gastos' : 'a Visão geral'}</b><small>${n} de ${L.length} widgets na tela</small></span><span class="pf-go">Abrir${I.chev}</span></button>`;
 }
 function painelEditorHtml() {
-  const L = painelLayout(); const on = L.filter((x) => x.on); const off = L.filter((x) => !x.on);
-  const linha = (x, i) => { const w = widgetDe(x.id);
+  const alvo = alvoAtual(); const L = painelLayout(alvo); const on = L.filter((x) => x.on); const off = L.filter((x) => !x.on);
+  const linha = (x, i) => { const w = widgetDe(x.id, alvo);
     const tams = w.tams.length > 1 ? `<div class="wg-tams" role="group" aria-label="Largura de ${esc(w.nome())}">${w.tams.map((t) => `<button type="button" class="np-chip" data-act="painel-tam" data-id="${x.id}" data-tam="${t}" aria-pressed="${x.tam === t}">${TAM_NOME[t]}</button>`).join('')}</div>` : '<small class="wg-fixo">Largura inteira</small>';
     return `<li class="wg-row" draggable="true" data-id="${x.id}">
       <span class="wg-alca" aria-hidden="true" title="Arraste para mudar a posição">${I_ALCA}</span>
       <label class="wg-sw"><input type="checkbox" data-painel-on="${x.id}" checked aria-label="Mostrar ${esc(w.nome())}"><span></span></label>
       <div class="wg-row-t"><b>${esc(w.nome())}</b><small>${esc(w.desc)}</small>${tams}</div>
       <div class="wg-row-a"><button class="icon-btn sm" data-act="painel-mover" data-id="${x.id}" data-d="-1" ${i === 0 ? 'disabled' : ''} aria-label="Subir ${esc(w.nome())}">${I.up}</button><button class="icon-btn sm" data-act="painel-mover" data-id="${x.id}" data-d="1" ${i === on.length - 1 ? 'disabled' : ''} aria-label="Descer ${esc(w.nome())}">${I.down}</button></div></li>`; };
-  const extra = (x) => { const w = widgetDe(x.id);
+  const extra = (x) => { const w = widgetDe(x.id, alvo);
     return `<li class="wg-row off" data-id="${x.id}"><span></span><label class="wg-sw"><input type="checkbox" data-painel-on="${x.id}" aria-label="Mostrar ${esc(w.nome())}"><span></span></label>
       <div class="wg-row-t"><b>${esc(w.nome())}</b><small>${esc(w.desc)}</small></div><button class="btn sm" data-act="painel-add" data-id="${x.id}">Adicionar</button></li>`; };
-  const mini = `<div class="wg-mini" aria-hidden="true">${on.map((x) => `<i style="grid-column: span ${x.tam}">${esc(widgetDe(x.id).nome())}</i>`).join('')}</div>`;
+  const mini = `<div class="wg-mini" aria-hidden="true">${on.map((x) => `<i style="grid-column: span ${x.tam}">${esc(widgetDe(x.id, alvo).nome())}</i>`).join('')}</div>`;
   return `<section class="dr-sec"><h3>Como a tela fica</h3><p class="mmsg">Ligue ou desligue cada widget, escolha a largura e arraste (ou use as setas) para mudar a ordem. As mudanças valem na hora e ficam salvas na sua conta. No celular, cada widget ocupa a largura toda.</p>${mini}</section>
     <section class="dr-sec"><h3>Na tela (${on.length})</h3><ul class="wg-lista" id="wg-lista">${on.map(linha).join('') || '<li class="empty-s">Nenhum widget na tela.</li>'}</ul></section>
     ${off.length ? `<section class="dr-sec"><h3>Disponíveis para adicionar (${off.length})</h3><ul class="wg-lista">${off.map(extra).join('')}</ul></section>` : ''}
@@ -163,27 +171,27 @@ function painelRender(foco, reserva) {
   const el = (foco && document.querySelector('#admin ' + foco)) || (reserva && document.querySelector('#admin ' + reserva)); if (el) el.focus();
 }
 function painelAcao(act, ds) {
-  const L = painelLayout(); const i = L.findIndex((x) => x.id === ds.id);
+  const alvo = alvoAtual(); const L = painelLayout(alvo); const i = L.findIndex((x) => x.id === ds.id); const salvar = (lista) => painelSalvar(lista, false, alvo);
   switch (act) {
-    case 'painel-abrir': S.maisOpen = false; if (!S.adminOpen) openAdmin('painel'); else { S.adminPage = 'painel'; renderAdmin(true); } return true;
+    case 'painel-abrir': S.painelAlvo = PAINEIS[ds.alvo] ? ds.alvo : 'geral'; S.maisOpen = false; if (!S.adminOpen) openAdmin('painel'); else { S.adminPage = 'painel'; renderAdmin(true); } return true;
     case 'painel-voltar': S.adminPage = 'inicio'; renderAdmin(true); return true;
-    case 'painel-mover': { const n = L.filter((x) => x.on).length; const j = i + (+ds.d); if (i < 0 || j < 0 || j >= n) return true; [L[i], L[j]] = [L[j], L[i]]; painelSalvar(L); painelRender(`[data-act="painel-mover"][data-id="${ds.id}"][data-d="${ds.d}"]:not([disabled])`, `[data-act="painel-mover"][data-id="${ds.id}"]:not([disabled])`); return true; }
-    case 'painel-add': { if (i < 0) return true; const [x] = L.splice(i, 1); x.on = true; L.splice(L.filter((y) => y.on).length, 0, x); painelSalvar(L); painelRender(`[data-painel-on="${x.id}"]`); toast(`${widgetDe(x.id).nome()} adicionado ao fim da Visão geral.`); return true; }
-    case 'painel-tam': if (i >= 0) { L[i].tam = +ds.tam; painelSalvar(L); painelRender(`[data-act="painel-tam"][data-id="${ds.id}"][data-tam="${ds.tam}"]`); } return true;
+    case 'painel-mover': { const n = L.filter((x) => x.on).length; const j = i + (+ds.d); if (i < 0 || j < 0 || j >= n) return true; [L[i], L[j]] = [L[j], L[i]]; salvar(L); painelRender(`[data-act="painel-mover"][data-id="${ds.id}"][data-d="${ds.d}"]:not([disabled])`, `[data-act="painel-mover"][data-id="${ds.id}"]:not([disabled])`); return true; }
+    case 'painel-add': { if (i < 0) return true; const [x] = L.splice(i, 1); x.on = true; L.splice(L.filter((y) => y.on).length, 0, x); salvar(L); painelRender(`[data-painel-on="${x.id}"]`); toast(`${widgetDe(x.id, alvo).nome()} adicionado ao fim de ${painelDe(alvo).nome}.`); return true; }
+    case 'painel-tam': if (i >= 0) { L[i].tam = +ds.tam; salvar(L); painelRender(`[data-act="painel-tam"][data-id="${ds.id}"][data-tam="${ds.tam}"]`); } return true;
     case 'painel-padrao': {
-      const antes = S.profile.painel ? JSON.parse(JSON.stringify(S.profile.painel)) : null;
-      S.profile.painel = null; touch('profile'); renderAdmin(); if (S.view === 'geral') renderLater();
-      toastAcao('Visão geral de volta ao padrão.', 'Desfazer', () => { S.profile.painel = antes; touch('profile'); if (S.adminOpen) renderAdmin(); render(); });
+      const P = painelDe(alvo); const antes = S.profile[P.chave] ? JSON.parse(JSON.stringify(S.profile[P.chave])) : null;
+      S.profile[P.chave] = null; touch('profile'); renderAdmin(); if (S.view === P.view) renderLater();
+      toastAcao(`${P.nome} de volta ao padrão.`, 'Desfazer', () => { S.profile[P.chave] = antes; touch('profile'); if (S.adminOpen) renderAdmin(); render(); });
       return true;
     }
     default: return false;
   }
 }
 function painelLigar(t) {
-  const L = painelLayout(); const x = L.find((y) => y.id === t.dataset.painelOn); if (!x) return;
+  const alvo = alvoAtual(); const L = painelLayout(alvo); const x = L.find((y) => y.id === t.dataset.painelOn); if (!x) return;
   const i = L.indexOf(x); L.splice(i, 1); x.on = t.checked;
   if (x.on) L.splice(L.filter((y) => y.on).length, 0, x); else L.push(x); // ligado vai para o fim da tela; desligado sai da ordem
-  painelSalvar(L); painelRender(`[data-painel-on="${x.id}"]`);
+  painelSalvar(L, false, alvo); painelRender(`[data-painel-on="${x.id}"]`);
 }
 // arrastar e soltar na lista do painel (mouse); no toque, as setas fazem o mesmo
 function painelDnD() {
@@ -198,15 +206,16 @@ function painelDnD() {
   });
   document.addEventListener('drop', (e) => {
     const r = e.target.closest && e.target.closest('.wg-row:not(.off)'); if (!r || !arrastando) return; e.preventDefault();
-    const L = painelLayout(); const de = L.findIndex((x) => x.id === arrastando); if (de < 0 || r.dataset.id === arrastando) return;
+    const alvo = alvoAtual(); const L = painelLayout(alvo); const de = L.findIndex((x) => x.id === arrastando); if (de < 0 || r.dataset.id === arrastando) return;
     const [item] = L.splice(de, 1); let para = L.findIndex((x) => x.id === r.dataset.id); if (r.classList.contains('depois')) para++;
-    L.splice(para, 0, item); arrastando = null; painelSalvar(L); painelRender();
+    L.splice(para, 0, item); arrastando = null; painelSalvar(L, false, alvo); painelRender();
   });
 }
 
 /* ---------- Organizar na própria tela (como no celular) ----------
    Toque e segure um widget (ou "Organizar a tela") para soltar os widgets: eles balançam, ganham botões de remover e de
    largura, e podem ser arrastados com o dedo ou o mouse. Os vizinhos abrem espaço enquanto arrasta. "Concluir" ou Esc fecha. */
+const wgAlvo = () => (S.view === 'despesas' ? 'gastos' : 'geral'); // a tela que está sendo organizada
 const I_MENOS = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 12h10"/></svg>';
 function wgControles(w, x) {
   const tam = w.tams.length > 1 ? `<button class="wg-tam" data-act="wg-tam" data-id="${x.id}" aria-label="Largura de ${esc(w.nome())}: ${TAM_NOME[x.tam]}. Tocar troca.">${TAM_NOME[x.tam]}</button>` : '';
@@ -214,9 +223,9 @@ function wgControles(w, x) {
     <span class="wg-mv"><button data-act="wg-mover" data-id="${x.id}" data-d="-1" aria-label="Mover ${esc(w.nome())} para antes">${I.up}</button><button data-act="wg-mover" data-id="${x.id}" data-d="1" aria-label="Mover ${esc(w.nome())} para depois">${I.down}</button></span></div>`;
 }
 function wgBarraHtml() {
-  const off = painelLayout().filter((x) => !x.on);
-  const lista = S.wgAdd ? `<div class="wg-add" role="dialog" aria-label="Adicionar widget">${off.length ? off.map((x) => { const w = widgetDe(x.id); return `<button class="wg-add-i" data-act="wg-add" data-id="${x.id}"><b>${esc(w.nome())}</b><small>${esc(w.desc)}</small></button>`; }).join('') : '<p class="empty-s">Todos os widgets já estão na tela.</p>'}</div>` : '';
-  return `<div class="wg-barra" role="toolbar" aria-label="Organizar a Visão geral"><span class="wg-barra-t"><b>Organizando a tela</b><small>Arraste os widgets para mudar a ordem</small></span>
+  const off = painelLayout(wgAlvo()).filter((x) => !x.on);
+  const lista = S.wgAdd ? `<div class="wg-add" role="dialog" aria-label="Adicionar widget">${off.length ? off.map((x) => { const w = widgetDe(x.id, wgAlvo()); return `<button class="wg-add-i" data-act="wg-add" data-id="${x.id}"><b>${esc(w.nome())}</b><small>${esc(w.desc)}</small></button>`; }).join('') : '<p class="empty-s">Todos os widgets já estão na tela.</p>'}</div>` : '';
+  return `<div class="wg-barra" role="toolbar" aria-label="Organizar ${painelDe(wgAlvo()).nome}"><span class="wg-barra-t"><b>Organizando a tela</b><small>Arraste os widgets para mudar a ordem</small></span>
     <span class="wg-barra-a"><button class="btn sm" data-act="wg-add-abrir" aria-expanded="${!!S.wgAdd}">${I.plus}Adicionar</button><button class="btn sm primary" data-act="wg-concluir">Concluir</button></span>${lista}</div>`;
 }
 function wgEntrar(focar) {
@@ -227,9 +236,9 @@ function wgEntrar(focar) {
   const grid = document.querySelector('#view .wg-grid');
   if (!grid) { const y = window.scrollY; render(); window.scrollTo(0, y); }
   else {
-    const L = painelLayout();
+    const L = painelLayout(wgAlvo());
     grid.querySelectorAll(':scope > .wg[data-wg="extras"], :scope > .wg:not([data-wg])').forEach((e) => e.remove());
-    grid.querySelectorAll(':scope > .wg[data-wg]').forEach((e) => { const x = L.find((y) => y.id === e.dataset.wg); const w = widgetDe(e.dataset.wg); if (x && w) { e.insertAdjacentHTML('afterbegin', wgControles(w, x)); e.setAttribute('aria-label', w.nome()); } });
+    grid.querySelectorAll(':scope > .wg[data-wg]').forEach((e) => { const x = L.find((y) => y.id === e.dataset.wg); const w = widgetDe(e.dataset.wg, wgAlvo()); if (x && w) { e.insertAdjacentHTML('afterbegin', wgControles(w, x)); e.setAttribute('aria-label', w.nome()); } });
     grid.classList.add('editando'); grid.insertAdjacentHTML('beforebegin', wgBarraHtml());
     const pe = document.querySelector('#view .wg-foot'); if (pe) pe.remove();
     document.querySelectorAll('.hero-card [data-act="sim-toggle"], .hero-card [data-act="hist-toggle"]').forEach((b) => b.setAttribute('aria-expanded', 'false'));
@@ -241,8 +250,8 @@ function wgSair() { if (!S.wgEdit) return; S.wgEdit = false; S.wgAdd = false; co
 // ordem atual dos widgets na tela -> layout salvo (sem redesenhar)
 function wgGravarOrdem() {
   const ids = [...document.querySelectorAll('.wg-grid.editando > .wg[data-wg]')].map((e) => e.dataset.wg);
-  const L = painelLayout(); const on = ids.map((id) => L.find((x) => x.id === id)).filter(Boolean);
-  painelSalvar(on.concat(L.filter((x) => !ids.includes(x.id))), true);
+  const L = painelLayout(wgAlvo()); const on = ids.map((id) => L.find((x) => x.id === id)).filter(Boolean);
+  painelSalvar(on.concat(L.filter((x) => !ids.includes(x.id))), true, wgAlvo());
 }
 // anima os vizinhos da posição antiga para a nova (técnica FLIP)
 function wgFlip(mudar) {
@@ -258,25 +267,25 @@ function wgAcao(act, ds) {
     case 'wg-concluir': wgSair(); return true;
     case 'wg-add-abrir': S.wgAdd = !S.wgAdd; { const b = document.querySelector('.wg-barra'); if (b) b.outerHTML = wgBarraHtml(); } return true;
     case 'wg-add': {
-      const L = painelLayout(); const i = L.findIndex((x) => x.id === ds.id); if (i < 0) return true;
-      const [x] = L.splice(i, 1); x.on = true; L.splice(L.filter((y) => y.on).length, 0, x); painelSalvar(L, true); S.wgAdd = false; render();
+      const L = painelLayout(wgAlvo()); const i = L.findIndex((x) => x.id === ds.id); if (i < 0) return true;
+      const [x] = L.splice(i, 1); x.on = true; L.splice(L.filter((y) => y.on).length, 0, x); painelSalvar(L, true, wgAlvo()); S.wgAdd = false; render();
       const el = document.querySelector(`.wg[data-wg="${x.id}"]`); if (el) { el.scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); el.classList.add('wg-novo'); }
       return true;
     }
     case 'wg-remover': {
-      const el = document.querySelector(`.wg[data-wg="${ds.id}"]`); const antes = JSON.parse(JSON.stringify(S.profile.painel || null));
-      const L = painelLayout(); const x = L.find((y) => y.id === ds.id); if (!x) return true; x.on = false;
-      const fim = () => { wgFlip(() => { if (el) el.remove(); }); painelSalvar(L.filter((y) => y.on).concat(L.filter((y) => !y.on)), true); };
+      const el = document.querySelector(`.wg[data-wg="${ds.id}"]`); const chave = painelDe(wgAlvo()).chave; const antes = JSON.parse(JSON.stringify(S.profile[chave] || null));
+      const L = painelLayout(wgAlvo()); const x = L.find((y) => y.id === ds.id); if (!x) return true; x.on = false;
+      const fim = () => { wgFlip(() => { if (el) el.remove(); }); painelSalvar(L.filter((y) => y.on).concat(L.filter((y) => !y.on)), true, wgAlvo()); };
       if (el && !matchMedia('(prefers-reduced-motion: reduce)').matches) { el.classList.add('wg-saindo'); setTimeout(fim, 180); } else fim();
-      toastAcao(`${widgetDe(ds.id).nome()} saiu da tela.`, 'Desfazer', () => { S.profile.painel = antes; touch('profile'); render(); });
+      toastAcao(`${widgetDe(ds.id, wgAlvo()).nome()} saiu da tela.`, 'Desfazer', () => { S.profile[chave] = antes; touch('profile'); render(); });
       return true;
     }
     case 'wg-tam': {
-      const w = widgetDe(ds.id); const L = painelLayout(); const x = L.find((y) => y.id === ds.id); if (!x || !w) return true;
-      x.tam = w.tams[(w.tams.indexOf(x.tam) + 1) % w.tams.length]; painelSalvar(L, true);
+      const w = widgetDe(ds.id, wgAlvo()); const L = painelLayout(wgAlvo()); const x = L.find((y) => y.id === ds.id); if (!x || !w) return true;
+      x.tam = w.tams[(w.tams.indexOf(x.tam) + 1) % w.tams.length]; painelSalvar(L, true, wgAlvo());
       const el = document.querySelector(`.wg[data-wg="${ds.id}"]`); if (el) wgFlip(() => { el.dataset.tam = x.tam; });
       const b = el && el.querySelector('.wg-tam'); if (b) { b.textContent = TAM_NOME[x.tam]; b.setAttribute('aria-label', `Largura de ${w.nome()}: ${TAM_NOME[x.tam]}. Tocar troca.`); }
-      setTimeout(() => drawDashboard(), 240); // os gráficos se ajustam à nova largura
+      setTimeout(() => drawAll(), 240); // os gráficos se ajustam à nova largura
       return true;
     }
     case 'wg-mover': {
@@ -297,7 +306,7 @@ function wgGestos() {
   const ignorar = (t) => t.closest('input, select, textarea, .wg-ctl, .info-i, .hist-btn, a, [contenteditable], .sld, .obj-sw');
   const limpar = () => { if (G) { clearTimeout(G.t); if (G.raf) cancelAnimationFrame(G.raf); } G = null; S.wgArrastando = false; };
   document.addEventListener('pointerdown', (e) => {
-    if (S.screen !== 'app' || S.view !== 'geral' || e.button !== 0) return;
+    if (S.screen !== 'app' || (S.view !== 'geral' && S.view !== 'despesas') || e.button !== 0) return;
     const el = e.target.closest && e.target.closest('.wg-grid > .wg[data-wg]:not([data-wg="extras"])'); if (!el || ignorar(e.target)) return;
     G = { el, id: el.dataset.wg, x: e.clientX, y: e.clientY, px: e.clientX, py: e.clientY, tipo: e.pointerType, armado: false, arrastando: false, suprimir: false };
     if (!S.wgEdit) {

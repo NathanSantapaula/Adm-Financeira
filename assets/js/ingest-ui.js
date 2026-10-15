@@ -151,7 +151,7 @@ function aplicarIngestao() {
   if (ap) touch('profile');
   res.anos.forEach((y) => { if (y === S.year) touch('plan'); else savePlanNow(y).catch(() => toast('Não foi possível salvar o ano ' + y + '. Tente de novo.')); });
   const meses = rows.filter((t) => t.incluir && !t.duplicado && t.ano === S.year).map((t) => t.mes);
-  if (meses.length) { S.mes = Math.min(...meses); S.mesesAbertos = new Set([S.mes]); }
+  if (meses.length) { S.mes = Math.min(...meses); S.gPer = 'mes'; }
   const partes = [[res.despesas, 'gasto', 'gastos'], [res.rendas, 'entrada', 'entradas'], [res.investimentos, 'aporte', 'aportes'], [res.proventos, 'provento', 'proventos']].filter((x) => x[0]).map((x) => `${x[0]} ${x[0] === 1 ? x[1] : x[2]}`);
   if (res.conciliados) partes.push(`${res.conciliados} casados com o previsto`);
   S.ing = null; if (res.despesas && S.view !== 'despesas') S.view = 'despesas';

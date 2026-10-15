@@ -719,9 +719,102 @@
     return out.map((n, i) => [n, i]).sort((a, b) => (NIVEL_PESO[b[0].nivel] - NIVEL_PESO[a[0].nivel]) || a[1] - b[1]).map((x) => x[0]);
   }
 
+  /* ---------- Análise dos gastos de um período (um mês ou o ano) ----------
+     entradas: [{ m, dia, valor, cat, area, nome, tipo: 'real'|'prev', origem }] de todo o ano (reais têm dia; previstos e parcelas, dia 0).
+     mes: 0..11, ou -1 para o ano. meses: meses decorridos. hoje: { mes, dia } quando o período inclui o mês corrente.
+     parcelados: [{ nome, cat, parcel }] (inclusive os herdados de anos anteriores). */
+  const ehFixa = (cats, id) => { const c = (cats || []).find((x) => x.id === id); return !!c && (c.id === 'fixa' || norm(c.nome).includes('fixa')); };
+  const RUIDO_ESTAB = /\b(compra|compras|cartao|credito|debito|pix|pagamento|pagto|pag|transferencia|transf|ted|doc|parcela|parc|no|em|de|ltda|me|sa|br)\b/g;
+  function nomeEstab(s) {
+    const t = norm(s).replace(/\d+\s*\/\s*\d+/g, ' ').replace(/[^a-z\s]/g, ' ').replace(RUIDO_ESTAB, ' ').replace(/\s+/g, ' ').trim();
+    return t.split(' ').filter((w) => w.length > 1).slice(0, 3).join(' ');
+  }
+  function analiseGastos(o) {
+    const ano = +o.ano || new Date().getFullYear(); const mes = o.mes == null ? -1 : +o.mes; const meses = Math.max(0, Math.min(12, o.meses == null ? 12 : +o.meses));
+    const cats = o.catsDesp || []; const orc = o.orcamento || z();
+    const ents = (o.entradas || []).filter((e) => Math.abs(+e.valor || 0) >= 0.005 && e.m >= 0 && e.m < 12);
+    const per = mes < 0 ? ents : ents.filter((e) => e.m === mes);
+    const somar = (arr) => r2(arr.reduce((s, e) => s + (+e.valor || 0), 0));
+    const nomeCat = (id) => (cats.find((c) => c.id === id) || {}).nome || 'Sem categoria';
+    const hojeNoPer = !!(o.hoje && (mes < 0 || o.hoje.mes === mes));
+    // série do ano: total, fixos e variáveis por mês
+    const porMes = z(); const fixos = z(); const variaveis = z();
+    ents.forEach((e) => { const v = +e.valor || 0; porMes[e.m] += v; (ehFixa(cats, e.cat) ? fixos : variaveis)[e.m] += v; });
+    const total = somar(per); const orcP = mes < 0 ? sum(orc) : (+orc[mes] || 0);
+    const fixoP = r2(per.filter((e) => ehFixa(cats, e.cat)).reduce((s, e) => s + (+e.valor || 0), 0));
+    const nReais = per.filter((e) => e.tipo === 'real').length;
+    // comparação: o mês contra a média dos até 3 meses anteriores com gasto; o ano contra nada
+    const anteriores = []; if (mes >= 0) for (let k = mes - 1; k >= 0 && anteriores.length < 3; k--) if (porMes[k] > 0.005) anteriores.push(k);
+    const base = anteriores.length ? r2(anteriores.reduce((s, k) => s + porMes[k], 0) / anteriores.length) : null;
+    const delta = base > 0 ? total / base - 1 : null;
+    const mesesConta = mes < 0 ? Math.max(1, meses || 12) : 1;
+    // ritmo do mês: gasto acumulado dia a dia, projeção e quanto ainda cabe por dia
+    let ritmo = null;
+    if (mes >= 0) {
+      const dias = new Date(ano, mes + 1, 0).getDate(); const acum = new Array(dias).fill(0);
+      per.forEach((e) => { const d = e.dia >= 1 ? Math.min(dias, e.dia) : 1; acum[d - 1] += +e.valor || 0; });
+      for (let i = 1; i < dias; i++) acum[i] += acum[i - 1];
+      const diaAtual = hojeNoPer ? Math.min(dias, Math.max(1, +o.hoje.dia || 1)) : null;
+      let projecao = null; let porDia = null; let cabeDia = null;
+      if (diaAtual) {
+        const prev = somar(per.filter((e) => e.tipo !== 'real')); const reais = total - prev; porDia = reais / diaAtual;
+        projecao = r2(prev + porDia * dias); if (orcP > 0) cabeDia = r2(Math.max(0, orcP - total) / Math.max(1, dias - diaAtual + 1));
+      }
+      ritmo = { dias, acum: acum.map(r2), diaAtual, porDia: porDia == null ? null : r2(porDia), projecao, cabeDia, mediaDia: r2(total / (diaAtual || dias)) };
+    }
+    // onde foi: categorias e áreas
+    const agrupar = (lista, chave, nome) => {
+      const mp = new Map(); lista.forEach((e) => { const k = chave(e); const g = mp.get(k) || { k, nome: nome(e), total: 0, qtd: 0 }; g.total += +e.valor || 0; g.qtd++; mp.set(k, g); });
+      return [...mp.values()].map((g) => Object.assign(g, { total: r2(g.total), pct: total > 0 ? g.total / total : 0 })).filter((g) => g.total > 0.004).sort((a, b) => b.total - a.total);
+    };
+    const porCat = agrupar(per, (e) => e.cat, (e) => nomeCat(e.cat));
+    const chaveArea = (e) => e.cat + '|' + (e.area || 'Outros');
+    const mediaArea = new Map(); ents.filter((e) => anteriores.includes(e.m)).forEach((e) => { const k = chaveArea(e); mediaArea.set(k, (mediaArea.get(k) || 0) + (+e.valor || 0) / anteriores.length); });
+    const porArea = agrupar(per, chaveArea, (e) => e.area || 'Outros').map((a) => Object.assign(a, { catNome: nomeCat(a.k.split('|')[0]), media: anteriores.length ? r2(mediaArea.get(a.k) || 0) : null }));
+    // o que mudou contra a média (no mês corrente, ainda incompleto, só as altas fazem sentido)
+    let mudou = [];
+    if (anteriores.length) {
+      const chaves = new Set([...mediaArea.keys(), ...porArea.map((a) => a.k)]);
+      mudou = [...chaves].map((k) => { const agora = (porArea.find((a) => a.k === k) || {}).total || 0; const media = r2(mediaArea.get(k) || 0); const [c, ...ar] = k.split('|');
+        return { k, nome: ar.join('|'), catNome: nomeCat(c), agora: r2(agora), media, dif: r2(agora - media), pct: media > 0 ? agora / media - 1 : null }; })
+        .filter((x) => Math.abs(x.dif) >= 50 && (x.pct == null || Math.abs(x.pct) >= 0.2) && (!hojeNoPer || x.dif > 0))
+        .sort((a, b) => Math.abs(b.dif) - Math.abs(a.dif)).slice(0, 6);
+    }
+    // maiores gastos do período
+    const top = per.filter((e) => +e.valor > 0).slice().sort((a, b) => b.valor - a.valor).slice(0, 6);
+    // onde mais compra: lançamentos reais agrupados pelo estabelecimento
+    const reaisPer = per.filter((e) => e.tipo === 'real' && +e.valor > 0);
+    const estab = agrupar(reaisPer.filter((e) => nomeEstab(e.nome)), (e) => nomeEstab(e.nome), (e) => e.nome).map((g) => Object.assign(g, { media: r2(g.total / g.qtd) })).slice(0, 8);
+    // dia da semana (0 = domingo)
+    const semana = [0, 0, 0, 0, 0, 0, 0]; const semanaQtd = [0, 0, 0, 0, 0, 0, 0];
+    reaisPer.forEach((e) => { if (!(e.dia >= 1)) return; const w = new Date(ano, e.m, e.dia).getDay(); semana[w] += +e.valor; semanaQtd[w]++; });
+    // recorrentes: o mesmo estabelecimento em vários meses, com valor parecido (assinaturas, contas)
+    const limite = mes >= 0 ? mes : Math.max(0, meses - 1);
+    const porEstab = new Map(); ents.filter((e) => e.tipo === 'real' && +e.valor > 0 && e.m <= limite).forEach((e) => { const k = nomeEstab(e.nome); if (!k) return; const g = porEstab.get(k) || { k, nome: e.nome, porMes: new Map() }; g.porMes.set(e.m, (g.porMes.get(e.m) || 0) + (+e.valor)); g.nome = e.nome; porEstab.set(k, g); });
+    const minMeses = limite + 1 >= 4 ? 3 : 2;
+    const recorrentes = [...porEstab.values()].map((g) => {
+      const v = [...g.porMes.values()]; const media = v.reduce((s, x) => s + x, 0) / v.length; const dp = Math.sqrt(v.reduce((s, x) => s + (x - media) ** 2, 0) / v.length);
+      const ult = Math.max(...g.porMes.keys());
+      return { nome: g.nome, meses: v.length, media: r2(media), cv: media > 0 ? dp / media : 1, ultimoMes: ult, ultimo: r2(g.porMes.get(ult)) };
+    }).filter((r) => r.meses >= minMeses && r.cv <= 0.25).sort((a, b) => b.media - a.media);
+    // parcelamentos em andamento no mês de referência
+    const ref = mes >= 0 ? mes : o.hoje ? o.hoje.mes : 11;
+    const parcelas = (o.parcelados || []).filter((it) => it && it.parcel).map((it) => {
+      const p = it.parcel; const i = parcelaIndice(p, ano, ref); if (!i) return null; const partes = distribuir(+p.total || 0, Math.max(1, p.n | 0)); const fim = parcelaFim(p);
+      return { nome: it.nome, cat: it.cat, i, n: p.n, valor: partes[i - 1], restante: r2(partes.slice(i).reduce((s, x) => s + x, 0)), fim };
+    }).filter(Boolean).sort((a, b) => b.valor - a.valor);
+    return {
+      mes, total, orcamento: r2(orcP), uso: orcP > 0 ? total / orcP : null, restante: orcP > 0 ? r2(orcP - total) : null,
+      nReais, nPrev: per.length - nReais, fixos: fixoP, pctFixos: total > 0 ? fixoP / total : null, mediaMes: r2(total / mesesConta),
+      base, baseMeses: anteriores.length, delta, ritmo, porMes: porMes.map(r2), fixosMes: fixos.map(r2), variaveisMes: variaveis.map(r2),
+      porCat, porArea, mudou, top, estab, semana: semana.map(r2), semanaQtd, recorrentes, recorrentesMes: r2(recorrentes.reduce((s, r) => s + r.media, 0)),
+      parcelas, parcelasMes: r2(parcelas.reduce((s, x) => s + x.valor, 0)), parcelasRestante: r2(parcelas.reduce((s, x) => s + x.restante, 0)),
+    };
+  }
+
   const api = { PLANOS, RECURSOS, ABA_RECURSO, planoPermite, planoMinimo, planoNorm, parseDataISO, MES, MES_LONGO, TAXONOMIA, ASSET_LEVELS, QUIZ, PERFIS, RETORNO_PADRAO, CATS_DESP, CATS_RENDA, FORMATO_BACKUP,
     z, add, sub, sum, r2, norm, monthIndex, parseValor, distribuir, parcelaMeses, parcelaFim, parcelaIndice, itemValores, carryItems,
-    ativoKey, buildAssetTree, rebalance, analiseInvest, analiseRenda, historico, ctxAno, OBJ_TIPOS, normObjetivos, analiseObjetivos, sugerirDivisao, aporteNecessario, notificacoes, scorePerfil, projetar, mesesAteMeta, simularObjetivo, migratePlan, compute, makeBackup, parseBackup,
+    ativoKey, buildAssetTree, rebalance, analiseInvest, analiseRenda, analiseGastos, nomeEstab, historico, ctxAno, OBJ_TIPOS, normObjetivos, analiseObjetivos, sugerirDivisao, aporteNecessario, notificacoes, scorePerfil, projetar, mesesAteMeta, simularObjetivo, migratePlan, compute, makeBackup, parseBackup,
     templateSheets, parseImport, applyImport };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.FPEngine = api;
 })(typeof window !== 'undefined' ? window : globalThis);

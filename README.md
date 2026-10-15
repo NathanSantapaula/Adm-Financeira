@@ -74,7 +74,7 @@ Não rode o `schema.sql` de novo. Cole no SQL Editor apenas `supabase/migrations
 
 ## 4. Importação inteligente de extratos
 
-Botão **Importar extrato** na Conta corrente. Funciona no navegador, sem enviar nada para servidor:
+Botão **Importar extrato** na aba Gastos. Funciona no navegador, sem enviar nada para servidor:
 
 1. Arraste um arquivo **.csv** (extrato ou fatura de cartão) ou **.ofx** (Open Finance/internet banking). O leitor detecta a codificação (UTF-8, UTF-16, Windows-1252), o separador e as colunas (data, histórico, valor, ou colunas separadas de débito e crédito).
 2. Cada linha é **categorizada** por regras (mercado, transporte, assinaturas, salário, tickers de ações e FIIs, etc.) e recebe um nível de confiança. Pagamento de fatura e transferências entre contas próprias são marcados como neutros para não duplicar gasto.
@@ -165,9 +165,13 @@ No painel, o topo é o cartão do cliente. Tocando nele abre **Meu perfil** (no 
 
 A foto ou o avatar aparecem no menu, no painel e, para você, na lista de Clientes. Para acrescentar imagens próprias à coleção, use `avatares` em `config.js` (instruções no próprio arquivo).
 
-## 7. Conta corrente por mês
+## 7. Gastos
 
-Cada mês é um bloco (accordion). Fechado, mostra gasto, orçado e saldo. Aberto, mostra as categorias (Área > Subárea opcional > item) e os **lançamentos reais** do mês, com botão para lançar, estornar e desfazer baixa. Parcelamentos aparecem como um único item consolidado e seguem pelos anos seguintes. Só há as categorias padrão Despesa fixa e Despesa variável; você cria, renomeia e reordena as demais.
+No topo, escolha o **mês** ou o **ano**: tudo na aba passa a mostrar esse período. Logo abaixo, quatro números: quanto foi gasto (com o orçamento do mês, editável ali mesmo), a projeção até o fim do mês no ritmo atual (e quanto ainda cabe por dia), a comparação com a média dos meses anteriores e o peso dos gastos fixos.
+
+Depois vêm as análises, que funcionam como na Visão geral: **Organizar a tela** solta os widgets para arrastar, mudar a largura, tirar e adicionar, e **Personalizar** (ou Painel › Personalizar a aba Gastos) abre a lista completa. A escolha fica no perfil e os widgets se encaixam sem deixar espaços vazios. Por padrão aparecem para onde foi o dinheiro, ritmo do mês, mês a mês, maiores gastos e parcelamentos; os demais ficam disponíveis para adicionar: para onde foi o dinheiro (categorias e áreas, com a variação contra a média), ritmo do mês (gasto acumulado dia a dia contra o orçamento), mês a mês (fixos e variáveis), o que mudou, maiores gastos, onde você mais compra (estabelecimentos agrupados pelo nome), assinaturas e contas recorrentes, parcelamentos em andamento e gastos por dia da semana. Tocar numa área, estabelecimento ou assinatura filtra a lista.
+
+No fim, a seção recolhível **Lançamentos** reúne todos os lançamentos do período numa lista só, com busca, filtro por categoria, por tipo (reais, previstos, importados) e agrupamento por data ou por categoria. Os cálculos estão em `E.analiseGastos` (`engine.js`, com testes). Parcelamentos continuam sendo um único item consolidado que segue pelos anos seguintes.
 
 ## 8. Central de notificações
 
@@ -175,7 +179,7 @@ O sino ao lado do seletor de ano, no topo de todas as telas, reúne avisos gerad
 
 | Grupo | Quando dispara | Ação do botão |
 |---|---|---|
-| Orçamento | 75%, 90% e acima de 100% do orçamento do mês; ritmo de gastos que projeta estouro (a partir do dia 7); gastos sem orçamento definido; área de gasto 40% acima da média dos meses anteriores | Ver gastos (Conta corrente, já no mês) ou Definir orçamento |
+| Orçamento | 75%, 90% e acima de 100% do orçamento do mês; ritmo de gastos que projeta estouro (a partir do dia 7); gastos sem orçamento definido; área de gasto 40% acima da média dos meses anteriores | Ver gastos (aba Gastos, já no mês) ou Definir orçamento |
 | Lembrete | Dia 5 em diante sem entradas no mês (ou, do dia 5 ao 9, convite para conferir as que já estão lá); dia 8 sem lançamentos; dia 10 sem aporte (com a sobra do mês anterior, quando houver); dia 20 em diante, fechamento do mês e quanto falta da meta de aporte; dias 1 a 5, resumo do mês anterior | Registrar entradas, Importar extrato, Aportar agora, Ver fechamento |
 | Carteira | Ativo 3 p.p. ou mais abaixo do alvo (com o valor sugerido do próximo aporte); ativo 5 p.p. ou mais acima do alvo; alvos que não somam 100%; carteira sem alvo | Ver onde investir, Ajustar alvos |
 | Conquista | Meta de aporte do mês batida; proventos recebidos no mês | Ver aportes, Ver proventos |

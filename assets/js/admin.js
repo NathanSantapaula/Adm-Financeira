@@ -33,7 +33,7 @@ function adminHtml() {
       <div class="field-row"><div>Retorno anual hipotético (%)<small>Usado só nas projeções. Não é promessa de rentabilidade.</small></div><input class="in-s" data-prof="retornoAnual" inputmode="decimal" value="${String(p.retornoAnual).replace('.', ',')}" aria-label="Retorno anual hipotético"></div>
       ${objetivosLinkHtml()}
 </section>
-    <section class="dr-sec"><h3>Visão geral</h3>${painelLinkHtml()}</section>
+    <section class="dr-sec"><h3>Telas</h3>${painelLinkHtml('geral')}${painelLinkHtml('gastos')}</section>
     <section class="dr-sec"><h3>Abas do menu</h3><div class="abas">${abas.map(([k, l, d]) => `<label class="chk aba"><input type="checkbox" data-aba="${k}" ${p.abas.includes(k) ? 'checked' : ''} ${k === 'geral' ? 'disabled' : ''}><span><b>${l}</b><small>${d}</small></span></label>`).join('')}</div></section>
     <section class="dr-sec"><h3>Anos de planejamento</h3><ul class="yrs">${years.map((y) => `<li><b>${y}</b>${years.length > 1 ? `<button class="btn sm danger" data-act="del-year" data-year="${y}">Excluir</button>` : ''}</li>`).join('')}</ul>
       <form data-form="year" class="yr-new"><label class="pop-t" for="yr-adm">Adicionar ou abrir outro ano</label><div class="act-row"><input id="yr-adm" name="ano" class="in-s left" inputmode="numeric" maxlength="4" placeholder="Ex.: ${NOW_Y + 1}" autocomplete="off"><button class="btn primary" type="submit">Abrir</button></div></form></section>
@@ -51,7 +51,7 @@ function renderAdmin(topo) {
   if (!topo && ae && d.contains(ae) && ae.dataset) { const at = ['act', 'id', 'd', 'tam', 'painelOn', 'objf'].filter((k) => ae.dataset[k] != null).map((k) => `[data-${k.replace(/[A-Z]/g, (c) => '-' + c.toLowerCase())}="${CSS.escape(ae.dataset[k])}"]`).join(''); if (at) foco = at; }
   const sc = topo ? 0 : $('.dr-body', d) ? $('.dr-body', d).scrollTop : 0; const perfil = S.adminPage === 'perfil'; const objs = S.adminPage === 'objetivos'; const pnl = S.adminPage === 'painel';
   const head = pnl
-    ? `<div class="dr-head"><div class="dr-back"><button class="btn ghost sm" data-act="painel-voltar" aria-label="Voltar ao painel"><span class="flip">${I.chev}</span>Painel</button><h2>Personalizar a Visão geral</h2></div><button class="btn ghost" data-act="admin-close" aria-label="Fechar painel">${I.x}</button></div>`
+    ? `<div class="dr-head"><div class="dr-back"><button class="btn ghost sm" data-act="painel-voltar" aria-label="Voltar ao painel"><span class="flip">${I.chev}</span>Painel</button><h2>Personalizar ${alvoAtual() === 'gastos' ? 'a aba Gastos' : 'a Visão geral'}</h2></div><button class="btn ghost" data-act="admin-close" aria-label="Fechar painel">${I.x}</button></div>`
     : objs
     ? `<div class="dr-head"><div class="dr-back"><button class="btn ghost sm" data-act="objetivos-voltar" aria-label="Voltar ao painel"><span class="flip">${I.chev}</span>Painel</button><h2>Meus objetivos</h2></div><button class="btn ghost" data-act="admin-close" aria-label="Fechar painel">${I.x}</button></div>`
     : perfil

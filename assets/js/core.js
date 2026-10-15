@@ -15,7 +15,7 @@ const primeiroNome = () => (CFG.consultorCurto || CFG.consultor.split(' ')[0]);
 const ABAS = [
   ['geral', 'Visão geral', 'Boas-vindas, patrimônio e estatísticas do seu planejamento.'],
   ['rendas', 'Rendas', 'Suas fontes de renda, em categorias que você define.'],
-  ['despesas', 'Conta corrente', 'Orçamento do mês e gastos por categoria.'],
+  ['despesas', 'Gastos', 'Orçamento, análises e todos os lançamentos do mês ou do ano.'],
   ['inv', 'Investimentos', 'Quanto você aplica em cada ativo.'],
   ['pro', 'Proventos', 'Dividendos e rendimentos recebidos.'],
   ['cart', 'Carteira', 'Alocação-alvo e onde investir a cada aporte.'],
