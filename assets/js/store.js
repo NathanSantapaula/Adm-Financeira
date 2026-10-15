@@ -53,14 +53,21 @@ const Store = (() => {
   let sb = null;
   const loadScript = (src) => new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('script')); document.head.appendChild(s); });
   const mapErr = (e) => {
-    const m = String((e && e.message) || e || '');
+    const m = String((e && e.message) || e || ''); const code = String((e && e.code) || '');
+    if (e) console.warn('[auth]', code || (e && e.status) || '', m); // o texto original ajuda a diagnosticar no console
+    // envio do e-mail de confirmação: limite de envios por hora ou servidor de e-mail do Supabase recusando o endereço
+    if (/over_email_send_rate_limit|email_address_not_authorized/.test(code) || /email rate limit|sending (confirmation|magic link|recovery)|confirmation email|not authorized/i.test(m)) {
+      return Object.assign(erro('Não conseguimos enviar o e-mail de confirmação agora. Seus dados não foram perdidos: tente de novo em alguns minutos ou fale com o assessor.'), { email: true });
+    }
     if (/Invalid login credentials/i.test(m)) return erro('E-mail ou senha incorretos.');
     if (/Email not confirmed/i.test(m)) return erro('Confirme seu e-mail antes de entrar. Procure a mensagem de confirmação na sua caixa de entrada.');
     if (/already registered|already been registered/i.test(m)) return erro('Este e-mail já tem conta. Entre ou recupere a senha.');
     if (/Password should be at least|weak/i.test(m)) return erro('Use uma senha com pelo menos 8 caracteres.');
-    if (/rate limit|too many/i.test(m)) return erro('Muitas tentativas seguidas. Aguarde um pouco e tente de novo.');
+    if (/rate limit|too many/i.test(m) || (e && e.status === 429)) return erro('Muitas tentativas seguidas deste aparelho. Aguarde alguns minutos e tente de novo.');
     if (/network|fetch/i.test(m)) return erro('Sem conexão com o servidor. Verifique sua internet.');
-    return erro('Não foi possível concluir agora. Tente novamente.');
+    // qualquer outro erro: mostra o código do Supabase para o cliente poder repassar ao assessor
+    const ref = code || (/database error/i.test(m) ? 'erro no banco' : e && e.status ? 'status ' + e.status : '');
+    return erro(`Não foi possível concluir agora. Tente novamente.${ref ? ` (motivo: ${ref})` : ''}`);
   };
   const U = (u) => (u ? { id: u.id, email: u.email, nome: (u.user_metadata && u.user_metadata.nome) || '', whatsapp: (u.user_metadata && u.user_metadata.whatsapp) || '' } : null);
   const need = ({ data, error }) => { if (error) throw error; return data; };

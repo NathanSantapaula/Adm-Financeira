@@ -61,6 +61,7 @@ function render(opts) {
   if (scr === 'app' && S.lastCount !== key + ':' + S.year) { S.lastCount = key + ':' + S.year; contarNumeros($('#view')); }
   if (scr === 'landing') initReveal();
   if (typeof notifTitulo === 'function') notifTitulo();
+  if (S.yearOpen) yearPopAjusta();
   if (S.pendingFocus) { const c = findCell(S.pendingFocus.ri, S.pendingFocus.m); if (c) c.focus(); S.pendingFocus = null; }
   const ad = $('#admin'); if (S.adminOpen && ad && ad.open) { const ae = document.activeElement; if (!(ae && ad.contains(ae) && /INPUT|SELECT|TEXTAREA/.test(ae.tagName))) renderAdmin(); }
 }
@@ -136,7 +137,7 @@ function onClick(e) {
       case 'contact': S.maisOpen = false; openContact(); break;
       case 'terms': openTerms(); break;
       case 'adm-sec': { S.admSec = S.admSec || {}; const sec = el.closest('.dr-acc'); const ab = sec.dataset.open !== 'true'; S.admSec[ds.id] = ab; sec.dataset.open = ab; el.setAttribute('aria-expanded', ab); break; }
-      case 'lp-confirma': case 'lp-set': lpAcao(act, el); break;
+      case 'lp-confirma': case 'lp-set': case 'lp-tela': lpAcao(act, el); break;
       // "Quero a assessoria" (data-pagar) vai direto ao pagamento: logado, na hora; sem conta, logo depois do cadastro
       case 'go-auth': S.authPagar = !!ds.pagar && (ds.plano === 'completo' || ds.plano === 'investidor'); if (S.user && S.authPagar && !S.isAdmin) { S.authPagar = false; iniciarCheckout(ds.plano); break; } if (S.user) { S.screen = S.profile.onboarded ? 'app' : 'onboarding'; if (S.screen === 'onboarding' && !S.ob) initOb(); render(); break; } S.authMode = ds.mode || 'signup'; S.authPlano = ds.plano === 'completo' || ds.plano === 'investidor' ? ds.plano : 'gratis'; S.authErr = ''; S.authDraft = null; S.screen = 'auth'; render(); break;
       case 'auth-mode': S.authMode = ds.mode; S.authErr = ''; S.authMsg = ''; render(); break;

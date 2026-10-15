@@ -193,6 +193,14 @@ function yearControl() {
     ${S.yearOpen ? `<div class="popover" role="dialog" aria-label="Escolher ano"><div class="pop-t">Planejamento de</div><div class="yr-list">${list}</div>
       <form class="yr-new" data-form="year"><label class="pop-t" for="yr-in">Outro ano</label><div class="act-row"><input id="yr-in" name="ano" class="in-s left" inputmode="numeric" maxlength="4" placeholder="Ex.: ${NOW_Y + 1}" autocomplete="off"><button class="btn primary" type="submit">Abrir</button></div><div class="merr" role="alert"></div></form></div>` : ''}</div></div>`;
 }
+// o balão abre alinhado à direita do botão; se não couber (no celular o botão fica à esquerda), desliza para dentro da tela
+function yearPopAjusta() {
+  const p = document.querySelector('.year .popover'); if (!p) return;
+  p.style.left = ''; p.style.right = ''; p.style.transformOrigin = '';
+  const m = 12; const W = document.documentElement.clientWidth; const base = p.parentElement.getBoundingClientRect(); const r = p.getBoundingClientRect();
+  if (r.left < m) { p.style.right = 'auto'; p.style.left = Math.min(0, m - base.left) + 'px'; p.style.transformOrigin = 'top left'; }
+  else if (r.right > W - m) { p.style.right = (r.right - (W - m)) + 'px'; }
+}
 const pageHead = (title, sub, acts) => `<div class="page-h"><div><h2 class="title">${esc(title)}</h2>${sub ? `<p class="sub">${esc(sub)}</p>` : ''}</div><div class="acts">${acts || ''}${yearControl()}</div></div>`;
 
 /* ---------- modais ---------- */

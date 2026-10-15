@@ -201,6 +201,17 @@ O sino ao lado do seletor de ano, no topo de todas as telas, reúne avisos gerad
 
 Descrições e recomendações não ocupam mais a tela: ficam atrás de um ícone "i" ao lado do título. Passar o mouse ou focar com o teclado mostra o texto num balão. No celular, um toque fixa o balão, e outro toque, um toque fora ou Esc fecham. Isso vale para os subtítulos das páginas, os subtítulos e legendas dos cartões, a ajuda das seções do painel e as dicas dos campos de configuração. Continuam visíveis os números, os destaques ("Para estudar", "O que o painel está vendo"), os estados vazios, os avisos legais curtos e qualquer texto com botão ou link. A página inicial e o relatório para impressão não mudam. Tudo é feito por `assets/js/info.js`, sem mexer nos textos: um texto explicativo novo, escrito no padrão de sempre, já vira "i" sozinho.
 
+### Página inicial
+
+Ordem pensada para conversão (`assets/js/landing.js`): herói com a prévia viva do painel (abas Visão geral, Carteira e Gastos, o patrimônio que sobe ao abrir, a janela que inclina com o mouse e três cartões de vidro flutuando), recursos, simulador do aporte, **Quem cuida do seu planejamento** (foto, texto curto, três pilares, trajetória e botões de contato), **depoimentos**, planos, dúvidas e chamada final. A seção de perfis saiu (o simulador já mostra o perfil).
+
+Os depoimentos ficam num carrossel centrado: o cartão do meio fica em destaque e os vizinhos recuam e esmaecem conforme a rolagem. Ele avança sozinho a cada 7 segundos só quando está visível e ninguém está mexendo, e pausa com toque, mouse, foco ou teclado. Também tem bolinhas, setas, setas do teclado e arraste com o mouse. Com notas preenchidas, aparece a média.
+
+Tudo o que é seu fica em `config.js`:
+- `foto`: caminho da foto (hoje `assets/img/nathan.jpg`). A foto fica num quadro com o fundo dela, e o topo da cabeça sai do quadro sobre o fundo do site. Esse recorte vem de `fotoRecorte` (contorno do cabelo, em pixels da foto), `fotoCorte` (altura onde começa o quadro) e `fotoTam` (largura e altura da foto). Trocou a foto? Ajuste esses três ou apague `fotoRecorte` para usar só o quadro. Sem foto, aparecem as iniciais.
+- `empresas`: a trajetória (Stone Co., Deloitte, XP Inc.), numa linha discreta de logos, todos na mesma cor chapada (o arquivo vira máscara e a cor vem do tema). Os logos da Deloitte e da XP vieram do Wikimedia Commons, marcados como domínio público; o o logo da XP é desenhado no próprio HTML (`LP_SVG` em `landing.js`, mesmo desenho do arquivo original) com as letras na cor chapada e a forma na cor da marca (`--b2`, azul por padrão e acompanhando o tema Personalizado); o da Stone é o arquivo enviado pelo Nathan (só a palavra, fundo transparente). `caixa` corta a margem vazia do arquivo, `altura` equilibra o tamanho visual, e `cargo` e `periodo` aparecem ao passar o mouse. Sem logo, o nome aparece escrito.
+- `depoimentos`: só reais e autorizados. A seção e o link "Depoimentos" no menu aparecem quando houver ao menos um. Campos: `nome` e `texto` (obrigatórios), `descricao`, `plano`, `nota` (1 a 5), `data`, `foto`.
+
 ## 9. Marca AVEN
 
 O logo é desenhado em código (SVG), sem arquivo de imagem nem fonte externa, e acompanha os temas claro, escuro e OLED. O "A" sem travessa tem uma seta azul (#0A84FF) dentro; no ícone do aplicativo, "A" e "V" aparecem juntos, como duas setas.

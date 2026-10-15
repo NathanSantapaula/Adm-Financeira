@@ -6,7 +6,9 @@ const objNome = (t) => (OBJETIVOS.find((o) => o[0] === t) || OBJETIVOS.find((o) 
 /* ---------- autenticação ---------- */
 function authHtml() {
   const m = S.authMode; const demo = Store.mode === 'local';
-  const err = S.authErr ? `<div class="merr show" role="alert">${esc(S.authErr)}</div>` : '<div class="merr" role="alert"></div>';
+  // quando o e-mail de confirmação não sai, o cliente ainda pode falar com o assessor (o contato não se perde)
+  const ajuda = S.authErrEmail ? `<div class="auth-ajuda">${contactButtons(`Olá, ${primeiroNome()}! Tentei criar minha conta no ${CFG.marca}, mas o e-mail de confirmação não chegou.${S.authDraft && S.authDraft.email ? ` Meu e-mail: ${S.authDraft.email}.` : ''}`, `Cadastro no ${CFG.marca}`, { semXp: true })}</div>` : '';
+  const err = S.authErr ? `<div class="merr show" role="alert">${esc(S.authErr)}</div>${ajuda}` : '<div class="merr" role="alert"></div>';
   const note = demo ? '<div class="notice">Modo demonstração: os dados ficam apenas neste navegador. Para ativar login e nuvem, configure o Supabase (veja o README).</div>' : '';
   const back = '<button class="btn ghost back" data-act="goto-landing">Voltar</button>';
   let body = '';
@@ -44,9 +46,9 @@ function authHtml() {
 
 async function submitAuth(f) {
   const d = Object.fromEntries(new FormData(f).entries()); const m = S.authMode; const demo = Store.mode === 'local';
-  const fail = (msg) => { S.authErr = msg; S.authDraft = { nome: d.nome, email: d.email, whatsapp: d.whatsapp }; render(); };
+  const fail = (msg, ehEmail) => { S.authErr = msg; S.authErrEmail = !!ehEmail; S.authDraft = { nome: d.nome, email: d.email, whatsapp: d.whatsapp }; render(); };
   const email = String(d.email || '').trim(); const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
-  S.authErr = '';
+  S.authErr = ''; S.authErrEmail = false;
   const btn = $('button[type=submit]', f); if (btn) btn.disabled = true;
   try {
     if (m === 'recovery') {
@@ -74,7 +76,7 @@ async function submitAuth(f) {
     await entrar(r.user);
     S.profile.nome = nome; S.profile.whatsapp = String(d.whatsapp || '').trim(); S.profile.consentimento = true; S.profile.planoSolicitado = plano; touch('profile');
     S.ob.nome = nome; if (pagar) { iniciarCheckout(plano); return; } render();
-  } catch (e) { fail(e && e.amigavel ? e.message : 'Não foi possível concluir agora. Tente novamente.'); }
+  } catch (e) { fail(e && e.amigavel ? e.message : 'Não foi possível concluir agora. Tente novamente.', !!(e && e.email)); }
 }
 
 /* ---------- onboarding: diagnóstico ---------- */
