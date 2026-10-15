@@ -10,7 +10,7 @@ Painel e página de produto em vidro. A tipografia é a fonte do sistema (SF Pro
 
 - Uma família só: `--font` (fonte do sistema, com Inter carregada do Google Fonts como reserva). O Nathan prefere esta fonte; não trocar por serifa.
 - Títulos e números de destaque em 700 com espaçamento negativo (-0.02 a -0.045em) e `tabular-nums`.
-- Página inicial: cinco tamanhos (`--lp-s`, `--lp-b`, `--lp-l`, `--lp-h`, `--lp-d`); títulos com no máximo duas linhas em qualquer largura.
+- Página inicial: títulos `.hp-h1` e `.hp-h2` com `clamp()`, no máximo duas linhas em qualquer largura.
 
 ## Cor
 
