@@ -106,7 +106,7 @@ Tudo é calculado a custo (ou pelo valor atual que o cliente informar na Carteir
 
 ### Simulador do objetivo (“E se?”)
 
-No card do patrimônio, ao lado de "Histórico", o botão **E se?** abre o **Simulador do objetivo** logo abaixo. Ele vem fechado, para a tela ficar limpa, e fecha pelo X. O link "E se eu aportar mais? Simular", no card de objetivos, também abre o simulador. Ele tem dois controles: aporte extra por mês (com atalhos de +10%, +25%, +50% e Dobrar) e retorno anual (de 2% a 20%, com um traço na taxa do perfil). Ao mover qualquer um deles, o card recalcula na hora, com juros compostos mês a mês (`E.simularObjetivo`, que usa `mesesAteMeta` e `projetar`):
+No card do patrimônio, ao lado de "Histórico", o botão **E se?** abre o **Simulador do objetivo** numa janela sobre a tela (no celular, uma folha que sobe de baixo). A página por trás não muda. A janela fecha pelo X, pela tecla Esc ou com um toque fora dela, e o foco volta ao botão. O link "E se eu aportar mais? Simular", no card de objetivos, também abre o simulador. Ele tem dois controles: aporte extra por mês (com atalhos de +10%, +25%, +50% e Dobrar) e retorno anual (de 2% a 20%, com um traço na taxa do perfil). Ao mover qualquer um deles, o card recalcula na hora, com juros compostos mês a mês (`E.simularObjetivo`, que usa `mesesAteMeta` e `projetar`):
 
 - o novo prazo, em anos e meses, e o mês previsto;
 - a diferença para o cenário atual ("Você antecipa sua meta em 2 anos e 4 meses" ou "Sua meta atrasa…");
@@ -134,7 +134,7 @@ No lugar do antigo gráfico "Orçamento e gastos", que repetia o indicador de or
 
 ### Linha do tempo de todos os anos
 
-No card principal da Visão geral, o botão discreto "Histórico" abre a **Evolução histórica do patrimônio**. Ela consolida todos os anos de planejamento (`E.historico`, no `engine.js`), em ordem, do primeiro ano com dados até o mês atual. Anos futuros ficam de fora.
+No card principal da Visão geral, o botão discreto "Histórico" abre a **Evolução histórica do patrimônio** numa janela sobre a tela, como o simulador. Ela consolida todos os anos de planejamento (`E.historico`, no `engine.js`), em ordem, do primeiro ano com dados até o mês atual. Anos futuros ficam de fora.
 
 - **Indicadores do período:** patrimônio hoje e quanto cresceu desde o início, entradas, gastos, taxa de poupança acumulada, quanto foi investido do próprio bolso e proventos recebidos.
 - **Gráfico com três visões:** patrimônio mês a mês, uma curva contínua com uma faixa por ano e pontos em Dez/24, Dez/25 e Hoje; renda e gastos, com entradas, gastos e sobra por ano; e aportes e proventos por ano. O ano em andamento aparece mais claro e com asterisco.

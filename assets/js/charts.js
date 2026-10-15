@@ -75,7 +75,7 @@ function chartLine(el, cfg) {
     paths += `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="${s.w || 2.5}" stroke-linecap="round" stroke-linejoin="round"${s.dashed ? ' stroke-dasharray="2 7"' : ''}/>`;
   });
   const goal = cfg.goal ? `<line x1="${m.l}" x2="${W - m.r}" y1="${y(cfg.goal)}" y2="${y(cfg.goal)}" stroke="var(--c4)" stroke-width="1.5" stroke-dasharray="5 5"/><text x="${cfg.goalLeft ? m.l + 6 : W - m.r}" y="${y(cfg.goal) - 6}" text-anchor="${cfg.goalLeft ? 'start' : 'end'}" class="goal-l">${escSvg(cfg.goalLabel || 'Objetivo')}</text>` : '';
-  const sparse = cfg.labels.some((l) => l === ''); const stepL = sparse ? 1 : Math.max(1, Math.ceil(n / 12)); let lab = '';
+  const sparse = cfg.labels.some((l) => l === ''); const stepL = sparse ? 1 : Math.max(1, Math.ceil(n / 12), Math.ceil(n / Math.max(2, Math.floor(iw / (Math.max(...cfg.labels.map((l) => String(l).length)) * 6 + 6))))); /* rótulos não se encostam em telas estreitas */ let lab = '';
   for (let i = 0; i < n; i += stepL) if (cfg.labels[i] !== '') lab += `<text x="${x(i).toFixed(1)}" y="${H - 6}" text-anchor="middle">${escSvg(cfg.labels[i])}</text>`;
   el.innerHTML = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${escSvg(cfg.aria)}"><defs>${defs}</defs>${g}${goal}${paths}${lab}<line class="hv" x1="0" x2="0" y1="${m.t}" y2="${m.t + ih}" stroke="var(--ink-3)" stroke-width="1" opacity="0"/></svg>`;
   const svg = el.firstChild; const hv = svg.querySelector('.hv');

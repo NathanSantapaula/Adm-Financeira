@@ -213,7 +213,7 @@ function finishOb() {
 /* ---------- avisos ---------- */
 let toastT = null;
 // com um painel ou modal aberto (camada superior do navegador), o aviso precisa morar dentro dele para ficar visível e clicável
-function toastHost() { const t = $('#toast'); const dlg = [...document.querySelectorAll('dialog[open]')].pop(); const host = dlg || document.body; if (t.parentElement !== host) host.appendChild(t); return t; }
+function toastHost() { let t = $('#toast'); if (!t) { t = document.createElement('div'); t.className = 'toast'; t.id = 'toast'; t.setAttribute('role', 'status'); t.setAttribute('aria-live', 'polite'); } const dlg = [...document.querySelectorAll('dialog[open]')].pop(); const host = dlg || document.body; if (t.parentElement !== host) host.appendChild(t); return t; }
 function toast(msg) { const t = toastHost(); t.classList.remove('acao'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 3200); }
 /* toast com uma ação (ex.: Desfazer). Fica 8 s e aceita clique. */
 function toastAcao(msg, rotulo, fn) {

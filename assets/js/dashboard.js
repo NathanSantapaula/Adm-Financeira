@@ -58,7 +58,7 @@ function drawDashboard() {
   else chartBars($('#d-patr'), { labels: MES, cur, height: 200, aria: 'Sobra para investir por mês', bars: [{ color: 'var(--c1)', values: C.investAlocado }], tip: (i) => `<b>${MES[i]}</b><br>Entradas: ${brl0(C.receita[i])}<br>Gastos: ${brl0(C.despesas[i])}<br>Sobra: ${brl0(C.investAlocado[i])}` });
   chartBars($('#d-flow'), { labels: MES, cur, aria: 'Gastos e sobra para investir por mês', bars: [{ color: 'var(--c2)', values: C.despesas }, { color: 'var(--c1)', values: sobra }], tip: (i) => `<b>${MES[i]}</b><br>Entradas: ${brl0(C.receita[i])}<br>Gastos: ${brl0(C.despesas[i])}<br>Sobra: ${brl0(C.investAlocado[i])}` });
   drawPainel2(); drawWidgetsExtras();
-  simAtualizar(); drawHistorico();
+  popSync(); // simulador ou histórico aberto na janela: acompanha os dados redesenhados
   if (temRecurso('investimentos')) { const comp = composicao(); const tot = comp.reduce((a, b) => a + b.value, 0); const palette = ['var(--c1)', 'var(--c2)', 'var(--c3)', 'var(--c4)', 'var(--c5)', 'var(--c6)']; if (tot > 0) chartDonut($('#d-donut'), { aria: 'Composição da carteira por classe de ativo', title: brl0(tot), sub: 'em ativos', items: comp.map((c, i) => ({ label: c.label, value: c.value, color: palette[i % 6] })) }); }
 }
 
@@ -192,13 +192,7 @@ function simAcao(act, ds) {
   switch (act) {
     case 'sim-preset': { const st = simEstado(simBase()); st.extra = +ds.v; const ex = document.getElementById('sim-extra'); if (ex) ex.value = st.extra; simAtualizar(); return true; }
     case 'sim-reset': { const b = simBase(); S.sim = { extra: 0, taxa: b.taxa, ano: S.year, obj: (b.pj.ob && b.pj.ob.id) || '' }; const ex = document.getElementById('sim-extra'); const tx = document.getElementById('sim-taxa'); if (ex) ex.value = 0; if (tx) tx.value = b.taxa; simAtualizar(); return true; }
-    case 'sim-toggle': case 'sim-ir': {
-      S.simAberto = act === 'sim-ir' ? true : !S.simAberto; render();
-      const c = document.getElementById('sim');
-      if (S.simAberto && c) { c.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }); const ex = document.getElementById('sim-extra'); setTimeout(() => (ex || c).focus({ preventScroll: true }), 350); }
-      else if (!S.simAberto) { const b = document.querySelector('[data-act="sim-toggle"].hist-btn'); if (b) b.focus(); }
-      return true;
-    }
+    case 'sim-toggle': case 'sim-ir': popAlternar('sim', act === 'sim-ir'); return true;
     case 'sim-aplicar': {
       const b = simBase(); const st = simEstado(b); const antes = S.plan.settings.metaAporte; const novo = Math.round(b.aporte + st.extra);
       S.plan.settings.metaAporte = novo; S.sim = { extra: 0, taxa: st.taxa, ano: S.year, obj: st.obj }; touch('plan'); render();
@@ -290,12 +284,7 @@ function drawHistorico() {
 function histAcao(act, ds) {
   const st = histEstado();
   switch (act) {
-    case 'hist-toggle': {
-      st.aberto = !st.aberto; render();
-      if (st.aberto) { const c = document.getElementById('hist'); if (c) { c.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }); c.setAttribute('tabindex', '-1'); c.focus({ preventScroll: true }); } }
-      else { const b = document.querySelector('.hist-btn'); if (b) b.focus(); }
-      return true;
-    }
+    case 'hist-toggle': popAlternar('hist'); return true;
     case 'hist-aba': {
       st.aba = ds.aba; document.querySelectorAll('.hist-tabs .np-chip').forEach((b) => { const on = b.dataset.aba === st.aba; b.setAttribute('aria-selected', on); b.setAttribute('aria-pressed', on); });
       const lg = document.querySelector('.hist-gh .leg'); if (lg) lg.outerHTML = histLeg(st.aba);
@@ -350,4 +339,48 @@ function drawPainel2() {
   const cats = (S.plan.catsDesp || []).filter((c) => E.sum(C.despCat[c.id] || []) > 0); const cores = ['var(--c2)', 'var(--c4)', 'var(--c3)', 'var(--c5)', 'var(--c6)', 'var(--c1)'];
   chartBars(el, { labels: MES, cur, height: 190, aria: 'Gastos de cada mês divididos entre fixos e variáveis', bars: cats.map((c, i) => ({ color: cores[i % 6], values: C.despCat[c.id] })),
     tip: (i) => `<b>${MES_LONGO[i]}</b><br>` + cats.map((c) => `${esc(c.nome)}: ${brl0(C.despCat[c.id][i])}`).join('<br>') });
+}
+
+/* ---------- Janela (pop-up) do simulador e do histórico ----------
+   "E se?" e "Histórico", no card do patrimônio, abrem o conteúdo numa janela sobre a tela em vez de inseri-lo na página.
+   Usa um <dialog> modal: fundo escurecido, Esc ou toque fora fecham, e o foco volta ao botão que abriu. */
+function popDialogo() {
+  let d = document.getElementById('wg-pop');
+  if (!d) {
+    d = document.createElement('dialog'); d.id = 'wg-pop'; d.className = 'pop-dlg'; document.body.appendChild(d);
+    d.addEventListener('close', () => { // fechou por Esc, toque fora ou botão: limpa o estado e devolve o foco
+      const era = d.dataset.tipo; S.simAberto = false; if (S.hist) S.hist.aberto = false; d.dataset.tipo = ''; ['toast', 'infotip'].forEach((id) => { const n = document.getElementById(id); if (n && d.contains(n)) document.body.appendChild(n); }); d.innerHTML = ''; /* toast/dica podem estar hospedados no diálogo: voltam ao body antes de limpar */
+      popBotoes(); const b = document.querySelector(`.hero-card [data-act="${era === 'sim' ? 'sim-toggle' : 'hist-toggle'}"]`); if (b) b.focus({ preventScroll: true });
+    });
+    d.addEventListener('click', (e) => { if (e.target === d) d.close(); }); // toque no fundo escurecido
+  }
+  return d;
+}
+const popBotoes = () => {
+  document.querySelectorAll('[data-act="sim-toggle"].hist-btn').forEach((b) => b.setAttribute('aria-expanded', String(!!S.simAberto)));
+  document.querySelectorAll('[data-act="hist-toggle"].hist-btn').forEach((b) => b.setAttribute('aria-expanded', String(!!(S.hist && S.hist.aberto))));
+};
+// conteúdo da janela conforme o estado (S.simAberto ou S.hist.aberto); desenha os gráficos depois de visível
+function popSync() {
+  const tipo = S.simAberto ? 'sim' : S.hist && S.hist.aberto ? 'hist' : '';
+  const d = document.getElementById('wg-pop');
+  if (!tipo || S.screen !== 'app' || S.view !== 'geral') { if (d && d.open) d.close(); return; }
+  const dlg = popDialogo(); const html = tipo === 'sim' ? simHtml() : histHtml();
+  if (!html) { if (dlg.open) dlg.close(); else { S.simAberto = false; if (S.hist) S.hist.aberto = false; } return; }
+  const sc = dlg.scrollTop; const tst = document.getElementById('toast');
+  dlg.dataset.tipo = tipo; dlg.innerHTML = html; if (tst && !tst.isConnected) dlg.appendChild(tst);
+  dlg.setAttribute('aria-labelledby', tipo === 'sim' ? 'sim-t' : 'hist-t');
+  if (!dlg.open) dlg.showModal();
+  dlg.scrollTop = sc; popBotoes();
+  if (tipo === 'sim') simAtualizar(); else drawHistorico();
+}
+function popAlternar(tipo, abrir) {
+  const st = histEstado(); const aberto = tipo === 'sim' ? !!S.simAberto : !!st.aberto;
+  const novo = abrir === true ? true : !aberto;
+  S.simAberto = tipo === 'sim' ? novo : false; st.aberto = tipo === 'hist' ? novo : false; // uma janela por vez
+  if (!novo) { const d = document.getElementById('wg-pop'); if (d && d.open) d.close(); popBotoes(); return; }
+  popSync();
+  const d = document.getElementById('wg-pop'); if (!d || !d.open) return;
+  const alvo = tipo === 'sim' ? document.getElementById('sim-extra') : d.querySelector('.hist-tabs .np-chip[aria-selected="true"]');
+  setTimeout(() => (alvo || d).focus({ preventScroll: true }), 60);
 }

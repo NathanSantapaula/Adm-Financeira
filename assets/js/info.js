@@ -98,7 +98,7 @@ function infoIniciar() {
     if (b) { e.preventDefault(); e.stopPropagation(); if (infoAtual === b && infoFixo) infoEsconder(true); else infoMostrar(b, true); return; }
     if (infoAtual && !(e.target.closest && e.target.closest('#infotip'))) infoEsconder(true);
   }, true);
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && infoAtual) { const b = infoAtual; infoEsconder(true); b.focus(); e.stopPropagation(); } }, true);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && infoAtual) { const b = infoAtual; infoEsconder(true); b.focus(); e.stopPropagation(); e.preventDefault(); } /* Esc fecha só o balão, não a janela por baixo */ }, true);
   window.addEventListener('scroll', () => infoEsconder(true), true); window.addEventListener('resize', () => infoEsconder(true));
   // tudo o que for desenhado depois (telas, painel, modais, trocas parciais) passa pela mesma regra
   const alvo = '.cap, .sub, .c-h p, .sec-h p, .mmsg, .field-row small';

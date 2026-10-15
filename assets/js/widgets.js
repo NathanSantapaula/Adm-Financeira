@@ -119,9 +119,7 @@ function widgetsHtml() {
     const w = widgetDe(x.id); let corpo = ''; try { corpo = w.html(); } catch (e) { corpo = ''; }
     if (!corpo) return;
     h += `<div class="wg" data-wg="${x.id}" data-tam="${x.tam}" style="--i:${k % 4}"${ed ? ` aria-label="${esc(w.nome())}"` : ''}>${ed ? wgControles(w, x) : ''}${corpo}</div>`;
-    if (x.id === 'patrimonio' && !ed) { const ext = histHtml() + simHtml(); if (ext) h += `<div class="wg" data-wg="extras" data-tam="6">${ext}</div>`; }
   });
-  if (!ed && !L.some((x) => x.id === 'patrimonio') && (S.hist && S.hist.aberto)) h += `<div class="wg" data-tam="6">${histHtml()}</div>`;
   const barra = ed ? wgBarraHtml() : '';
   const pe = ed ? '' : `<div class="wg-foot"><button class="btn ghost sm" data-act="wg-editar">${I_AJUSTE}Organizar a tela</button><button class="lnk" data-act="painel-abrir">Mais opções</button></div>`;
   return `${barra}<div class="wg-grid${ed ? ' editando' : ''}">${h}</div>${pe}`;
@@ -223,6 +221,7 @@ function wgBarraHtml() {
 }
 function wgEntrar(focar) {
   if (S.wgEdit) return; S.wgEdit = true; S.wgAdd = false; S.simAberto = false; if (S.hist) S.hist.aberto = false;
+  { const pd = document.getElementById('wg-pop'); if (pd && pd.open) pd.close(); } // fecha a janela do simulador/histórico
   // transforma a tela no lugar, sem redesenhar: no toque longo, o elemento sob o dedo precisa continuar no DOM
   // (se ele sumisse, o navegador deixaria de entregar os eventos de toque e o arraste não começaria)
   const grid = document.querySelector('#view .wg-grid');

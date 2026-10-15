@@ -79,12 +79,7 @@ function objCardHtml() {
 function objTrocarFoco(id) {
   S.profile.objetivoFoco = id; touch('profile'); S.sim = null;
   const c = document.getElementById('obj-card'); if (c) c.outerHTML = objCardHtml();
-  const s = document.getElementById('sim'); const novo = simHtml();
-  if (s) { if (novo) s.outerHTML = novo; else s.remove(); } else if (novo) { // simulador aberto que estava sem conteúdo: entra no bloco logo abaixo do patrimônio
-    const ext = document.querySelector('.wg[data-wg="extras"]'); const pat = document.querySelector('.wg[data-wg="patrimonio"]');
-    if (ext) ext.insertAdjacentHTML('beforeend', novo); else if (pat) pat.insertAdjacentHTML('afterend', `<div class="wg" data-wg="extras" data-tam="6">${novo}</div>`);
-  }
-  simAtualizar();
+  if (S.simAberto) popSync(); // simulador aberto na janela (dashboard.js): passa a mostrar o novo objetivo
   const b = document.querySelector(`.obj-chip[data-id="${CSS.escape(id)}"]`); if (b) b.focus();
 }
 
