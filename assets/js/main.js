@@ -47,6 +47,7 @@ function render(opts) {
   const y = window.scrollY; const tw = $('.tablewrap'); const tws = tw ? [tw.scrollLeft, tw.scrollTop] : null;
   S.C = S.plan && S.profile ? E.compute(S.plan, planCtx()) : null;
   hideTip();
+  $('#view').classList.toggle('tela-nova', !same); // a entrada anima só na troca de tela
   if (scr === 'app') { renderSide(); $('#view').innerHTML = viewHtml(); }
   else {
     $('#side').innerHTML = ''; $('#tabbar').innerHTML = '';

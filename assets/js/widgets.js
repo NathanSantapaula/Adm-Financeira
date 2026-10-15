@@ -250,7 +250,7 @@ function wgFlip(mudar) {
   mudar();
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   els.forEach((e) => { const a = antes.get(e); const b = e.getBoundingClientRect(); const dx = a.left - b.left; const dy = a.top - b.top; if (!dx && !dy) return;
-    e.style.transition = 'none'; e.style.translate = `${dx}px ${dy}px`; requestAnimationFrame(() => { e.style.transition = 'translate .22s cubic-bezier(.2,.8,.2,1)'; e.style.translate = '0 0'; }); });
+    e.style.transition = 'none'; e.style.translate = `${dx}px ${dy}px`; requestAnimationFrame(() => { e.style.transition = 'translate 220ms var(--ease-out)'; e.style.translate = '0 0'; }); });
 }
 function wgAcao(act, ds) {
   switch (act) {
