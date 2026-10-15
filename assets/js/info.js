@@ -9,7 +9,7 @@
 const INFO_ICONE = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5"/><circle cx="12" cy="7.6" r=".9" fill="currentColor" stroke="none"/></svg>';
 let infoSeq = 0;
 const infoInterativo = (el) => !!el.querySelector('a, button, input, select, textarea, label');
-const infoLivre = (el) => !el.id && !el.classList.contains('keep') && !el.classList.contains('disc') && !el.closest('.rel, .lp, .info-i, .npop, .keep-txt') && !infoInterativo(el);
+const infoLivre = (el) => !el.id && !el.classList.contains('keep') && !el.classList.contains('disc') && !el.closest('.rel, .hp, .info-i, .npop, .keep-txt') && !infoInterativo(el);
 
 function infoBotao(heading, onde) {
   let b = [...heading.children].find((c) => c.classList && c.classList.contains('info-i'));

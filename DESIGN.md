@@ -4,7 +4,7 @@ Sistema visual v4 do AVEN Financial Planning. Fonte da verdade dos valores: `ass
 
 ## Ideia
 
-Um relatório financeiro editado, feito de vidro. A tipografia é a fonte do sistema (SF Pro no Apple, Inter de reserva), em pesos firmes; vidro e gradientes da marca dão profundidade nos três temas. Vidro e gradiente são compromisso de marca: elevar, nunca remover.
+Painel e página de produto em vidro. A tipografia é a fonte do sistema (SF Pro no Apple, Inter de reserva), em pesos firmes; vidro e gradientes da marca dão profundidade nos três temas. Vidro e gradiente são compromisso de marca: elevar, nunca remover.
 
 ## Tipografia
 
@@ -37,7 +37,7 @@ Cartões do painel usam vidro sem desfoque (translúcido sobre o fundo de ambien
 
 ## Página inicial
 
-Composição de relatório: um eixo a 42% da largura (títulos no eixo, textos pendurados nele). Herói com mosaico de campos em gradiente e fragmentos do próprio painel em vidro claro (valores ilustrativos, marcados como tal). Sem fotos por enquanto. Seções: um lançamento em três momentos (o do meio funciona), barra de etapas, simulador de aporte (usa `E.rebalance`), assessor e o que ele vê por plano, tabela de planos, perguntas em faixas, primeiro passo do cadastro já aberto e rodapé com o e-mail como título.
+Página de produto centrada (classes `hp-`, em `landing.js`): herói com título em gradiente e prévia do painel numa janela de vidro sobre luz da marca; três recursos alternando texto e prévia; simulador de aporte num painel aurora (usa `E.rebalance`); perfis; seção escura do assessor com o que ele vê por plano; planos em cartões (Assessoria com borda em gradiente); perguntas; chamada final que leva o nome para o cadastro. Sem fotos. Grades com `auto-fit` e contêiner de até 1180px, sem colunas fixas: vale de 320px a telas largas. Seções escuras (`.hp-dark`) redefinem os tokens localmente.
 
 ## Movimento
 
