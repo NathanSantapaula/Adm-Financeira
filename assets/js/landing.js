@@ -177,12 +177,12 @@ function lpDepoimentosHtml() {
   const notas = deps.map((d) => nota(d.nota)).filter(Boolean); const media = notas.length ? notas.reduce((a, b) => a + b, 0) / notas.length : 0;
   const card = (d, i) => `<li class="hp-dep${i === 0 ? ' ativo' : ''}" data-i="${i}" aria-roledescription="depoimento" aria-label="${i + 1} de ${deps.length}"><figure>
       <div class="hp-dep-top">${estrelas(nota(d.nota))}${d.data ? `<time>${esc(d.data)}</time>` : ''}</div>
-      <blockquote><p>${esc(d.texto)}</p></blockquote>
+      <blockquote>${d.destaque ? `<p class="hp-dep-dest">${esc(d.destaque)}</p>` : ''}<p>${esc(d.texto)}</p></blockquote>
       <figcaption><span class="hp-av">${d.foto ? `<img src="${esc(d.foto)}" alt="" loading="lazy">` : esc(lpIniciais(d.nome))}</span>
         <span class="hp-dep-q"><b>${esc(d.nome)}</b>${d.descricao ? `<small>${esc(d.descricao)}</small>` : ''}</span>${d.plano ? `<em>${esc(d.plano)}</em>` : ''}</figcaption></figure></li>`;
   return `<section class="hp-sec hp-depo" id="depoimentos"><div class="hp-w">
     <div class="hp-depo-h" data-rv><div><h2 class="hp-h2">Quem já planeja<br>com o ${esc(primeiroNome())}.</h2><p class="hp-lead">Clientes que acompanham o próprio dinheiro com o ${esc(CFG.marca)} e a assessoria.</p></div>
-      ${media ? `<div class="hp-media"><b>${media.toFixed(1).replace('.', ',')}</b><span>${estrelas(Math.round(media))}<small>média de ${notas.length} ${notas.length === 1 ? 'avaliação' : 'avaliações'}</small></span></div>` : ''}</div>
+      ${media ? `<div class="hp-media"><span class="hp-media-av" aria-hidden="true">${deps.slice(0, 5).map((d) => `<i>${d.foto ? `<img src="${esc(d.foto)}" alt="" loading="lazy">` : esc(lpIniciais(d.nome))}</i>`).join('')}</span><b>${media.toFixed(1).replace('.', ',')}</b><span>${estrelas(Math.round(media))}<small>média de ${notas.length} ${notas.length === 1 ? 'avaliação' : 'avaliações'}</small></span></div>` : ''}</div>
   </div>
   <div class="hp-car" data-rv><ul class="hp-car-t" id="hp-car" tabindex="0" aria-roledescription="carrossel" aria-label="Depoimentos de clientes. Use as setas do teclado para navegar.">${deps.map(card).join('')}</ul></div>
   <div class="hp-w hp-car-pe"><div class="hp-car-dots" role="group" aria-label="Escolher depoimento">${deps.map((_, i) => `<button type="button" data-car-i="${i}" aria-label="Depoimento ${i + 1}"${i === 0 ? ' aria-current="true"' : ''}></button>`).join('')}</div>
@@ -343,19 +343,22 @@ function lpCarrossel() {
     cards.forEach((c, i) => { const d = (c.offsetLeft + c.offsetWidth / 2 - meio) / c.offsetWidth; const a = Math.min(1.2, Math.abs(d));
       if (Math.abs(d) < dmin) { dmin = Math.abs(d); melhor = i; }
       if (!calmo()) { c.style.transform = `scale(${(1 - a * 0.07).toFixed(4)})`; c.style.opacity = (1 - Math.min(1, a) * 0.42).toFixed(3); } });
-    if (melhor !== atual || !cards[melhor].classList.contains('ativo')) { atual = melhor; cards.forEach((c, i) => c.classList.toggle('ativo', i === atual)); dots.forEach((b, i) => (i === atual ? b.setAttribute('aria-current', 'true') : b.removeAttribute('aria-current'))); }
+    if (melhor !== atual || !cards[melhor].classList.contains('ativo')) { atual = melhor; cards.forEach((c, i) => c.classList.toggle('ativo', i === atual)); dots.forEach((b, i) => (i === atual ? b.setAttribute('aria-current', 'true') : b.removeAttribute('aria-current'))); if (!pausado) agendar(); }
     if (prev) prev.disabled = atual === 0; if (next) next.disabled = atual === cards.length - 1; };
   const agenda = () => { if (!raf) raf = requestAnimationFrame(pinta); };
   t.addEventListener('scroll', agenda, { passive: true });
   if ('ResizeObserver' in window) new ResizeObserver(agenda).observe(t);
-  // avanço automático com pausa
-  let pausaAte = 0; let visivel = false;
-  const pausa = () => { pausaAte = Date.now() + 15000; };
-  if ('IntersectionObserver' in window) new IntersectionObserver((es) => { visivel = es[0].isIntersecting; }, { threshold: 0.4 }).observe(t);
+  // avanço automático: a bolinha do cartão atual se enche em 7 s e aí passa para o próximo; mexeu, pausa (15 s, ou enquanto o mouse estiver em cima)
+  let visivel = false; let pausado = false; let tAvanco = 0; let tVolta = 0;
+  const encher = () => { dots.forEach((b) => b.classList.remove('corre')); const b = dots[atual]; if (b && !pausado && !calmo()) { void b.offsetWidth; b.classList.add('corre'); } };
+  function agendar() { clearTimeout(tAvanco); if (calmo() || cards.length < 2 || pausado) return; encher();
+    tAvanco = setTimeout(() => { if (!document.body.contains(t)) return; if (!visivel || document.hidden) { agendar(); return; } ir(atual + 1); }, 7000); }
+  const pausar = (ms) => { pausado = true; sec.classList.add('pausa'); clearTimeout(tAvanco); clearTimeout(tVolta); dots.forEach((b) => b.classList.remove('corre'));
+    if (ms) tVolta = setTimeout(() => { pausado = false; sec.classList.remove('pausa'); agendar(); }, ms); };
+  const pausa = () => pausar(15000);
+  if ('IntersectionObserver' in window) new IntersectionObserver((es) => { const v = es[0].isIntersecting; if (v && !visivel && !pausado) agendar(); visivel = v; }, { threshold: 0.4 }).observe(t);
   ['pointerdown', 'wheel', 'touchstart', 'keydown', 'focusin'].forEach((ev) => t.addEventListener(ev, pausa, { passive: true }));
-  t.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') pausaAte = Infinity; }); t.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') pausa(); });
-  const tick = setInterval(() => { if (!document.body.contains(t)) { clearInterval(tick); return; }
-    if (calmo() || !visivel || document.hidden || Date.now() < pausaAte || cards.length < 2) return; ir(atual + 1); }, 7000);
+  t.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') pausar(0); }); t.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') pausa(); });
   // setas, bolinhas e teclado
   sec.querySelectorAll('[data-car]').forEach((b) => b.addEventListener('click', () => { pausa(); ir(atual + +b.dataset.car); }));
   dots.forEach((b) => b.addEventListener('click', () => { pausa(); ir(+b.dataset.carI); }));

@@ -27,7 +27,7 @@ window.FP_CONFIG = {
   // bio: texto sobre você (vazio usa um texto padrão com as empresas acima).
   // credenciais: ['Assessor de investimentos XP Inc.', 'Certificação X'],
   // depoimentos: só reais e autorizados. A seção com o carrossel aparece quando houver ao menos um. Campos:
-  //   { nome: 'Mariana C.', texto: 'O depoimento.', descricao: 'Médica, São Paulo', plano: 'Assessoria', nota: 5, data: 'Set 2026', foto: '' }
+  //   { nome: 'Mariana C.', destaque: 'Frase principal, curta.', texto: 'O depoimento.', descricao: 'Médica, São Paulo', plano: 'Assessoria', nota: 5, data: 'Set 2026', foto: '' }
   //   (nome e texto obrigatórios; o resto é opcional; sem foto aparecem as iniciais)
   foto: 'assets/img/nathan.jpg',
   // fotoRecorte: contorno do topo da cabeça (pontos x,y em pixels da foto original), que "sai" do quadro sobre o fundo do site.
@@ -45,7 +45,14 @@ window.FP_CONFIG = {
   ],
   bio: '',
   credenciais: [],
-  depoimentos: [],
+  // destaque: a frase principal, em letra grande (trecho das palavras do cliente); texto: o resto, curto
+  depoimentos: [
+    { nome: 'Rodrigo M.', destaque: 'Saber onde aportar todo mês tirou um peso enorme da minha cabeça.', texto: 'Eu sempre desistia das planilhas depois de duas semanas. Com o painel do Nathan ficou prático entender para onde o dinheiro estava indo.', descricao: 'Engenheiro de Software, São Paulo', plano: 'Assessoria', nota: 5, data: 'Ago 2026', foto: '' },
+    { nome: 'Camila S.', destaque: 'Não é só sobre rentabilidade, é sobre ter paz de espírito.', texto: 'Antes eu investia por intuição. O Nathan me ajudou a desenhar metas reais para o curto e o longo prazo.', descricao: 'Arquiteta, Campinas', plano: 'Assessoria', nota: 5, data: 'Set 2026', foto: '' },
+    { nome: 'Felipe B.', destaque: 'Hoje sei o porquê de cada ativo estar ali.', texto: 'A virada de chave foi ver a carteira estruturada com alvos claros. Recomendo demais o trabalho dele.', descricao: 'Advogado, São Paulo', plano: 'Assessoria', nota: 5, data: 'Jul 2026', foto: '' },
+    { nome: 'Juliana R.', destaque: 'Sinto que tenho um parceiro cuidando da minha retaguarda financeira.', texto: 'O atendimento é direto e humano: um papo reto sobre os gastos e ajustes na rota quando precisa.', descricao: 'Gerente de Marketing, Santo André', plano: 'Assessoria', nota: 5, data: 'Set 2026', foto: '' },
+    { nome: 'Lucas T.', destaque: 'Minha esposa e eu finalmente estamos alinhados nas finanças.', texto: 'O que mais ajuda é a rotina mensal: saber o que fazer com o dinheiro que sobra, sem quebrar a cabeça com notícia de última hora.', descricao: 'Analista Financeiro, São Paulo', plano: 'Assessoria', nota: 5, data: 'Out 2026', foto: '' },
+  ],
 
   // Banco de dados e login (Supabase). Deixe em branco para o modo demonstração (dados só no navegador).
   supabase: { url: 'https://amvxhgjtseeixhjwllkc.supabase.co', anonKey: 'sb_publishable_WmR5xrvOV5wzFBJ9eNcBOA_V8PDjClb' },

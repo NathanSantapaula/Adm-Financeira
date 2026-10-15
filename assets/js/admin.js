@@ -5,11 +5,9 @@ function openAdmin(pagina) { if (S.screen !== 'app' || !S.profile) return; S.adm
    o estado fica em S.admSec durante a sessão e sobrevive aos redesenhos do painel */
 // descrição curta de cada seção, visível mesmo fechada (quando a seção não traz a sua própria)
 const ADM_DESC = {
-  'metas-e-ponto-de-partida': 'Meta de aportes do mês e do ano, patrimônio inicial e seus objetivos.',
-  telas: 'Escolha e organize os widgets de cada tela.',
-  'abas-do-menu': 'Quais abas aparecem no menu.',
-  'anos-de-planejamento': 'Abra, crie ou exclua anos de planejamento.',
-  'importar-planilha-xlsx-': 'Traga dados de uma planilha, inclusive a carteira montada pelo assessor.',
+  planejamento: 'Metas, ponto de partida, objetivos e anos.',
+  'personalizar-o-painel': 'Telas, abas do menu, aparência e voz.',
+  'backup-e-planilhas': 'Salve, restaure ou importe seus dados.',
 };
 const ADM_FIXAS = new Set(['plano', 'sessao']); // sempre abertas
 function admAcordeao(d) {
@@ -51,21 +49,24 @@ function adminHtml() {
   const importBlock = gated('importar') ? lockedHtml('importar') : importHtml();
   const sub = [p.perfilInvestidor && p.perfilInvestidor.resultado ? 'Perfil ' + ob : '', planLabel()].filter(Boolean).join(' · ');
   return `<button class="pf-card" data-act="perfil-abrir">${avatarHtml(p, 'lg')}<span class="pf-t"><b>${esc(p.nome || 'Minha conta')}</b><small>${esc(p.email || '')}</small><small>${esc(sub)}</small></span><span class="pf-go">Meu perfil${I.chev}</span></button>
-   <section class="dr-sec"><h3>Metas e ponto de partida</h3>
+   <section class="dr-sec"><h3>Planejamento</h3>
+      <div class="dr-sub"><h4>Metas e ponto de partida</h4>
       ${pl ? `<div class="field-row"><div>Meta de aportes mensais<small>A meta de cada mês soma os dividendos recebidos.</small></div><input class="in-s" data-setting="metaAporte" inputmode="decimal" value="${pl.settings.metaAporte ? nf.format(pl.settings.metaAporte) : ''}" placeholder="0,00" aria-label="Meta de aportes mensais"></div>
       <div class="field-row"><div>Meta de investimento de ${pl.year}<small>Opcional. Se vazio, soma as metas mensais.</small></div><input class="in-s" data-setting="metaInvAno" inputmode="decimal" value="${pl.settings.metaInvAno ? nf.format(pl.settings.metaInvAno) : ''}" placeholder="—" aria-label="Meta de investimento do ano"></div>
       <div class="field-row"><div>Patrimônio inicial de ${pl.year}<small>O que você tinha investido no início deste ano. Vazio = automático (patrimônio informado mais os aportes dos anos anteriores).</small></div><input class="in-s" data-setting="patrimonioInicial" inputmode="decimal" value="${pl.settings.patrimonioInicial != null ? nf.format(pl.settings.patrimonioInicial) : ''}" placeholder="0,00" aria-label="Patrimônio inicial do ano"></div>` : ''}
-      ${objetivosLinkHtml()}
-</section>
-    <section class="dr-sec"><h3>Telas</h3>${['geral', 'gastos', 'rendas', 'invest', 'proventos', 'carteira'].filter((k) => !PAINEIS[k].recurso || temRecurso(PAINEIS[k].recurso)).map(painelLinkHtml).join('')}</section>
-    <section class="dr-sec"><h3>Abas do menu</h3><div class="abas">${abas.map(([k, l, d]) => `<label class="chk aba"><input type="checkbox" data-aba="${k}" ${p.abas.includes(k) ? 'checked' : ''} ${k === 'geral' ? 'disabled' : ''}><span><b>${l}</b><small>${d}</small></span></label>`).join('')}</div></section>
-    <section class="dr-sec"><h3>Anos de planejamento</h3><ul class="yrs">${years.map((y) => `<li><b>${y}</b>${years.length > 1 ? `<button class="btn sm danger" data-act="del-year" data-year="${y}">Excluir</button>` : ''}</li>`).join('')}</ul>
-      <form data-form="year" class="yr-new"><label class="pop-t" for="yr-adm">Adicionar ou abrir outro ano</label><div class="act-row"><input id="yr-adm" name="ano" class="in-s left" inputmode="numeric" maxlength="4" placeholder="Ex.: ${NOW_Y + 1}" autocomplete="off"><button class="btn primary" type="submit">Abrir</button></div></form></section>
-    ${prefsHtml()}
-    <section class="dr-sec"><h3>Importação de extratos</h3><p class="mmsg">${(p.regras || []).length ? `Seu painel já aprendeu ${p.regras.length} ${p.regras.length === 1 ? 'estabelecimento' : 'estabelecimentos'} com as suas correções.` : 'Quando você corrige uma categoria na importação, o sistema lembra para as próximas.'}</p>${(p.regras || []).length ? '<div class="btn-row"><button class="btn danger sm" data-act="regras-limpar">Esquecer o que aprendi</button></div>' : ''}</section>
-    <section class="dr-sec"><h3>Backup completo</h3><p class="mmsg">Baixe todos os seus dados (perfil, anos, rendas, gastos, ativos e carteira) em um único arquivo. Se precisar, restaure aqui mesmo.</p>
-      <div class="btn-row"><button class="btn primary" data-act="backup">Backup completo</button><label class="btn" for="bk-file">Restaurar backup</label><input id="bk-file" type="file" accept=".json,application/json" hidden></div>${bkHtml()}</section>
-    <section class="dr-sec"><h3>Importar planilha (.xlsx)</h3>${importBlock}</section>
+      ${objetivosLinkHtml()}</div>
+      <div class="dr-sub"><h4>Anos de planejamento</h4><ul class="yrs">${years.map((y) => `<li><b>${y}</b>${years.length > 1 ? `<button class="btn sm danger" data-act="del-year" data-year="${y}">Excluir</button>` : ''}</li>`).join('')}</ul>
+      <form data-form="year" class="yr-new"><label class="pop-t" for="yr-adm">Adicionar ou abrir outro ano</label><div class="act-row"><input id="yr-adm" name="ano" class="in-s left" inputmode="numeric" maxlength="4" placeholder="Ex.: ${NOW_Y + 1}" autocomplete="off"><button class="btn primary" type="submit">Abrir</button></div></form></div>
+    </section>
+    <section class="dr-sec"><h3>Personalizar o painel</h3>
+      <div class="dr-sub"><h4>Telas</h4>${['geral', 'gastos', 'rendas', 'invest', 'proventos', 'carteira'].filter((k) => !PAINEIS[k].recurso || temRecurso(PAINEIS[k].recurso)).map(painelLinkHtml).join('')}</div>
+      <div class="dr-sub"><h4>Abas do menu</h4><div class="abas">${abas.map(([k, l, d]) => `<label class="chk aba"><input type="checkbox" data-aba="${k}" ${p.abas.includes(k) ? 'checked' : ''} ${k === 'geral' ? 'disabled' : ''}><span><b>${l}</b><small>${d}</small></span></label>`).join('')}</div></div>
+      ${prefsHtml()}
+    </section>
+    <section class="dr-sec"><h3>Backup e planilhas</h3>
+      <div class="dr-sub"><h4>Backup completo</h4><div class="btn-row"><button class="btn primary" data-act="backup">Baixar backup</button><label class="btn" for="bk-file">Restaurar backup</label><input id="bk-file" type="file" accept=".json,application/json" hidden></div>${bkHtml()}</div>
+      <div class="dr-sub"><h4>Importar planilha (.xlsx)</h4>${importBlock}</div>
+    </section>
     <section class="dr-sec"><h3>Plano</h3>${plano}<div class="btn-row"><button class="btn" data-act="contact">Falar com o ${esc(primeiroNome())}</button></div></section>
     <section class="dr-sec"><h3>Sessão</h3><div class="btn-row"><button class="btn" data-act="goto-landing">Ver página inicial</button><button class="btn" data-act="terms">Termos e privacidade</button><button class="btn danger" data-act="sair">Sair</button></div></section>`;
 }
