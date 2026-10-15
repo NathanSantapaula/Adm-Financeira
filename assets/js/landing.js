@@ -73,9 +73,6 @@ function lpLanc(estado, vivo) {
     <span class="hp-lanc-v">−${brl(vivo ? 210 : feito ? 386.4 : 92.9)}</span>${cat}${acao}</li>`;
 }
 
-// projeção ilustrativa da seção "Seu futuro": mesmos números do gráfico (R$ 180 mil, R$ 4.500 por mês, 10% ao ano, 10 anos)
-const lpProj = () => E.projetar(180000, 4500, 10, 120);
-const lpProjAno = () => { const p = lpProj(); const i = p.findIndex((v) => v >= 1000000); return i < 0 ? NOW_Y + 10 : NOW_Y + Math.floor(i / 12) + 1; };
 
 /* objetivo da prévia: o visitante escolhe qual (os mesmos tipos do app, E.OBJ_TIPOS); valores ilustrativos por tipo:
    [meta em reais, progresso de 0 a 1, anos até a previsão] */
@@ -242,10 +239,6 @@ function landingHtml() {
       <div class="hp-feat-t"><h3>Do extrato ao mês, sem digitar.</h3><p>Envie o extrato em CSV ou OFX. Cada lançamento chega com uma categoria sugerida e dá baixa no que você planejou. Nada é gravado sem você conferir: experimente confirmar o do meio.</p></div>
       <div class="hp-card hp-vis"><small>Importação de outubro</small><ul class="hp-lancs">${lpLanc('chega')}</ul><ul class="hp-lancs" id="lp-vivo-w">${lpLanc(st.ok ? 'pronto' : 'chega', true)}</ul><ul class="hp-lancs">${lpLanc('pronto')}</ul></div>
     </div>
-    <div class="hp-feat luz" data-rv>
-      <div class="hp-feat-t"><h3>Seu futuro, em números.</h3><p>Projete o patrimônio até o seu objetivo, seja aposentadoria, imóvel ou independência financeira, e veja o efeito de cada aporte no prazo.</p></div>
-      <div class="hp-card hp-vis luz"><div class="hp-proj-h"><small>Projeção ilustrativa</small><span class="hp-proj-k"><b>${brl0(1000000)}</b> objetivo</span><span class="hp-proj-k"><b>${lpProjAno()}</b> previsão</span></div><div class="chart" id="hp-proj"></div></div>
-    </div>
   </div></section>
 
   <section class="hp-sec" id="simulador"><div class="hp-w">
@@ -299,8 +292,6 @@ function drawLanding() {
   chartLine($('#hp-line'), { height: 168, zoom: true, labels: meses, aria: 'Evolução ilustrativa do patrimônio', series: [{ color: 'var(--c1)', values: patr, area: true, w: 3 }], tip: (i) => `<b>${meses[i]}</b><br>${brl0(patr[i])}` });
   chartDonut($('#hp-donut'), { aria: 'Composição ilustrativa da carteira', title: '3 classes', sub: 'diversificada', items: [{ label: 'Renda fixa', value: 54, color: 'var(--c1)' }, { label: 'Ações', value: 28, color: 'var(--c2)' }, { label: 'Fundos imobiliários', value: 18, color: 'var(--c3)' }] });
   lpObjAtualiza();
-  const proj = lpProj(); const lab = proj.map((_, i) => (i % 12 === 11 ? String(NOW_Y + Math.floor(i / 12) + 1) : ''));
-  chartLine($('#hp-proj'), { height: 220, labels: lab, aria: 'Projeção ilustrativa do patrimônio até o objetivo', goal: 1000000, goalLabel: 'Objetivo: R$ 1 milhão', series: [{ color: 'var(--c1)', values: proj, area: true, w: 3 }], tip: (i) => `<b>${NOW_Y + Math.floor(i / 12)}</b><br>${brl0(proj[i])}` });
   lpHeroVivo(); lpCarrossel();
 }
 

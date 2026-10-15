@@ -38,7 +38,7 @@ window.FP_CONFIG = {
   // logos do Wikimedia Commons (domínio público), mostrados numa cor só. caixa: [x, y, largura, altura] do desenho dentro
   // do arquivo e [largura, altura] do arquivo, para cortar a margem vazia (opcional). altura: em px, para equilibrar logos (opcional). peso: engrossa o traço de um logo fino, em px (opcional).
   empresas: [
-    { nome: 'Stone Co.', logo: 'assets/img/logos/stone.png', caixa: [452, 1624, 3192, 848, 4096, 4096], altura: 19 },
+    { nome: 'Stone Co.', logo: 'assets/img/logos/stone.png', caixa: [0, 0, 361, 96, 361, 96], altura: 19 }, // PNG já recortado e branco (361 × 96)
     { nome: 'Deloitte', logo: 'assets/img/logos/deloitte.svg', caixa: [3, 2, 886, 167, 892, 171] },
     // XP: desenhado no próprio HTML (LP_SVG em landing.js) para a forma ficar na cor da marca e mudar com o tema
     { nome: 'XP Inc.', svg: 'xp' },

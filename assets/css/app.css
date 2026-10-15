@@ -737,7 +737,7 @@ dialog.drawer[open] { display: flex; animation: drin .22s ease-out; }
 .hp-logo-svg { display: block; height: 17px; } .hp-logo-svg svg { display: block; height: 100%; width: auto; overflow: visible; }
 .hp-logo-acc { fill: var(--b2); }
 .hp-logo-img { position: relative; display: block; height: 17px; overflow: hidden; }
-.hp-logo-img img { position: absolute; max-width: none; height: auto; filter: brightness(0) invert(1); }
+.hp-logo-img img { position: absolute; max-width: none; height: auto; } /* PNG já vem branco e pequeno: filtro em imagem grande some no Safari do iPhone */
 .hp-logo { display: block; height: 17px; width: auto; background: currentColor; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-size: contain; mask-size: contain; -webkit-mask-position: center; mask-position: center; }
 .hp-emp-n { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; white-space: nowrap; }
 @media (hover: hover) and (pointer: fine) { .hp-emp:hover { opacity: 1; } }
@@ -1928,20 +1928,6 @@ div.g-li { cursor: default; }
 
 /* cadastro: contato com o assessor quando o e-mail de confirmação não sai */
 .auth-ajuda { margin: -4px 0 14px; } .auth-ajuda .btn-row { justify-content: flex-start; }
-
-/* ---------- página inicial: "Seu futuro, em números" iluminado (luz da marca atrás e no cartão) ---------- */
-.hp-feat.luz { position: relative; }
-.hp-feat.luz::before { content: ""; position: absolute; right: -6%; top: 50%; width: min(760px, 80%); height: 120%; translate: 0 -50%; z-index: -1; pointer-events: none; border-radius: 50%;
-  background: radial-gradient(closest-side, color-mix(in srgb, var(--b2) 24%, transparent), color-mix(in srgb, var(--b3) 12%, transparent) 55%, transparent); filter: blur(24px); }
-.hp-vis.luz { background: radial-gradient(110% 80% at 100% 0%, color-mix(in srgb, var(--b2) 16%, transparent), transparent 60%) padding-box, radial-gradient(90% 70% at 0% 100%, color-mix(in srgb, var(--b1) 14%, transparent), transparent 65%) padding-box,
-  var(--sheen) padding-box, linear-gradient(var(--glass-strong), var(--glass-strong)) padding-box, linear-gradient(150deg, color-mix(in srgb, var(--b1) 75%, transparent), var(--glass-edge) 45%, color-mix(in srgb, var(--b3) 60%, transparent)) border-box;
-  box-shadow: var(--shadow), 0 40px 90px -40px color-mix(in srgb, var(--b2) 65%, transparent); }
-.hp-vis.luz .chart path[stroke] { filter: drop-shadow(0 6px 12px color-mix(in srgb, var(--b2) 55%, transparent)); }
-.hp-proj-h { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; margin-bottom: 4px; }
-.hp-proj-h small { flex: 1 1 100%; }
-.hp-proj-k { display: inline-flex; align-items: baseline; gap: 6px; color: var(--ink-3); font-size: 13px; }
-.hp-proj-k b { color: var(--ink); font-size: clamp(20px, 2.2vw, 26px); font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
-.hp-proj-k + .hp-proj-k b { background: var(--g-marca); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
 
 /* ---------- página inicial no celular: sem o título "Tudo o que importa" e planos em carrossel (Assessoria primeiro) ---------- */
 .hp-planos-dica { display: none; }
