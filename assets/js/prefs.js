@@ -3,18 +3,48 @@
    Voz   = catálogo de frases com marcadores {assim}; o app inteiro fala pela função voz(). */
 'use strict';
 const TEMAS = {
-  auto: { nome: 'Automático', desc: 'Segue o seu aparelho: Claro de dia, Dark OLED à noite.', sw: ['#F5F6F9', '#FFFFFF', '#000000', '#0F0F11'] },
-  light: { nome: 'Claro', desc: 'Vidro claro sobre luz azul, limpo e luminoso.', sw: ['#F5F6F9', '#FFFFFF', '#0A84FF', '#5E5CE6'] },
-  oled: { nome: 'Dark OLED', desc: 'Preto verdadeiro. Elegante e econômico em telas OLED.', sw: ['#000000', '#0F0F11', '#2F9BFF', '#7D7AFF'] },
-  midnight: { nome: 'Midnight Blue', desc: 'Azul profundo com vidro de brilho frio.', sw: ['#050A1A', '#0D1730', '#5AA7FF', '#8B7BFF'] },
+  auto: { nome: 'Automático', desc: 'Segue o aparelho: claro de dia, escuro à noite.' },
+  light: { nome: 'Claro', desc: 'Vidro claro sobre luz azul.', sw: ['#F5F6F9', '#0A84FF'] },
+  oled: { nome: 'Dark OLED', desc: 'Preto verdadeiro, econômico em telas OLED.', sw: ['#000000', '#3D9DFF'] },
+  custom: { nome: 'Personalizado', desc: 'Você escolhe o fundo e a cor de destaque.' },
 };
-const COR_BARRA = { light: '#F5F6F9', oled: '#000000', midnight: '#050A1A' };
+// cores de destaque do tema Personalizado (o contraste é ajustado sozinho para o fundo escolhido)
+const CORES_DESTAQUE = [['#0A84FF', 'Azul AVEN'], ['#5E5CE6', 'Índigo'], ['#10B981', 'Esmeralda'], ['#14B8A6', 'Turquesa'], ['#E8436F', 'Rosa'], ['#F97316', 'Laranja'], ['#D4A017', 'Dourado'], ['#64748B', 'Grafite']];
+const COR_BARRA = { light: '#F5F6F9', oled: '#000000' };
 const mqEscuro = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+const escuroAgora = () => !!(mqEscuro && mqEscuro.matches);
 
-const temaResolvido = (pref) => (pref === 'light' || pref === 'oled' || pref === 'midnight' ? pref : mqEscuro && mqEscuro.matches ? 'oled' : 'light');
+/* contraste: a cor escolhida vira três tons legíveis (texto e destaque, preenchimento com texto branco e brilho) */
+const hexRgb = (h) => [1, 3, 5].map((i) => parseInt(String(h).slice(i, i + 2), 16) || 0);
+const rgbHex = (c) => '#' + c.map((v) => Math.round(v).toString(16).padStart(2, '0')).join('');
+const luminancia = (c) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2]); };
+const contraste = (a, b) => { const x = luminancia(a); const y = luminancia(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+function corLegivel(cor, fundo, para) { const c0 = hexRgb(cor); const f = hexRgb(fundo); let c = c0; for (let t = 0.05; t <= 1.001 && contraste(c, f) < 4.5; t += 0.05) c = c0.map((v, i) => v + (para[i] - v) * t); return rgbHex(c); }
+function coresDestaque(cor, base) {
+  const escuro = base === 'oled';
+  const acc = escuro ? corLegivel(cor, '#0F0F11', [255, 255, 255]) : corLegivel(cor, '#FFFFFF', [0, 0, 0]);
+  const fill = corLegivel(cor, '#FFFFFF', [0, 0, 0]); const g = hexRgb(acc);
+  // cor: o tom escolhido, para gradientes e fundos; mono: a seta do logo acompanha as letras quando a cor não é o azul da marca
+  return { base: escuro ? 'oled' : 'light', acc, fill, glow: `rgba(${g.join(', ')}, .36)`, cor, mono: cor.toLowerCase() !== '#0a84ff' };
+}
+const temaCustom = () => { const c = (typeof S !== 'undefined' && S.profile && S.profile.prefs && S.profile.prefs.custom) || {}; return { base: c.base === 'oled' ? 'oled' : 'light', cor: /^#[0-9a-f]{6}$/i.test(c.cor || '') ? c.cor : '#0A84FF' }; };
+/* prefs.tema: 'auto' | 'light' | 'oled' | 'custom'. prefs.manual guarda o último tema escolhido à mão.
+   Com o Automático ligado e o Personalizado escolhido, a cor fica e o fundo segue o aparelho. */
 function aplicarTema(pref, animar) {
-  pref = TEMAS[pref] ? pref : 'auto'; const r = temaResolvido(pref); const h = document.documentElement;
+  pref = TEMAS[pref] ? pref : pref === 'midnight' ? 'oled' : 'auto'; const h = document.documentElement;
+  const manual = typeof S !== 'undefined' && S.profile && S.profile.prefs ? S.profile.prefs.manual : null;
+  const custom = pref === 'custom' || (pref === 'auto' && manual === 'custom');
   if (animar) { h.classList.add('tema-anim'); setTimeout(() => h.classList.remove('tema-anim'), 650); }
+  let r = pref === 'light' || pref === 'oled' ? pref : pref === 'custom' ? temaCustom().base : escuroAgora() ? 'oled' : 'light';
+  if (custom) {
+    const k = temaCustom(); const cs = coresDestaque(k.cor, r); r = cs.base;
+    h.dataset.custom = '1'; h.style.setProperty('--u-acc', cs.acc); h.style.setProperty('--u-fill', cs.fill); h.style.setProperty('--u-glow', cs.glow); h.style.setProperty('--u-cor', cs.cor);
+    if (cs.mono) h.dataset.mono = '1'; else delete h.dataset.mono;
+    try { localStorage.setItem('fp:temaCustom', JSON.stringify(cs)); } catch (e) { /* ignora */ }
+  } else {
+    delete h.dataset.custom; delete h.dataset.mono; ['--u-acc', '--u-fill', '--u-glow', '--u-cor'].forEach((v) => h.style.removeProperty(v));
+    try { localStorage.removeItem('fp:temaCustom'); } catch (e) { /* ignora */ }
+  }
   h.dataset.theme = r; h.dataset.themePref = pref;
   const meta = document.querySelector('meta[name="theme-color"]'); if (meta) meta.setAttribute('content', COR_BARRA[r]);
   try { localStorage.setItem('fp:tema', pref); } catch (e) { /* ignora */ }
@@ -23,10 +53,10 @@ if (mqEscuro && mqEscuro.addEventListener) mqEscuro.addEventListener('change', (
 
 /* ---------------- voz ---------------- */
 const VOZES = {
-  consultivo: { nome: 'Consultivo', desc: 'Equilibrado e prático, como uma conversa com o seu assessor.' },
-  formal: { nome: 'Executivo', desc: 'Preciso e impessoal, em linguagem de relatório.' },
-  direto: { nome: 'Direto', desc: 'Curto, objetivo e sem rodeios.' },
-  acolhedor: { nome: 'Acolhedor', desc: 'Caloroso e encorajador, celebra cada avanço.' },
+  consultivo: { nome: 'Consultivo', desc: 'Equilibrado, como o seu assessor.' },
+  formal: { nome: 'Executivo', desc: 'Formal, como um relatório.' },
+  direto: { nome: 'Direto', desc: 'Curto e objetivo.' },
+  acolhedor: { nome: 'Acolhedor', desc: 'Caloroso e encorajador.' },
 };
 const VOZ = {
   consultivo: {
@@ -86,12 +116,30 @@ function voz(chave, vars) {
 const saudacaoHora = () => { const h = new Date().getHours(); return h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite'; };
 
 /* ---------------- ações e interface de preferências ---------------- */
-function definirTema(pref) { if (!S.profile) return; S.profile.prefs.tema = pref; touch('profile'); aplicarTema(pref, true); if (S.adminOpen) renderAdmin(); }
+function definirTema(pref) {
+  if (!S.profile) return; const p = S.profile.prefs;
+  if (pref === 'auto-on') p.tema = 'auto';
+  else if (pref === 'auto-off') p.tema = p.manual || (escuroAgora() ? 'oled' : 'light');
+  else if (TEMAS[pref] && pref !== 'auto') { p.manual = pref; if (p.tema !== 'auto') p.tema = pref; else if (pref !== 'custom') p.tema = pref; }
+  touch('profile'); aplicarTema(p.tema, true); if (S.adminOpen) renderAdmin();
+}
+function definirCor(campo, valor) {
+  if (!S.profile) return; const p = S.profile.prefs; p.custom = Object.assign({ base: 'light', cor: '#0A84FF' }, p.custom);
+  if (campo === 'base') p.custom.base = valor === 'oled' ? 'oled' : 'light'; else if (/^#[0-9a-f]{6}$/i.test(valor || '')) p.custom.cor = valor;
+  p.manual = 'custom'; if (p.tema !== 'auto') p.tema = 'custom'; touch('profile'); aplicarTema(p.tema, true); if (S.adminOpen) renderAdmin();
+}
 function definirVoz(v) { if (!S.profile || !VOZ[v]) return; S.profile.prefs.voz = v; touch('profile'); render(); if (S.adminOpen) renderAdmin(); toast('Voz alterada: ' + VOZES[v].nome + '.'); }
 function prefsHtml() {
-  const p = S.profile.prefs;
-  const temas = Object.keys(TEMAS).map((k) => `<button class="theme-card" data-act="tema" data-tema="${k}" aria-pressed="${p.tema === k}"><span class="theme-sw">${TEMAS[k].sw.map((c) => `<i style="background:${c}"></i>`).join('')}</span><b>${TEMAS[k].nome}</b><small>${TEMAS[k].desc}</small></button>`).join('');
-  const vozes = Object.keys(VOZES).map((k) => `<button class="voice-card" data-act="voz" data-voz="${k}" aria-pressed="${p.voz === k}"><b>${VOZES[k].nome}</b><small>${VOZES[k].desc}</small><q>${VOZ[k].exemplo}</q></button>`).join('');
-  return `<section class="dr-sec"><h3>Aparência</h3><p class="mmsg">Escolha o visual do seu painel. A troca é imediata e fica salva na sua conta.</p><div class="themes">${temas}</div></section>
-    <section class="dr-sec"><h3>Voz do painel</h3><p class="mmsg">Define o tom dos destaques, avisos e orientações financeiras.</p><div class="voices">${vozes}</div></section>`;
+  const p = S.profile.prefs; const auto = p.tema === 'auto'; const escolhido = auto ? p.manual || null : p.tema; const k = temaCustom();
+  const amostra = (id) => `<span class="ap-sw" aria-hidden="true">${(id === 'custom' ? [k.base === 'oled' ? '#000000' : '#F5F6F9', k.cor] : TEMAS[id].sw).map((c) => `<i style="background:${c}"></i>`).join('')}</span>`;
+  const opcoes = ['light', 'oled', 'custom'].map((id) => `<button class="ap-op" data-act="tema" data-tema="${id}" aria-pressed="${escolhido === id}">${amostra(id)}<span><b>${TEMAS[id].nome}</b><small>${TEMAS[id].desc}</small></span></button>`).join('');
+  const fundo = [['light', 'Claro'], ['oled', 'Escuro']].map(([v, l]) => `<button class="${k.base === v ? 'on' : ''}" data-act="tema-cor" data-campo="base" data-v="${v}" aria-pressed="${k.base === v}"${auto ? ' disabled' : ''}>${l}</button>`).join('');
+  const cores = CORES_DESTAQUE.map(([c, n]) => `<button class="ap-cor" style="--c:${c}" data-act="tema-cor" data-campo="cor" data-v="${c}" aria-pressed="${k.cor.toLowerCase() === c.toLowerCase()}" aria-label="${n}" title="${n}"></button>`).join('');
+  const custom = escolhido === 'custom' ? `<div class="ap-custom"><div class="ap-linha"><span>Fundo${auto ? ' <small>(segue o aparelho)</small>' : ''}</span><div class="seg" role="group" aria-label="Fundo do tema personalizado">${fundo}</div></div>
+    <div class="ap-linha"><span>Cor de destaque</span><div class="ap-cores" role="group" aria-label="Cor de destaque">${cores}</div></div></div>` : '';
+  const vozes = Object.keys(VOZES).map((v) => `<button class="ap-voz" data-act="voz" data-voz="${v}" aria-pressed="${p.voz === v}"><b>${VOZES[v].nome}</b><small>${VOZES[v].desc}</small></button>`).join('');
+  return `<section class="dr-sec"><h3>Aparência</h3><p class="mmsg">Tema e cor do painel. A troca é imediata e fica salva na sua conta.</p>
+      <label class="ap-auto"><span><b>Automático</b><small>Claro de dia, escuro à noite, como o aparelho.</small></span><span class="wg-sw"><input type="checkbox" data-tema-auto ${auto ? 'checked' : ''} aria-label="Tema automático"><span></span></span></label>
+      <div class="ap-ops" role="group" aria-label="Tema">${opcoes}</div>${custom}</section>
+    <section class="dr-sec"><h3>Voz do painel</h3><p class="mmsg">O tom dos destaques, avisos e orientações. Os números nunca mudam.</p><div class="ap-vozes">${vozes}</div></section>`;
 }

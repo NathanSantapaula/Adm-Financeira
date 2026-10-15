@@ -21,7 +21,7 @@ function authHtml() {
     body = `<h2>Nova senha</h2><p class="sub">Escolha uma nova senha para a sua conta.</p>
       <form id="f-auth" novalidate><label class="fld"><span>Nova senha <small>(mínimo de 8 caracteres)</small></span><input name="password" type="password" autocomplete="new-password"></label>${err}<button class="btn primary lg" type="submit">Salvar nova senha</button></form>`;
   } else if (m === 'signup') {
-    body = `<h2>Criar sua conta</h2><p class="sub">Em seguida você faz o diagnóstico: patrimônio, perfil de investidor e objetivo.</p>${note}
+    body = `<h2>Criar sua conta</h2><p class="sub">${S.authPagar ? 'Em seguida você vai direto para o pagamento. O diagnóstico fica para depois.' : 'Em seguida você faz o diagnóstico: patrimônio, perfil de investidor e objetivo.'}</p>${note}
       <form id="f-auth" novalidate>
         <label class="fld"><span>Nome completo</span><input name="nome" autocomplete="name" value="${esc(S.authDraft && S.authDraft.nome || '')}"></label>
         <label class="fld"><span>E-mail</span><input name="email" type="email" autocomplete="email" value="${esc(S.authDraft && S.authDraft.email || '')}"></label>
@@ -59,7 +59,8 @@ async function submitAuth(f) {
     if (m === 'reset') { await Store.resetPassword(email); S.authMsg = 'Se esse e-mail tiver conta, o link já está a caminho.'; render(); return; }
     if (m === 'login') {
       if (!demo && !d.password) return fail('Informe a sua senha.');
-      const { user } = await Store.signIn({ email, password: d.password }); await entrar(user); render(); return;
+      const { user } = await Store.signIn({ email, password: d.password }); await entrar(user);
+      if (S.authPagar && S.authPlano && !S.isAdmin) { S.authPagar = false; iniciarCheckout(S.authPlano); return; } render(); return;
     }
     // signup
     const nome = String(d.nome || '').trim();
@@ -68,10 +69,11 @@ async function submitAuth(f) {
     if (!d.termos) return fail('Aceite os termos e a política de privacidade para continuar.');
     const plano = d.plano === 'completo' || d.plano === 'investidor' ? d.plano : null;
     const r = await Store.signUp({ nome, email, whatsapp: String(d.whatsapp || '').trim(), password: d.password });
-    if (r.needsVerify) { try { if (plano) localStorage.setItem('fp:plano', plano); } catch (e) { /* ignora */ } S.authMode = 'verify'; S.authMsg = email; render(); return; }
+    const pagar = !!(S.authPagar && plano); S.authPagar = false;
+    if (r.needsVerify) { try { if (plano) localStorage.setItem('fp:plano', plano); if (pagar) localStorage.setItem('fp:pagar', '1'); } catch (e) { /* ignora */ } S.authMode = 'verify'; S.authMsg = email; render(); return; }
     await entrar(r.user);
     S.profile.nome = nome; S.profile.whatsapp = String(d.whatsapp || '').trim(); S.profile.consentimento = true; S.profile.planoSolicitado = plano; touch('profile');
-    S.ob.nome = nome; render();
+    S.ob.nome = nome; if (pagar) { iniciarCheckout(plano); return; } render();
   } catch (e) { fail(e && e.amigavel ? e.message : 'Não foi possível concluir agora. Tente novamente.'); }
 }
 
@@ -202,7 +204,7 @@ function checkoutHtml() {
        <div class="step"><h3><span>3</span>Aguarde a confirmação</h3><p class="mmsg">O ${esc(primeiroNome())} confirma o pagamento e libera o plano na sua conta. Você já pode usar o painel enquanto isso.</p><div class="btn-row"><button class="btn" data-act="checkout-back">Ir para o meu painel</button></div></div>`;
   return `<div class="auth wide"><button class="btn ghost back" data-act="checkout-back">${p.onboarded ? 'Voltar' : 'Pular por enquanto'}</button>
     <div class="co-grid"><div class="co-sum"><h2>Plano ${esc(nome)}</h2><p class="sub">${esc(info.resumo)}</p>
-      <div class="price2"><b>${esc(precoTxt(id))}</b></div>${id === 'completo' ? `<p class="launch">Condição de lançamento. Valor regular ${brl(CFG.precoRegular)}.</p>` : ''}
+      <div class="price2">${id === 'completo' && CFG.precoRegular > precoPlano(id) ? `<s class="hp-antes"><span class="hp-sr">De </span>${esc(brl(CFG.precoRegular))}</s>` : ''}<b>${esc(precoTxt(id))}</b></div>${id === 'completo' ? '<p class="launch">Condição de lançamento.</p>' : ''}
       <ul>${info.itens.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>${id === 'completo' ? `<p class="cap">Na Assessoria, o ${esc(primeiroNome())} passa a ver o seu planejamento para acompanhar você. Os termos explicam isso.</p>` : ''}</div>
       <div class="co-steps">${steps}</div></div></div>`;
 }

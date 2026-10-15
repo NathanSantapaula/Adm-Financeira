@@ -719,6 +719,42 @@
     return out.map((n, i) => [n, i]).sort((a, b) => (NIVEL_PESO[b[0].nivel] - NIVEL_PESO[a[0].nivel]) || a[1] - b[1]).map((x) => x[0]);
   }
 
+  /* ---------- Análise da carteira contra o alvo (aba Carteira) ----------
+     itens: [{ nome, classe, tipo, alvo (peso), valor (posição atual), preco? }]; aporte: valor do mês.
+     O aporte segue rebalance (só compra, nunca vende). Percentuais em pontos (0 a 100). */
+  function analiseCarteira(o) {
+    const base = (o.itens || []).map((i) => Object.assign({}, i, { w: Math.max(0, +i.alvo || 0), v: Math.max(0, +i.valor || 0) }));
+    const aporte = Math.max(0, +o.aporte || 0); const W = sum(base.map((i) => i.w)); const total = sum(base.map((i) => i.v)); const T = total + aporte;
+    const rb = rebalance(base.map((i) => ({ w: i.w, v: i.v })), aporte);
+    const itens = base.map((i, n) => {
+      const pctAtual = total > 0 ? (i.v / total) * 100 : 0; const pctAlvo = W > 0 ? (i.w / W) * 100 : 0; const sug = rb.alloc[n] || 0;
+      const pctDepois = T > 0 ? ((i.v + sug) / T) * 100 : 0; const valorAlvo = W > 0 ? (T * i.w) / W : 0;
+      return Object.assign(i, { pctAtual, pctAlvo, desvio: pctAtual - pctAlvo, sug, pctDepois, desvioDepois: pctDepois - pctAlvo,
+        falta: r2(Math.max(0, valorAlvo - i.v - sug)), cotas: +i.preco > 0 && sug > 0 ? Math.floor(sug / +i.preco + 1e-9) : null });
+    });
+    const classes = [];
+    itens.forEach((i) => { let g = classes.find((c) => c.classe === i.classe && c.tipo === i.tipo); if (!g) { g = { classe: i.classe, tipo: i.tipo, atual: 0, alvo: 0, depois: 0, valor: 0, sug: 0 }; classes.push(g); }
+      g.atual += i.pctAtual; g.alvo += i.pctAlvo; g.depois += i.pctDepois; g.valor += i.v; g.sug += i.sug; });
+    const comAlvo = W > 0 && total > 0;
+    const aderencia = comAlvo ? Math.max(0, 1 - itens.reduce((s, i) => s + Math.abs(i.desvio), 0) / 200) : null;
+    const aderenciaDepois = W > 0 && T > 0 ? Math.max(0, 1 - itens.reduce((s, i) => s + Math.abs(i.desvioDepois), 0) / 200) : null;
+    // em quantos aportes iguais a este a carteira fica com todos os ativos a menos de 1 p.p. do alvo, sem vender
+    let mesesEquilibrio = null;
+    if (W > 0 && comAlvo && Math.max(...itens.map((i) => Math.abs(i.desvio))) < 1) mesesEquilibrio = 0;
+    else if (W > 0 && aporte > 0) {
+      let v = base.map((i) => i.v);
+      for (let m = 1; m <= 120; m++) {
+        const r = rebalance(base.map((i, k) => ({ w: i.w, v: v[k] })), aporte); v = v.map((x, k) => x + r.alloc[k]); const tt = sum(v);
+        if (Math.max(...base.map((i, k) => Math.abs((v[k] / tt) * 100 - (i.w / W) * 100))) < 1) { mesesEquilibrio = m; break; }
+      }
+    }
+    return {
+      itens, classes: classes.map((c) => Object.assign(c, { valor: r2(c.valor), sug: r2(c.sug) })), total: r2(total), aporte, somaAlvo: W,
+      aderencia, aderenciaDepois, foraDoAlvo: comAlvo ? itens.filter((i) => Math.abs(i.desvio) >= 3).length : 0, mesesEquilibrio,
+      maisLonge: comAlvo ? itens.filter((i) => Math.abs(i.desvio) >= 0.5).sort((a, b) => Math.abs(b.desvio) - Math.abs(a.desvio)).slice(0, 5) : [],
+    };
+  }
+
   /* ---------- Análise dos gastos de um período (um mês ou o ano) ----------
      entradas: [{ m, dia, valor, cat, area, nome, tipo: 'real'|'prev', origem }] de todo o ano (reais têm dia; previstos e parcelas, dia 0).
      mes: 0..11, ou -1 para o ano. meses: meses decorridos. hoje: { mes, dia } quando o período inclui o mês corrente.
@@ -814,7 +850,7 @@
 
   const api = { PLANOS, RECURSOS, ABA_RECURSO, planoPermite, planoMinimo, planoNorm, parseDataISO, MES, MES_LONGO, TAXONOMIA, ASSET_LEVELS, QUIZ, PERFIS, RETORNO_PADRAO, CATS_DESP, CATS_RENDA, FORMATO_BACKUP,
     z, add, sub, sum, r2, norm, monthIndex, parseValor, distribuir, parcelaMeses, parcelaFim, parcelaIndice, itemValores, carryItems,
-    ativoKey, buildAssetTree, rebalance, analiseInvest, analiseRenda, analiseGastos, nomeEstab, historico, ctxAno, OBJ_TIPOS, normObjetivos, analiseObjetivos, sugerirDivisao, aporteNecessario, notificacoes, scorePerfil, projetar, mesesAteMeta, simularObjetivo, migratePlan, compute, makeBackup, parseBackup,
+    ativoKey, buildAssetTree, rebalance, analiseInvest, analiseRenda, analiseGastos, analiseCarteira, nomeEstab, historico, ctxAno, OBJ_TIPOS, normObjetivos, analiseObjetivos, sugerirDivisao, aporteNecessario, notificacoes, scorePerfil, projetar, mesesAteMeta, simularObjetivo, migratePlan, compute, makeBackup, parseBackup,
     templateSheets, parseImport, applyImport };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.FPEngine = api;
 })(typeof window !== 'undefined' ? window : globalThis);

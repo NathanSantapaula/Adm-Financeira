@@ -27,7 +27,7 @@ Planejamento financeiro ligado a um assessor real: o mesmo sistema que o cliente
 
 ## Capabilities and Constraints
 
-- Regras do `CLAUDE.md` valem sempre: olho oculto em todo valor em reais, textos de orientação pela `voz()`, três temas (claro, Dark OLED, Midnight) por tokens CSS, sem rolagem lateral em 390 px, `prefers-reduced-motion` respeitado.
+- Regras do `CLAUDE.md` valem sempre: olho oculto em todo valor em reais, textos de orientação pela `voz()`, temas (claro, Dark OLED e Personalizado) por tokens CSS, sem rolagem lateral em 390 px, `prefers-reduced-motion` respeitado.
 - Sem promessa de rentabilidade e sem jargão sem explicação nos textos para o cliente.
 - Sem novas bibliotecas ou frameworks sem consulta.
 

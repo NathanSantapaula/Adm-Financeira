@@ -14,7 +14,7 @@ Painel e página de produto em vidro. A tipografia é a fonte do sistema (SF Pro
 
 ## Cor
 
-- Temas por tokens: `light` (Claro), `oled` (Dark OLED), `midnight` (Midnight Blue). Nada de cor fixa fora dos tokens, exceto a seta azul do logo (`AVEN_AZUL`) e as cores de marca em `:root` (`--f-*`, `--g-*`), iguais nos três temas.
+- Temas por tokens: `light` (Claro) e `oled` (Dark OLED); o Personalizado usa um dos dois como fundo e troca só a cor de destaque (`:root[data-custom]`, variáveis `--u-acc`, `--u-fill`, `--u-glow` calculadas com contraste em `prefs.js`). Nada de cor fixa fora dos tokens, exceto a seta azul do logo (`AVEN_AZUL`), as amostras de cor de destaque (`CORES_DESTAQUE`) e as cores de marca em `:root` (`--f-*`, `--g-*`), iguais em todos os temas.
 - Gradientes da marca: `--g-marca` (ciano, azul, índigo), `--g-noite` (azul-marinho), `--g-aurora` (campo escuro com luzes).
 - `--accent-fill` é o azul de preenchimento de botão com texto branco legível em cada tema; `--accent` é o azul de texto e destaque.
 

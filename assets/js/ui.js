@@ -40,11 +40,12 @@ const I = {
 };
 /* Marca AVEN: letras desenhadas em grade de altura 100 (não dependem de fonte).
    O "A" sem travessa é uma seta para cima, com a seta azul dentro; "A" e "V" juntos formam duas setas.
-   Cores seguem o tema (currentColor / --ink / --bg); o azul da seta é fixo (AVEN_AZUL). */
+   Cores seguem o tema (currentColor / --ink / --bg); a seta é azul (AVEN_AZUL), exceto no tema Personalizado com outra cor,
+   em que acompanha as letras (classe seta-aven, regra :root[data-mono] em app.css). */
 const AVEN_AZUL = '#0A84FF';
 const AVEN_A = 'M0 100 33 0h26l33 100H67L46 34 25 100Z';
 const AVEN_V = 'M0 0h25l21 66L67 0h25L59 100H33Z';
-const AVEN_SETA = `<path d="M46 56 61 100H31Z" fill="${AVEN_AZUL}"/>`;
+const AVEN_SETA = `<path class="seta-aven" d="M46 56 61 100H31Z" fill="${AVEN_AZUL}"/>`;
 const AVEN_LETRAS = `<path d="${AVEN_A}"/>${AVEN_SETA}<path transform="translate(69 0)" d="${AVEN_V}"/><path transform="translate(171 0)" d="M0 0h66v21H24v19h36v20H24v19h42v21H0Z"/><path transform="translate(247 0)" d="M0 100V0h23l38 58V0h23v100H61L23 42v58Z"/>`;
 // Ícone (quadrado com "AV" e a seta azul): favicon, ícone do app e espaços pequenos
 const LOGO = `<svg class="logo-ic" width="28" height="28" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="24" fill="var(--ink)"/><g transform="translate(14.6 28) scale(.44)"><path d="${AVEN_A}" fill="var(--bg)"/>${AVEN_SETA}<path transform="translate(69 0)" d="${AVEN_V}" fill="var(--bg)"/></g></svg>`;

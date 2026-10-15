@@ -13,12 +13,12 @@ window.FP_CONFIG = {
   linkedinUrl: 'https://www.linkedin.com/in/nathansantapaula/',
   agendaUrl: 'https://zcal.co/i/ioYEzB16',
   paymentUrl: 'https://mpago.li/22BFXTT',
-  // paymentUrlInvestidor: 'https://...', // link de pagamento do plano Investidor (opcional)
+  paymentUrlInvestidor: 'https://mpago.la/1XGSHzW', // link de pagamento do plano Investidor
 
   // Planos: Organização (gratuito), Investidor e Assessoria. O plano Assessoria usa precoPor/precoRegular.
   precoPor: 124.75,
   precoRegular: 324.99,
-  precoInvestidor: null, // ex.: 49.9. Vazio mostra "Sob consulta" no site
+  precoInvestidor: 54.75, // ex.: 49.9. Vazio mostra "Sob consulta" no site
 
   // Prova de autoridade: só aparece se preenchido. Exemplos:
   // bio: 'Texto curto sobre você.',

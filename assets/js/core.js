@@ -69,6 +69,8 @@ function hydrateProfile(p) {
   p.anoRef = (p.anoRef | 0) || NOW_Y; p.onboarded = !!p.onboarded; p.retornoAnual = p.retornoAnual != null ? +p.retornoAnual : 10;
   p.planoSolicitado = p.planoSolicitado === 'completo' || p.planoSolicitado === 'investidor' ? p.planoSolicitado : null;
   p.prefs = Object.assign({ tema: 'auto', voz: 'consultivo' }, p.prefs || {});
+  if (p.prefs.tema === 'midnight') p.prefs.tema = 'oled'; // Midnight Blue saiu: quem usava fica no escuro
+  if (p.prefs.manual === 'midnight') p.prefs.manual = 'oled';
   if (!TEMAS[p.prefs.tema]) p.prefs.tema = 'auto'; if (!VOZES[p.prefs.voz]) p.prefs.voz = 'consultivo';
   p.regras = Array.isArray(p.regras) ? p.regras.slice(0, 300) : [];
   p.objetivos = E.normObjetivos(p, uid); // lista de objetivos (perfis antigos com um objetivo só são convertidos)
@@ -151,6 +153,8 @@ async function entrar(user) {
   S.year = pickYear(); S.plan = S.plans[S.year] || null; S.mes = defaultMes(S.year);
   S.view = 'geral'; S.clients = null; S.mesesAbertos = new Set([defaultMes(S.year)]);
   S.screen = S.profile.onboarded ? 'app' : 'onboarding'; if (S.screen === 'onboarding') initOb();
+  // cadastro que pediu a Assessoria e precisou confirmar o e-mail: no primeiro acesso, segue direto para o pagamento
+  try { if (localStorage.getItem('fp:pagar')) { localStorage.removeItem('fp:pagar'); if (S.profile.planoSolicitado && !S.isAdmin) { S.checkoutPlano = S.profile.planoSolicitado; S.screen = 'checkout'; } } } catch (e) { /* ignora */ }
 }
 function pickYear() {
   const ref = S.profile && S.profile.anoRef; const ys = Object.keys(S.plans).map(Number).sort();

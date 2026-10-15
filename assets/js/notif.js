@@ -219,7 +219,7 @@ function notifPopover(lista) {
   const vazio = lista.length ? '<p class="np-vazio">Nada nesta categoria agora.</p>'
     : `<div class="np-vazio"><span class="np-ok" aria-hidden="true">${I.check}</span><b>Tudo em dia</b><p>Eu acompanho o seu planejamento e aviso por aqui sobre orçamento, entradas, aportes e oportunidades na carteira.</p></div>`;
   return `<div class="popover npop${S.notifAnim ? ' entra' : ''}" role="dialog" aria-label="Central de notificações" tabindex="-1">
-    <div class="np-h"><div><b>Central de notificações</b><small>Seu assistente financeiro · ${esc(CFG.consultor)}</small></div>${novas ? '<button class="lnk" data-act="notif-todas">Marcar como lidas</button>' : ''}</div>
+    <div class="np-h"><div><b>Central de notificações</b><small>Seu assistente financeiro · ${esc(CFG.consultor)}</small></div><div class="np-h-a">${novas ? '<button class="lnk" data-act="notif-todas">Marcar como lidas</button>' : ''}<button class="icon-btn np-x" data-act="notif-fechar" aria-label="Fechar notificações">${I.x}</button></div></div>
     ${lista.length > 1 ? `<div class="np-chips" role="group" aria-label="Filtrar avisos">${chips}</div>` : ''}
     ${vis.length ? `<ul class="np-l">${vis.map(item).join('')}</ul>` : vazio}
     <p class="np-foot">Avisos automáticos, calculados a partir do seu planejamento de ${new Date().getFullYear()}.</p></div>`;
@@ -251,6 +251,7 @@ function notifAcao(act, ds) {
       if (S.yearOpen) { S.yearOpen = false; render(); } else notifRefresh(abrir ? '.npop' : '.bell');
       return true;
     }
+    case 'notif-fechar': S.notifOpen = false; notifRefresh('.bell'); return true;
     case 'notif-go': notifIr(ds.id); return true;
     case 'notif-ler': notifMarcar('lidas', [ds.id]); notifRefresh(); return true;
     case 'notif-todas': notifMarcar('lidas', (S.notifs || []).map((n) => n.id)); notifRefresh('.npop'); return true;

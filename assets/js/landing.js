@@ -51,12 +51,16 @@ function landingHtml() {
   const perfil = (k) => `<article class="hp-card hp-perfil" data-rv><h3>${E.PERFIS[k].nome}</h3><p>${E.PERFIS[k].desc}</p>
     <div class="hp-pbar" role="img" aria-label="Referência: ${rf(k).rendaFixa}% renda fixa e ${rf(k).bolsa}% renda variável"><i style="width:${rf(k).rendaFixa}%"></i><b style="width:${rf(k).bolsa}%"></b></div>
     <div class="hp-pleg"><span><i class="d1"></i>Renda fixa ${rf(k).rendaFixa}%</span><span><i class="d2"></i>Renda variável ${rf(k).bolsa}%</span></div></article>`;
-  const plano = (id) => { const i = infoPlano(id); const d = id === 'completo'; const txt = id !== 'gratis' && precoPlano(id) <= 0;
-    return `<article class="hp-card hp-plano${d ? ' rec' : ''}" data-rv>${d ? `<span class="hp-selo">Com o ${esc(nome)}</span>` : ''}
+  // planos em ordem crescente: cada degrau sobe um pouco e ganha mais cor; a Assessoria fecha em destaque escuro
+  const plano = (id, n) => { const i = infoPlano(id); const d = id === 'completo'; const txt = id !== 'gratis' && precoPlano(id) <= 0;
+    const antes = d && CFG.precoRegular > precoPlano(id) ? `<s class="hp-antes"><span class="hp-sr">De </span>${esc(brl(CFG.precoRegular))}</s>` : '';
+    return `<article class="hp-card hp-plano n${n + 1}${d ? ' rec hp-dark' : ''}" data-rv>${d ? `<span class="hp-selo">Com o ${esc(nome)}</span>` : ''}
+      <span class="hp-nivel" role="img" aria-label="Nível ${n + 1} de 3"><i></i><i></i><i></i></span>
       <h3>${esc(nomePlano(id))}</h3><p class="hp-plano-r">${esc(i.resumo)}</p>
-      <p class="hp-preco${txt ? ' txt' : ''}">${esc(precoTxt(id))}</p><p class="hp-plano-n">${d && CFG.precoRegular ? `Condição de lançamento. Valor regular ${brl(CFG.precoRegular)}.` : '&nbsp;'}</p>
+      <div class="hp-preco-w">${antes}<p class="hp-preco${txt ? ' txt' : ''}">${antes ? '<span class="hp-sr">por </span>' : ''}${esc(precoTxt(id))}</p></div>
+      <p class="hp-plano-n">${antes ? 'Condição de lançamento.' : id === 'gratis' ? 'Grátis, sem prazo.' : '&nbsp;'}</p>
       <ul>${i.itens.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>
-      <button class="hp-btn${d ? '' : ' vidro'}" data-act="go-auth" data-mode="signup" data-plano="${id}">${id === 'gratis' ? 'Começar grátis' : id === 'investidor' ? (txt ? 'Quero saber mais' : 'Quero o Investidor') : 'Quero a assessoria'}</button></article>`; };
+      <button class="hp-btn${d ? ' lg' : id === 'gratis' ? ' vidro' : ''}" data-act="go-auth" data-mode="signup" data-plano="${id}"${d ? ' data-pagar="1"' : ''}>${id === 'gratis' ? 'Começar grátis' : id === 'investidor' ? (txt ? 'Quero saber mais' : 'Quero o Investidor') : 'Quero a assessoria'}</button></article>`; };
   const faq = [
     ['O que é o diagnóstico?', 'É uma etapa guiada logo após o cadastro: você informa seu patrimônio atual, responde a sete perguntas de perfil de investidor e define seus objetivos. Com isso o painel já nasce personalizado.'],
     ['Onde ficam os meus dados?', `Seus lançamentos ficam em servidor protegido por login e só você acessa. ${esc(CFG.consultor)} vê apenas seu nome, contato e o resultado do diagnóstico, a menos que você contrate a Assessoria.`],
@@ -65,8 +69,6 @@ function landingHtml() {
     ['O assessor vê os meus lançamentos?', `No Organização e no Investidor, não: o ${esc(nome)} vê nome, contato e o resultado do diagnóstico. Na Assessoria ele também acompanha o planejamento, para orientar você.`],
     ['Posso levar meus dados embora?', 'Sim. A qualquer momento você baixa um backup completo e pode restaurá-lo depois.'],
   ];
-  const ve = (s) => `<span class="${s ? 'hp-ve' : 'hp-nve'}">${s ? 'Vê' : 'Não vê'}</span>`;
-  const priv = [['Nome e contato', 1, 1], ['Resultado do diagnóstico', 1, 1], ['Orçamento e lançamentos', 0, 1], ['Investimentos e carteira', 0, 1]];
   const cta = logged ? 'Abrir meu painel' : 'Fazer meu diagnóstico gratuito';
 
   return `<div class="hp">
@@ -141,9 +143,6 @@ function landingHtml() {
         <li class="hp-card" data-rv><b>3</b><div><h3>Revisão mensal</h3><p>Todo mês você sabe o que fazer com o próximo aporte e se está no caminho do objetivo.</p></div></li>
       </ol>
     </div>
-    <div class="hp-card hp-priv" data-rv><h3>O que o ${esc(nome)} vê, em cada plano</h3>
-      <div class="hp-priv-s"><table><thead><tr><th scope="col"><span class="hp-sr">Informação</span></th><th scope="col">Organização e Investidor</th><th scope="col">Assessoria</th></tr></thead>
-        <tbody>${priv.map((p) => `<tr><th scope="row">${p[0]}</th><td>${ve(p[1])}</td><td>${ve(p[2])}</td></tr>`).join('')}</tbody></table></div></div>
     ${(CFG.depoimentos || []).length ? `<div class="hp-grid3 hp-depos">${CFG.depoimentos.map((d) => `<figure class="hp-card" data-rv><blockquote>${esc(d.texto)}</blockquote><figcaption>${esc(d.nome)}</figcaption></figure>`).join('')}</div>` : ''}
   </div></section>
 
@@ -199,7 +198,7 @@ function lpAcao(act, el) {
 function lpComecar() {
   const st = lpEstado();
   if (S.user) { S.screen = S.profile.onboarded ? 'app' : 'onboarding'; if (S.screen === 'onboarding' && !S.ob) initOb(); render(); return; }
-  S.authMode = 'signup'; S.authPlano = 'gratis'; S.authErr = ''; S.authDraft = { nome: String(st.nome || '').trim() }; S.screen = 'auth'; render();
+  S.authMode = 'signup'; S.authPlano = 'gratis'; S.authPagar = false; S.authErr = ''; S.authDraft = { nome: String(st.nome || '').trim() }; S.screen = 'auth'; render();
 }
 
 /* entradas: cada bloco sobe uma vez ao aparecer, em sequência curta. Sem script ou com movimento reduzido, tudo já aparece. */

@@ -135,7 +135,7 @@ function viewAssets(kind) {
 }
 const altura = (el) => { const c = el && el.closest('.card'); return c ? Math.max(210, Math.min(360, c.clientHeight - 96)) : 210; };
 function drawAssets() {
-  if (S.screen !== 'app' || !S.plan || !S.C) return; const C = S.C; const cur = S.year === NOW_Y ? NOW_M : -1;
+  if (S.screen !== 'app' || !S.plan || !S.C) return; drawCart(); const C = S.C; const cur = S.year === NOW_Y ? NOW_M : -1;
   if (S.view === 'inv' && $('#inv-aportes')) {
     const meta = +S.plan.settings.metaAporte || 0;
     chartBars($('#inv-aportes'), { labels: MES, cur, height: altura($('#inv-aportes')), aria: 'Aportes e dividendos reinvestidos por mês, com a meta mensal', bars: [{ color: 'var(--c1)', values: C.aportes }, { color: 'var(--c3)', values: C.dividendos }], marks: meta > 0 ? [{ color: 'var(--c4)', values: MES.map(() => meta) }] : [],
@@ -164,41 +164,187 @@ function cartModel(opt) { // opt (opcional): { plan, C, mes, aporte } para calcu
   });
   return { items, sumAlvo, total, mes, planejado, aporte, rb };
 }
+/* Carteira: widgets organizáveis (mesmo sistema da Visão geral) sobre E.analiseCarteira.
+   O editor de alvos é visual (controle deslizante e campos por ativo) e grava no perfil (S.profile.carteira). */
+const CART_WIDGETS = [
+  { id: 'assessor', nome: () => `Carteira recomendada pelo ${primeiroNome()}`, desc: 'Aparece quando o seu assessor enviar uma carteira recomendada.', tam: 6, tams: [6], padrao: () => true },
+  { id: 'alvos', nome: () => 'Alvos e quanto você tem', desc: 'Ajuste o alvo de cada investimento e quanto você tem hoje nele.', tam: 6, tams: [4, 6], padrao: () => true },
+  { id: 'aporte', nome: () => 'Onde investir este mês', desc: 'Quanto colocar em cada ativo para voltar ao alvo, sem vender nada.', tam: 4, tams: [3, 4, 6], padrao: () => true },
+  { id: 'composicao', nome: () => 'Composição da carteira', desc: 'Peso de cada classe. Passe o mouse para ver os números e toque numa classe para ver os ativos dela.', tam: 2, tams: [2, 3, 4, 6], padrao: () => true },
+  { id: 'ativos', nome: () => 'Cada investimento', desc: 'Um cartão por ativo: quanto tem, quanto pesa contra o alvo e quanto recebe neste aporte.', tam: 6, tams: [4, 6], padrao: () => true },
+  { id: 'classes', nome: () => 'Equilíbrio por classe', desc: 'Cada classe hoje, no alvo e depois do aporte.', tam: 3, tams: [3, 4, 6], padrao: () => true },
+  { id: 'desvios', nome: () => 'Mais longe do alvo', desc: 'Os ativos que mais fugiram do alvo e quanto falta em cada um.', tam: 3, tams: [2, 3, 4, 6], padrao: () => true },
+];
+const fmtPpS = (v) => `${v >= 0 ? '+' : '−'}${fmt1(Math.abs(v))} p.p.`;
+const semAlvoMsg = '<p class="empty-s">Aparece quando houver alvos definidos.</p>';
+function cartAnalise() {
+  const M = cartModel();
+  const K = E.analiseCarteira({ aporte: M.aporte, itens: M.items.map((i) => ({ nome: i.a.nome, classe: i.a.classe, tipo: i.a.tipo, alvo: i.alvo, valor: i.valor, preco: i.preco, k: i.k, auto: i.auto })) });
+  return { M, K };
+}
+const barraCart = (hoje, depois, alvo, mx, cor) => `<span class="cart-m" aria-hidden="true"><i class="d" style="width:${((depois / mx) * 100).toFixed(1)}%${cor ? ';background:' + cor : ''}"></i><i class="h" style="width:${((hoje / mx) * 100).toFixed(1)}%"></i><b style="left:${((alvo / mx) * 100).toFixed(1)}%"></b></span>`;
+
+/* ---- editor visual: alvo (%) e quanto tem hoje, ativo por ativo, em grupos por classe que abrem com a seta ---- */
+const cedAberto = (classe) => !!(S.cedAberto && S.cedAberto[classe]);
+function cedAlternar(btn, abrir) {
+  const g = btn.closest('.ced-g'); if (!g) return; const ab = abrir == null ? !g.classList.contains('on') : abrir;
+  S.cedAberto = S.cedAberto || {}; S.cedAberto[g.dataset.cedG] = ab;
+  g.classList.toggle('on', ab); btn.setAttribute('aria-expanded', ab); const l = g.querySelector('.ced-lista'); if (l) l.hidden = !ab;
+}
+// leva ao ativo no editor: abre a classe dele, rola até a linha e foca o controle do alvo
+function cedIrAtivo(k) {
+  const r = [...document.querySelectorAll('.ced input[type="range"][data-cartv="alvo"]')].find((x) => x.dataset.k === k); if (!r) return;
+  const g = r.closest('.ced-g'); if (g) cedAlternar(g.querySelector('.ced-gh'), true);
+  const li = r.closest('.ced-l'); const suave = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  li.scrollIntoView({ behavior: suave ? 'smooth' : 'auto', block: 'center' }); li.classList.remove('ced-pulso'); void li.offsetWidth; li.classList.add('ced-pulso');
+  setTimeout(() => r.focus({ preventScroll: true }), suave ? 350 : 0);
+}
+function cartSomaHtml(soma) {
+  const ok = Math.abs(soma - 100) < 0.05; const tom = soma <= 0 ? '' : ok ? 'ok' : soma > 100 ? 'neg' : 'warn';
+  return `<div class="ced-soma ${tom}"><div class="ced-soma-t"><b>Alvos somam <span id="ced-soma-v">${fmtPct(soma)}</span></b><small>${soma <= 0 ? 'Comece pela referência do seu perfil ou distribua igualmente.' : ok ? 'Tudo certo: a carteira está 100% definida.' : soma > 100 ? `Passou ${fmtPct(soma - 100)} do total. Normalize ou reduza algum alvo.` : `Faltam ${fmtPct(100 - soma)} para completar. Normalize ou aumente algum alvo.`}</small></div>
+    <span class="ced-soma-b" aria-hidden="true"><i style="width:${Math.min(100, soma).toFixed(1)}%"></i></span></div>`;
+}
+function cartEditorHtml(M, K) {
+  const perfil = S.profile.perfilInvestidor && S.profile.perfilInvestidor.resultado ? E.PERFIS[S.profile.perfilInvestidor.resultado] : null;
+  const grupos = []; K.itens.forEach((i) => { let g = grupos.find((x) => x.classe === i.classe && x.tipo === i.tipo); if (!g) { g = { classe: i.classe, tipo: i.tipo, itens: [] }; grupos.push(g); } g.itens.push(i); });
+  const linha = (i) => { const id = 'ced-' + E.norm(i.k).replace(/[^a-z0-9]+/g, '-');
+    return `<li class="ced-l"><div class="ced-n"><b>${esc(i.nome)}</b><small>hoje ${fmtPct(i.pctAtual)} da carteira${i.desvio <= -0.5 ? ` · <em class="under">${fmtPpS(i.desvio)}</em>` : i.desvio >= 0.5 ? ` · <em class="over">${fmtPpS(i.desvio)}</em>` : ''}</small></div>
+      <div class="ced-alvo"><label class="sr" for="${id}-r">Alvo de ${esc(i.nome)}</label><input id="${id}-r" type="range" min="0" max="100" step="0.5" value="${i.w}" data-cartv="alvo" data-k="${esc(i.k)}" style="--f:${(i.w / 100).toFixed(4)}" aria-label="Alvo de ${esc(i.nome)} em porcentagem">
+        <span class="ced-pct"><input class="in-s" inputmode="decimal" value="${String(i.w).replace('.', ',')}" data-cartv="alvo" data-k="${esc(i.k)}" aria-label="Alvo de ${esc(i.nome)} em porcentagem"><span aria-hidden="true">%</span></span></div>
+      <div class="ced-val"><label><small>Tenho hoje${i.auto ? ' <em>(soma dos aportes)</em>' : ''}</small><input class="in-s" inputmode="decimal" data-cartv="valor" data-k="${esc(i.k)}"${oculto() ? ' placeholder="Valor oculto"' : ''} value="${oculto() ? '' : nf.format(i.v)}" aria-label="Quanto você tem hoje em ${esc(i.nome)}, em reais"></label>${i.auto ? '' : `<button class="lnk ced-auto" data-act="cart-valor-auto" data-k="${esc(i.k)}" title="Voltar a usar a soma dos aportes">Usar soma dos aportes</button>`}</div>
+      <div class="ced-pre"><label><small>Preço da cota</small><input class="in-s" inputmode="decimal" data-cartv="preco" data-k="${esc(i.k)}" placeholder="opcional" value="${i.preco ? nf.format(i.preco) : ''}" aria-label="Preço da cota de ${esc(i.nome)}, opcional"></label></div></li>`; };
+  const ini = S.profile.patrimonioInicial; const aviso = ini > M.total + 1 ? `<div class="notice">Você informou ${brl0(ini)} de patrimônio inicial, mas só ${brl0(M.total)} estão distribuídos nos ativos. Ajuste o "Tenho hoje" de cada ativo para um rebalanceamento preciso.</div>` : '';
+  return `<section class="card ced" id="cart-alvos"><div class="c-h"><h3>Alvos e quanto você tem</h3></div>
+    ${cartSomaHtml(K.somaAlvo)}
+    <div class="btn-row ced-acts">${perfil ? `<button class="btn sm${K.somaAlvo <= 0 ? ' primary' : ''}" data-act="cart-perfil">Usar a alocação do perfil ${esc(perfil.nome.toLowerCase())}</button>` : ''}<button class="btn sm" data-act="cart-equal">Distribuir igualmente</button>${Math.abs(K.somaAlvo - 100) >= 0.05 && K.somaAlvo > 0 ? '<button class="btn sm" data-act="cart-norm">Normalizar para 100%</button>' : ''}<button class="btn ghost sm" data-act="cart-clear">Zerar alvos</button></div>
+    ${aviso}<div class="ced-gs">${grupos.map((g, n) => { const ab = cedAberto(g.classe); const alvo = g.itens.reduce((s, i) => s + i.w, 0); const hoje = g.itens.reduce((s, i) => s + i.pctAtual, 0); const mx = Math.max(alvo, hoje, 1);
+      return `<div class="ced-g${ab ? ' on' : ''}" data-ced-g="${esc(g.classe)}"><button class="ced-gh" data-act="ced-g" aria-expanded="${ab}" aria-controls="ced-g-${n}">
+        <i class="ced-dot" style="background:${PAL[n % 6]}" aria-hidden="true"></i><span class="ced-gn"><b>${esc(g.classe)}</b><small>${g.itens.length} ${g.itens.length === 1 ? 'ativo' : 'ativos'} · hoje ${fmtPct(hoje)}</small></span>
+        <span class="ced-gb" aria-hidden="true"><i class="h" style="width:${((hoje / mx) * 100).toFixed(1)}%"></i><i class="a" style="width:${((alvo / mx) * 100).toFixed(1)}%;background:${PAL[n % 6]}"></i></span>
+        <span class="ced-ga" data-ced-ga>${fmtPct(alvo)}<small>alvo</small></span><span class="ced-chev" aria-hidden="true">${I.chev}</span></button>
+        <ul class="ced-lista" id="ced-g-${n}"${ab ? '' : ' hidden'}>${g.itens.map(linha).join('')}</ul></div>`; }).join('')}</div>
+    <p class="cap">Toque numa classe para abrir os ativos dela. Arraste o controle ou digite o alvo. "Tenho hoje" começa pela soma dos aportes de todos os anos; digite o valor atual se ele mudou. O preço da cota é opcional e serve para estimar quantas cotas comprar.</p></section>`;
+}
+
+/* ---- composição interativa: um anel por classe; tocar numa fatia entra na classe e mostra os ativos de dentro.
+   Dentro da classe, tocar num ativo leva ao alvo dele no editor. Estado só da sessão em S.cmpClasse. ---- */
+let CMP_SEGS = []; // fatias desenhadas agora: { nome, valor, sub, k? }
+function cartComposicaoHtml(K) {
+  if (!(K.total > 0)) return '<p class="empty-s">A composição aparece depois do primeiro aporte.</p>';
+  const temAlvo = K.somaAlvo > 0; const nc = K.classes.findIndex((c) => c.classe === S.cmpClasse); const cls = nc >= 0 ? K.classes[nc] : null;
+  if (!cls) S.cmpClasse = null;
+  const tons = (n, m) => (m <= 1 ? [PAL[n % 6]] : Array.from({ length: m }, (_, j) => `color-mix(in srgb, ${PAL[n % 6]} ${Math.round(100 - (j * 55) / (m - 1))}%, var(--surface))`));
+  let fatias;
+  if (cls) {
+    const its = K.itens.filter((i) => i.classe === cls.classe && i.v > 0).sort((x, y) => y.v - x.v); const cores = tons(nc, its.length);
+    fatias = its.map((i, j) => ({ nome: i.nome, valor: i.v, pct: cls.valor > 0 ? (i.v / cls.valor) * 100 : 0, cor: cores[j], k: i.k,
+      sub: `${fmtPct(cls.valor > 0 ? (i.v / cls.valor) * 100 : 0)} da classe · ${fmtPct(i.pctAtual)} da carteira${temAlvo ? ` · alvo ${fmtPct(i.pctAlvo)}` : ''}`,
+      li: `${fmtPct(cls.valor > 0 ? (i.v / cls.valor) * 100 : 0)}`, liSub: temAlvo ? `${fmtPct(i.pctAtual)} da carteira · alvo ${fmtPct(i.pctAlvo)}` : `${fmtPct(i.pctAtual)} da carteira` }));
+  } else {
+    fatias = K.classes.map((c, n) => { const d = c.atual - c.alvo;
+      return { nome: c.classe, valor: c.valor, pct: c.atual, cor: PAL[n % 6], li: fmtPct(c.atual), liSub: temAlvo ? `alvo ${fmtPct(c.alvo)}` : '',
+        sub: temAlvo ? `${fmtPct(c.atual)} hoje · ${fmtPct(c.alvo)} alvo${Math.abs(d) >= 0.05 ? ` (${fmtPpS(d)})` : ''}` : `${fmtPct(c.atual)} da carteira` }; });
+  }
+  CMP_SEGS = fatias;
+  const C = 2 * Math.PI * 76; let ac = 0; const gap = fatias.filter((f) => f.pct > 0.3).length > 1 ? 2.5 : 0;
+  const segs = fatias.map((f, n) => { const l = (f.pct / 100) * C; const out = l > 0.5 ? `<circle class="cmp-seg" data-cseg="${n}" r="76" cx="100" cy="100" stroke="${f.cor}" stroke-dasharray="${Math.max(0.01, l - gap).toFixed(2)} ${C.toFixed(2)}" stroke-dashoffset="${(-ac).toFixed(2)}" style="--i:${n}"><title>${esc(f.nome)}</title></circle>` : ''; ac += l; return out; }).join('');
+  const total = cls ? cls.valor : K.total; const rotulo = cls ? cls.classe : 'Total hoje';
+  const subTotal = cls ? `${fmtPct(cls.atual)} da carteira${temAlvo ? ` · alvo ${fmtPct(cls.alvo)}` : ''}` : `${K.classes.length} ${K.classes.length === 1 ? 'classe' : 'classes'} · toque para abrir`;
+  const lista = fatias.map((f, n) => `<li><button class="cmp-li" data-act="cart-seg" data-cseg="${n}"${f.k ? ` data-k="${esc(f.k)}"` : ''}><i style="background:${f.cor}"></i><span>${esc(f.nome)}</span><b>${f.li}</b>${f.liSub ? `<small>${f.liSub}</small>` : ''}<span class="cmp-ir" aria-hidden="true">${I.chev}</span></button></li>`).join('');
+  return `<div class="cmp${cls ? ' dentro' : ''}" data-cmp-total="${esc(brl0(total))}" data-cmp-rot="${esc(rotulo)}" data-cmp-sub="${esc(subTotal)}">
+    ${cls ? `<button class="btn ghost sm cmp-volta" data-act="cart-cmp-volta">${I.chev} Todas as classes</button>` : ''}
+    <div class="cmp-g"><svg viewBox="0 0 200 200" role="img" aria-label="${cls ? `Ativos de ${esc(cls.classe)}` : 'Composição da carteira por classe'}"><circle class="cmp-trilho" r="76" cx="100" cy="100"/><g transform="rotate(-90 100 100)">${segs}</g></svg>
+      <div class="cmp-c" aria-live="polite"><small id="cmp-c-k">${esc(rotulo)}</small><b id="cmp-c-v">${brl0(total)}</b><span id="cmp-c-s">${subTotal}</span></div></div>
+    <ul class="cmp-l">${lista}</ul></div>`;
+}
+// destaca uma fatia (ou volta ao total quando n é null), sem redesenhar
+function cartSeg(n) {
+  const raiz = document.querySelector('.cmp'); if (!raiz) return; const f = n == null ? null : CMP_SEGS[n];
+  raiz.classList.toggle('foco', !!f);
+  raiz.querySelectorAll('[data-cseg]').forEach((e) => e.classList.toggle('on', !!f && +e.dataset.cseg === +n));
+  const k = document.getElementById('cmp-c-k'); const v = document.getElementById('cmp-c-v'); const s = document.getElementById('cmp-c-s'); if (!k) return;
+  if (!f) { k.textContent = raiz.dataset.cmpRot; v.textContent = raiz.dataset.cmpTotal; s.textContent = raiz.dataset.cmpSub; return; }
+  k.textContent = f.nome; v.textContent = brl0(f.valor); s.textContent = f.sub;
+}
+// tocar numa fatia: fora de uma classe, entra nela; dentro, leva ao ativo no editor
+function cartCmpAbrir(n) {
+  const f = CMP_SEGS[n]; if (!f) return;
+  if (f.k) { cedIrAtivo(f.k); return; }
+  S.cmpClasse = f.nome; cartCmpTrocar();
+}
+function cartCmpTrocar() {
+  const velho = document.querySelector('.cmp'); if (!velho) return; const { K } = cartAnalise();
+  const t = document.createElement('div'); t.innerHTML = cartComposicaoHtml(K); const novo = t.firstElementChild; novo.classList.add('troca');
+  velho.replaceWith(novo); drawCart(); const foco = novo.querySelector('.cmp-volta') || novo.querySelector('.cmp-li'); if (foco) foco.focus({ preventScroll: true });
+}
+
 function viewCart() {
   if (gated('cart')) return `${pageHead('Carteira', 'Alvo da carteira e onde investir a cada aporte.')}${lockedHtml('cart')}`;
   const p = S.plan;
   if (!p.ativos.length) return `${pageHead('Carteira', 'Alvo da carteira e onde investir a cada aporte.')}<div class="empty-state"><h2>Cadastre seus ativos primeiro</h2><p>A Carteira usa os ativos da aba Investimentos. Adicione-os lá ou importe a planilha com a carteira que o seu assessor montou.</p><div class="btn-row"><button class="btn primary" data-act="nav" data-view="inv">Ir para Investimentos</button><button class="btn" data-act="admin-open">Importar planilha</button></div></div>`;
-  const M = cartModel(); const { items } = M; RI = 0; FIRST_ED = true;
-  const okAlvo = Math.abs(M.sumAlvo - 100) < 0.05;
-  const chip = M.sumAlvo <= 0 ? '<span class="chip warn">Defina o alvo (%) de cada ativo</span>' : okAlvo ? '<span class="chip ok">Alvos somam 100%</span>' : `<span class="chip warn">Alvos somam ${fmtPct(M.sumAlvo)}. Normalize para 100%</span>`;
-  const cm = items.filter((i) => i.sug > 0.004).sort((a, b) => b.sug - a.sug);
-  const out = M.rb.W <= 0 ? '<p class="mmsg">Informe o percentual-alvo dos ativos na tabela abaixo para ver onde investir.</p>' : M.aporte <= 0 ? '<p class="mmsg">Informe um valor de aporte maior que zero.</p>'
-    : `<ol class="alloc">${cm.map((i) => `<li><span class="a-n">${esc(i.a.nome)}<small>${esc(i.a.classe)}</small></span><span class="a-p">${i.cotas != null ? `≈ ${i.cotas} ${i.cotas === 1 ? 'cota' : 'cotas'}` : ''}</span><span class="a-v">${brl(i.sug)}</span></li>`).join('')}</ol>
-      <p class="cap">O aporte vai primeiro para os ativos mais abaixo do alvo, sem vender nada. Se todos estiverem no alvo, divide pelos percentuais. As sugestões seguem as metas que você definiu.</p>`;
+  const { M, K } = cartAnalise(); const semAlvo = K.somaAlvo <= 0;
+  const html = {};
+  const rec = recPainelHtml(); if (rec) html.assessor = rec;
+  html.alvos = cartEditorHtml(M, K);
+  // onde investir este mês
+  const cm = K.itens.filter((i) => i.sug > 0.004).sort((a, b) => b.sug - a.sug);
   const mesSel = `<select data-cart="mes" aria-label="Mês do aporte">${MES.map((m, i) => `<option value="${i}" ${M.mes === i ? 'selected' : ''}>${m}</option>`).join('')}</select>`;
-  const painel = `<div class="card cart-top"><div class="cart-in"><label class="fld"><span>Mês do aporte</span>${mesSel}</label>
-    <label class="fld"><span>Valor do aporte <small>${S.cart.aporte == null ? '(da sua meta)' : '(digitado)'}</small></span><input class="in-s" data-cart="aporte" inputmode="decimal"${oculto() ? ` placeholder="Valor oculto"` : ""} value="${oculto() ? "" : nf.format(M.aporte)}" aria-label="Valor do aporte em reais"></label>${S.cart.aporte != null ? '<button class="btn" data-act="cart-auto">Usar valor da meta</button>' : ''}</div>
-    <div class="cart-out"><h3>Onde investir ${brl(M.aporte)} em ${MES_LONGO[M.mes]}</h3>${out}${cm.length ? `<div class="btn-row"><button class="btn primary" data-act="cart-register">Registrar em Investimentos (${MES[M.mes]})</button></div>` : ''}</div></div>`;
-  const byClass = [];
-  items.forEach((i) => { let g = byClass.find((x) => x.classe === i.a.classe && x.tipo === i.a.tipo); if (!g) { g = { tipo: i.a.tipo, classe: i.a.classe, items: [] }; byClass.push(g); } g.items.push(i); });
-  const clsRows = byClass.map((g) => { const at = g.items.reduce((s, i) => s + i.pctAtual, 0); const al = g.items.reduce((s, i) => s + i.pctAlvo, 0); const mx = Math.max(40, at, al);
-    return `<tr><td>${esc(g.classe)}</td><td><div class="meter" role="img" aria-label="Atual ${fmtPct(at)}, alvo ${fmtPct(al)}"><i style="width:${(at / mx) * 100}%"></i><b style="left:${(al / mx) * 100}%"></b></div></td><td class="num">${fmtPct(al)}</td><td class="num">${fmtPct(at)}</td><td class="num ${at - al < -0.05 ? 'under' : at - al > 0.05 ? 'over' : ''}">${fmtPp(at - al)}</td></tr>`; }).join('');
-  const classTbl = M.rb.W > 0 ? `<div class="sec-h"><div><h3>Equilíbrio por classe</h3><p>A barra mostra quanto a classe pesa hoje; o traço marca o alvo.</p></div></div><div class="card flush"><table class="mini"><thead><tr><th>Classe</th><th></th><th class="num">Alvo</th><th class="num">Atual</th><th class="num">Desvio</th></tr></thead><tbody>${clsRows}</tbody></table></div>` : '';
-  let body = '';
-  byClass.forEach((g) => {
-    const s = (f) => g.items.reduce((a, i) => a + f(i), 0);
-    body += `<tr class="r-g d1"><td class="lab"><div class="in"><span>${esc(g.classe)}</span></div></td><td class="num">${fmtPct(s((i) => i.alvo))}</td><td class="num">${fmt(s((i) => i.valor))}</td><td class="num"></td><td class="num">${fmtPct(s((i) => i.pctAtual))}</td><td class="num">${fmtPp(s((i) => i.desvio))}</td><td class="num">${fmt(s((i) => i.sug))}</td><td class="num"></td></tr>`;
-    g.items.forEach((i) => { const ri = RI++; const ed = (k, col, v, o) => cell(v, col, Object.assign({ k, id: i.k, ri, col: true }, o || {}));
-      body += `<tr><td class="lab"><div class="in" style="--d:1"><span>${esc(i.a.nome)}</span></div></td>${ed('al', 0, i.alvo, { fmt: 'pct' })}${ed('va', 1, i.valor, { auto: i.auto })}${ed('pc', 2, i.preco || 0)}<td class="num${i.pctAtual < 0.005 ? ' z' : ''}">${fmtPct(i.pctAtual)}</td><td class="num ${i.desvio < -0.05 ? 'under' : i.desvio > 0.05 ? 'over' : 'z'}">${fmtPp(i.desvio)}</td><td class="num sug${i.sug > 0 ? ' pos' : ' z'}">${fmt(i.sug)}</td><td class="num${i.cotas ? '' : ' z'}">${i.cotas != null ? i.cotas : '–'}</td></tr>`; });
-  });
-  body += `<tr class="r-total"><td class="lab"><div class="in"><span>Total</span></div></td><td class="num">${fmtPct(M.sumAlvo)}</td><td class="num">${fmt(M.total)}</td><td class="num"></td><td class="num">${M.total > 0 ? '100%' : '–'}</td><td class="num"></td><td class="num">${fmt(items.reduce((a, i) => a + i.sug, 0))}</td><td class="num"></td></tr>`;
-  const ini = S.profile.patrimonioInicial; const aviso = ini > M.total + 1 ? `<div class="notice">Você informou ${brl0(ini)} de patrimônio inicial, mas só ${brl0(M.total)} estão distribuídos nos ativos. Digite o valor atual de cada ativo na coluna “Posição atual” para um rebalanceamento preciso.</div>` : '';
-  const perfilNome = S.profile.perfilInvestidor && S.profile.perfilInvestidor.resultado ? E.PERFIS[S.profile.perfilInvestidor.resultado].nome : '';
-  const acts = `${chip}<button class="btn" data-act="cart-norm">Normalizar para 100%</button><button class="btn" data-act="cart-equal">Distribuir igualmente</button>${perfilNome ? `<button class="btn" data-act="cart-perfil">Usar alocação do perfil ${perfilNome.toLowerCase()}</button>` : ''}<button class="btn" data-act="cart-clear">Limpar alvos</button>`;
-  return `${pageHead('Carteira', 'Adapte a alocação-alvo à sua carteira. A cada aporte mensal, veja onde investir para manter tudo equilibrado.')}${recPainelHtml()}${aviso}<div class="acts wrap-acts">${acts}</div>${painel}${classTbl}<div class="sec-h"><div><h3>Alvo e posição por ativo</h3></div></div>
-    <div class="tablewrap"><table class="grid grid-cart"><thead><tr><th class="lab">Ativo</th><th>Alvo (%)</th><th>Posição atual (R$)</th><th>Preço (R$)</th><th>Atual (%)</th><th>Desvio</th><th>Aporte sugerido (R$)</th><th>Cotas</th></tr></thead><tbody>${body}</tbody></table></div>
-    <p class="cap">Posição atual: soma dos aportes de todos os anos, a menos que você digite o valor de mercado (apague para voltar ao automático). Preço é opcional e serve para estimar as cotas.</p>
+  const entrada = `<div class="cart-in2"><label class="fld"><span>Mês</span>${mesSel}</label><label class="fld"><span>Valor do aporte <small>${S.cart.aporte == null ? '(da sua meta)' : '(digitado)'}</small></span><input class="in-s" data-cart="aporte" inputmode="decimal"${oculto() ? ' placeholder="Valor oculto"' : ''} value="${oculto() ? '' : nf.format(M.aporte)}" aria-label="Valor do aporte em reais"></label>${S.cart.aporte != null ? '<button class="btn sm" data-act="cart-auto">Usar a meta</button>' : ''}</div>`;
+  const lista = semAlvo ? '<p class="empty-s">Defina os alvos acima (ou use a alocação do seu perfil) para ver onde investir.</p>' : M.aporte <= 0 ? '<p class="empty-s">Informe um valor de aporte maior que zero.</p>'
+    : `<ol class="cart-sug">${cm.map((i) => { const mx = Math.max(i.pctAlvo, i.pctDepois, i.pctAtual, 1) * 1.15;
+        return `<li><span class="cart-sug-n"><b>${esc(i.nome)}</b><small>${esc(i.classe)} · hoje ${fmtPct(i.pctAtual)}, depois ${fmtPct(i.pctDepois)}, alvo ${fmtPct(i.pctAlvo)}</small>${barraCart(i.pctAtual, i.pctDepois, i.pctAlvo, mx)}</span>
+          <span class="cart-sug-v"><b>${brl(i.sug)}</b>${i.cotas != null ? `<small>≈ ${i.cotas} ${i.cotas === 1 ? 'cota' : 'cotas'}</small>` : ''}</span></li>`; }).join('')}</ol>
+      <div class="cart-sug-f"><button class="btn primary" data-act="cart-register">Registrar em Investimentos (${MES[M.mes]})</button><p class="cap">O aporte vai primeiro para o que está mais abaixo do alvo, sem vender nada. Barra clara: hoje; escura: depois do aporte; traço: alvo.</p></div>`;
+  html.aporte = `<section class="card"><div class="c-h"><h3>Onde investir ${brl(M.aporte)} em ${MES_LONGO[M.mes]}</h3></div>${entrada}${lista}</section>`;
+  html.composicao = `<section class="card"><div class="c-h"><h3>Composição da carteira</h3></div>${cartComposicaoHtml(K)}</section>`;
+  // cada investimento
+  const tile = (i) => { const prog = i.pctAlvo > 0 ? Math.min(1, i.pctAtual / i.pctAlvo) : 0; const d = i.desvio;
+    const st = semAlvo ? '' : i.pctAlvo <= 0 ? '<span class="ca-st">Sem alvo</span>' : Math.abs(d) < 0.5 ? '<span class="ca-st ok">No alvo</span>' : d < 0 ? `<span class="ca-st under">${fmtPpS(d)} abaixo</span>` : `<span class="ca-st over">${fmtPpS(d)} acima</span>`;
+    return `<li class="ca"><div class="ca-h"><b>${esc(i.nome)}</b><small>${esc(i.classe)}</small></div><b class="ca-v">${brl0(i.v)}</b>
+      <div class="ca-p"><span>${fmtPct(i.pctAtual)} <small>hoje</small></span>${semAlvo ? '' : `<span>${fmtPct(i.pctAlvo)} <small>alvo</small></span>`}</div>
+      ${semAlvo ? '' : `<span class="ca-bar" aria-hidden="true"><i style="width:${(prog * 100).toFixed(1)}%"></i></span>`}<div class="ca-f">${st}${i.sug > 0.004 ? `<span class="ca-sug">+${brl0(i.sug)} neste aporte</span>` : ''}</div></li>`; };
+  html.ativos = `<section class="card"><div class="c-h"><h3>Cada investimento</h3><small class="c-note">${K.itens.length} ${K.itens.length === 1 ? 'ativo' : 'ativos'}</small></div><ul class="ca-grid">${K.itens.slice().sort((a, b) => b.v - a.v).map(tile).join('')}</ul></section>`;
+  // equilíbrio por classe
+  const mxC = Math.max(1, ...K.classes.map((c) => Math.max(c.atual, c.alvo, c.depois))) * 1.1;
+  html.classes = `<section class="card"><div class="c-h"><h3>Equilíbrio por classe</h3></div>${semAlvo ? semAlvoMsg : `<ul class="cart-cls">${K.classes.map((c, n) => { const d = c.atual - c.alvo;
+      return `<li><div class="cart-cls-h"><b>${esc(c.classe)}</b><span>${fmtPct(c.atual)} <small>hoje</small> · ${fmtPct(c.alvo)} <small>alvo</small></span></div>${barraCart(c.atual, c.depois, c.alvo, mxC, PAL[n % 6])}
+      <small class="cart-cls-d ${d < -0.05 ? 'under' : d > 0.05 ? 'over' : ''}">${Math.abs(d) < 0.05 ? 'No alvo' : fmtPpS(d) + (d < 0 ? ' abaixo do alvo' : ' acima do alvo')}${c.sug > 0 ? ` · recebe ${brl0(c.sug)} neste aporte` : ''}</small></li>`; }).join('')}</ul>`}</section>`;
+  // mais longe do alvo
+  html.desvios = `<section class="card"><div class="c-h"><h3>Mais longe do alvo</h3></div>${semAlvo ? semAlvoMsg : K.maisLonge.length ? `<ul class="g-lista">${K.maisLonge.map((i) => `<li><div class="g-li"><span><b>${esc(i.nome)}</b><small>${esc(i.classe)} · hoje ${fmtPct(i.pctAtual)}, alvo ${fmtPct(i.pctAlvo)}</small></span><span class="g-li-v"><b class="${i.desvio < 0 ? 'under' : 'over'}">${fmtPpS(i.desvio)}</b><small>${i.desvio < 0 ? (i.falta > 0 ? `faltam ${brl0(i.falta)} depois deste aporte` : 'chega ao alvo com este aporte') : 'sem novos aportes por enquanto'}</small></span></div></li>`).join('')}</ul>` : '<p class="empty-s">Todos os ativos estão a menos de meio ponto do alvo.</p>'}</section>`;
+  return `${pageHead('Carteira', 'Defina o alvo de cada investimento e veja, a cada aporte, onde investir para manter tudo equilibrado.')}${telaWidgetsHtml('carteira', html)}
     <p class="cap disc">Ferramenta de organização. As sugestões seguem os percentuais-alvo definidos por você e não constituem recomendação individual de investimento.</p>`;
+}
+
+/* campos do editor: o alvo acompanha o dedo sem redesenhar; ao soltar (change), grava e atualiza a tela */
+function cartCampoVivo(t) {
+  if (t.dataset.cartv !== 'alvo') return;
+  const v = t.type === 'range' ? +t.value : E.parseValor(t.value); if (Number.isNaN(v)) return;
+  const linha = t.closest('.ced-l'); if (linha) { const r = linha.querySelector('input[type="range"]'); const n = linha.querySelector('.ced-pct input');
+    if (r && r !== t) { r.value = v; } if (r) r.style.setProperty('--f', (Math.max(0, Math.min(100, v)) / 100).toFixed(4)); if (n && n !== t) n.value = String(v).replace('.', ','); }
+  // soma ao vivo: todos os alvos do editor
+  let soma = 0; document.querySelectorAll('.ced input[type="range"][data-cartv="alvo"]').forEach((r) => { soma += +r.value || 0; });
+  const sv = document.getElementById('ced-soma-v'); if (sv) sv.textContent = fmtPct(soma);
+  const sb = document.querySelector('.ced-soma-b i'); if (sb) sb.style.width = Math.min(100, soma).toFixed(1) + '%';
+  const g = t.closest('.ced-g'); const ga = g && g.querySelector('[data-ced-ga]');
+  if (ga) { let sg = 0; g.querySelectorAll('input[type="range"][data-cartv="alvo"]').forEach((r) => { sg += +r.value || 0; }); ga.firstChild.textContent = fmtPct(sg); }
+}
+function cartCampoGravar(t) {
+  const e = cartEntry(t.dataset.k, true); const campo = t.dataset.cartv; const txt = String(t.value || '').trim();
+  if (campo === 'alvo') { const v = t.type === 'range' ? +t.value : E.parseValor(txt); if (Number.isNaN(v) || v < 0 || v > 100) { toast('Informe um alvo entre 0 e 100%.'); render(); return; } e.alvo = E.r2(v); }
+  else if (campo === 'valor') { if (oculto() && !txt) return; if (!txt) { e.valor = null; } else { const v = parseReais(txt); if (Number.isNaN(v) || v < 0) { toast('Valor inválido. Use números como 1.234,56'); render(); return; } e.valor = E.r2(v); } }
+  else if (campo === 'preco') { if (!txt) e.preco = null; else { const v = parseReais(txt); if (Number.isNaN(v) || v < 0) { toast('Preço inválido.'); render(); return; } e.preco = v > 0 ? E.r2(v) : null; } }
+  touch('profile'); renderLater();
+}
+function drawCart() {
+  if (S.view !== 'cart' || !S.plan || !S.plan.ativos.length || gated('cart')) return;
+  const raiz = document.querySelector('.cmp'); if (!raiz || raiz.dataset.ligado) return; raiz.dataset.ligado = '1';
+  // passar o mouse ou focar uma fatia (ou a linha da legenda) mostra os números dela no centro
+  raiz.addEventListener('pointerover', (ev) => { const s = ev.target.closest && ev.target.closest('[data-cseg]'); if (s && ev.pointerType === 'mouse') cartSeg(+s.dataset.cseg); });
+  raiz.addEventListener('pointerleave', (ev) => { if (ev.pointerType === 'mouse') cartSeg(null); });
+  raiz.addEventListener('focusin', (ev) => { const s = ev.target.closest('[data-cseg]'); if (s) cartSeg(+s.dataset.cseg); });
+  raiz.addEventListener('focusout', (ev) => { if (!raiz.contains(ev.relatedTarget)) cartSeg(null); });
+  // toque ou clique numa fatia do gráfico: entra na classe (ou leva ao ativo, quando já está dentro dela)
+  raiz.querySelector('svg').addEventListener('click', (ev) => { const s = ev.target.closest('[data-cseg]'); if (s) cartCmpAbrir(+s.dataset.cseg); });
 }
 function cartNormalize() {
   const items = cartModel().items; const s = items.reduce((a, i) => a + i.alvo, 0); if (s <= 0) { toast('Defina ao menos um alvo antes de normalizar.'); return; }

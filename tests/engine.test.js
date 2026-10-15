@@ -271,4 +271,19 @@ ok(E.planoPermite('gratis', 'orcamento') && !E.planoPermite('gratis', 'carteira'
   ok(Math.abs(E.sum(A.porMes) - A.total) < 0.01 && Math.abs(A.fixosMes[0] - 2000) < 0.01 && Math.abs(A.variaveisMes[2] - 1599.9) < 0.01, 'gastos: fixos e variáveis por mês');
 }
 
+// --- análise da carteira contra o alvo (aba Carteira)
+{
+  const itens = [{ nome: 'A', classe: 'RF', tipo: 'RENDA FIXA', alvo: 50, valor: 6000, preco: 100 }, { nome: 'B', classe: 'Ações', tipo: 'BOLSA', alvo: 30, valor: 1000, preco: 25 }, { nome: 'C', classe: 'FII', tipo: 'BOLSA', alvo: 20, valor: 3000 }];
+  const K = E.analiseCarteira({ itens, aporte: 2000 });
+  ok(Math.abs(K.itens[1].sug - 2000) < 0.01 && K.itens[0].sug === 0 && K.itens[1].cotas === 80 && K.itens[2].cotas === null, 'carteira: aporte vai para o que está mais abaixo do alvo, com cotas');
+  ok(Math.abs(K.itens[1].pctDepois - 25) < 1e-9 && Math.abs(K.itens[1].desvio + 20) < 1e-9 && Math.abs(K.itens[1].falta - 600) < 0.01, 'carteira: posição depois do aporte e quanto ainda falta');
+  ok(Math.abs(K.aderencia - 0.8) < 1e-9 && K.aderenciaDepois > K.aderencia && K.foraDoAlvo === 3 && K.maisLonge[0].nome === 'B', 'carteira: aderência ao alvo e ativos mais longe');
+  ok(K.mesesEquilibrio === 3, `carteira: chega ao alvo em 3 aportes sem vender (${K.mesesEquilibrio})`);
+  const cls = K.classes.find((c) => c.classe === 'Ações'); ok(Math.abs(cls.atual - 10) < 1e-9 && Math.abs(cls.alvo - 30) < 1e-9 && Math.abs(cls.depois - 25) < 1e-9, 'carteira: equilíbrio por classe');
+  const eq = E.analiseCarteira({ itens: [{ nome: 'A', classe: 'RF', alvo: 50, valor: 500 }, { nome: 'B', classe: 'RV', alvo: 50, valor: 500 }], aporte: 100 });
+  ok(eq.mesesEquilibrio === 0 && eq.foraDoAlvo === 0 && eq.aderencia === 1, 'carteira: já no alvo');
+  const sem = E.analiseCarteira({ itens: [{ nome: 'A', classe: 'RF', alvo: 0, valor: 500 }], aporte: 100 });
+  ok(sem.aderencia === null && sem.mesesEquilibrio === null && sem.maisLonge.length === 0, 'carteira: sem alvos definidos');
+}
+
 process.exit(bad ? 1 : 0);

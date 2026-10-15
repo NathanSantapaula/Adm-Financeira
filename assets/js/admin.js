@@ -1,6 +1,31 @@
 /* Painel administrativo lateral, backup completo, importação .xlsx, anos e área do consultor. */
 'use strict';
 function openAdmin(pagina) { if (S.screen !== 'app' || !S.profile) return; S.adminOpen = true; S.adminPage = pagina === 'perfil' || pagina === 'objetivos' || pagina === 'painel' ? pagina : 'inicio'; renderAdmin(true); const d = $('#admin'); if (!d.open) d.showModal(); }
+/* página inicial do painel: cada seção vira um bloco que abre e fecha pela setinha (todas começam fechadas);
+   o estado fica em S.admSec durante a sessão e sobrevive aos redesenhos do painel */
+// descrição curta de cada seção, visível mesmo fechada (quando a seção não traz a sua própria)
+const ADM_DESC = {
+  'metas-e-ponto-de-partida': 'Meta de aportes do mês e do ano, patrimônio inicial e seus objetivos.',
+  telas: 'Escolha e organize os widgets de cada tela.',
+  'abas-do-menu': 'Quais abas aparecem no menu.',
+  'anos-de-planejamento': 'Abra, crie ou exclua anos de planejamento.',
+  'importar-planilha-xlsx-': 'Traga dados de uma planilha, inclusive a carteira montada pelo assessor.',
+};
+const ADM_FIXAS = new Set(['plano', 'sessao']); // sempre abertas
+function admAcordeao(d) {
+  d.querySelectorAll('.dr-body > section.dr-sec').forEach((sec) => {
+    const h = sec.querySelector(':scope > h3'); if (!h) return;
+    const id = E.norm(h.textContent).replace(/[^a-z0-9]+/g, '-'); if (ADM_FIXAS.has(id)) return;
+    const aberto = !!(S.admSec && S.admSec[id]);
+    const p0 = h.nextElementSibling && h.nextElementSibling.matches('p.mmsg') ? h.nextElementSibling : null;
+    const desc = p0 ? p0.innerHTML : ADM_DESC[id] ? esc(ADM_DESC[id]) : ''; if (p0) p0.remove();
+    const corpo = document.createElement('div'); corpo.className = 'dr-acc-b'; corpo.id = 'adm-' + id;
+    [...sec.childNodes].filter((n) => n !== h).forEach((n) => corpo.appendChild(n));
+    const t = document.createElement('h3'); t.className = 'dr-acc-t';
+    t.innerHTML = `<button class="dr-acc-h" data-act="adm-sec" data-id="${id}" aria-expanded="${aberto}" aria-controls="adm-${id}"><span class="dr-acc-n"><span>${h.innerHTML}</span>${desc ? `<small class="dr-acc-d keep">${desc}</small>` : ''}</span><span class="macc-ch">${I.chev}</span></button>`;
+    sec.replaceChildren(t, corpo); sec.classList.add('dr-acc'); sec.dataset.open = aberto;
+  });
+}
 function closeAdmin() { S.adminOpen = false; const d = $('#admin'); if (d && d.open) d.close(); }
 
 function abrirAno(y) {
@@ -30,10 +55,9 @@ function adminHtml() {
       ${pl ? `<div class="field-row"><div>Meta de aportes mensais<small>A meta de cada mês soma os dividendos recebidos.</small></div><input class="in-s" data-setting="metaAporte" inputmode="decimal" value="${pl.settings.metaAporte ? nf.format(pl.settings.metaAporte) : ''}" placeholder="0,00" aria-label="Meta de aportes mensais"></div>
       <div class="field-row"><div>Meta de investimento de ${pl.year}<small>Opcional. Se vazio, soma as metas mensais.</small></div><input class="in-s" data-setting="metaInvAno" inputmode="decimal" value="${pl.settings.metaInvAno ? nf.format(pl.settings.metaInvAno) : ''}" placeholder="—" aria-label="Meta de investimento do ano"></div>
       <div class="field-row"><div>Patrimônio inicial de ${pl.year}<small>O que você tinha investido no início deste ano. Vazio = automático (patrimônio informado mais os aportes dos anos anteriores).</small></div><input class="in-s" data-setting="patrimonioInicial" inputmode="decimal" value="${pl.settings.patrimonioInicial != null ? nf.format(pl.settings.patrimonioInicial) : ''}" placeholder="0,00" aria-label="Patrimônio inicial do ano"></div>` : ''}
-      <div class="field-row"><div>Retorno anual hipotético (%)<small>Usado só nas projeções. Não é promessa de rentabilidade.</small></div><input class="in-s" data-prof="retornoAnual" inputmode="decimal" value="${String(p.retornoAnual).replace('.', ',')}" aria-label="Retorno anual hipotético"></div>
       ${objetivosLinkHtml()}
 </section>
-    <section class="dr-sec"><h3>Telas</h3>${['geral', 'gastos', 'rendas', 'invest', 'proventos'].filter((k) => !PAINEIS[k].recurso || temRecurso(PAINEIS[k].recurso)).map(painelLinkHtml).join('')}</section>
+    <section class="dr-sec"><h3>Telas</h3>${['geral', 'gastos', 'rendas', 'invest', 'proventos', 'carteira'].filter((k) => !PAINEIS[k].recurso || temRecurso(PAINEIS[k].recurso)).map(painelLinkHtml).join('')}</section>
     <section class="dr-sec"><h3>Abas do menu</h3><div class="abas">${abas.map(([k, l, d]) => `<label class="chk aba"><input type="checkbox" data-aba="${k}" ${p.abas.includes(k) ? 'checked' : ''} ${k === 'geral' ? 'disabled' : ''}><span><b>${l}</b><small>${d}</small></span></label>`).join('')}</div></section>
     <section class="dr-sec"><h3>Anos de planejamento</h3><ul class="yrs">${years.map((y) => `<li><b>${y}</b>${years.length > 1 ? `<button class="btn sm danger" data-act="del-year" data-year="${y}">Excluir</button>` : ''}</li>`).join('')}</ul>
       <form data-form="year" class="yr-new"><label class="pop-t" for="yr-adm">Adicionar ou abrir outro ano</label><div class="act-row"><input id="yr-adm" name="ano" class="in-s left" inputmode="numeric" maxlength="4" placeholder="Ex.: ${NOW_Y + 1}" autocomplete="off"><button class="btn primary" type="submit">Abrir</button></div></form></section>
@@ -59,6 +83,7 @@ function renderAdmin(topo) {
     : `<div class="dr-head"><div><h2>Painel administrativo</h2><p>${esc(S.profile.nome || 'Minha conta')}, ${esc(planLabel().toLowerCase())}</p></div><button class="btn ghost" data-act="admin-close" aria-label="Fechar painel">${I.x}</button></div>`;
   const tst = $('#toast'); // o aviso pode estar dentro deste painel (ver toastHost): não deixa ele sumir no redesenho
   d.innerHTML = `${head}<div class="dr-body${perfil ? ' pf-page' : objs ? ' obj-page' : pnl ? ' wg-page' : ''}">${pnl ? painelEditorHtml() : objs ? objetivosHtml() : perfil ? perfilHtml() : adminHtml()}</div>`;
+  if (!pnl && !objs && !perfil) admAcordeao(d);
   if (tst && !tst.isConnected) d.appendChild(tst);
   $('.dr-body', d).scrollTop = sc;
   // o painel pode ser redesenhado por trás (salvamento, Visão geral): devolve o foco ao mesmo controle
@@ -201,6 +226,7 @@ function onAdminChange(t) {
   }
   if (t.matches('[data-objf]')) { objCampo(t); return true; }
   if (t.matches('[data-painel-on]')) { painelLigar(t); return true; }
+  if (t.matches('[data-tema-auto]')) { definirTema(t.checked ? 'auto-on' : 'auto-off'); return true; }
   if (t.matches('[data-aba]')) {
     const keys = $$('[data-aba]:checked', $('#admin')).map((x) => x.dataset.aba);
     p.abas = hydrateProfile({ abas: ['geral'].concat(keys.filter((k) => k !== 'geral')) }).abas; if (!p.abas.includes(S.view)) S.view = 'geral'; touch('profile'); renderLater(); return true;

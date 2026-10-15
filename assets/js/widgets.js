@@ -104,6 +104,7 @@ const PAINEIS = {
   rendas: { defs: () => R_WIDGETS, chave: 'painelRendas', nome: 'Rendas', view: 'rendas' },
   invest: { defs: () => INV_WIDGETS, chave: 'painelInvest', nome: 'Investimentos', view: 'inv', recurso: 'investimentos' },
   proventos: { defs: () => PRO_WIDGETS, chave: 'painelProventos', nome: 'Proventos', view: 'pro', recurso: 'proventos' },
+  carteira: { defs: () => CART_WIDGETS, chave: 'painelCarteira', nome: 'Carteira', view: 'cart', recurso: 'carteira' },
 };
 const alvoDaTela = () => Object.keys(PAINEIS).find((k) => PAINEIS[k].view === S.view) || null; // tela com widgets aberta agora
 const nomeTela = (alvo) => (alvo && alvo !== 'geral' ? 'a aba ' + painelDe(alvo).nome : 'a Visão geral');
@@ -142,7 +143,7 @@ function widgetsHtml() {
    html: { idDoWidget: htmlDoCartão }; widgets sem html (sem dado ou fora do período) não aparecem. */
 function telaWidgetsHtml(alvo, html) {
   const ed = !!S.wgEdit && alvoDaTela() === alvo; const L = painelLayout(alvo).filter((x) => x.on && html[x.id]);
-  const sp = encaixeLinhas(L.map((x) => x.tam)); const spm = encaixeLinhas(L.map((x) => (x.tam === 2 ? 3 : x.tam === 4 ? 6 : x.tam)));
+  const sp = encaixeLinhas(L.map((x) => x.tam)); const spm = encaixeLinhas(tamMedio(sp));
   const cel = L.map((x, k) => { const w = widgetDe(x.id, alvo);
     return `<div class="wg" data-wg="${x.id}" data-tam="${x.tam}" style="--i:${k % 4};--sp:${sp[k]};--spm:${spm[k]}"${ed ? ` aria-label="${esc(w.nome())}"` : ''}>${ed ? wgControles(w, x) : ''}${html[x.id]}</div>`; }).join('');
   const pe = ed ? '' : `<div class="wg-foot"><button class="btn ghost sm" data-act="wg-editar">${I_AJUSTE}Organizar a tela</button><button class="lnk" data-act="painel-abrir" data-alvo="${alvo}">Mais opções</button></div>`;
@@ -153,6 +154,13 @@ function encaixeLinhas(tams, cols) {
   cols = cols || 6; const out = []; let usado = 0; let ultimo = -1;
   tams.forEach((t, i) => { t = Math.min(cols, t); if (usado + t > cols) { if (ultimo >= 0) out[ultimo] += cols - usado; usado = 0; } out.push(t); usado += t; ultimo = i; if (usado === cols) usado = 0; });
   if (usado > 0 && ultimo >= 0) out[ultimo] += cols - usado;
+  return out;
+}
+// larguras em telas médias: quem divide uma linha com só mais um widget fica meio a meio; sozinho, ocupa a linha
+function tamMedio(sp) {
+  const out = []; let linha = []; let soma = 0;
+  const fecha = () => { if (linha.length === 2) out.push(3, 3); else linha.forEach((t) => out.push(linha.length === 1 || t > 3 ? 6 : 3)); linha = []; soma = 0; };
+  sp.forEach((t) => { linha.push(t); soma += t; if (soma >= 6) fecha(); }); if (linha.length) fecha();
   return out;
 }
 const I_AJUSTE = ic('<rect x="3.5" y="3.5" width="7" height="7" rx="2"/><rect x="13.5" y="3.5" width="7" height="7" rx="2"/><rect x="3.5" y="13.5" width="7" height="7" rx="2"/><path d="M17 14v6M14 17h6"/>');

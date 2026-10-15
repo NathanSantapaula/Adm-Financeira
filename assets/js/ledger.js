@@ -212,7 +212,7 @@ function gLancamentos() {
 function viewDespesas() {
   const p = S.plan; RI = 0; FIRST_ED = true; const mr = S.year === NOW_Y ? NOW_M : S.mes;
   const vazio = !p.lancamentos.length && !(S.C.T.despesas > 0) && !(S.C.T.orcamento > 0);
-  const acts = `<button class="btn primary" data-act="ingest-open">${I.plus}Importar extrato</button><button class="btn" data-act="cats" data-kind="desp">Categorias</button><button class="btn ghost" data-act="g-pers">Personalizar</button>${yearControl()}`;
+  const acts = `<button class="btn primary" data-act="ingest-open">${I.plus}Importar extrato</button><button class="btn" data-act="cats" data-kind="desp">Categorias</button>${yearControl()}`;
   const head = `<div class="page-h"><div><h2 class="title">Gastos</h2><p class="sub">Escolha o mês ou o ano: os números, as análises e a lista mostram o mesmo período.</p></div><div class="acts">${acts}</div></div>`;
   if (vazio) return `${head}<section class="cc-empty"><div class="cc-empty-ic" aria-hidden="true">${I.plus}</div><div class="cc-empty-tx"><h3>Seu ${S.year} começa pelo extrato</h3><p>Arraste o CSV ou OFX do seu banco: categorizamos tudo e você só confere. Leva menos de um minuto.</p></div><div class="cc-empty-acts"><button class="btn primary lg" data-act="ingest-open">Importar extrato</button><button class="btn ghost" data-act="add-lanc" data-mes="${mr}">Lançar manualmente</button></div></section>`;
   const { G } = gastosDados();

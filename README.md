@@ -12,7 +12,7 @@ assets/js/engine.js           cálculos, parcelamento, planos e permissões, reb
 assets/js/ingest.js           leitura de CSV/OFX, categorização, duplicidade, conciliação, payload de IA
 assets/js/ingest-ui.js        tela de importação (arrastar arquivo, prévia editável)
 assets/js/plans.js            permissões por plano na interface (bloqueios e upgrade)
-assets/js/prefs.js            temas (Claro, Dark OLED, Midnight Blue) e tom de voz
+assets/js/prefs.js            temas (Claro, Dark OLED, Personalizado) e tom de voz
 assets/js/report.js           visão do consultor, carteira recomendada e relatório
 assets/js/store.js            camada de dados (Supabase ou navegador)
 assets/js/*.js                demais telas e interface
@@ -70,7 +70,7 @@ Não rode o `schema.sql` de novo. Cole no SQL Editor apenas `supabase/migrations
 - Para mudar qual plano libera um recurso sem mexer no código, use `recursos` em `config.js`, por exemplo `recursos: { carteira: 'completo' }`. Lista de recursos e planos está nos comentários do arquivo.
 - A interface é só a primeira camada. O que protege de verdade o que o consultor vê é o banco (RLS, migration 002), e a Edge Function confere o plano antes de chamar a IA.
 
-**Preços:** `precoPor` e `precoRegular` definem a Assessoria. Defina `precoInvestidor` (ex.: `49.9`) para exibir o preço do plano Investidor; vazio mostra "Sob consulta". `paymentUrl` é o link de pagamento da Assessoria. Para o plano Investidor, adicione `paymentUrlInvestidor` em `config.js`; sem ele, a tela de assinatura do Investidor não mostra botão de pagamento e orienta o cliente a falar com você.
+**Preços:** `precoPor` e `precoRegular` definem a Assessoria (o regular aparece riscado acima do preço de lançamento). `precoInvestidor` é o preço do plano Investidor (hoje `54.75`); vazio mostra "Sob consulta". Na página inicial os planos aparecem em ordem crescente, em degraus, com a Assessoria em destaque. "Quero a assessoria" leva direto à tela de pagamento: logado, na hora; sem conta, logo após o cadastro (o diagnóstico fica para depois; se o cadastro pedir confirmação de e-mail, o primeiro acesso já abre o pagamento). `paymentUrl` é o link de pagamento da Assessoria. Para o plano Investidor, o link fica em `paymentUrlInvestidor` em `config.js` (já configurado); sem ele, a tela de assinatura do Investidor não mostra botão de pagamento e orienta o cliente a falar com você.
 
 ## 4. Importação inteligente de extratos
 
@@ -96,7 +96,7 @@ Depois, em `assets/js/config.js`, troque `ingestao.iaAtiva` para `true`. A funç
 
 ## 5. Rendas, Investimentos e Proventos como painel de estudo
 
-Os indicadores e cada cartão dessas três abas são widgets, como na Visão geral e em Gastos: **Organizar a tela** (no fim dos widgets, ou segurando um deles) permite arrastar, mudar a largura, tirar e adicionar, e **Mais opções** abre a lista completa (também em Painel › Telas). A escolha fica no perfil e os widgets se encaixam sem deixar espaços vazios. A planilha mês a mês continua fixa no fim de cada aba.
+Os indicadores e cada cartão dessas três abas (e da Carteira) são widgets, como na Visão geral e em Gastos: **Organizar a tela** (no fim dos widgets, ou segurando um deles) permite arrastar, mudar a largura, tirar e adicionar, e **Mais opções** abre a lista completa (também em Painel › Telas). A escolha fica no perfil e os widgets se encaixam sem deixar espaços vazios. A planilha mês a mês continua fixa no fim de cada aba.
 
 A planilha mês a mês continua disponível, recolhida no fim da página. Acima dela:
 
@@ -105,6 +105,10 @@ A planilha mês a mês continua disponível, recolhida no fim da página. Acima 
 
 - **Rendas:** entradas no ano e média mensal, previsibilidade (quanto vem de fontes recorrentes), taxa de poupança, renda passiva, entradas mês a mês por categoria contra o total de gastos, estabilidade (menor, maior e média, com os meses abaixo da média destacados), ranking das fontes (recorrente ou eventual) e "Para estudar" (dependência de uma fonte com a reserva sugerida de 6 a 12 meses de gastos, oscilação, peso dos gastos fixos sobre a renda recorrente e poupança contra a referência de 20%). O cadastro e a edição continuam em "Rendas mês a mês", recolhido no fim.
 Tudo é calculado a custo (ou pelo valor atual que o cliente informar na Carteira), sem cotação de mercado. As projeções usam o retorno hipotético do Painel e são ilustrativas.
+
+### Carteira
+
+A aba Carteira é feita de widgets organizáveis sobre `E.analiseCarteira` (`engine.js`, com testes): **Alvos e quanto você tem** (editor por classe: cada classe é uma linha compacta com seta, alvo somado e barra de hoje contra o alvo, e abre para mostrar os ativos; em cada ativo, um controle deslizante e um campo de % para o alvo, a soma dos alvos ao vivo numa barra, "Tenho hoje" e preço da cota por ativo, com o botão para voltar à soma dos aportes, e atalhos para usar a alocação do perfil, distribuir igualmente ou zerar), **Onde investir este mês** (mês e valor do aporte, quanto vai para cada ativo, as cotas e uma barra com hoje, depois do aporte e o alvo, e o botão para registrar em Investimentos), **Composição da carteira** (um anel por classe; passar o mouse ou focar destaca a fatia e mostra valor, % hoje, % alvo e a diferença no centro; tocar numa classe entra nela e mostra os ativos de dentro, e tocar num ativo leva ao alvo dele no editor; as fatias se desenham na entrada e ao trocar de nível, exceto com movimento reduzido), **Cada investimento** (um cartão por ativo com valor, % hoje contra o alvo, situação e quanto recebe no aporte), **Equilíbrio por classe** e **Mais longe do alvo**. A carteira recomendada pelo assessor aparece como widget quando existir.
 
 ### Simulador do objetivo (“E se?”)
 
@@ -162,7 +166,7 @@ O cliente pode ter vários objetivos ao mesmo tempo (imóvel, carro, viagem, fil
 No painel, o topo é o cartão do cliente. Tocando nele abre **Meu perfil** (no celular, também em Mais > Meu perfil), onde ele:
 
 - envia uma **foto** (JPG, PNG ou WebP). A imagem é recortada em quadrado e reduzida para 320 px no próprio aparelho antes de salvar, ficando com poucas dezenas de KB e guardada junto com o perfil;
-- ou escolhe um **avatar** da coleção: 16 desenhos originais em quatro grupos (Proteção, Equilíbrio, Crescimento e Tecnologia). O grupo do perfil de investidor do cliente aparece primeiro, como sugestão. O avatar "Mosaico" é gerado a partir do nome, então cada pessoa tem o seu;
+- ou escolhe um dos **3 avatares** da coleção AVEN (Marca, Aurora e Camadas), desenhados com os gradientes, o vidro e a seta da marca. Quem tinha escolhido um avatar antigo passa a ver a inicial do nome até escolher outro;
 - edita nome, como prefere ser chamado (usado na saudação), WhatsApp, profissão e cidade, e vê ou refaz o perfil de investidor.
 
 A foto ou o avatar aparecem no menu, no painel e, para você, na lista de Clientes. Para acrescentar imagens próprias à coleção, use `avatares` em `config.js` (instruções no próprio arquivo).
@@ -212,8 +216,8 @@ O identificador interno dos backups continua `financial-planning`, para que back
 
 No **Painel administrativo**, seções **Aparência** e **Voz do painel**:
 
-- **Tema:** Automático (Claro de dia, Dark OLED à noite, conforme o aparelho), Claro, Dark OLED ou Midnight Blue. Os três usam vidro e gradientes da marca (detalhes em `DESIGN.md`). Aplicado antes da tela carregar, sem piscar.
-- **Voz:** Consultivo, Executivo, Direto ou Acolhedor. Muda os textos de orientação e os alertas financeiros (orçamento, poupança, aporte, desvio da carteira). Os números nunca mudam, só a forma de dizer.
+- **Tema:** chave **Automático** (Claro de dia, escuro à noite, conforme o aparelho) e as opções Claro, Dark OLED ou **Personalizado** (o cliente escolhe o fundo, claro ou escuro, e uma de oito cores de destaque; o contraste do texto sobre a cor é calculado em `prefs.js`). O Midnight Blue saiu: quem usava passa para o Dark OLED. Todos usam vidro e gradientes da marca (detalhes em `DESIGN.md`). Aplicado antes da tela carregar, sem piscar.
+- **Voz:** Consultivo, Executivo, Direto ou Acolhedor, cada um com uma linha curta do tom. Muda os textos de orientação e os alertas financeiros (orçamento, poupança, aporte, desvio da carteira). Os números nunca mudam, só a forma de dizer.
 
 A escolha fica salva no perfil do cliente. O sistema respeita a preferência de reduzir animações do dispositivo.
 

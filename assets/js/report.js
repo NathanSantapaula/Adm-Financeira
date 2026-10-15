@@ -48,9 +48,9 @@ const drawRelatorio = () => { if (S.screen === 'app' && S.view === 'relatorio' &
 const tipoDeClasse = (classe) => (/cdb|tesouro|renda fixa|lci|lca|poupan|aplica/i.test(classe) ? 'RENDA FIXA' : 'BOLSA DE VALORES');
 function recPainelHtml() {
   const r = S.recomendacao; if (!temRecurso('carteira_recomendada') || !r || !(r.carteira || []).length) return '';
-  return `<div class="card" style="margin-bottom:16px"><div class="c-h"><h3>Carteira recomendada pelo ${esc(primeiroNome())}</h3><button class="btn primary sm" data-act="rec-aplicar">Aplicar à minha carteira</button></div>
+  return `<section class="card"><div class="c-h"><h3>Carteira recomendada pelo ${esc(primeiroNome())}</h3><button class="btn primary sm" data-act="rec-aplicar">Aplicar à minha carteira</button></div>
     <table class="mini" style="margin-bottom:8px"><thead><tr><th>Ativo</th><th>Classe</th><th class="num">Alvo</th></tr></thead><tbody>${r.carteira.map((x) => `<tr><td>${esc(x.nome)}</td><td>${esc(x.classe)}</td><td class="num">${fmtPct(+x.alvo)}</td></tr>`).join('')}</tbody></table>
-    ${(r.notas || '').trim() ? `<div class="rel-nota">${esc(r.notas)}</div>` : ''}<p class="cap">Aplicar cria os ativos que faltam e substitui os seus alvos pelos recomendados. Os valores continuam sendo os seus.</p></div>`;
+    ${(r.notas || '').trim() ? `<div class="rel-nota">${esc(r.notas)}</div>` : ''}<p class="cap">Aplicar cria os ativos que faltam e substitui os seus alvos pelos recomendados. Os valores continuam sendo os seus.</p></section>`;
 }
 function recAplicar() {
   const r = S.recomendacao; if (!r || !(r.carteira || []).length) return;

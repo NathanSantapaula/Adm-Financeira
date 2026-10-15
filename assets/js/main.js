@@ -100,6 +100,7 @@ function onClick(e) {
       case 'ing-filtro': S.ing.filtro = ds.f; renderIng(); break;
       case 'ing-ia': ingRefinar(); break;
       case 'tema': definirTema(ds.tema); break;
+      case 'tema-cor': definirCor(ds.campo, ds.v); break;
       case 'voz': definirVoz(ds.voz); break;
       case 'rec-aplicar': recAplicar(); break;
       case 'rec-add': recAdd(); break;
@@ -124,13 +125,20 @@ function onClick(e) {
       case 'cart-clear': cartClear(); break;
       case 'cart-perfil': cartPerfil(); break;
       case 'cart-auto': S.cart.aporte = null; render(); break;
+      case 'cart-valor-auto': { const e = cartEntry(ds.k, false); if (e) { e.valor = null; touch('profile'); render(); } break; }
+      case 'cart-seg': cartCmpAbrir(+ds.cseg); break;
+      case 'cart-cmp-volta': S.cmpClasse = null; cartCmpTrocar(); break;
+      case 'ced-g': cedAlternar(el); break;
+      case 'cart-alvos': { const sec = document.getElementById('cart-alvos'); if (sec) sec.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }); break; }
       case 'cart-register': cartRegister(); break;
       case 'upgrade': iniciarCheckout(ds.plano); break;
       case 'checkout-back': S.screen = S.profile.onboarded ? 'app' : 'onboarding'; if (S.screen === 'onboarding' && !S.ob) initOb(); render(); break;
       case 'contact': S.maisOpen = false; openContact(); break;
       case 'terms': openTerms(); break;
+      case 'adm-sec': { S.admSec = S.admSec || {}; const sec = el.closest('.dr-acc'); const ab = sec.dataset.open !== 'true'; S.admSec[ds.id] = ab; sec.dataset.open = ab; el.setAttribute('aria-expanded', ab); break; }
       case 'lp-confirma': case 'lp-set': lpAcao(act, el); break;
-      case 'go-auth': if (S.user) { S.screen = S.profile.onboarded ? 'app' : 'onboarding'; if (S.screen === 'onboarding' && !S.ob) initOb(); render(); break; } S.authMode = ds.mode || 'signup'; S.authPlano = ds.plano === 'completo' || ds.plano === 'investidor' ? ds.plano : 'gratis'; S.authErr = ''; S.authDraft = null; S.screen = 'auth'; render(); break;
+      // "Quero a assessoria" (data-pagar) vai direto ao pagamento: logado, na hora; sem conta, logo depois do cadastro
+      case 'go-auth': S.authPagar = !!ds.pagar && (ds.plano === 'completo' || ds.plano === 'investidor'); if (S.user && S.authPagar && !S.isAdmin) { S.authPagar = false; iniciarCheckout(ds.plano); break; } if (S.user) { S.screen = S.profile.onboarded ? 'app' : 'onboarding'; if (S.screen === 'onboarding' && !S.ob) initOb(); render(); break; } S.authMode = ds.mode || 'signup'; S.authPlano = ds.plano === 'completo' || ds.plano === 'investidor' ? ds.plano : 'gratis'; S.authErr = ''; S.authDraft = null; S.screen = 'auth'; render(); break;
       case 'auth-mode': S.authMode = ds.mode; S.authErr = ''; S.authMsg = ''; render(); break;
       case 'goto-landing': closeAdmin(); S.screen = 'landing'; render(); break;
       case 'open-app': S.screen = S.profile.onboarded ? 'app' : 'onboarding'; if (S.screen === 'onboarding' && !S.ob) initOb(); render(); break;
@@ -181,6 +189,7 @@ function onChange(e) {
   if (t.closest && t.closest('#admin') && onAdminChange(t)) return;
   if (t.matches('[data-cat-name]')) { catAction('cat-rename', t.dataset.catName, t.value); return; }
   if (t.matches('[data-plano-cli]')) { setPlanoCliente(t.dataset.planoCli, t.value); return; }
+  if (t.matches('[data-cartv]')) { cartCampoGravar(t); return; }
   if (t.matches('[data-cart="mes"]')) { S.cart.mes = +t.value; renderLater(); return; }
   if (t.matches('[data-cart="aporte"]')) {
     if (oculto() && !t.value.trim()) return; // com valores ocultos, campo vazio não muda nada
@@ -196,6 +205,7 @@ function onInput(e) {
   if (t.matches('[data-sim]')) { simInput(t); return; }
   if (t.matches('[data-lp]')) { lpInput(t); return; }
   if (t.matches('[data-gf]')) { gInput(t); return; }
+  if (t.matches('[data-cartv]')) { cartCampoVivo(t); return; }
   if (t.matches('[data-filter]')) { S.filter[t.dataset.filter] = t.value; clearTimeout(filterT); filterT = setTimeout(() => { const pos = t.selectionStart; render(); refocus(`[data-filter="${t.dataset.filter}"]`, pos); }, 160); }
   if (t.matches('[data-clients-q]')) { S.clientsQ = t.value; clearTimeout(filterT); filterT = setTimeout(() => { const pos = t.selectionStart; render(); refocus('[data-clients-q]', pos); }, 160); }
 }
