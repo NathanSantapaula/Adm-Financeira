@@ -2153,16 +2153,32 @@ button.wg-ic:active { transform: scale(.92); }
 
 /* =========================================================================
    Visual do card do objetivo pela voz do painel (prefs.js, visualAtual):
-   Consultivo = com a foto (o card de sempre); Direto = sem foto, vidro azul-noite limpo;
-   Acolhedor = sem foto, com o objeto 3D dentro do card (obj3d.js). Sem WebGL, o 3D recebe .sem-3d e volta à foto.
+   Consultivo = com a foto (o card de sempre); Direto = sem foto; Acolhedor = sem foto, com o objeto 3D (obj3d.js).
+   Sem foto, o card segue o tema como os outros widgets: superfície do tema com um degradê na cor de destaque,
+   textos e botões com os tokens (claro, escuro ou personalizado). Sem WebGL, o 3D recebe .sem-3d e volta à foto.
    ========================================================================= */
 .sonho.v-limpo .sonho-foto, .sonho.v-3d:not(.sem-3d) .sonho-foto { display: none; }
-.card.goal-card.sonho.v-limpo, .card.goal-card.sonho.v-3d:not(.sem-3d) { border-color: rgba(150, 195, 255, .2);
-  background: radial-gradient(70% 60% at 12% 0%, rgba(79, 195, 255, .16), transparent 70%), linear-gradient(165deg, #12244D 0%, #0A1631 55%, #070F24 100%);
-  box-shadow: inset 0 1px 0 rgba(190, 220, 255, .14), 0 30px 70px -30px rgba(0, 6, 24, .7), 0 0 0 1px rgba(120, 170, 255, .06); }
-.card.goal-card.sonho.v-3d:not(.sem-3d) {
-  background: radial-gradient(60% 50% at 78% 34%, rgba(79, 195, 255, .24), rgba(139, 123, 255, .1) 45%, transparent 72%), linear-gradient(165deg, #12244D 0%, #0A1631 55%, #070F24 100%); }
-.sonho.v-limpo .sonho-c, .sonho.v-limpo .sonho-c *, .sonho.v-3d:not(.sem-3d) .sonho-c, .sonho.v-3d:not(.sem-3d) .sonho-c * { text-shadow: none; }
+.card.goal-card.sonho:is(.v-limpo, .v-3d:not(.sem-3d)) {
+  --ink: inherit; --ink-2: inherit; --ink-3: inherit; --line: inherit; --line-2: inherit; color: var(--ink);
+  border-color: color-mix(in srgb, var(--accent) 18%, var(--line));
+  background: radial-gradient(75% 65% at 88% 12%, color-mix(in srgb, var(--accent) 20%, transparent), transparent 70%),
+    linear-gradient(160deg, color-mix(in srgb, var(--accent) 12%, var(--surface)) 0%, var(--surface) 48%, color-mix(in srgb, var(--accent-2) 9%, var(--surface)) 100%);
+  box-shadow: var(--shadow); }
+.sonho:is(.v-limpo, .v-3d:not(.sem-3d)) .sonho-c, .sonho:is(.v-limpo, .v-3d:not(.sem-3d)) .sonho-c *, .sonho:is(.v-limpo, .v-3d:not(.sem-3d)) .sonho-t { text-shadow: none; }
+.sonho:is(.v-limpo, .v-3d:not(.sem-3d)) .sonho-c svg, .sonho:is(.v-limpo, .v-3d:not(.sem-3d)) .sonho-ring svg { filter: none; }
+.sonho:is(.v-limpo, .v-3d:not(.sem-3d)) :is(.sonho-tag, .sonho-ger, .sonho-esse, .sonho-prazo, .sonho-sim) { color: var(--ink); background: var(--surface-2); border-color: var(--line); -webkit-backdrop-filter: none; backdrop-filter: none; }
+.sonho:is(.v-limpo, .v-3d:not(.sem-3d)) .sonho-tag svg { color: var(--accent); }
+@media (hover: hover) and (pointer: fine) { .sonho:is(.v-limpo, .v-3d:not(.sem-3d)) :is(.sonho-ger, .sonho-esse, .sonho-sim):hover { background: var(--surface-3); } }
+.sonho:is(.v-limpo, .v-3d:not(.sem-3d)) .ring text { fill: var(--ink); } .sonho:is(.v-limpo, .v-3d:not(.sem-3d)) .ring .ring-s { fill: var(--ink-3); }
+.sonho:is(.v-limpo, .v-3d:not(.sem-3d)) .ring circle + circle { stroke: var(--accent); }
+.sonho:is(.v-limpo, .v-3d:not(.sem-3d)) .sonho-st i { background: var(--ink-3); box-shadow: 0 0 0 3px color-mix(in srgb, var(--ink-3) 18%, transparent); }
+.sonho:is(.v-limpo, .v-3d:not(.sem-3d)) .sonho-st.pos i { background: var(--pos); box-shadow: 0 0 0 3px var(--pos-soft); }
+.sonho:is(.v-limpo, .v-3d:not(.sem-3d)) .sonho-st.warn i { background: var(--warn); box-shadow: 0 0 0 3px var(--warn-soft); }
+.sonho:is(.v-limpo, .v-3d:not(.sem-3d)) .sonho-st.neg i { background: var(--neg); box-shadow: 0 0 0 3px var(--neg-soft); }
+.sonho:is(.v-limpo, .v-3d:not(.sem-3d)) .obj-chip { color: var(--ink-2); border-color: var(--line-2); background: transparent; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.sonho:is(.v-limpo, .v-3d:not(.sem-3d)) .obj-chip[aria-selected="true"] { color: var(--accent); background: var(--accent-soft); border-color: transparent; }
+.sonho:is(.v-limpo, .v-3d:not(.sem-3d)) .info-i { color: var(--ink-3); }
+.sonho:is(.v-limpo, .v-3d:not(.sem-3d)) .btn.sonho-btn { background: var(--accent-fill); color: var(--on-accent); }
 .sonho.v-3d:not(.sem-3d) .sonho-c { position: relative; z-index: 5; }
 .ob3d { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
 .sem-3d .ob3d { display: none; }
