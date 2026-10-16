@@ -101,7 +101,7 @@ function objCardHtml() {
   const sim = g.status !== 'concluido' && g.valor > 0 && g.pct > 0 ? `<button class="sonho-esse" data-act="sim-ir" aria-label="E se? Simular cenários para este objetivo" title="E se? Simular cenários para este objetivo">${typeof I_SIM !== 'undefined' ? I_SIM : ''}<span>E se?</span></button>` : '';
   return `<section class="card goal-card sonho v-${vis}" id="obj-card"><span class="sonho-foto" aria-hidden="true" style="background-image:url('${objFoto(g.tipo)}')"></span>${o3(g.tipo)}
     <div class="sonho-c">
-      <div class="sonho-top"><span class="sonho-tag">${OBJ_ICONES[g.tipo] || OBJ_ICONES.outro}<span>${esc(objNome(g.tipo))}</span></span><span class="sonho-acts">${sim}<button class="sonho-ger" data-act="objetivos-abrir" aria-label="Meus objetivos" title="Meus objetivos">${OBJ_I_SETA}</button></span></div>
+      <div class="sonho-top"><span class="sonho-k">Seu próximo objetivo</span><span class="sonho-acts">${sim}<button class="sonho-ger" data-act="objetivos-abrir" aria-label="Meus objetivos" title="Meus objetivos">${OBJ_I_SETA}</button></span></div>
       <h3 class="sonho-t">${esc(objTitulo(g))}</h3>
       <div class="sonho-meio"><div class="sonho-prog"><div class="sonho-ring">${ring(g.progresso, { size: 84, stroke: 7, color: '#fff', label: pct(g.progresso), sub: 'concluído', aria: `Progresso de ${objNomeDe(g)}` })}</div>
         <div class="sonho-v"><b>${brl0(g.saldo)}</b><small>de ${brl0(g.valor)}</small><span class="sonho-st ${st[1]}"><i aria-hidden="true"></i>${esc(stTxt)}</span></div></div>

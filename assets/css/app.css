@@ -1992,9 +1992,6 @@ html.sem-rolagem { overflow: hidden; }
 @keyframes sonho-entra { from { opacity: 0; transform: scale(1.08); } }
 .sonho-c { position: relative; display: flex; flex-direction: column; gap: 8px; height: 100%; padding: 16px 18px 14px; }
 .sonho-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: auto; }
-.sonho-tag { display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px 6px 9px; border-radius: 980px; font-size: 12.5px; font-weight: 600; letter-spacing: .01em;
-  background: rgba(255, 255, 255, .14); border: 1px solid rgba(255, 255, 255, .22); -webkit-backdrop-filter: blur(14px) saturate(160%); backdrop-filter: blur(14px) saturate(160%); }
-.sonho-tag svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .sonho-ger { width: 34px; height: 34px; display: grid; place-items: center; padding: 0; border-radius: 50%; color: #fff; cursor: pointer; border: 1px solid rgba(255, 255, 255, .22);
   background: rgba(255, 255, 255, .14); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); transition: background-color 200ms ease, transform 140ms var(--ease-out); }
 .sonho-ger svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
@@ -2027,12 +2024,14 @@ html.sem-rolagem { overflow: hidden; }
 @media (max-width: 560px) { .sonho-c { padding: 16px 16px 14px; } }
 @media (prefers-reduced-motion: reduce) { .sonho-foto { transition: none; } .sonho.troca .sonho-foto { animation: none; } }
 
-/* objetivo deitado: com o card largo (meio a meio com o patrimônio), anel e valores ficam ao lado do prazo e a foto respira à direita */
+/* prazo do objetivo: uma linha discreta (ícone, data e "previsão no ritmo atual"), igual no computador e no celular */
+.sonho .sonho-prazo { gap: 6px; padding: 0; border: 0; border-radius: 0; background: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.sonho .sonho-prazo > svg { width: 14px; height: 14px; }
+.sonho .sonho-prazo > span { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 6px; }
+/* objetivo deitado: com o card largo (meio a meio com o patrimônio), o título fica mais estreito e a foto respira à direita */
 .card.goal-card.sonho { container: sonho / inline-size; }
 .sonho-meio { display: grid; gap: 8px; }
 @container sonho (min-width: 440px) {
-  .sonho-meio { grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 12px 18px; }
-  .sonho-pe { flex-direction: column; align-items: stretch; justify-content: flex-end; margin-top: 0; }
   .sonho-t { max-width: 16ch; }
   .sonho-foto::after { background: linear-gradient(90deg, rgba(4, 8, 18, .9) 0%, rgba(4, 8, 18, .7) 38%, rgba(4, 8, 18, .25) 72%, rgba(4, 8, 18, .1) 100%), linear-gradient(180deg, rgba(4, 8, 18, .25) 0%, rgba(4, 8, 18, 0) 30%, rgba(4, 8, 18, .55) 100%); }
 }
@@ -2042,9 +2041,6 @@ html.sem-rolagem { overflow: hidden; }
   .sonho-t { font-size: clamp(22px, 2vw, 26px); }
   .sonho-meio { gap: 6px; }
   .sonho-pe { gap: 6px 10px; margin-top: 2px; }
-  .sonho-prazo { gap: 6px; padding: 0; border: 0; border-radius: 0; background: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
-  .sonho-prazo > svg { width: 14px; height: 14px; }
-  .sonho-prazo > span { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 6px; }
   .sonho-sim { padding: 6px 11px; border-radius: 980px; font-size: 12px; }
   .sonho .obj-sw { margin-top: 2px; }
 }
@@ -2166,8 +2162,8 @@ button.wg-ic:active { transform: scale(.92); }
   box-shadow: var(--shadow); }
 .sonho:is(.v-limpo, .v-3d:not(.sem-3d)) .sonho-c, .sonho:is(.v-limpo, .v-3d:not(.sem-3d)) .sonho-c *, .sonho:is(.v-limpo, .v-3d:not(.sem-3d)) .sonho-t { text-shadow: none; }
 .sonho:is(.v-limpo, .v-3d:not(.sem-3d)) .sonho-c svg, .sonho:is(.v-limpo, .v-3d:not(.sem-3d)) .sonho-ring svg { filter: none; }
-.sonho:is(.v-limpo, .v-3d:not(.sem-3d)) :is(.sonho-tag, .sonho-ger, .sonho-esse, .sonho-prazo, .sonho-sim) { color: var(--ink); background: var(--surface-2); border-color: var(--line); -webkit-backdrop-filter: none; backdrop-filter: none; }
-.sonho:is(.v-limpo, .v-3d:not(.sem-3d)) .sonho-tag svg { color: var(--accent); }
+.sonho:is(.v-limpo, .v-3d:not(.sem-3d)) .sonho-prazo { color: var(--ink); }
+.sonho:is(.v-limpo, .v-3d:not(.sem-3d)) :is(.sonho-ger, .sonho-esse, .sonho-sim) { color: var(--ink); background: var(--surface-2); border-color: var(--line); -webkit-backdrop-filter: none; backdrop-filter: none; }
 @media (hover: hover) and (pointer: fine) { .sonho:is(.v-limpo, .v-3d:not(.sem-3d)) :is(.sonho-ger, .sonho-esse, .sonho-sim):hover { background: var(--surface-3); } }
 .sonho:is(.v-limpo, .v-3d:not(.sem-3d)) .ring text { fill: var(--ink); } .sonho:is(.v-limpo, .v-3d:not(.sem-3d)) .ring .ring-s { fill: var(--ink-3); }
 .sonho:is(.v-limpo, .v-3d:not(.sem-3d)) .ring circle + circle { stroke: var(--accent); }
@@ -2182,8 +2178,9 @@ button.wg-ic:active { transform: scale(.92); }
 .sonho.v-3d:not(.sem-3d) .sonho-c { position: relative; z-index: 5; }
 .ob3d { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
 .sem-3d .ob3d { display: none; }
-.ob3d-gl { position: absolute; right: 2%; top: 40px; width: 56%; max-width: 240px; aspect-ratio: 1; pointer-events: none; opacity: 0; transition: opacity 500ms var(--ease-out); }
+.ob3d-gl { position: absolute; right: 1%; top: 32px; width: 60%; max-width: 290px; aspect-ratio: 1; pointer-events: none; opacity: 0; transition: opacity 500ms var(--ease-out); }
 .ob3d.gl-ok .ob3d-gl { opacity: 1; }
 .ob3d-gl canvas { display: block; width: 100%; height: 100%; }
 @media (prefers-reduced-motion: reduce) { .ob3d-gl { transition: none; } }
 @media (max-width: 760px) { .ob3d-gl { right: 2%; top: 34px; width: 32%; max-width: 150px; } }
+@container sonho (min-width: 440px) { .ob3d-gl { right: -2%; top: 26px; width: 50%; } } /* card largo: o objeto fica mais à direita, longe dos valores */
