@@ -192,7 +192,7 @@ O sino ao lado do seletor de ano, no topo de todas as telas, reúne avisos gerad
 
 - Cada aviso vale para o mês em que surgiu. Se a situação piora, por exemplo de 90% para orçamento estourado, chega um aviso novo e o sino balança uma vez.
 - O cliente pode marcar como lido ou dispensar um aviso (com Desfazer). Isso fica salvo no perfil e vale em qualquer aparelho.
-- Os textos seguem a voz escolhida pelo cliente (Consultivo, Executivo, Direto ou Acolhedor).
+- Os textos seguem a voz escolhida pelo cliente (Consultivo, Direto ou Acolhedor).
 - Avisos de aporte e carteira só aparecem nos planos que têm esses recursos. Botões que levariam a uma aba oculta não aparecem.
 - As regras estão em `E.notificacoes` (`engine.js`) e têm testes em `tests/engine.test.js`. A interface, os textos e o estado de leitura estão em `assets/js/notif.js`. Para criar um aviso novo, acrescente a regra em `notificacoes` com um id que inclua o mês, o título em `NOTIF_TIT` e o texto nas quatro vozes em `NOTIF_VOZ`.
 - A central funciona com o site aberto. Avisos por e-mail ou push no celular exigiriam um serviço rodando no servidor (Edge Function agendada no Supabase), que ainda não existe.
@@ -230,7 +230,7 @@ O **Painel administrativo** abre com o perfil e três grupos (Planejamento; Pers
 No grupo **Personalizar o painel** (junto com Telas e Abas do menu):
 
 - **Tema:** chave **Automático** (Claro de dia, escuro à noite, conforme o aparelho) e as opções Claro, Dark OLED ou **Personalizado** (o cliente escolhe o fundo, claro ou escuro, e uma de oito cores de destaque; o contraste do texto sobre a cor é calculado em `prefs.js`). O Midnight Blue saiu: quem usava passa para o Dark OLED. Todos usam vidro e gradientes da marca (detalhes em `DESIGN.md`). Aplicado antes da tela carregar, sem piscar.
-- **Voz:** Consultivo, Executivo, Direto ou Acolhedor, cada um com uma linha curta do tom. Muda os textos de orientação e os alertas financeiros (orçamento, poupança, aporte, desvio da carteira). Os números nunca mudam, só a forma de dizer.
+- **Voz:** Consultivo, Direto ou Acolhedor, cada um com uma linha curta do tom. A voz também escolhe o visual do card do objetivo na Visão geral: Consultivo com a foto do objetivo, Direto sem foto (visual limpo) e Acolhedor com um objeto 3D do objetivo (alianças, carro, casa, avião, blocos de dinheiro...), que gira com o mouse. Sem suporte a 3D no aparelho, aparece a foto. Quem usava a voz Executivo passou para Direto. Muda os textos de orientação e os alertas financeiros (orçamento, poupança, aporte, desvio da carteira). Os números nunca mudam, só a forma de dizer.
 
 A escolha fica salva no perfil do cliente. O sistema respeita a preferência de reduzir animações do dispositivo.
 

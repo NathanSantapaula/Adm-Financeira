@@ -1,5 +1,5 @@
-/* Experiência Imersiva: objeto 3D de verdade (WebGL) no card do objetivo, um por tipo de objetivo.
-   Three.js r128 vem do cdnjs só quando a Imersiva está ligada, com verificação de integridade (SRI).
+/* Voz Acolhedor: objeto 3D de verdade (WebGL) no card do objetivo, um por tipo de objetivo (visualAtual() === '3d').
+   Three.js r128 vem do cdnjs só quando essa voz está escolhida, com verificação de integridade (SRI).
    Um único renderizador é reaproveitado: a cada desenho da tela o canvas muda para o card novo (o3Ligar).
    Estúdio: reflexos de softbox gerados na hora (PMREM), luz principal, contraluz azul e tom ACES.
    Os objetos são modelados aqui com geometria (sem arquivos). Sem WebGL, ou se a biblioteca não carregar,

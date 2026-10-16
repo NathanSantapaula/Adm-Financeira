@@ -90,8 +90,8 @@ function obj3dLigar() {
 
 function objCardHtml() {
   const A = objAnalise(); const g = objFoco(A);
-  const o3 = (tipo) => (imersiva() ? obj3dHtml(tipo) : '');
-  if (!g) return `<section class="card goal-card sonho vazio" id="obj-card"><span class="sonho-foto" aria-hidden="true" style="background-image:url('${objFoto('outro')}')"></span>${o3('outro')}
+  const vis = visualAtual(); const o3 = (tipo) => (vis === '3d' ? obj3dHtml(tipo) : ''); // visual vem da voz (prefs.js)
+  if (!g) return `<section class="card goal-card sonho vazio v-${vis}" id="obj-card"><span class="sonho-foto" aria-hidden="true" style="background-image:url('${objFoto('outro')}')"></span>${o3('outro')}
     <div class="sonho-c"><p class="sonho-k">Sua próxima conquista</p><h3 class="sonho-t">Qual é o seu sonho?</h3>
     <p class="sonho-txt">Imóvel, carro, viagem, filhos, independência: cadastre seus objetivos com valor e prazo e acompanhe cada um aqui.</p>
     <button class="btn sonho-btn" data-act="objetivo-definir">Definir meus objetivos</button></div></section>`;
@@ -99,7 +99,7 @@ function objCardHtml() {
   const sw = A.itens.length > 1 ? `<div class="obj-sw" role="tablist" aria-label="Escolher objetivo">${A.itens.map((x, k) => `<button role="tab" class="obj-chip" data-act="objetivo-foco" data-id="${esc(x.id)}" aria-selected="${x.id === g.id}" title="${esc(objNomeDe(x))}">${objIcone(x, k)}<span>${esc(objNomeDe(x))}</span></button>`).join('')}</div>` : '';
   // "E se?" (simulador do objetivo) fica no topo do card, ao lado da seta para Meus objetivos
   const sim = g.status !== 'concluido' && g.valor > 0 && g.pct > 0 ? `<button class="sonho-esse" data-act="sim-ir" aria-label="E se? Simular cenários para este objetivo" title="E se? Simular cenários para este objetivo">${typeof I_SIM !== 'undefined' ? I_SIM : ''}<span>E se?</span></button>` : '';
-  return `<section class="card goal-card sonho" id="obj-card"><span class="sonho-foto" aria-hidden="true" style="background-image:url('${objFoto(g.tipo)}')"></span>${o3(g.tipo)}
+  return `<section class="card goal-card sonho v-${vis}" id="obj-card"><span class="sonho-foto" aria-hidden="true" style="background-image:url('${objFoto(g.tipo)}')"></span>${o3(g.tipo)}
     <div class="sonho-c">
       <div class="sonho-top"><span class="sonho-tag">${OBJ_ICONES[g.tipo] || OBJ_ICONES.outro}<span>${esc(objNome(g.tipo))}</span></span><span class="sonho-acts">${sim}<button class="sonho-ger" data-act="objetivos-abrir" aria-label="Meus objetivos" title="Meus objetivos">${OBJ_I_SETA}</button></span></div>
       <h3 class="sonho-t">${esc(objTitulo(g))}</h3>
@@ -113,7 +113,7 @@ function objCardHtml() {
 // troca de objetivo em foco sem redesenhar a página: só o card e o simulador
 function objTrocarFoco(id) {
   S.profile.objetivoFoco = id; touch('profile'); S.sim = null;
-  const c = document.getElementById('obj-card'); if (c) { c.outerHTML = objCardHtml(); const n = document.getElementById('obj-card'); if (n) n.classList.add('troca'); if (imersiva()) obj3dLigar(); } // a foto nova entra com um esmaecer curto
+  const c = document.getElementById('obj-card'); if (c) { c.outerHTML = objCardHtml(); const n = document.getElementById('obj-card'); if (n) n.classList.add('troca'); if (visualAtual() === '3d') obj3dLigar(); } // a foto nova entra com um esmaecer curto
   if (S.simAberto) popSync(); // simulador aberto na janela (dashboard.js): passa a mostrar o novo objetivo
   const b = document.querySelector(`.obj-chip[data-id="${CSS.escape(id)}"]`); if (b) b.focus();
 }

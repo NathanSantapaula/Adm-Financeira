@@ -112,7 +112,6 @@ function onClick(e) {
       case 'tema': definirTema(ds.tema); break;
       case 'tema-cor': definirCor(ds.campo, ds.v); break;
       case 'voz': definirVoz(ds.voz); break;
-      case 'experiencia': definirExp(ds.exp); break;
       case 'rec-aplicar': recAplicar(); break;
       case 'rec-add': recAdd(); break;
       case 'rec-norm': recNorm(); break;

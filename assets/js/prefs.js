@@ -52,11 +52,11 @@ function aplicarTema(pref, animar) {
 if (mqEscuro && mqEscuro.addEventListener) mqEscuro.addEventListener('change', () => { if ((document.documentElement.dataset.themePref || 'auto') === 'auto') aplicarTema('auto', true); });
 
 /* ---------------- voz ---------------- */
+// três vozes; cada uma também define o visual do card do objetivo na Visão geral (VISUAL_VOZ)
 const VOZES = {
-  consultivo: { nome: 'Consultivo', desc: 'Equilibrado, como o seu assessor.' },
-  formal: { nome: 'Executivo', desc: 'Formal, como um relatório.' },
-  direto: { nome: 'Direto', desc: 'Curto e objetivo.' },
-  acolhedor: { nome: 'Acolhedor', desc: 'Caloroso e encorajador.' },
+  consultivo: { nome: 'Consultivo', desc: 'Equilibrado, como o seu assessor. Objetivo com foto.' },
+  direto: { nome: 'Direto', desc: 'Curto e objetivo. Visual limpo, sem fotos.' },
+  acolhedor: { nome: 'Acolhedor', desc: 'Caloroso e encorajador. Objetivo em 3D.' },
 };
 const VOZ = {
   consultivo: {
@@ -71,19 +71,6 @@ const VOZ = {
     sem_dados: 'Comece registrando suas rendas e seus gastos, ou importe um extrato. Em poucos minutos o painel mostra para onde vai o seu dinheiro.',
     ingest_ok: 'Importação concluída: {resumo}.', mes_vazio: 'Nenhum lançamento neste mês ainda. Importe um extrato ou adicione o primeiro gasto.',
     exemplo: 'Você usou 78% do orçamento de março. Ainda restam R$ 1.320.',
-  },
-  formal: {
-    deficit: 'No exercício de {ano}, os gastos superaram as entradas registradas em {valor}. Verifique se há rendas não lançadas.',
-    saudacao: '{saud}, {nome}.', titulo: 'Posição consolidada de {ano}.',
-    orc_ok: 'O orçamento de {mes} foi utilizado em {pct}, restando {restante}.',
-    orc_estourou: 'O orçamento de {mes} foi excedido em {valor}. Recomenda-se revisar os gastos do período.',
-    orc_definir: 'Não há orçamento definido para {mes}. Recomenda-se estabelecê-lo para acompanhamento.',
-    poupanca: 'No exercício de {ano}, {pct} da renda foi destinada à poupança ({valor}).',
-    aporte_mes: 'Em {mes}, os aportes somaram {valor}, equivalentes a {pct} da meta mensal de {meta}.',
-    carteira_desvio: '{ativo} encontra-se {pp} p.p. abaixo da alocação-alvo. Sugere-se priorizá-lo no próximo aporte.',
-    sem_dados: 'Não há lançamentos registrados. Registre rendas e gastos ou importe um extrato para iniciar a análise.',
-    ingest_ok: 'Importação concluída: {resumo}.', mes_vazio: 'Não há lançamentos registrados neste mês.',
-    exemplo: 'O orçamento de março foi utilizado em 78%, restando R$ 1.320.',
   },
   direto: {
     deficit: 'Gastos {valor} acima das entradas em {ano}. Falta lançar renda?',
@@ -108,32 +95,16 @@ const VOZ = {
     exemplo: 'Tudo certo: você usou 78% do orçamento de março e ainda tem R$ 1.320.',
   },
 };
-const tomAtual = () => (document.documentElement.dataset.exp === 'imersiva' ? 'acolhedor' : typeof S !== 'undefined' && S.profile && S.profile.prefs && VOZ[S.profile.prefs.voz] ? S.profile.prefs.voz : 'consultivo');
+// a antiga voz Executivo ('formal') passou a ser Direto
+const tomAtual = () => { const v = typeof S !== 'undefined' && S.profile && S.profile.prefs ? S.profile.prefs.voz : null; return v === 'formal' ? 'direto' : VOZ[v] ? v : 'consultivo'; };
+// card do objetivo: Consultivo com a foto, Direto sem foto (vidro azul-noite limpo), Acolhedor com o objeto 3D (obj3d.js)
+const VISUAL_VOZ = { consultivo: 'foto', direto: 'limpo', acolhedor: '3d' };
+const visualAtual = () => VISUAL_VOZ[tomAtual()] || 'foto';
 function voz(chave, vars) {
   const t = VOZ[tomAtual()][chave] != null ? VOZ[tomAtual()][chave] : VOZ.consultivo[chave] || '';
   return t.replace(/\{(\w+)\}/g, (_, k) => (vars && vars[k] != null ? vars[k] : ''));
 }
 const saudacaoHora = () => { const h = new Date().getHours(); return h < 12 ? 'Bom dia' : h < 18 ? 'Boa tarde' : 'Boa noite'; };
-
-/* ---------------- experiência (prévia, só no modo demonstração) ----------------
-   'essencial' é o painel de sempre. 'imersiva' troca a página do app inteira: azul-noite, voz Acolhedor
-   e objetos 3D do objetivo saindo do card (objetivos.js). Fica no navegador (fp:exp) enquanto é protótipo. */
-const EXPERIENCIAS = {
-  essencial: { nome: 'Essencial', desc: 'O painel de sempre, claro ou escuro.' },
-  imersiva: { nome: 'Imersiva', desc: 'Azul-noite, objeto 3D do seu objetivo e tom acolhedor.' },
-};
-const expPrevia = () => typeof Store !== 'undefined' && Store.mode === 'local';
-const expAtual = () => { if (!expPrevia()) return 'essencial'; try { return localStorage.getItem('fp:exp') === 'imersiva' ? 'imersiva' : 'essencial'; } catch (e) { return 'essencial'; } };
-const imersiva = () => document.documentElement.dataset.exp === 'imersiva';
-function aplicarExp() {
-  const h = document.documentElement; const e = expAtual();
-  if (e === 'imersiva') h.dataset.exp = 'imersiva'; else delete h.dataset.exp;
-  const meta = document.querySelector('meta[name="theme-color"]'); if (meta) meta.setAttribute('content', e === 'imersiva' ? '#050B1A' : COR_BARRA[h.dataset.theme] || '#F5F6F9');
-}
-function definirExp(e) {
-  if (!EXPERIENCIAS[e] || !expPrevia()) return; try { localStorage.setItem('fp:exp', e); } catch (x) { /* ignora */ }
-  aplicarExp(); render(); if (S.adminOpen) renderAdmin(); toast('Experiência: ' + EXPERIENCIAS[e].nome + '.');
-}
 
 /* ---------------- ações e interface de preferências ---------------- */
 function definirTema(pref) {
@@ -157,10 +128,9 @@ function prefsHtml() {
   const cores = CORES_DESTAQUE.map(([c, n]) => `<button class="ap-cor" style="--c:${c}" data-act="tema-cor" data-campo="cor" data-v="${c}" aria-pressed="${k.cor.toLowerCase() === c.toLowerCase()}" aria-label="${n}" title="${n}"></button>`).join('');
   const custom = escolhido === 'custom' ? `<div class="ap-custom"><div class="ap-linha"><span>Fundo${auto ? ' <small>(segue o aparelho)</small>' : ''}</span><div class="seg" role="group" aria-label="Fundo do tema personalizado">${fundo}</div></div>
     <div class="ap-linha"><span>Cor de destaque</span><div class="ap-cores" role="group" aria-label="Cor de destaque">${cores}</div></div></div>` : '';
-  const vozes = Object.keys(VOZES).map((v) => `<button class="ap-voz" data-act="voz" data-voz="${v}" aria-pressed="${p.voz === v}"><b>${VOZES[v].nome}</b><small>${VOZES[v].desc}</small></button>`).join('');
-  const ex = expPrevia() ? `<section class="dr-sec"><h3>Experiência (prévia)</h3><p class="mmsg keep">Protótipo só no modo demonstração: muda o visual e o tom do painel inteiro.</p><div class="ap-vozes">${Object.keys(EXPERIENCIAS).map((e) => `<button class="ap-voz" data-act="experiencia" data-exp="${e}" aria-pressed="${expAtual() === e}"><b>${EXPERIENCIAS[e].nome}</b><small>${EXPERIENCIAS[e].desc}</small></button>`).join('')}</div></section>` : '';
+  const vozes = Object.keys(VOZES).map((v) => `<button class="ap-voz" data-act="voz" data-voz="${v}" aria-pressed="${tomAtual() === v}"><b>${VOZES[v].nome}</b><small>${VOZES[v].desc}</small></button>`).join('');
   // dentro da página "Personalizar o painel" (admin.js): cada uma vira um título com setinha (admAcordeao)
-  return ex + `<section class="dr-sec"><h3>Aparência</h3>
+  return `<section class="dr-sec"><h3>Aparência</h3>
       <label class="ap-auto"><span><b>Automático</b><small>Claro de dia, escuro à noite, como o aparelho.</small></span><span class="wg-sw"><input type="checkbox" data-tema-auto ${auto ? 'checked' : ''} aria-label="Tema automático"><span></span></span></label>
       <div class="ap-ops" role="group" aria-label="Tema">${opcoes}</div>${custom}</section>
     <section class="dr-sec"><h3>Voz do painel</h3><div class="ap-vozes">${vozes}</div></section>`;
