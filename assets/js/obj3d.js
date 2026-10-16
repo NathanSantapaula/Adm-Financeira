@@ -91,18 +91,24 @@ const O3_OBJ = {
     const v2 = o3Moeda(M); v2.position.set(-0.75, 0.7, -0.1); v2.rotation.set(0.6, -0.4, -0.9); v2.scale.setScalar(0.75); g.add(v2);
     g.rotation.x = 0.35; return g;
   },
-  // blocos de dinheiro: maços de notas verdes cintados, numa pilha reta e de pé
+  // blocos de dinheiro: maços de notas verdes cintados, empilhados em pirâmide, e um maço solto no ar
   independencia(M) {
     const T = THREE; const g = new T.Group();
-    const nota = o3Textura((x, w, h) => { const gr = x.createLinearGradient(0, 0, w, h); gr.addColorStop(0, '#5ED27F'); gr.addColorStop(1, '#1E8A43'); x.fillStyle = gr; x.fillRect(0, 0, w, h);
-      x.strokeStyle = 'rgba(236,255,242,.75)'; x.lineWidth = 6; x.strokeRect(14, 14, w - 28, h - 28); x.fillStyle = 'rgba(236,255,242,.9)'; x.beginPath(); x.arc(w / 2, h / 2, h * 0.27, 0, Math.PI * 2); x.fill();
-      x.fillStyle = '#1E8A43'; x.font = `800 ${h * 0.24}px Arial, sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText('R$', w / 2, h * 0.53); }, 512, 240);
-    const borda = o3Textura((x, w, h) => { for (let i = 0; i < h; i += 2) { x.fillStyle = i % 4 ? '#E3F5E8' : '#6FC08A'; x.fillRect(0, i, w, 2); } }, 64, 128); // bordas das notas empilhadas
-    const topo = new T.MeshPhysicalMaterial({ map: nota, roughness: 0.55, clearcoat: 0.15 }); const lado = new T.MeshPhysicalMaterial({ map: borda, roughness: 0.85 });
-    const cinta = new T.MeshPhysicalMaterial({ color: 0xF2E6C4, roughness: 0.55, clearcoat: 0.2 });
-    const geo = new T.BoxGeometry(1.0, 0.2, 0.46); const geoC = new T.BoxGeometry(0.16, 0.212, 0.472);
-    for (let i = 0; i < 5; i++) { const m = new T.Group(); m.add(new T.Mesh(geo, [lado, lado, topo, topo, lado, lado]), new T.Mesh(geoC, cinta)); m.position.y = -0.4 + i * 0.205; g.add(m); }
-    g.rotation.set(0.22, -0.55, 0); return g;
+    const nota = o3Textura((x, w, h) => { const gr = x.createLinearGradient(0, 0, w, h); gr.addColorStop(0, '#2BCB63'); gr.addColorStop(0.5, '#0E8A3C'); gr.addColorStop(1, '#055C26'); x.fillStyle = gr; x.fillRect(0, 0, w, h);
+      x.strokeStyle = 'rgba(220,255,232,.7)'; x.lineWidth = 5; x.strokeRect(12, 12, w - 24, h - 24); x.fillStyle = 'rgba(220,255,232,.85)'; x.beginPath(); x.ellipse(w * 0.72, h / 2, h * 0.3, h * 0.3, 0, 0, Math.PI * 2); x.fill();
+      x.fillStyle = '#E6FFEE'; x.font = `800 ${h * 0.26}px Arial, sans-serif`; x.textBaseline = 'middle'; x.fillText('100', w * 0.08, h * 0.3); x.font = `700 ${h * 0.16}px Arial, sans-serif`; x.fillText('REAIS', w * 0.08, h * 0.72);
+      x.fillStyle = '#0B6B2F'; x.font = `800 ${h * 0.24}px Arial, sans-serif`; x.textAlign = 'center'; x.fillText('R$', w * 0.72, h * 0.53); }, 512, 240);
+    // lateral do maço: as bordas das notas empilhadas
+    const borda = o3Textura((x, w, h) => { for (let i = 0; i < h; i += 2) { x.fillStyle = i % 4 ? '#3FB868' : '#0A6E30'; x.fillRect(0, i, w, 2); } }, 64, 128);
+    const topo = new T.MeshPhysicalMaterial({ map: nota, roughness: 0.7, envMapIntensity: 0.35 }); const lado = new T.MeshPhysicalMaterial({ map: borda, roughness: 0.9, envMapIntensity: 0.3 }); // pouco reflexo: o verde fica forte
+    const cinta = new T.MeshPhysicalMaterial({ color: 0xE9C877, roughness: 0.5, clearcoat: 0.3 });
+    const maco = () => { const m = new T.Group(); const L = 1.0; const A = 0.2; const P = 0.46;
+      m.add(new T.Mesh(new T.BoxGeometry(L, A, P), [lado, lado, topo, topo, lado, lado]));
+      const c = new T.Mesh(new T.BoxGeometry(0.16, A + 0.012, P + 0.012), cinta); m.add(c); return m; };
+    const pos = [[0, -0.42, -0.5, 0.04], [0, -0.42, 0, -0.03], [0, -0.42, 0.5, 0.05], [0.02, -0.21, -0.25, -0.06], [-0.02, -0.21, 0.25, 0.04], [0, 0, 0, 0.08]];
+    pos.forEach(([x, y, z, r]) => { const m = maco(); m.position.set(x, y, z); m.rotation.y = r; g.add(m); });
+    const solto = maco(); solto.position.set(0.55, 0.42, 0.15); solto.rotation.set(0.5, 0.6, 0.35); g.add(solto);
+    g.rotation.set(0.32, -0.6, 0); return g;
   },
   carro(M) {
     const T = THREE; const g = new T.Group(); const s = new T.Shape();
