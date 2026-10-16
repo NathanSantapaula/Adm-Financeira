@@ -56,6 +56,17 @@ function chartBars(el, cfg) {
   if (cfg.onPick) svg.addEventListener('click', (e) => { const r = svg.getBoundingClientRect(); const i = Math.floor((e.clientX - r.left - m.l) / band); if (i >= 0 && i < n) cfg.onPick(i); });
 }
 
+/* curva sem cantos (Catmull-Rom com os controles presos entre os pontos, para não "passar" do valor real) */
+function curvaSuave(pts) {
+  if (pts.length < 3) return pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+  let d = `M${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] || pts[i]; const p1 = pts[i]; const p2 = pts[i + 1]; const p3 = pts[i + 2] || p2;
+    const lo2 = Math.min(p1[1], p2[1]); const hi2 = Math.max(p1[1], p2[1]); const cl = (v) => Math.max(lo2, Math.min(hi2, v));
+    d += ` C${(p1[0] + (p2[0] - p0[0]) / 6).toFixed(1)} ${cl(p1[1] + (p2[1] - p0[1]) / 6).toFixed(1)} ${(p2[0] - (p3[0] - p1[0]) / 6).toFixed(1)} ${cl(p2[1] - (p3[1] - p1[1]) / 6).toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
+  }
+  return d;
+}
 /* Linha/área: várias séries (a tracejada serve para projeção) e linha de meta opcional */
 function chartLine(el, cfg) {
   if (!el) return;
@@ -70,17 +81,8 @@ function chartLine(el, cfg) {
   let g = ''; const nt = Math.round((hi - lo) / step);
   for (let k = 0; k <= nt; k++) { const v = lo + k * step; g += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(v)}" y2="${y(v)}" class="${Math.abs(v) < 1e-9 ? 'gz' : 'gl'}"${cfg.suave ? ' stroke-dasharray="3 6"' : ''}/><text x="${m.l - 8}" y="${y(v) + 4}" text-anchor="end">${tickFmt(+v.toFixed(2))}</text>`; }
   const gid = 'ga-' + (el.id || 'x'); let paths = ''; let defs = ''; let fim = '';
-  // cfg.suave: curva sem cantos (Catmull-Rom com os controles presos entre os pontos, para não "passar" do valor real)
-  const caminho = (pts) => {
-    if (!cfg.suave || pts.length < 3) return pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
-    let d = `M${pts[0][0].toFixed(1)} ${pts[0][1].toFixed(1)}`;
-    for (let i = 0; i < pts.length - 1; i++) {
-      const p0 = pts[i - 1] || pts[i]; const p1 = pts[i]; const p2 = pts[i + 1]; const p3 = pts[i + 2] || p2;
-      const lo2 = Math.min(p1[1], p2[1]); const hi2 = Math.max(p1[1], p2[1]); const cl = (v) => Math.max(lo2, Math.min(hi2, v));
-      d += ` C${(p1[0] + (p2[0] - p0[0]) / 6).toFixed(1)} ${cl(p1[1] + (p2[1] - p0[1]) / 6).toFixed(1)} ${(p2[0] - (p3[0] - p1[0]) / 6).toFixed(1)} ${cl(p2[1] - (p3[1] - p1[1]) / 6).toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)}`;
-    }
-    return d;
-  };
+  // cfg.suave: curva sem cantos (curvaSuave)
+  const caminho = (pts) => (cfg.suave ? curvaSuave(pts) : pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' '));
   if (cfg.brilho) defs += `<filter id="${gid}f" x="-5%" y="-40%" width="110%" height="180%"><feGaussianBlur stdDeviation="5"/></filter>`;
   cfg.series.forEach((s, si) => {
     const pts = s.values.map((v, i) => (v == null ? null : [x(i), y(v)])).filter(Boolean); if (!pts.length) return;
@@ -162,7 +164,7 @@ function chartHistorico(el, cfg) {
   const step = niceStep((hiV - loV) / 4); let hi = Math.ceil(hiV / step) * step; const lo = Math.floor(loV / step) * step; if (hi <= lo) hi = lo + step;
   const x = (i) => m.l + (n === 1 ? iw / 2 : (iw * i) / (n - 1)); const y = (v) => m.t + ih * (1 - (v - lo) / (hi - lo));
   let g = ''; const nt = Math.round((hi - lo) / step);
-  for (let k = 0; k <= nt; k++) { const v = lo + k * step; g += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" class="${Math.abs(v) < 1e-9 ? 'gz' : 'gl'}"/><text x="${m.l - 8}" y="${(y(v) + 4).toFixed(1)}" text-anchor="end">${tickFmt(+v.toFixed(2))}</text>`; }
+  for (let k = 0; k <= nt; k++) { const v = lo + k * step; g += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" class="${Math.abs(v) < 1e-9 ? 'gz' : 'gl'}"${cfg.brilho ? ' stroke-dasharray="3 6"' : ''}/><text x="${m.l - 8}" y="${(y(v) + 4).toFixed(1)}" text-anchor="end">${tickFmt(+v.toFixed(2))}</text>`; }
   // faixas dos anos: divisória tracejada no início de cada ano e o ano no meio da faixa
   const faixas = []; P.forEach((p, i) => { const f = faixas[faixas.length - 1]; if (!f || f.ano !== p.ano) faixas.push({ ano: p.ano, i0: i, i1: i }); else f.i1 = i; });
   let anos = '';
@@ -173,7 +175,7 @@ function chartHistorico(el, cfg) {
     anos += `<text x="${((xa + xb) / 2).toFixed(1)}" y="${H - 6}" text-anchor="middle" class="hy-ano">${f.ano}</text>`;
   });
   const pts = vals.map((v, i) => [x(i), y(v)]);
-  const d = pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+  const d = cfg.suave ? curvaSuave(pts) : pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
   const gid = 'gh-' + (el.id || 'x');
   const area = `<path d="${d} L${pts[n - 1][0].toFixed(1)} ${(m.t + ih).toFixed(1)} L${pts[0][0].toFixed(1)} ${(m.t + ih).toFixed(1)} Z" fill="url(#${gid})"/>`;
   // marcos: fim de cada ano (dezembro) e o mês atual
@@ -181,10 +183,11 @@ function chartHistorico(el, cfg) {
   faixas.forEach((f, k) => {
     const i = f.i1; const hoje = k === faixas.length - 1 && P[i].mes < 11; const rot = cfg.rotuloPonto ? cfg.rotuloPonto(vals[i]) : '';
     const yy = pts[i][1]; const acima = yy - 10 > m.t - 4;
+    if (cfg.brilho) marcos += `<circle cx="${pts[i][0].toFixed(1)}" cy="${yy.toFixed(1)}" r="${hoje ? 12 : 8}" fill="${cor}" opacity="${hoje ? 0.22 : 0.14}"/>`;
     marcos += `<circle cx="${pts[i][0].toFixed(1)}" cy="${yy.toFixed(1)}" r="${hoje ? 5.5 : 4}" fill="${hoje ? cor : 'var(--surface)'}" stroke="${cor}" stroke-width="2.5"/>`;
     if (rot && (faixas.length <= 8 || k === faixas.length - 1 || k % 2 === 0)) marcos += `<text x="${Math.min(W - m.r, Math.max(m.l + 14, pts[i][0])).toFixed(1)}" y="${(acima ? yy - 11 : yy + 18).toFixed(1)}" text-anchor="${pts[i][0] > W - m.r - 30 ? 'end' : 'middle'}" class="hy-rot">${escSvg((hoje ? 'Hoje · ' : '') + rot)}</text>`;
   });
-  el.innerHTML = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${escSvg(cfg.aria || '')}"><defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${cor}" stop-opacity=".26"/><stop offset="1" stop-color="${cor}" stop-opacity="0"/></linearGradient></defs>${anos}${g}${area}<path d="${d}" fill="none" stroke="${cor}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>${marcos}<line class="hv" x1="0" x2="0" y1="${m.t}" y2="${m.t + ih}" stroke="var(--ink-3)" stroke-width="1" opacity="0"/><circle class="hp" r="4.5" fill="${cor}" stroke="var(--surface)" stroke-width="2" opacity="0"/></svg>`;
+  el.innerHTML = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${escSvg(cfg.aria || '')}"><defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${cor}" stop-opacity="${cfg.brilho ? '.4' : '.26'}"/>${cfg.brilho ? `<stop offset=".55" stop-color="${cor}" stop-opacity=".1"/>` : ''}<stop offset="1" stop-color="${cor}" stop-opacity="0"/></linearGradient>${cfg.brilho ? `<filter id="${gid}f" x="-5%" y="-40%" width="110%" height="180%"><feGaussianBlur stdDeviation="5"/></filter>` : ''}</defs>${anos}${g}${area}${cfg.brilho ? `<path d="${d}" fill="none" stroke="${cor}" stroke-width="8" stroke-linecap="round" opacity=".45" filter="url(#${gid}f)"/>` : ''}<path d="${d}" fill="none" stroke="${cor}" stroke-width="${cfg.brilho ? 3 : 2.5}" stroke-linecap="round" stroke-linejoin="round"/>${marcos}<line class="hv" x1="0" x2="0" y1="${m.t}" y2="${m.t + ih}" stroke="var(--ink-3)" stroke-width="1" opacity="0"/><circle class="hp" r="4.5" fill="${cor}" stroke="var(--surface)" stroke-width="2" opacity="0"/></svg>`;
   const svg = el.firstChild; const hv = svg.querySelector('.hv'); const hp = svg.querySelector('.hp');
   svg.addEventListener('pointermove', (e) => {
     const r = svg.getBoundingClientRect(); const i = Math.max(0, Math.min(n - 1, Math.round(((e.clientX - r.left - m.l) / iw) * (n - 1))));

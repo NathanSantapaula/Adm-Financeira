@@ -39,11 +39,11 @@ function o3Mat() {
     azul: fis({ color: 0x1F6FE5, metalness: 0.3, roughness: 0.3, clearcoat: 1 }),
     cinza: new T.MeshStandardMaterial({ color: 0xA9B4C4, metalness: 0.7, roughness: 0.3 }),
     nuvem: new T.MeshStandardMaterial({ color: 0xFFFFFF, roughness: 1, metalness: 0 }),
-    parede: fis({ color: 0xF4EBDD, roughness: 0.6, clearcoat: 0.2 }),
+    parede: fis({ color: 0xF1E6D6, roughness: 0.6, clearcoat: 0.2, envMapIntensity: 0.6 }),
     telhado: fis({ color: 0xC2553A, roughness: 0.45, clearcoat: 0.35 }),
     madeira: fis({ color: 0x6E4223, roughness: 0.5, clearcoat: 0.3 }),
-    janela: new T.MeshStandardMaterial({ color: 0xFFE2A0, emissive: 0xFFC766, emissiveIntensity: 0.9 }),
-    grama: fis({ color: 0x5FA867, roughness: 0.7 }),
+    janela: new T.MeshStandardMaterial({ color: 0xFFC86B, emissive: 0xFFB13D, emissiveIntensity: 1.5 }),
+    grama: fis({ color: 0x3F9A4E, roughness: 0.75, envMapIntensity: 0.45 }),
     couro: fis({ color: 0x6B3B1C, roughness: 0.42, clearcoat: 0.6, clearcoatRoughness: 0.2 }),
     couroEsc: fis({ color: 0x4A2610, roughness: 0.5, clearcoat: 0.4 }),
     marinho: fis({ color: 0x18244A, roughness: 0.62, clearcoat: 0.25 }),
@@ -51,11 +51,20 @@ function o3Mat() {
     peluciaClara: fis({ color: 0xEBC9A0, roughness: 0.95 }),
     olho: fis({ color: 0x0B0B0F, roughness: 0.05, clearcoat: 1 }),
     fita: fis({ color: 0x4D8CFF, roughness: 0.35, clearcoat: 0.6 }),
-    areia: fis({ color: 0xEBCB92, roughness: 0.9 }),
+    areia: fis({ color: 0xE8C27E, roughness: 0.9, envMapIntensity: 0.5 }),
     coral: fis({ color: 0xFF5A5F, roughness: 0.38, clearcoat: 0.5, side: T.DoubleSide }),
     lona: fis({ color: 0xFFF8EE, roughness: 0.42, clearcoat: 0.4, side: T.DoubleSide }),
     sol: new T.MeshStandardMaterial({ color: 0xFFC94A, emissive: 0xFFB020, emissiveIntensity: 1.4 }),
     papel: fis({ color: 0xF7F3EA, roughness: 0.8 }),
+    pedra: fis({ color: 0xB9BEC6, roughness: 0.75, envMapIntensity: 0.6 }),
+    concreto: fis({ color: 0x3A4150, roughness: 0.55, clearcoat: 0.3 }),
+    madeiraClara: fis({ color: 0xB9824F, roughness: 0.45, clearcoat: 0.5 }),
+    agua: fis({ color: 0x0FA5CF, roughness: 0.12, metalness: 0.05, clearcoat: 0.8, clearcoatRoughness: 0.05, emissive: 0x06617F, emissiveIntensity: 0.55, envMapIntensity: 0.55 }),
+    folha: fis({ color: 0x2E9C47, roughness: 0.55, clearcoat: 0.25, envMapIntensity: 0.55, side: THREE.DoubleSide }),
+    tronco: fis({ color: 0x9A6B3E, roughness: 0.8 }),
+    troncoEsc: fis({ color: 0x6E4A28, roughness: 0.85 }),
+    coco: fis({ color: 0x5B3A1E, roughness: 0.6, clearcoat: 0.3 }),
+    halo: new THREE.MeshBasicMaterial({ color: 0xFFB020, transparent: true, opacity: 0.32, depthWrite: false, blending: THREE.AdditiveBlending }),
   };
 }
 // textura desenhada no aparelho (cifrão da moeda, estampa da nota)
@@ -127,20 +136,30 @@ const O3_OBJ = {
     [0.3, -0.3].forEach((z) => { const f = new T.Mesh(new T.BoxGeometry(0.04, 0.07, 0.2), M.farol); f.position.set(1.17, 0.02, z); g.add(f); const l = new T.Mesh(new T.BoxGeometry(0.04, 0.06, 0.2), M.lanterna); l.position.set(-1.16, 0.08, z); g.add(l); });
     g.rotation.set(0.18, -0.65, 0); return g;
   },
+  // casa moderna em dois volumes, janelas acesas por dentro, piscina, árvores, caminho de pedras e a chave dourada no ar
   imovel(M) {
-    const T = THREE; const g = new T.Group();
-    const base = new T.Mesh(new T.CylinderGeometry(1.05, 1.1, 0.12, 64), M.grama); base.position.y = -0.62; g.add(base);
-    const casa = new T.Mesh(new T.BoxGeometry(1.15, 0.78, 0.95), M.parede); casa.position.y = -0.17; g.add(casa);
-    const tri = new T.Shape(); tri.moveTo(-0.72, 0); tri.lineTo(0.72, 0); tri.lineTo(0, 0.56); tri.lineTo(-0.72, 0);
-    const tel = new T.ExtrudeGeometry(tri, { depth: 1.08, bevelEnabled: true, bevelThickness: 0.03, bevelSize: 0.03, bevelSegments: 3 }); tel.translate(0, 0, -0.54);
-    const telhado = new T.Mesh(tel, M.telhado); telhado.position.y = 0.2; g.add(telhado);
-    const cham = new T.Mesh(new T.BoxGeometry(0.16, 0.36, 0.16), M.telhado); cham.position.set(0.36, 0.58, -0.2); g.add(cham);
-    const porta = new T.Mesh(new T.BoxGeometry(0.24, 0.42, 0.04), M.madeira); porta.position.set(-0.2, -0.35, 0.48); g.add(porta);
-    [[0.27, -0.12, 0.48, 0.24, 0.22, 0.04], [0.58, -0.12, 0.05, 0.04, 0.22, 0.26], [0.58, -0.12, -0.3, 0.04, 0.22, 0.2]].forEach(([x, y, z, w, h, d]) => { const jn = new T.Mesh(new T.BoxGeometry(w, h, d), M.janela); jn.position.set(x, y, z); g.add(jn); });
+    const T = THREE; const g = new T.Group(); const caixa = (w, h, d, mat, x, y, z) => { const m = new T.Mesh(new T.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); g.add(m); return m; };
+    const base = new T.Mesh(new T.CylinderGeometry(1.18, 1.24, 0.1, 72), M.grama); base.position.y = -0.66; g.add(base);
+    const borda = new T.Mesh(new T.CylinderGeometry(1.25, 1.28, 0.08, 72), M.pedra); borda.position.y = -0.74; g.add(borda);
+    caixa(1.1, 0.46, 0.78, M.parede, -0.12, -0.38, -0.05); // térreo
+    caixa(1.22, 0.05, 0.9, M.concreto, -0.12, -0.13, -0.05); // laje do térreo
+    caixa(0.78, 0.4, 0.62, M.madeiraClara, 0.12, 0.09, -0.1); // andar de cima, revestido de madeira
+    caixa(0.94, 0.05, 0.76, M.concreto, 0.12, 0.315, -0.1); // telhado
+    caixa(0.52, 0.3, 0.02, M.janela, -0.3, -0.38, 0.345); caixa(0.02, 0.3, 0.46, M.janela, 0.435, -0.38, -0.02); // vidros do térreo
+    caixa(0.5, 0.2, 0.02, M.janela, 0.12, 0.1, 0.21); caixa(0.02, 0.2, 0.36, M.janela, 0.51, 0.1, -0.1); // faixa de vidro de cima
+    caixa(0.18, 0.34, 0.03, M.madeira, 0.18, -0.44, 0.35); // porta
+    caixa(0.6, 0.02, 0.3, M.concreto, -0.3, -0.62, 0.5); // deck
+    const borPisc = caixa(0.62, 0.05, 0.38, M.pedra, 0.52, -0.6, 0.55); borPisc.scale.set(1, 1, 1);
+    caixa(0.54, 0.04, 0.3, M.agua, 0.52, -0.57, 0.55); // piscina
+    [[-0.08, -0.6, 0.72], [0.02, -0.6, 0.88], [-0.12, -0.6, 1.0]].forEach(([x, y, z]) => { const p = new T.Mesh(new T.CylinderGeometry(0.07, 0.07, 0.02, 20), M.pedra); p.position.set(x, y, z); g.add(p); });
+    const arvore = (x, z, s) => { const a = new T.Group(); const tr = new T.Mesh(new T.CylinderGeometry(0.03, 0.04, 0.3, 10), M.tronco); tr.position.y = 0.15; a.add(tr);
+      [[0, 0.42, 0, 0.2], [0.09, 0.34, 0.04, 0.14], [-0.08, 0.36, -0.03, 0.15]].forEach(([fx, fy, fz, r]) => { const f = new T.Mesh(new T.SphereGeometry(r, 24, 16), M.folha); f.position.set(fx, fy, fz); a.add(f); });
+      a.position.set(x, -0.61, z); a.scale.setScalar(s); g.add(a); };
+    arvore(-0.85, 0.35, 1); arvore(-0.75, -0.55, 0.8); arvore(0.85, -0.45, 0.9);
     const chave = new T.Group(); const arg = new T.Mesh(new T.TorusGeometry(0.11, 0.035, 24, 64), M.ouro); const haste = new T.Mesh(new T.CylinderGeometry(0.03, 0.03, 0.42, 16), M.ouro);
     haste.rotation.z = Math.PI / 2; haste.position.x = 0.32; const d1 = new T.Mesh(new T.BoxGeometry(0.05, 0.1, 0.04), M.ouro); d1.position.set(0.45, -0.06, 0); const d2 = d1.clone(); d2.position.x = 0.36;
-    chave.add(arg, haste, d1, d2); chave.position.set(0.55, 0.75, 0.3); chave.rotation.set(0.4, -0.5, 0.5); g.add(chave);
-    g.rotation.set(0.28, -0.55, 0); return g;
+    chave.add(arg, haste, d1, d2); chave.position.set(0.5, 0.72, 0.25); chave.rotation.set(0.4, -0.5, 0.5); g.add(chave);
+    g.rotation.set(0.32, -0.62, 0); g.userData.zoom = 1.22; return g; // cena larga e baixa: um pouco mais de zoom
   },
   viagem(M) {
     const T = THREE; const g = new T.Group(); const av = new T.Group();
@@ -184,17 +203,32 @@ const O3_OBJ = {
     const laco = new T.Group(); [-1, 1].forEach((ld) => { const c = new T.Mesh(new T.ConeGeometry(0.11, 0.2, 32), M.fita); c.rotation.z = (ld * Math.PI) / 2; c.position.x = ld * 0.1; laco.add(c); }); laco.add(new T.Mesh(new T.SphereGeometry(0.05, 24, 16), M.fita)); laco.position.set(0, -0.02, 0.4); g.add(laco);
     g.rotation.set(0.1, -0.3, 0); return g;
   },
+  // ilha tropical: água turquesa, areia, coqueiro de tronco curvo com cocos, espreguiçadeira, guarda-sol e um sol que brilha
   aposentadoria(M) {
     const T = THREE; const g = new T.Group();
-    const monte = new T.Mesh(new T.SphereGeometry(1.15, 64, 24, 0, Math.PI * 2, 0, 0.55), M.areia); monte.scale.y = 0.35; monte.position.y = -0.98; g.add(monte);
-    const guarda = new T.Group();
-    for (let i = 0; i < 8; i++) { const fatia = new T.Mesh(new T.CylinderGeometry(0.02, 1, 0.34, 6, 1, true, (i / 8) * Math.PI * 2, Math.PI / 4), i % 2 ? M.lona : M.coral); guarda.add(fatia); }
-    const mastro = new T.Mesh(new T.CylinderGeometry(0.025, 0.025, 1.45, 16), M.madeira); mastro.position.y = -0.7; guarda.add(mastro);
-    const topo = new T.Mesh(new T.SphereGeometry(0.05, 16, 12), M.madeira); topo.position.y = 0.19; guarda.add(topo);
-    guarda.position.set(-0.1, 0.42, 0); guarda.rotation.z = 0.22; g.add(guarda);
-    const sol = new T.Mesh(new T.SphereGeometry(0.22, 48, 32), M.sol); sol.position.set(0.85, 0.75, -0.5); g.add(sol);
-    const bola = new T.Mesh(new T.SphereGeometry(0.16, 48, 32), M.coral); bola.position.set(0.5, -0.66, 0.4); g.add(bola);
-    g.rotation.set(0.22, -0.4, 0); return g;
+    const mar = new T.Mesh(new T.CylinderGeometry(1.0, 1.04, 0.08, 72), M.agua); mar.position.y = -0.72; g.add(mar);
+    const areia = new T.Mesh(new T.SphereGeometry(0.95, 64, 24, 0, Math.PI * 2, 0, 0.62), M.areia); areia.scale.y = 0.32; areia.position.y = -0.85; g.add(areia);
+    // coqueiro: tronco curvo com anéis, folhas caídas em leque e três cocos
+    const curva = new T.CatmullRomCurve3([new T.Vector3(-0.25, -0.62, 0), new T.Vector3(-0.2, -0.2, 0.02), new T.Vector3(-0.05, 0.22, 0.04), new T.Vector3(0.12, 0.58, 0.05)]);
+    g.add(new T.Mesh(new T.TubeGeometry(curva, 40, 0.055, 14), M.tronco));
+    for (let i = 1; i < 10; i++) { const t = i / 10; const p = curva.getPointAt(t); const tg = curva.getTangentAt(t); const anel = new T.Mesh(new T.TorusGeometry(0.058, 0.012, 8, 20), M.troncoEsc);
+      anel.position.copy(p); anel.quaternion.setFromUnitVectors(new T.Vector3(0, 0, 1), tg); g.add(anel); }
+    const topo = curva.getPointAt(1); const folhaS = new T.Shape(); folhaS.moveTo(0, 0); folhaS.quadraticCurveTo(0.2, 0.17, 0.72, -0.02); folhaS.quadraticCurveTo(0.2, -0.13, 0, 0);
+    const folhaG = new T.ExtrudeGeometry(folhaS, { depth: 0.008, bevelEnabled: true, bevelThickness: 0.006, bevelSize: 0.008, bevelSegments: 2 });
+    for (let i = 0; i < 8; i++) { const f = new T.Mesh(folhaG, M.folha); f.rotation.x = Math.PI / 2; const caida = new T.Group(); caida.rotation.z = -(0.3 + (i % 2) * 0.3); caida.add(f); const piv = new T.Group(); piv.position.copy(topo); piv.rotation.y = (i / 8) * Math.PI * 2; piv.add(caida); g.add(piv); }
+    [[0.04, -0.07, 0.04], [-0.05, -0.08, -0.02], [0.02, -0.09, -0.06]].forEach(([x, y, z]) => { const c = new T.Mesh(new T.SphereGeometry(0.05, 20, 14), M.coco); c.position.set(topo.x + x, topo.y + y, topo.z + z); g.add(c); });
+    // espreguiçadeira listrada
+    const esp = new T.Group(); const assento = new T.Mesh(new T.BoxGeometry(0.42, 0.03, 0.2), M.coral); esp.add(assento);
+    const encosto = new T.Mesh(new T.BoxGeometry(0.2, 0.03, 0.2), M.lona); encosto.position.set(-0.27, 0.07, 0); encosto.rotation.z = 0.7; esp.add(encosto);
+    [[-0.17, 0.09], [-0.17, -0.09], [0.17, 0.09], [0.17, -0.09]].forEach(([x, z]) => { const p = new T.Mesh(new T.CylinderGeometry(0.01, 0.01, 0.08, 8), M.madeira); p.position.set(x, -0.05, z); esp.add(p); });
+    esp.position.set(0.35, -0.5, 0.35); esp.rotation.y = -0.5; g.add(esp);
+    // guarda-sol com gomos alternados
+    const gs = new T.Group(); for (let i = 0; i < 8; i++) gs.add(new T.Mesh(new T.CylinderGeometry(0.02, 0.36, 0.14, 6, 1, true, (i / 8) * Math.PI * 2, Math.PI / 4), i % 2 ? M.lona : M.coral));
+    const mastro = new T.Mesh(new T.CylinderGeometry(0.012, 0.012, 0.55, 10), M.madeira); mastro.position.y = -0.3; gs.add(mastro); gs.position.set(0.62, -0.08, 0.05); gs.rotation.z = 0.18; g.add(gs);
+    // sol com halo
+    const sol = new T.Mesh(new T.SphereGeometry(0.17, 40, 28), M.sol); sol.position.set(0.82, 0.68, -0.55); g.add(sol);
+    const halo = new T.Mesh(new T.SphereGeometry(0.3, 32, 20), M.halo); halo.position.copy(sol.position); g.add(halo);
+    g.rotation.set(0.26, -0.45, 0); g.userData.zoom = 1.2; return g;
   },
   negocio(M) {
     const T = THREE; const g = new T.Group(); const w = 1.5; const h = 1.02; const r = 0.14; const s = new T.Shape();
@@ -227,7 +261,7 @@ function o3Estudio(renderer) {
 function o3Criar() {
   const T = THREE;
   const renderer = new T.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); renderer.outputEncoding = T.sRGBEncoding; renderer.toneMapping = T.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.15; renderer.setClearColor(0x000000, 0);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); renderer.outputEncoding = T.sRGBEncoding; renderer.toneMapping = T.ACESFilmicToneMapping; renderer.toneMappingExposure = 0.98; renderer.setClearColor(0x000000, 0);
   const scene = new T.Scene(); scene.environment = o3Estudio(renderer);
   const camera = new T.PerspectiveCamera(30, 1, 0.1, 50); camera.position.set(0, 0, 5);
   const key = new T.DirectionalLight(0xFFFFFF, 1.6); key.position.set(3, 4, 5); const rim = new T.DirectionalLight(0x6CB4FF, 2.2); rim.position.set(-4, 2, -4);
@@ -249,7 +283,7 @@ function o3Objeto(tipo) {
     if (m.userData.lin) return; m.userData.lin = true; ['color', 'emissive', 'sheen'].forEach((k) => { if (m[k] && m[k].isColor) m[k].convertSRGBToLinear(); }); }); });
   // enquadra: o objeto ocupa sempre o mesmo espaço, centralizado
   const cx = new T.Box3().setFromObject(o); const tam = cx.getSize(new T.Vector3()); const centro = cx.getCenter(new T.Vector3());
-  const k = 2.05 / Math.max(tam.x, tam.y, tam.z * 0.8); const roda = new T.Group(); o.position.sub(centro); roda.add(o); roda.scale.setScalar(k);
+  const k = (2.05 / Math.max(tam.x, tam.y, tam.z * 0.8)) * (o.userData.zoom || 1); const roda = new T.Group(); o.position.sub(centro); roda.add(o); roda.scale.setScalar(k);
   O3.pivo.add(roda); O3.obj = roda; O3.tipo = tipo; O3.entrada = performance.now();
 }
 function o3Tamanho() { if (!O3 || !O3.host) return; const w = O3.host.clientWidth; const h = O3.host.clientHeight; if (!w || !h) return; O3.renderer.setSize(w, h, false); O3.camera.aspect = w / h; O3.camera.updateProjectionMatrix(); o3Quadro(performance.now()); }

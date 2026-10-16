@@ -70,6 +70,7 @@ function adminHtml() {
       <form data-form="year" class="yr-new"><label class="pop-t" for="yr-adm">Adicionar ou abrir outro ano</label><div class="act-row"><input id="yr-adm" name="ano" class="in-s left" inputmode="numeric" maxlength="4" placeholder="Ex.: ${NOW_Y + 1}" autocomplete="off"><button class="btn primary" type="submit">Abrir</button></div></form></section>`;
   if (G && G.id === 'personalizar') return `<section class="dr-sec"><h3>Telas</h3>${['geral', 'gastos', 'rendas', 'invest', 'proventos', 'carteira'].filter((k) => !PAINEIS[k].recurso || temRecurso(PAINEIS[k].recurso)).map(painelLinkHtml).join('')}</section>
     <section class="dr-sec"><h3>Abas do menu</h3><div class="abas">${abas.map(([k, l, d]) => `<label class="chk aba"><input type="checkbox" data-aba="${k}" ${p.abas.includes(k) ? 'checked' : ''} ${k === 'geral' ? 'disabled' : ''}><span><b>${l}</b><small>${d}</small></span></label>`).join('')}</div></section>
+    ${aberturaAdmHtml()}
     ${prefsHtml()}`;
   if (G && G.id === 'dados') return `<section class="dr-sec"><h3>Backup completo</h3><div class="btn-row"><button class="btn primary" data-act="backup">Baixar backup</button><label class="btn" for="bk-file">Restaurar backup</label><input id="bk-file" type="file" accept=".json,application/json" hidden></div>${bkHtml()}</section>
     <section class="dr-sec"><h3>Importar planilha (.xlsx)</h3>${importBlock}</section>`;
@@ -240,6 +241,7 @@ function onAdminChange(t) {
   if (t.matches('[data-objf]')) { objCampo(t); return true; }
   if (t.matches('[data-painel-on]')) { painelLigar(t); return true; }
   if (t.matches('[data-tema-auto]')) { definirTema(t.checked ? 'auto-on' : 'auto-off'); return true; }
+  if (t.matches('[data-abf]')) { aberturaCampo(t); return true; }
   if (t.matches('[data-aba]')) {
     const keys = $$('[data-aba]:checked', $('#admin')).map((x) => x.dataset.aba);
     p.abas = hydrateProfile({ abas: ['geral'].concat(keys.filter((k) => k !== 'geral')) }).abas; if (!p.abas.includes(S.view)) S.view = 'geral'; touch('profile'); renderLater(); return true;

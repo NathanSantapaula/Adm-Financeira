@@ -80,10 +80,10 @@ function periodoHtml() {
       <p class="per-dica keep">${dica}</p></div>` : ''}</div>`;
 }
 /* ---------- Título da Visão geral como uma conversa ----------
-   Uma lista de frases que se adequa à situação (orçamento do mês, objetivo em foco, aportes, proventos, fim do mês,
-   dia da semana e hora), na ordem do que mais importa agora. Os textos ficam em VOZ (prefs.js, chaves tit_*).
-   Na voz Acolhedor (a do 3D) o título apaga e digita a próxima frase de tempos em tempos (tituloLigar).
-   Nas outras vozes a frase só troca quando o cliente sai e volta (para a aba Visão geral ou para o navegador). */
+   As frases ficam em frases.js (TIT_CAT, centenas de variações nas três vozes); aqui ficam o contexto do momento
+   (tituloContexto), a frase atual (estável entre um desenho e outro) e a troca. Na voz Acolhedor (a do 3D) o título
+   apaga e digita uma frase nova a cada 45 a 60 segundos (tituloLigar); nas outras vozes a frase troca quando o
+   cliente volta para a aba Visão geral ou para o navegador. A frase nova nunca repete a atual e evita as últimas. */
 // a frase precisa caber em até duas linhas no espaço do título (medida com a fonte e a largura reais do título na tela)
 let TIT_MED = null;
 function cabeNoTitulo(f) {
@@ -93,47 +93,55 @@ function cabeNoTitulo(f) {
   const larg = TIT_MED.measureText(f).width + (parseFloat(cs.letterSpacing) || 0) * f.length + tam * 0.3; // + o cursor
   return larg <= h.clientWidth * 2 * 0.86; // folga para a quebra entre palavras
 }
-function tituloFrases() {
-  const p = S.plan; const C = S.C; const T = C.T; const tom = tomAtual(); const m = mesRef(); const agora = new Date(); const doAno = S.year === NOW_Y;
-  const mes = MES_LONGO[m]; const base = { ano: p.year, mes, Mes: mes.replace(/^./, (c) => c.toUpperCase()) }; const dinheiro = !oculto();
-  const L = []; const add = (k, v) => { if (VOZ[tom] && VOZ[tom][k] != null) L.push(voz(k, Object.assign({}, base, v))); };
-  const u = C.usoOrc[m]; const temOrc = C.orcamento[m] > 0;
-  if (temOrc && u > 1) add('tit_orc_estourou');
-  const fimMes = new Date(agora.getFullYear(), agora.getMonth() + 1, 0).getDate() - agora.getDate();
-  if (doAno && fimMes <= 5) add('tit_fim_mes', { dias: fimMes === 0 ? 'hoje' : fimMes === 1 ? '1 dia' : fimMes + ' dias' });
-  if (temOrc && u > 0.85 && u <= 1) add('tit_orc_alto', { pct: pct(u) });
-  const A = typeof objAnalise === 'function' ? objAnalise() : null; const g = A ? objFoco(A) : null;
-  if (g && g.valor > 0) {
-    const obj = objNomeDe(g);
-    if (g.status === 'concluido') add('tit_obj_ok', { obj });
-    else { if (g.previsto) add('tit_obj_prev', { obj, quando: MES_LONGO[g.previsto.mes] + ' de ' + g.previsto.ano }); if (g.progresso > 0.02) add('tit_obj', { obj, pct: pct(g.progresso) }); }
-  }
-  if (dinheiro && temRecurso('investimentos') && C.aplicado[m] > 0) add('tit_aporte', { valor: brl0(C.aplicado[m]) });
-  if (T.receita > 0 && T.poupanca >= 0.15) add('tit_poupanca', { pct: pct(T.poupanca) });
-  if (dinheiro && temRecurso('investimentos') && C.faturamento[m] > 0) add('tit_prov', { valor: brl0(C.faturamento[m]) });
-  if (dinheiro && temRecurso('patrimonio') && C.patrimonio[m] - C.patrimonioBase > 0) add('tit_patr', { valor: brl0(C.patrimonio[m] - C.patrimonioBase) });
-  if (doAno && agora.getDate() <= 3) add('tit_ini_mes');
-  const dia = agora.getDay(); const hora = agora.getHours();
-  if (dia === 5) add('tit_sexta'); else if (dia === 1) add('tit_segunda'); else if (dia === 0 || dia === 6) add('tit_fds');
-  if (hora >= 21 || hora < 5) add('tit_noite');
-  if (temOrc && u <= 0.85) add('tit_orc_ok');
-  add('tit_extra1'); add('tit_extra2');
-  L.push(voz('titulo', { ano: p.year })); // a frase de sempre fica na roda
-  const unicas = L.filter((f, i) => f && L.indexOf(f) === i); const cabem = unicas.filter(cabeNoTitulo);
-  return cabem.length ? cabem : [voz('titulo', { ano: p.year })];
+const TIT_DIAS = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
+// tudo o que as frases podem citar: momento, orçamento, poupança, aportes, proventos, patrimônio, carteira, objetivos e avisos
+function tituloContexto() {
+  const p = S.plan; const C = S.C; const T = C.T; const m = mesRef(); const agora = new Date(); const pr = S.profile;
+  const cap = (s) => s.replace(/^./, (c) => c.toUpperCase()); const mes = MES_LONGO[m];
+  const diasMes = new Date(agora.getFullYear(), agora.getMonth() + 1, 0).getDate() - agora.getDate();
+  const u = C.usoOrc[m]; const temOrc = C.orcamento[m] > 0; const inv = temRecurso('investimentos'); const meta = inv ? metaDoAporte() : 0;
+  const A = objAnalise(); const g = objFoco(A); const ok = !!(g && g.status === 'concluido');
+  let ativo = ''; try { if (temRecurso('carteira') && p.ativos.length) { const a = (cartAnalise().K.maisLonge || []).find((i) => i.desvio < -1); if (a) ativo = a.nome; } } catch (e) { ativo = ''; }
+  const areas = areasDoAno(); const nAv = (S.notifs || []).filter((n) => !n.lida).length; const pat = temRecurso('patrimonio');
+  const patrV = pat ? C.patrimonio[m] : 0; const crescV = pat ? C.patrimonio[m] - C.patrimonioBase : 0; const provA = E.sum(C.faturamento);
+  return {
+    nome: (pr.apelido || (pr.nome || '').split(' ')[0] || '').trim(), ano: p.year, mes, Mes: cap(mes), dia: TIT_DIAS[agora.getDay()], diaSemana: agora.getDay(), hora: agora.getHours(),
+    diaMes: agora.getDate(), mesNum: agora.getMonth(), doAno: S.year === NOW_Y, diasMes, dias: diasMes === 0 ? 'hoje' : diasMes === 1 ? '1 dia' : diasMes + ' dias',
+    diasAno: Math.ceil((new Date(agora.getFullYear(), 11, 31) - agora) / 864e5),
+    temOrc, uso: u, pctUso: u != null ? pct(u) : '', restante: temOrc && C.restante[m] > 0 ? brl0(C.restante[m]) : '', excesso: temOrc && C.restante[m] < 0 ? brl0(-C.restante[m]) : '',
+    gastoM: C.despesas[m], gastoMes: brl0(C.despesas[m]), area: areas.length ? areas[0].label : '',
+    receita: T.receita, poup: T.receita > 0 ? T.poupanca : null, pctPoup: T.poupanca != null ? pct(T.poupanca) : '', sobraAno: T.investAlocado, deficit: T.investAlocado < 0 ? brl0(-T.investAlocado) : '',
+    sobraM: C.investAlocado[m], sobraMes: C.investAlocado[m] > 0 ? brl0(C.investAlocado[m]) : '',
+    inv, aporteM: C.aplicado[m], aporteMes: brl0(C.aplicado[m]), meta, metaMes: meta > 0 ? brl0(meta) : '', faltaMeta: meta > C.aplicado[m] ? brl0(meta - C.aplicado[m]) : '',
+    aportesA: T.aplicado, aportesAno: brl0(T.aplicado), seq: inv ? painel2Dados().seq : 0,
+    provM: C.faturamento[m], provMes: brl0(C.faturamento[m]), provA, provAno: brl0(provA),
+    patrV, patr: brl0(patrV), crescV, cresc: brl0(crescV), crescPct: C.patrimonioBase > 0 && crescV > 0 ? pct(crescV / C.patrimonioBase) : '', ativo,
+    obj: g && g.valor > 0 ? objNomeDe(g) : '', objP: g ? g.progresso : 0, pctObj: g ? pct(g.progresso) : '', objOk: ok,
+    quando: g && g.previsto && !ok ? MES_LONGO[g.previsto.mes] + ' de ' + g.previsto.ano : '', faltaV: g && g.valor > g.saldo ? g.valor - g.saldo : 0, falta: g && g.valor > g.saldo ? brl0(g.valor - g.saldo) : '',
+    nObj: A.itens.length, nAvisos: nAv, avisosTxt: nAv === 1 ? 'aviso' : 'avisos',
+  };
 }
-const tituloAtual = () => { const L = tituloFrases(); return L[(S.titIdx || 0) % L.length]; };
+function tituloLista() { const L = tituloCandidatas(tituloContexto(), tomAtual()).filter((c) => cabeNoTitulo(c.f)); return L.length ? L : [{ f: voz('titulo', { ano: S.plan.year }), p: 1 }]; }
+function tituloNova(L) {
+  L = L || tituloLista(); const ant = S.titAtual; const f = tituloSortear(L, ant, S.titHist);
+  S.titHist = (S.titHist || []).concat(ant ? [ant] : []).slice(-30); S.titAtual = f; S.titTom = tomAtual(); return f;
+}
+// a mesma frase entre um desenho e outro; troca quando pedida (S.titTrocar), quando a voz muda ou quando ela deixou de valer
+function tituloAtual() {
+  const L = tituloLista(); const vale = S.titAtual && S.titTom === tomAtual() && L.some((c) => c.f === S.titAtual);
+  if (!vale || S.titTrocar) { S.titTrocar = false; tituloNova(L); }
+  return S.titAtual;
+}
 let TIT_T = 0; let TIT_EL = null;
-// voz Acolhedor: segura a frase, apaga letra por letra, digita a próxima (com ritmo de gente) e repete
+// voz Acolhedor: segura a frase por 45 a 60 s, apaga letra por letra e digita a próxima com ritmo de gente
 function tituloLigar() {
   clearTimeout(TIT_T); const h = document.querySelector('#view .wh'); TIT_EL = h; if (!h || visualAtual() !== '3d') return;
   const alvo = h.querySelector('.wh-t'); if (!alvo) return; const calmo = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const vivo = () => TIT_EL === h && h.isConnected;
   const depois = (fn, ms) => { TIT_T = setTimeout(() => { if (!vivo()) return; if (document.hidden) { depois(fn, 1000); return; } fn(); }, ms); };
-  const proxima = () => { S.titIdx = (S.titIdx || 0) + 1; return tituloAtual(); };
-  const segurar = () => depois(calmo ? trocar : apagar, calmo ? 9000 : 5200 + Math.random() * 1800);
-  const trocar = () => { const f = proxima(); alvo.textContent = f; h.setAttribute('aria-label', f); segurar(); };
-  const apagar = () => { h.classList.add('digitando'); const t = alvo.textContent; if (t.length) { alvo.textContent = t.slice(0, -1); depois(apagar, 16 + Math.random() * 18); } else depois(() => digitar(proxima(), 0), 320); };
+  const segurar = () => depois(calmo ? trocar : apagar, 45000 + Math.random() * 15000);
+  const trocar = () => { const f = tituloNova(); alvo.textContent = f; h.setAttribute('aria-label', f); segurar(); };
+  const apagar = () => { h.classList.add('digitando'); const t = alvo.textContent; if (t.length) { alvo.textContent = t.slice(0, -1); depois(apagar, 16 + Math.random() * 18); } else depois(() => digitar(tituloNova(), 0), 320); };
   const digitar = (f, i) => {
     alvo.textContent = f.slice(0, i + 1);
     if (i + 1 < f.length) { const c = f[i]; depois(() => digitar(f, i + 1), (/[,.:!?]/.test(c) ? 190 : / /.test(c) ? 70 : 34) + Math.random() * 42); }
@@ -145,7 +153,7 @@ function tituloLigar() {
 document.addEventListener('visibilitychange', () => {
   if (document.hidden || typeof S === 'undefined' || S.view !== 'geral' || S.screen !== 'app' || !S.plan || visualAtual() === '3d') return;
   const h = document.querySelector('#view .wh'); const alvo = h && h.querySelector('.wh-t'); if (!alvo) return;
-  const antes = tituloAtual(); S.titIdx = (S.titIdx || 0) + 1; const f = tituloAtual(); if (f === antes) return;
+  const antes = S.titAtual; const f = tituloNova(); if (f === antes) return;
   alvo.textContent = f; h.setAttribute('aria-label', f); h.classList.remove('wh-troca'); void h.offsetWidth; h.classList.add('wh-troca');
 });
 function viewGeral() {

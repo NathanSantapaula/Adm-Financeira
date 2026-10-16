@@ -17,7 +17,7 @@ function renderSide() {
       <div class="advisor"><div class="adv-t">Seu assessor<b>${esc(CFG.consultor)}</b></div><button class="btn" data-act="contact">Falar com o ${esc(primeiroNome())}</button></div><div class="save" data-s="${S.save}">${statusText()}</div></div>`;
   const prim = ['geral', 'despesas', 'inv', 'cart'].filter((k) => items.some((i) => i[0] === k));
   const rest = items.filter((i) => !prim.includes(i[0]));
-  const sheet = S.maisOpen ? `<div class="sheet" role="dialog" aria-label="Mais opções">${rest.map(btn).join('')}<button data-act="perfil-abrir">${avatarHtml(S.profile, 'sm')}<span>Meu perfil</span></button><button data-act="admin-open">${I.user}<span>Painel administrativo</span></button><button data-act="contact">${I.chat}<span>Falar com o ${esc(primeiroNome())}</span></button></div>` : '';
+  const sheet = S.maisOpen ? `<div class="sheet" role="dialog" aria-label="Mais opções">${rest.map(btn).join('')}<div class="sheet-conta" role="group" aria-label="Sua conta"><small aria-hidden="true">Sua conta</small><button data-act="perfil-abrir">${avatarHtml(S.profile, 'sm')}<span>Meu perfil</span></button><button data-act="admin-open">${I.user}<span>Painel administrativo</span></button><button data-act="contact">${I.chat}<span>Falar com o ${esc(primeiroNome())}</span></button></div></div>` : ''; // abas em cima; conta e contato embaixo, numa faixa mais escura
   $('#tabbar').innerHTML = `${sheet}<div class="tabs">${items.filter((i) => prim.includes(i[0])).map(btn).join('')}<button data-act="mais-toggle" aria-expanded="${S.maisOpen}">${I.mais}<span>Mais</span></button></div>`;
 }
 
@@ -61,6 +61,7 @@ function render(opts) {
   const tw2 = $('.tablewrap'); if (tw2 && tws && same) { tw2.scrollLeft = tws[0]; tw2.scrollTop = tws[1]; }
   window.scrollTo(window.scrollX, same ? y : 0); S.lastKey = key;
   drawAll();
+  if (scr === 'app' && typeof aberturaTalvez === 'function') aberturaTalvez();
   if (scr === 'app' && S.lastCount !== key + ':' + S.year) { S.lastCount = key + ':' + S.year; contarNumeros($('#view')); }
   if (scr === 'landing') initReveal();
   if (typeof notifTitulo === 'function') notifTitulo();
@@ -88,7 +89,7 @@ function onClick(e) {
   if (el) {
     const act = el.dataset.act; const p = S.plan; const ds = el.dataset;
     switch (act) {
-      case 'nav': if (ds.view === 'geral' && S.view !== 'geral') S.titIdx = (S.titIdx || 0) + 1; /* voltou à Visão geral: próxima frase do título */ S.view = ds.view; S.stale = false; S.maisOpen = false; S.notifOpen = false; closeAdmin(); render(); break;
+      case 'nav': if (ds.view === 'geral' && S.view !== 'geral') S.titTrocar = true; /* voltou à Visão geral: frase nova no título */ S.view = ds.view; S.stale = false; S.maisOpen = false; S.notifOpen = false; closeAdmin(); render(); break;
       case 'mais-toggle': S.maisOpen = !S.maisOpen; render(); break;
       case 'obj-sw-mover': objSwMover(+ds.d); break;
       case 'prov-modo': S.provModo = ds.m; el.parentElement.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === el))); drawProv(); break;
@@ -171,6 +172,8 @@ function onClick(e) {
       case 'admin-open': S.maisOpen = false; openAdmin(); break;
       case 'ob-obj-add': case 'ob-obj-del': obObjAcao(act, ds); break;
       case 'admin-close': closeAdmin(); break;
+      case 'ab-quando': aberturaQuando(ds.v, el); break;
+      case 'ab-ver': aberturaVer(); break;
       case 'perfil-abrir': S.maisOpen = false; S.adminPage = 'perfil'; if (!S.adminOpen) openAdmin('perfil'); else renderAdmin(true); break;
       case 'perfil-voltar': S.adminPage = 'inicio'; renderAdmin(true); break;
       case 'adm-grupo': S.adminPage = 'grupo:' + ds.g; renderAdmin(true); { const b = document.querySelector('#admin [data-act="adm-voltar"]'); if (b) b.focus(); } break;

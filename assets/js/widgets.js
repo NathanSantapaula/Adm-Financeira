@@ -278,7 +278,7 @@ function drawWidgetsExtras() {
   const C = S.C; const cur = S.year === NOW_Y ? NOW_M : -1;
   drawOrc(); drawProv();
   const hm = $('#d-histmini');
-  if (hm) { const H = histDados(); const P = H.serie.map((p) => ({ ano: p.ano, mes: p.mes, v: p.patrimonio })); chartHistorico(hm, { pontos: P, height: 200, aria: 'Patrimônio de todos os anos', rotuloPonto: (v) => tickFmt(v), tip: (i) => `<b>${MES_LONGO[H.serie[i].mes]} de ${H.serie[i].ano}</b><br>Patrimônio: ${brl0(H.serie[i].patrimonio)}` }); }
+  if (hm) { const H = histDados(); const P = H.serie.map((p) => ({ ano: p.ano, mes: p.mes, v: p.patrimonio })); chartHistorico(hm, { pontos: P, height: 200, suave: true, brilho: true, color: 'var(--c1)', aria: 'Patrimônio de todos os anos', rotuloPonto: (v) => tickFmt(v), tip: (i) => `<b>${MES_LONGO[H.serie[i].mes]} de ${H.serie[i].ano}</b><br>Patrimônio: ${brl0(H.serie[i].patrimonio)}` }); }
 }
 
 /* ---------- painel: Personalizar a Visão geral ---------- */
