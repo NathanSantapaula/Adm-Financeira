@@ -31,6 +31,13 @@ function abTema() {
     texto: escuro ? k('--ink') : branco, texto2: escuro ? k('--ink-2') : abMix(acc, branco, 0.82), sobe: escuro ? k('--pos') : abMix(k('--pos'), branco, 0.6) };
 }
 const abMix = (a, b, f) => a.map((v, i) => Math.round(v + (b[i] - v) * f));
+// desempenho: cores em texto ficam guardadas por cor e transparência (128 níveis, abaixo do que a tela distingue),
+// em vez de montar uma string por ponto a cada quadro; o cache zera quando o tema muda
+const AB_NIV = 128;
+function abEstilo(c, a) {
+  const A = AB; const n = Math.max(0, Math.min(AB_NIV, Math.round(a * AB_NIV))); const ch = c.join(',') + '|' + n;
+  let s = A.estilos.get(ch); if (!s) { s = abRgba(c, n / AB_NIV); A.estilos.set(ch, s); } return s;
+}
 const abCalmo = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 // chamada a cada desenho do app: abre só uma vez por sessão, para quem tem patrimônio
@@ -81,7 +88,8 @@ function abAbrir() {
   AB = { el, cv, ctx, D, t0: performance.now(), rotY: 0.7, rotX: -0.28, vY: 0, vX: 0, arr: null, mouse: null, alvos: [], sel: null, raf: 0, calmo: abCalmo() };
   abTema(); abPreparar(); abTamanho();
   // o tema pode mudar com a tela aberta (aparelho trocando de claro para escuro)
-  AB.mo = new MutationObserver(() => { if (AB) abTema(); }); AB.mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'data-custom', 'style'] });
+  AB.estilos = new Map(); AB.baldes = new Map(); AB.ver = 0; AB.fonte = getComputedStyle(document.body).fontFamily;
+  AB.mo = new MutationObserver(() => { if (AB) { abTema(); AB.estilos.clear(); AB.ver++; } }); AB.mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'data-custom', 'style'] });
   AB.ult = performance.now(); AB.tc = 0;
   AB.ro = new ResizeObserver(abTamanho); AB.ro.observe(el);
   if (!D.op.titulo) el.querySelector('.ab-tit').hidden = true; if (!D.op.vivo) el.querySelector('.ab-vivo').hidden = true;
@@ -130,13 +138,20 @@ function abOrbita(ang) { const A = AB; const OA = A.OA, OB = 0.46, ROT = -0.2; c
   return { x: A.cx + ox * Math.cos(ROT) - oy * Math.sin(ROT), y: A.cy + A.R * 0.06 + ox * Math.sin(ROT) + oy * Math.cos(ROT), frente: Math.sin(ang) > 0 }; }
 
 /* ---------- desenho ---------- */
+// junta retângulos por estilo e desenha cada grupo de uma vez (mesmos retângulos, na mesma mistura, só com menos trocas de cor)
+function abBalde(estilo) { let b = AB.baldes.get(estilo); if (!b) { b = []; AB.baldes.set(estilo, b); } return b; }
+function abDespejar(ctx) { AB.baldes.forEach((b, estilo) => { if (!b.length) return; ctx.fillStyle = estilo; for (let j = 0; j < b.length; j += 3) ctx.fillRect(b[j], b[j + 1], b[j + 2], b[j + 2]); b.length = 0; }); }
 function abQuadro(agora) {
   const A = AB; const ctx = A.ctx; const T = A.T; const W = A.W, H = A.H, cx = A.cx, cy = A.cy, R = A.R;
+  if (!(W > 0 && H > 0 && A.cv.width > 0)) return; // tela ainda sem tamanho (aba oculta): nada a desenhar
   // relógio da cena: anda só quando nada está segurado (dedo em cima, item aberto ou mouse parado sobre algo)
   const parado = !!(A.sel || A.segura || A.sobre); if (!parado && !A.calmo) A.tc += Math.min(50, agora - A.ult); A.ult = agora; const t = A.tc / 1000;
   const entra = A.calmo ? 1 : Math.min(1, (agora - A.t0) / 1800); const e = 1 - Math.pow(1 - entra, 3);
-  // giro: sozinho devagar, arraste com inércia
-  if (!A.arr) { A.rotY += (A.calmo || parado ? 0 : 0.0018) + A.vY; A.rotX = Math.max(-1.1, Math.min(1.1, A.rotX + A.vX)); A.vY *= 0.95; A.vX *= 0.95; }
+  // giro: sozinho devagar, arraste com inércia (a inércia some de vez quando fica imperceptível)
+  if (!A.arr) { A.rotY += (A.calmo || parado ? 0 : 0.0018) + A.vY; A.rotX = Math.max(-1.1, Math.min(1.1, A.rotX + A.vX)); A.vY *= 0.95; A.vX *= 0.95; if (Math.abs(A.vY) < 1e-6) A.vY = 0; if (Math.abs(A.vX) < 1e-6) A.vX = 0; }
+  // cena parada e nada mudou desde o último quadro: não redesenha (a imagem seria idêntica)
+  const sig = [A.tc, A.rotY, A.rotX, e, A.sel && A.sel.id, W, H, A.ver, A.calmo || !parado ? A.mouse && A.mouse.join() : 0, oculto()].join('|');
+  if (sig === A.quadroSig) return; A.quadroSig = sig;
   A.alvos = []; ctx.clearRect(0, 0, W, H);
   ctx.globalCompositeOperation = 'source-over';
   // no escuro, estrelas; no claro, confete nas cores da carteira
@@ -146,8 +161,11 @@ function abQuadro(agora) {
   g = ctx.createRadialGradient(cx - R * 0.32, cy - R * 0.38, R * 0.04, cx, cy, R);
   if (T.escuro) { g.addColorStop(0, abRgba(T.acc, 0.3)); g.addColorStop(0.55, abRgba(T.acc, 0.14)); g.addColorStop(1, abRgba(T.bg, 0.55)); }
   else { g.addColorStop(0, abRgba(T.esfera.brilho, 1)); g.addColorStop(0.5, abRgba(T.esfera.meio, 1)); g.addColorStop(1, abRgba(T.esfera.borda, 1)); }
-  if (!T.escuro) { ctx.shadowColor = abRgba(T.acc, 0.55); ctx.shadowBlur = 60; ctx.shadowOffsetY = 18; }
-  ctx.globalAlpha = T.escuro ? 1 : e; ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, R * e, 0, 7); ctx.fill(); ctx.globalAlpha = 1; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+  // a esfera do tema claro tem uma sombra larga (a operação mais cara do canvas): depois da entrada, ela é desenhada
+  // uma vez numa camada do tamanho da tela e só copiada nos quadros seguintes
+  const esfera = (c) => { if (!T.escuro) { c.shadowColor = abRgba(T.acc, 0.55); c.shadowBlur = 60; c.shadowOffsetY = 18; }
+    c.globalAlpha = T.escuro ? 1 : e; c.fillStyle = g; c.beginPath(); c.arc(cx, cy, R * e, 0, 7); c.fill(); c.globalAlpha = 1; c.shadowBlur = 0; c.shadowOffsetY = 0; };
+  if (T.escuro || e < 1) esfera(ctx); else ctx.drawImage(abCamada('esfera', esfera), 0, 0, W, H);
   // objetivos (atrás)
   const ob = A.D.objs.map((o, i, arr) => Object.assign({ o }, abOrbita((i / arr.length) * Math.PI * 2 + 0.5 + t * 0.06)));
   abElipse(false); ob.filter((p) => !p.frente).forEach((p) => abCristal(p, t));
@@ -156,18 +174,25 @@ function abQuadro(agora) {
   const div = A.div.map((q) => ({ q, p: abProj(abRot([Math.cos(q.fase + t * q.vel) * q.rr, 0, Math.sin(q.fase + t * q.vel) * q.rr], q.inc, q.gir)) }));
   const apo = A.D.apo.map((a, i, arr) => ({ a, p: abProj(abRot([Math.cos((i / arr.length) * Math.PI * 2 + t * 0.12) * 1.3, 0, Math.sin((i / arr.length) * Math.PI * 2 + t * 0.12) * 1.3], 0.95, 0.4)) }));
   ctx.globalCompositeOperation = T.soma;
-  anel.forEach((q, i) => { if (q[2] < 0) { ctx.fillStyle = abRgba(T.acc, A.anel[i].b * 0.7); ctx.fillRect(q[0], q[1], 1.2, 1.2); } });
+  anel.forEach((q, i) => { if (q[2] < 0) abBalde(abEstilo(T.acc, A.anel[i].b * 0.7)).push(q[0], q[1], 1.2); }); abDespejar(ctx);
   abTrilha(false, t); div.forEach((d) => { if (d.p[2] < 0) abDiv(d, false); }); apo.forEach((a) => { if (a.p[2] < 0) abLosango(a, false); });
   // malha
-  ctx.lineWidth = 1; A.malha.forEach((L) => { let ant = null; L.forEach((v) => { const p = abProj(v); if (ant) { const prof = (p[2] + ant[2]) / 2; if (prof > -0.05) { ctx.strokeStyle = abRgba(T.escuro ? T.acc : T.luz, (T.escuro ? 0.2 : 0.3) * (0.25 + prof * 0.75) * e); ctx.beginPath(); ctx.moveTo(ant[0], ant[1]); ctx.lineTo(p[0], p[1]); ctx.stroke(); } } ant = p; }); });
+  // (trechos agrupados por transparência só para trocar a cor menos vezes)
+  ctx.lineWidth = 1; const tracos = new Map(); A.malha.forEach((L) => { let ant = null; L.forEach((v) => { const p = abProj(v); if (ant) { const prof = (p[2] + ant[2]) / 2; if (prof > -0.05) { const es = abEstilo(T.escuro ? T.acc : T.luz, (T.escuro ? 0.2 : 0.3) * (0.25 + prof * 0.75) * e); let l = tracos.get(es); if (!l) tracos.set(es, (l = [])); l.push(ant[0], ant[1], p[0], p[1]); } } ant = p; }); });
+  // cada trecho segue com o próprio traço: no tema escuro as pontas que se encostam somam luz, e isso faz parte do desenho
+  tracos.forEach((l, es) => { ctx.strokeStyle = es; for (let j = 0; j < l.length; j += 4) { ctx.beginPath(); ctx.moveTo(l[j], l[j + 1]); ctx.lineTo(l[j + 2], l[j + 3]); ctx.stroke(); } });
   // pontos do globo (entram espalhados e se juntam; afastam-se do mouse, menos com a cena parada)
   const mx = A.mouse ? A.mouse[0] : -9999, my = A.mouse ? A.mouse[1] : -9999;
-  A.pts.forEach((pt, i) => {
-    let [sx, sy, z] = abProj(pt.v); if (e < 1) { const k = (1 - e) * (1.6 + (i % 7) * 0.35); sx = cx + (sx - cx) * (1 + k); sy = cy + (sy - cy) * (1 + k); }
+  // projeção feita aqui mesmo (sem criar listas por ponto) e os pontos agrupados por cor antes de pintar
+  const cY = Math.cos(A.rotY), sY = Math.sin(A.rotY), cX = Math.cos(A.rotX), sX = Math.sin(A.rotX);
+  for (let i = 0; i < A.pts.length; i++) { const pt = A.pts[i]; const v = pt.v;
+    const x2 = v[0] * cY - v[2] * sY, z2 = v[0] * sY + v[2] * cY; let sx = cx + x2 * R, sy = cy + (v[1] * cX - z2 * sX) * R; const z = v[1] * sX + z2 * cX;
+    if (e < 1) { const k = (1 - e) * (1.6 + (i % 7) * 0.35); sx = cx + (sx - cx) * (1 + k); sy = cy + (sy - cy) * (1 + k); }
     let realce = 0; if (z > 0 && !parado) { const dx = sx - mx, dy = sy - my, d = Math.hypot(dx, dy); if (d < 110) { const f = (110 - d) / 110; sx += (dx / (d || 1)) * f * 30; sy += (dy / (d || 1)) * f * 30; realce = f; } }
     const prof = (z + 1) / 2; const tam = (0.5 + prof * 2.1) * (1 + realce * 0.8); const al = Math.min(1, (0.06 + prof * 0.85) * (1 + realce)) * e;
-    ctx.fillStyle = abRgba(T.pts[pt.k], al); ctx.fillRect(sx - tam / 2, sy - tam / 2, tam, tam);
-  });
+    abBalde(abEstilo(T.pts[pt.k], al)).push(sx - tam / 2, sy - tam / 2, tam);
+  }
+  abDespejar(ctx);
   // classes da carteira: orbs que pulsam na superfície, do tamanho da proporção
   A.nos.forEach((n) => { const p = abProj([Math.cos(n.la) * Math.cos(n.lo), Math.sin(n.la), Math.cos(n.la) * Math.sin(n.lo)]); if (p[2] < -0.15) return;
     const c = T.cls[n.c.k]; const rr = (6 + Math.sqrt(n.c.pct * 100) * 3) * (0.75 + (p[2] + 1) * 0.15); const pulso = 1 + 0.08 * Math.sin(t * 2.4 + n.lo);
@@ -179,22 +204,33 @@ function abQuadro(agora) {
   });
   // camadas da frente
   ctx.globalCompositeOperation = T.escuro ? 'lighter' : 'source-over';
-  anel.forEach((q, i) => { if (q[2] >= 0) { ctx.fillStyle = abRgba(T.escuro ? T.acc : T.acc2, A.anel[i].b * (T.escuro ? 1 : 1.3)); const s = T.escuro ? 1.4 : 1.8; ctx.fillRect(q[0], q[1], s, s); } });
+  anel.forEach((q, i) => { if (q[2] >= 0) abBalde(abEstilo(T.escuro ? T.acc : T.acc2, A.anel[i].b * (T.escuro ? 1 : 1.3))).push(q[0], q[1], T.escuro ? 1.4 : 1.8); }); abDespejar(ctx);
   ctx.globalCompositeOperation = 'source-over';
   abTrilha(true, t); div.forEach((d) => { if (d.p[2] >= 0) abDiv(d, true); }); apo.forEach((a) => { if (a.p[2] >= 0) abLosango(a, true); });
-  ctx.strokeStyle = T.escuro ? abRgba(T.acc, 0.5) : 'rgba(255,255,255,.75)'; ctx.lineWidth = 2; ctx.shadowColor = abRgba(T.acc, 1); ctx.shadowBlur = 20; ctx.beginPath(); ctx.arc(cx, cy, R * 1.005 * e, 0, 7); ctx.stroke(); ctx.shadowBlur = 0;
-  // valor no centro
-  const fonte = getComputedStyle(document.body).fontFamily;
-  ctx.textAlign = 'center'; ctx.globalAlpha = e; ctx.fillStyle = abRgba(T.texto2, 0.95); ctx.font = `600 ${Math.max(11, Math.round(R * 0.06))}px ${fonte}`; ctx.fillText('Seu patrimônio', cx, cy - R * 0.08);
-  ctx.shadowColor = T.escuro ? abRgba(T.acc, 1) : abRgba(T.esfera.borda, 0.7); ctx.shadowBlur = T.escuro ? 28 : 16; ctx.fillStyle = abRgba(T.texto, 1); ctx.font = `780 ${Math.round(R * 0.2)}px ${fonte}`; ctx.fillText(brl0(A.D.patr), cx, cy + R * 0.11); ctx.shadowBlur = 0;
-  if (Math.abs(A.D.cresc) >= 1) { ctx.fillStyle = abRgba(A.D.cresc > 0 ? T.sobe : T.neg, 1); ctx.font = `650 ${Math.max(10.5, Math.round(R * 0.058))}px ${fonte}`; ctx.fillText(`${A.D.cresc > 0 ? '+' : '−'} ${brl0(Math.abs(A.D.cresc))} em ${A.D.ano}`, cx, cy + R * 0.22); }
-  ctx.globalAlpha = 1;
+  // borda luminosa do globo (sombra larga, igual em todo quadro depois da entrada: camada pronta)
+  const borda = (c) => { c.strokeStyle = T.escuro ? abRgba(T.acc, 0.5) : 'rgba(255,255,255,.75)'; c.lineWidth = 2; c.shadowColor = abRgba(T.acc, 1); c.shadowBlur = 20; c.beginPath(); c.arc(cx, cy, R * 1.005 * e, 0, 7); c.stroke(); c.shadowBlur = 0; };
+  if (e < 1) borda(ctx); else ctx.drawImage(abCamada('borda', borda), 0, 0, W, H);
+  // valor no centro (texto com brilho: também vira camada pronta depois da entrada)
+  const fonte = A.fonte;
+  const textos = (c) => { c.textAlign = 'center'; c.globalAlpha = e; c.fillStyle = abRgba(T.texto2, 0.95); c.font = `600 ${Math.max(11, Math.round(R * 0.06))}px ${fonte}`; c.fillText('Seu patrimônio', cx, cy - R * 0.08);
+    c.shadowColor = T.escuro ? abRgba(T.acc, 1) : abRgba(T.esfera.borda, 0.7); c.shadowBlur = T.escuro ? 28 : 16; c.fillStyle = abRgba(T.texto, 1); c.font = `780 ${Math.round(R * 0.2)}px ${fonte}`; c.fillText(brl0(A.D.patr), cx, cy + R * 0.11); c.shadowBlur = 0;
+    if (Math.abs(A.D.cresc) >= 1) { c.fillStyle = abRgba(A.D.cresc > 0 ? T.sobe : T.neg, 1); c.font = `650 ${Math.max(10.5, Math.round(R * 0.058))}px ${fonte}`; c.fillText(`${A.D.cresc > 0 ? '+' : '−'} ${brl0(Math.abs(A.D.cresc))} em ${A.D.ano}`, cx, cy + R * 0.22); }
+    c.globalAlpha = 1; };
+  if (e < 1) textos(ctx); else ctx.drawImage(abCamada('textos', textos), 0, 0, W, H);
   // objetivos (frente)
   abElipse(true); ob.filter((p) => p.frente).forEach((p) => abCristal(p, t));
   if (A.D.op.info) abInfo(t);
   // o item escolhido fica marcado
   if (A.sel) { const a = A.alvos.find((x) => x.id === A.sel.id) || A.sel;
     ctx.strokeStyle = abRgba(T.escuro ? T.luz : T.ink, 0.85); ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(a.x, a.y, a.r + 4, 0, 7); ctx.stroke(); }
+}
+// camada do tamanho da tela, desenhada uma vez e copiada pixel a pixel enquanto tamanho, tema e valores não mudam
+function abCamada(nome, desenha) {
+  const A = AB; const chave = [A.cv.width, A.cv.height, A.W, A.cx, A.cy, A.R, A.ver, oculto()].join('|'); A.camadas = A.camadas || {};
+  let k = A.camadas[nome]; if (k && k.chave === chave) return k.cv;
+  const cv = (k && k.cv) || document.createElement('canvas'); cv.width = A.cv.width; cv.height = A.cv.height; const c = cv.getContext('2d');
+  c.setTransform(A.cv.width / A.W, 0, 0, A.cv.height / A.H, 0, 0); c.clearRect(0, 0, A.W, A.H); desenha(c);
+  A.camadas[nome] = { chave, cv }; return cv;
 }
 function abElipse(frente) { const A = AB; const ctx = A.ctx; const OA = A.OA; ctx.save(); ctx.translate(A.cx, A.cy + A.R * 0.06); ctx.rotate(-0.2); ctx.strokeStyle = abRgba(A.T.acc, 0.32); ctx.lineWidth = 1.2; ctx.setLineDash([2, 6]);
   ctx.beginPath(); ctx.ellipse(0, 0, A.R * OA, A.R * 0.46, 0, frente ? 0 : Math.PI, frente ? Math.PI : Math.PI * 2); ctx.stroke(); ctx.restore(); }
