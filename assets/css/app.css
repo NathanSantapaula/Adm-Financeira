@@ -2297,10 +2297,11 @@ button.wg-ic:active { transform: scale(.92); }
 @media (hover: hover) and (pointer: fine) { .sheet-conta button:hover { background: color-mix(in srgb, var(--surface) 60%, transparent); } }
 .sheet { background: var(--sheen) padding-box, linear-gradient(color-mix(in srgb, var(--surface) 96%, transparent), color-mix(in srgb, var(--surface) 96%, transparent)) padding-box, var(--rim) border-box; } /* vidro quase opaco: a página de trás não mistura com as abas */
 
-/* ---------- Abertura "Seu universo financeiro" (abertura.js): cena sempre noturna, com tokens próprios ---------- */
-.ab { --ab-ink: #EEF3FF; --ab-ink-2: #8FA3C8; --ab-ink-3: #5F7196; --ab-acc: #4FC3FF; --ab-roxo: #8B7BFF; --ab-verde: #3EE08A; --ab-fundo: #030814;
+/* ---------- Abertura "Seu universo financeiro" (abertura.js): segue o tema (fundo, textos e destaque), claro ou escuro ---------- */
+.ab { --ab-ink: var(--ink); --ab-ink-2: var(--ink-2); --ab-ink-3: var(--ink-3); --ab-acc: var(--accent); --ab-roxo: var(--accent-2); --ab-verde: var(--pos);
   position: fixed; inset: 0; z-index: 400; overflow: hidden; color: var(--ab-ink); height: 100dvh;
-  background: radial-gradient(circle at 15% 10%, rgba(139,123,255,.18), transparent 45%), radial-gradient(circle at 66% 46%, #163878 0, #081634 34%, var(--ab-fundo) 75%);
+  background: radial-gradient(circle at 15% 10%, color-mix(in srgb, var(--ab-roxo) 16%, transparent), transparent 45%),
+    radial-gradient(circle at 66% 46%, color-mix(in srgb, var(--ab-acc) 24%, var(--bg)) 0, color-mix(in srgb, var(--ab-acc) 9%, var(--bg)) 34%, var(--bg) 75%);
   animation: ab-in .6s cubic-bezier(.23,1,.32,1) both; }
 .ab.saindo { opacity: 0; transform: scale(1.04); transition: opacity .5s cubic-bezier(.23,1,.32,1), transform .5s cubic-bezier(.23,1,.32,1); pointer-events: none; }
 @keyframes ab-in { from { opacity: 0; } }
@@ -2312,12 +2313,14 @@ button.wg-ic:active { transform: scale(.92); }
 .ab-esq { position: absolute; top: 140px; left: 56px; width: min(520px, 40vw); pointer-events: none; }
 .ab-saud { margin: 0 0 10px; font-size: 19px; font-weight: 500; color: var(--ab-ink-2); }
 .ab-tit { margin: 0; min-height: 2.12em; font-size: clamp(34px, 3.6vw, 52px); line-height: 1.06; font-weight: 750; letter-spacing: -0.035em; color: var(--ab-ink); text-wrap: balance; }
-.ab-cur { display: inline-block; width: 4px; height: .92em; margin-left: 4px; vertical-align: -.12em; border-radius: 2px; background: var(--ab-acc); box-shadow: 0 0 14px var(--ab-acc); animation: ab-pisca 1s steps(1) infinite; }
+.ab-cur { display: inline-block; width: 4px; height: .92em; margin-left: 4px; vertical-align: -.12em; border-radius: 2px; background: var(--ab-acc); box-shadow: 0 0 14px var(--glow); animation: ab-pisca 1s steps(1) infinite; }
 @keyframes ab-pisca { 50% { opacity: 0; } }
-.ab-vivo, .ab-card { border-radius: 22px; background: linear-gradient(160deg, rgba(30,52,104,.55), rgba(10,20,44,.6)); border: 1px solid rgba(150,195,255,.18);
-  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: inset 0 1px 0 rgba(190,220,255,.12), 0 30px 60px -30px rgba(0,0,0,.8); }
+/* vidro do tema: o mesmo dos cards do painel */
+.ab-vivo, .ab-card { border-radius: 22px; border: 1px solid transparent;
+  background: var(--sheen) padding-box, linear-gradient(160deg, color-mix(in srgb, var(--ab-acc) 10%, var(--glass-strong)), var(--glass-strong)) padding-box, var(--rim) border-box;
+  -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4); box-shadow: var(--shadow-lg); }
 .ab-vivo { display: grid; width: min(430px, 100%); margin-top: 34px; padding: 20px 24px; pointer-events: auto; }
-.ab-pill { display: flex; width: max-content; align-items: center; gap: 7px; margin-bottom: 8px; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; color: var(--ab-verde); background: rgba(62,224,138,.12); }
+.ab-pill { display: flex; width: max-content; align-items: center; gap: 7px; margin-bottom: 8px; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; color: var(--ab-verde); background: var(--pos-soft); }
 .ab-pill i { width: 8px; height: 8px; border-radius: 50%; background: var(--ab-verde); box-shadow: 0 0 10px var(--ab-verde); animation: ab-pulso 1.6s ease-in-out infinite; }
 @keyframes ab-pulso { 50% { opacity: .35; } }
 .ab-desde { font-size: 14px; color: var(--ab-ink-2); }
@@ -2326,28 +2329,29 @@ button.wg-ic:active { transform: scale(.92); }
 .ab-rend span { font-size: .56em; }
 .ab-vivo em { font-style: normal; font-size: 12px; color: var(--ab-ink-3); }
 .ab-entrar { position: absolute; right: 56px; bottom: max(56px, calc(env(safe-area-inset-bottom) + 24px)); display: inline-flex; align-items: center; gap: 10px; padding: 16px 34px; border: 0; border-radius: 999px;
-  font: inherit; font-size: 18px; font-weight: 650; color: #04101F; cursor: pointer; touch-action: manipulation;
-  background: linear-gradient(100deg, #5AD1FF, #4FA8FF 50%, var(--ab-roxo)); box-shadow: 0 0 40px rgba(79,195,255,.55), 0 14px 40px -12px rgba(79,150,255,.8);
+  font: inherit; font-size: 18px; font-weight: 650; color: var(--on-accent); cursor: pointer; touch-action: manipulation;
+  background: var(--g-marca); box-shadow: 0 0 40px var(--glow), 0 14px 40px -12px var(--glow);
   transition: transform .16s cubic-bezier(.23,1,.32,1), box-shadow .2s ease; }
 .ab-entrar span { transition: transform .2s cubic-bezier(.23,1,.32,1); }
 .ab-entrar:active { transform: scale(.97); }
 .ab-entrar:focus-visible { outline: 2px solid var(--ab-ink); outline-offset: 4px; }
-@media (hover: hover) and (pointer: fine) { .ab-entrar:hover { box-shadow: 0 0 60px rgba(79,195,255,.75), 0 14px 40px -12px rgba(79,150,255,.9); } .ab-entrar:hover span { transform: translateX(4px); } }
-.ab-card { position: absolute; z-index: 2; display: grid; gap: 4px; width: max-content; max-width: min(300px, calc(100vw - 32px)); padding: 16px 40px 16px 18px; border-color: color-mix(in srgb, var(--ab-cor, #9FD6FF) 55%, transparent);
-  font-size: 13px; color: #AAB8D6; animation: ab-card .2s cubic-bezier(.23,1,.32,1) both; }
+@media (hover: hover) and (pointer: fine) { .ab-entrar:hover { box-shadow: 0 0 64px var(--glow), 0 14px 40px -12px var(--glow); } .ab-entrar:hover span { transform: translateX(4px); } }
+.ab-card { position: absolute; z-index: 2; display: grid; gap: 4px; width: max-content; max-width: min(300px, calc(100vw - 32px)); padding: 16px 40px 16px 18px;
+  background: var(--sheen) padding-box, linear-gradient(160deg, color-mix(in srgb, var(--ab-cor, var(--ab-acc)) 12%, var(--glass-strong)), var(--glass-strong)) padding-box, linear-gradient(155deg, color-mix(in srgb, var(--ab-cor, var(--ab-acc)) 70%, transparent), color-mix(in srgb, var(--ab-cor, var(--ab-acc)) 20%, transparent)) border-box;
+  font-size: 13px; color: var(--ab-ink-2); animation: ab-card .2s cubic-bezier(.23,1,.32,1) both; }
 @keyframes ab-card { from { opacity: 0; transform: scale(.96); } }
 .ab-card[hidden], .ab-tit[hidden], .ab-vivo[hidden] { display: none; }
-.ab-card small { font-size: 13.5px; font-weight: 700; color: var(--ab-cor, #9FD6FF); }
+.ab-card small { font-size: 13.5px; font-weight: 700; color: var(--ab-cor, var(--ab-acc)); }
 .ab-card b { font-size: 16px; font-weight: 700; color: var(--ab-ink); }
-.ab-card .ab-v { font-size: 22px; font-weight: 780; letter-spacing: -0.02em; color: #FFFFFF; font-variant-numeric: tabular-nums; }
+.ab-card .ab-v { font-size: 22px; font-weight: 780; letter-spacing: -0.02em; color: var(--ab-ink); font-variant-numeric: tabular-nums; }
 .ab-card .ab-v em { font-style: normal; font-size: 13px; font-weight: 500; color: var(--ab-ink-2); }
-.ab-x { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border: 0; border-radius: 50%; font-size: 18px; line-height: 1; color: var(--ab-ink-2); background: rgba(150,195,255,.1); cursor: pointer; }
+.ab-x { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border: 0; border-radius: 50%; font-size: 18px; line-height: 1; color: var(--ab-ink-2); background: color-mix(in srgb, var(--ab-ink) 8%, transparent); cursor: pointer; }
 .ab-leg { display: grid; gap: 7px; margin: 6px 0 6px; padding: 0; list-style: none; max-width: 270px; }
-.ab-leg li { display: grid; grid-template-columns: 14px 1fr; gap: 8px; align-items: start; line-height: 1.35; color: #C9D5EE; }
+.ab-leg li { display: grid; grid-template-columns: 14px 1fr; gap: 8px; align-items: start; line-height: 1.35; color: var(--ab-ink); }
 .ab-leg i { width: 10px; height: 10px; margin-top: 3px; border-radius: 50%; }
-.ab-leg i.o { background: radial-gradient(circle at 35% 35%, #fff, #A082FF 60%); box-shadow: 0 0 8px #A082FF; }
+.ab-leg i.o { background: radial-gradient(circle at 35% 35%, #fff, var(--c2) 60%); box-shadow: 0 0 8px var(--c2); }
 .ab-leg i.l { border-radius: 1px; transform: rotate(45deg) scale(.85); background: var(--ab-verde); }
-.ab-leg i.h { border-radius: 0; clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%); background: #F4C55A; }
+.ab-leg i.h { border-radius: 0; clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0 50%); background: var(--c4); }
 @media (max-width: 759px) {
   .ab-marca { top: max(20px, env(safe-area-inset-top)); left: 20px; } .ab-marca .marca-w { height: 20px; }
   .ab-esq { top: max(62px, calc(env(safe-area-inset-top) + 42px)); left: 20px; right: 20px; width: auto; }
@@ -2358,3 +2362,12 @@ button.wg-ic:active { transform: scale(.92); }
 }
 @media (max-width: 759px) and (max-height: 700px) { .ab-vivo em { display: none; } .ab-tit { font-size: 22px; } }
 @media (prefers-reduced-motion: reduce) { .ab, .ab-card { animation: none; } .ab.saindo { transform: none; transition: opacity .2s ease; } .ab-cur, .ab-pill i { animation: none; } }
+/* abertura no tema claro: aurora colorida em vez de um fundo pálido */
+:root[data-theme="light"] .ab { background:
+  radial-gradient(42% 52% at 10% 6%, color-mix(in srgb, var(--c2) 24%, transparent), transparent 70%),
+  radial-gradient(40% 50% at 95% 8%, color-mix(in srgb, var(--c3) 26%, transparent), transparent 70%),
+  radial-gradient(48% 56% at 66% 47%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 72%),
+  radial-gradient(55% 45% at 28% 108%, color-mix(in srgb, var(--c6) 14%, transparent), transparent 70%),
+  radial-gradient(50% 45% at 100% 100%, color-mix(in srgb, var(--c4) 14%, transparent), transparent 70%), var(--bg); }
+:root[data-theme="light"] .ab-tit { background: linear-gradient(100deg, var(--ink) 30%, color-mix(in srgb, var(--accent) 80%, var(--ink))); -webkit-background-clip: text; background-clip: text; color: transparent; }
+:root[data-theme="light"] .ab-tit .ab-cur { -webkit-text-fill-color: initial; }

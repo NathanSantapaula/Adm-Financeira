@@ -148,7 +148,7 @@ const O3_OBJ = {
     caixa(0.52, 0.3, 0.02, M.janela, -0.3, -0.38, 0.345); caixa(0.02, 0.3, 0.46, M.janela, 0.435, -0.38, -0.02); // vidros do térreo
     caixa(0.5, 0.2, 0.02, M.janela, 0.12, 0.1, 0.21); caixa(0.02, 0.2, 0.36, M.janela, 0.51, 0.1, -0.1); // faixa de vidro de cima
     caixa(0.18, 0.34, 0.03, M.madeira, 0.18, -0.44, 0.35); // porta
-    caixa(0.6, 0.02, 0.3, M.concreto, -0.3, -0.62, 0.5); // deck
+    caixa(0.6, 0.03, 0.3, M.madeiraClara, -0.3, -0.595, 0.5); // deck de madeira, acima da grama (na mesma altura, as duas superfícies brigavam e piscavam)
     const borPisc = caixa(0.62, 0.05, 0.38, M.pedra, 0.52, -0.6, 0.55); borPisc.scale.set(1, 1, 1);
     caixa(0.54, 0.04, 0.3, M.agua, 0.52, -0.57, 0.55); // piscina
     [[-0.08, -0.6, 0.72], [0.02, -0.6, 0.88], [-0.12, -0.6, 1.0]].forEach(([x, y, z]) => { const p = new T.Mesh(new T.CylinderGeometry(0.07, 0.07, 0.02, 20), M.pedra); p.position.set(x, y, z); g.add(p); });
