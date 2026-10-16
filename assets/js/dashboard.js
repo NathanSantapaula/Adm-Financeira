@@ -79,25 +79,96 @@ function periodoHtml() {
       <div class="pop-t">${ini != null ? 'Agora toque no mês final' : 'Ou escolha no calendário de ' + S.year}</div><div class="per-cal">${meses}</div>
       <p class="per-dica keep">${dica}</p></div>` : ''}</div>`;
 }
+/* ---------- Título da Visão geral como uma conversa ----------
+   Uma lista de frases que se adequa à situação (orçamento do mês, objetivo em foco, aportes, proventos, fim do mês,
+   dia da semana e hora), na ordem do que mais importa agora. Os textos ficam em VOZ (prefs.js, chaves tit_*).
+   Na voz Acolhedor (a do 3D) o título apaga e digita a próxima frase de tempos em tempos (tituloLigar).
+   Nas outras vozes a frase só troca quando o cliente sai e volta (para a aba Visão geral ou para o navegador). */
+// a frase precisa caber em até duas linhas no espaço do título (medida com a fonte e a largura reais do título na tela)
+let TIT_MED = null;
+function cabeNoTitulo(f) {
+  const h = document.querySelector('#view .wh'); if (!h || !h.clientWidth) return f.length <= 48;
+  const cs = getComputedStyle(h); TIT_MED = TIT_MED || document.createElement('canvas').getContext('2d');
+  TIT_MED.font = cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily; const tam = parseFloat(cs.fontSize) || 32;
+  const larg = TIT_MED.measureText(f).width + (parseFloat(cs.letterSpacing) || 0) * f.length + tam * 0.3; // + o cursor
+  return larg <= h.clientWidth * 2 * 0.86; // folga para a quebra entre palavras
+}
+function tituloFrases() {
+  const p = S.plan; const C = S.C; const T = C.T; const tom = tomAtual(); const m = mesRef(); const agora = new Date(); const doAno = S.year === NOW_Y;
+  const mes = MES_LONGO[m]; const base = { ano: p.year, mes, Mes: mes.replace(/^./, (c) => c.toUpperCase()) }; const dinheiro = !oculto();
+  const L = []; const add = (k, v) => { if (VOZ[tom] && VOZ[tom][k] != null) L.push(voz(k, Object.assign({}, base, v))); };
+  const u = C.usoOrc[m]; const temOrc = C.orcamento[m] > 0;
+  if (temOrc && u > 1) add('tit_orc_estourou');
+  const fimMes = new Date(agora.getFullYear(), agora.getMonth() + 1, 0).getDate() - agora.getDate();
+  if (doAno && fimMes <= 5) add('tit_fim_mes', { dias: fimMes === 0 ? 'hoje' : fimMes === 1 ? '1 dia' : fimMes + ' dias' });
+  if (temOrc && u > 0.85 && u <= 1) add('tit_orc_alto', { pct: pct(u) });
+  const A = typeof objAnalise === 'function' ? objAnalise() : null; const g = A ? objFoco(A) : null;
+  if (g && g.valor > 0) {
+    const obj = objNomeDe(g);
+    if (g.status === 'concluido') add('tit_obj_ok', { obj });
+    else { if (g.previsto) add('tit_obj_prev', { obj, quando: MES_LONGO[g.previsto.mes] + ' de ' + g.previsto.ano }); if (g.progresso > 0.02) add('tit_obj', { obj, pct: pct(g.progresso) }); }
+  }
+  if (dinheiro && temRecurso('investimentos') && C.aplicado[m] > 0) add('tit_aporte', { valor: brl0(C.aplicado[m]) });
+  if (T.receita > 0 && T.poupanca >= 0.15) add('tit_poupanca', { pct: pct(T.poupanca) });
+  if (dinheiro && temRecurso('investimentos') && C.faturamento[m] > 0) add('tit_prov', { valor: brl0(C.faturamento[m]) });
+  if (dinheiro && temRecurso('patrimonio') && C.patrimonio[m] - C.patrimonioBase > 0) add('tit_patr', { valor: brl0(C.patrimonio[m] - C.patrimonioBase) });
+  if (doAno && agora.getDate() <= 3) add('tit_ini_mes');
+  const dia = agora.getDay(); const hora = agora.getHours();
+  if (dia === 5) add('tit_sexta'); else if (dia === 1) add('tit_segunda'); else if (dia === 0 || dia === 6) add('tit_fds');
+  if (hora >= 21 || hora < 5) add('tit_noite');
+  if (temOrc && u <= 0.85) add('tit_orc_ok');
+  add('tit_extra1'); add('tit_extra2');
+  L.push(voz('titulo', { ano: p.year })); // a frase de sempre fica na roda
+  const unicas = L.filter((f, i) => f && L.indexOf(f) === i); const cabem = unicas.filter(cabeNoTitulo);
+  return cabem.length ? cabem : [voz('titulo', { ano: p.year })];
+}
+const tituloAtual = () => { const L = tituloFrases(); return L[(S.titIdx || 0) % L.length]; };
+let TIT_T = 0; let TIT_EL = null;
+// voz Acolhedor: segura a frase, apaga letra por letra, digita a próxima (com ritmo de gente) e repete
+function tituloLigar() {
+  clearTimeout(TIT_T); const h = document.querySelector('#view .wh'); TIT_EL = h; if (!h || visualAtual() !== '3d') return;
+  const alvo = h.querySelector('.wh-t'); if (!alvo) return; const calmo = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const vivo = () => TIT_EL === h && h.isConnected;
+  const depois = (fn, ms) => { TIT_T = setTimeout(() => { if (!vivo()) return; if (document.hidden) { depois(fn, 1000); return; } fn(); }, ms); };
+  const proxima = () => { S.titIdx = (S.titIdx || 0) + 1; return tituloAtual(); };
+  const segurar = () => depois(calmo ? trocar : apagar, calmo ? 9000 : 5200 + Math.random() * 1800);
+  const trocar = () => { const f = proxima(); alvo.textContent = f; h.setAttribute('aria-label', f); segurar(); };
+  const apagar = () => { h.classList.add('digitando'); const t = alvo.textContent; if (t.length) { alvo.textContent = t.slice(0, -1); depois(apagar, 16 + Math.random() * 18); } else depois(() => digitar(proxima(), 0), 320); };
+  const digitar = (f, i) => {
+    alvo.textContent = f.slice(0, i + 1);
+    if (i + 1 < f.length) { const c = f[i]; depois(() => digitar(f, i + 1), (/[,.:!?]/.test(c) ? 190 : / /.test(c) ? 70 : 34) + Math.random() * 42); }
+    else { h.classList.remove('digitando'); h.setAttribute('aria-label', f); segurar(); }
+  };
+  segurar();
+}
+// outras vozes: ao voltar para o navegador, a frase troca (sem animação de digitação, só um esmaecer curto)
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden || typeof S === 'undefined' || S.view !== 'geral' || S.screen !== 'app' || !S.plan || visualAtual() === '3d') return;
+  const h = document.querySelector('#view .wh'); const alvo = h && h.querySelector('.wh-t'); if (!alvo) return;
+  const antes = tituloAtual(); S.titIdx = (S.titIdx || 0) + 1; const f = tituloAtual(); if (f === antes) return;
+  alvo.textContent = f; h.setAttribute('aria-label', f); h.classList.remove('wh-troca'); void h.offsetWidth; h.classList.add('wh-troca');
+});
 function viewGeral() {
   const p = S.plan; const pr = S.profile; const nome = (pr.apelido || (pr.nome || '').split(' ')[0]) || 'por aqui';
-  const cab = `<div class="welcome"><div><p class="greet">${esc(voz('saudacao', { saud: saudacaoHora(), nome }))}</p><h1 class="wh">${esc(voz('titulo', { ano: p.year }))}</h1></div>${yearControl(periodoHtml())}</div>`;
+  const cab = `<div class="welcome"><div><p class="greet">${esc(voz('saudacao', { saud: saudacaoHora(), nome }))}</p>${(() => { const f = tituloAtual(); return `<h1 class="wh${visualAtual() === '3d' ? ' wh-conversa' : ''}" aria-label="${esc(f)}"><span class="wh-t" aria-hidden="true">${esc(f)}</span>${visualAtual() === '3d' ? '<span class="wh-cur" aria-hidden="true"></span>' : ''}</h1>`; })()}</div>${yearControl(periodoHtml())}</div>`;
   return cab + widgetsHtml(); // widgets na ordem e no tamanho escolhidos pelo cliente (widgets.js)
 }
 
-/* Patrimônio estimado: linha do patrimônio (bolinha em cada mês, mês atual em destaque, ritmo da meta opcional)
-   ou barras dos aportes de cada mês contra a meta mensal. Os botões do card trocam só o gráfico, sem render(). */
+/* Patrimônio estimado: linha do patrimônio (bolinha em cada mês, mês atual em destaque, ritmo da meta opcional).
+   O botão do ritmo da meta troca só o gráfico, sem render(). Quando o valor muda (período, ano), ele conta até o novo. */
+function patrAnimaValor() {
+  const el = document.querySelector('.hero-card .c-big[data-v]'); if (!el) return; const novo = +el.dataset.v; const antigo = S.patrUltV; S.patrUltV = novo;
+  if (antigo == null || Math.abs(antigo - novo) < 1 || oculto() || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const t0 = performance.now(); const dur = 700; el.classList.add('trocando');
+  const passo = (agora) => { const k = Math.min(1, (agora - t0) / dur); const e = 1 - Math.pow(1 - k, 3); el.textContent = brl0(antigo + (novo - antigo) * e); if (k < 1) requestAnimationFrame(passo); else { el.textContent = brl0(novo); el.classList.remove('trocando'); } };
+  requestAnimationFrame(passo);
+}
 function drawPatr() {
   const el = $('#d-patr'); if (!el) return; hideTip(); const C = S.C; const meta = C.metaAno > 0 ? C.metaAno : 0;
   const [de, ate] = perIntervalo(); const ids = []; for (let i = de; i <= ate; i++) ids.push(i); const so = (arr) => ids.map((i) => arr[i]);
   const curAbs = S.year === NOW_Y ? NOW_M : -1; const cur = curAbs >= de && curAbs <= ate ? curAbs - de : -1;
   const base = C.patrimonioBase; const ritmo = MES.map((_, i) => base + (meta * (i + 1)) / 12); const comMeta = !!(S.patrMeta && meta);
   const varia = (i) => { const ant = i ? C.patrimonio[i - 1] : base; const d = C.patrimonio[i] - ant; return Math.abs(d) < 0.5 ? 'sem variação' : `${d > 0 ? '+' : '−'} ${brl0(Math.abs(d))}${ant > 0 ? ` (${d > 0 ? '+' : '−'}${pct(Math.abs(d) / ant)})` : ''}`; };
-  if (S.patrModo === 'aportes') {
-    chartBars(el, { labels: so(MES), cur, height: 170, aria: 'Aportes de cada mês comparados com a meta mensal', bars: [{ color: 'var(--c1)', values: so(C.aplicado) }], marks: meta ? [{ color: 'var(--c4)', values: ids.map(() => meta / 12) }] : [],
-      tip: (j) => { const i = ids[j]; return `<b>${mesNome(i)}</b><br>Aporte: ${brl0(C.aplicado[i])}${meta ? `<br>Meta do mês: ${brl0(meta / 12)}` : ''}`; } });
-    return;
-  }
   const series = [{ color: 'var(--c1)', values: so(C.patrimonio), area: true, w: 3 }]; if (comMeta) series.push({ color: 'var(--c4)', values: so(ritmo), dashed: true, w: 2 });
   chartLine(el, { height: 170, suave: true, brilho: true, pontos: true, pontoFinal: true, teclado: true, cur, zoom: Math.min(...so(C.patrimonio)) > 0, labels: so(MES), aria: 'Evolução do patrimônio no período. Use as setas para percorrer os meses.', series,
     tip: (j) => { const i = ids[j]; const dif = C.patrimonio[i] - ritmo[i]; return `<b>${mesNome(i)}${i === curAbs ? ' · hoje' : ''}</b><br>Patrimônio: ${brl0(C.patrimonio[i])}<br>No mês: ${varia(i)}<br>Aportes no mês: ${brl0(C.aplicado[i])}${comMeta ? `<br>Ritmo da meta: ${brl0(ritmo[i])} (${Math.abs(dif) < 0.5 ? 'em dia' : (dif > 0 ? 'acima ' : 'abaixo ') + brl0(Math.abs(dif))})` : ''}`; } });
@@ -105,10 +176,10 @@ function drawPatr() {
 function drawDashboard() {
   if (S.screen !== 'app' || S.view !== 'geral' || !S.plan) return;
   const C = S.C; const cur = S.year === NOW_Y ? NOW_M : -1; const sobra = C.investAlocado.map((v) => Math.max(0, v));
-  if (temRecurso('patrimonio')) drawPatr();
+  if (temRecurso('patrimonio')) { drawPatr(); patrAnimaValor(); }
   else { const [de, ate] = perIntervalo(); const ids = []; for (let i = de; i <= ate; i++) ids.push(i); chartBars($('#d-patr'), { labels: ids.map((i) => MES[i]), cur: cur >= de && cur <= ate ? cur - de : -1, height: 200, aria: 'Sobra para investir por mês', bars: [{ color: 'var(--c1)', values: ids.map((i) => C.investAlocado[i]) }], tip: (j) => { const i = ids[j]; return `<b>${MES[i]}</b><br>Entradas: ${brl0(C.receita[i])}<br>Gastos: ${brl0(C.despesas[i])}<br>Sobra: ${brl0(C.investAlocado[i])}`; } }); }
   chartBarsPer($('#d-flow'), { labels: MES, cur, aria: 'Gastos e sobra para investir por mês', bars: [{ color: 'var(--c2)', values: C.despesas }, { color: 'var(--c1)', values: sobra }], tip: (i) => `<b>${MES[i]}</b><br>Entradas: ${brl0(C.receita[i])}<br>Gastos: ${brl0(C.despesas[i])}<br>Sobra: ${brl0(C.investAlocado[i])}` });
-  drawPainel2(); drawWidgetsExtras();
+  drawPainel2(); drawWidgetsExtras(); tituloLigar();
   popSync(); // simulador ou histórico aberto na janela: acompanha os dados redesenhados
   if (temRecurso('investimentos')) { const comp = composicao(); const tot = comp.reduce((a, b) => a + b.value, 0); const palette = ['var(--c1)', 'var(--c2)', 'var(--c3)', 'var(--c4)', 'var(--c5)', 'var(--c6)']; if (tot > 0) chartDonut($('#d-donut'), { aria: 'Composição da carteira por classe de ativo', title: brl0(tot), sub: 'em ativos', items: comp.map((c, i) => ({ label: c.label, value: c.value, color: palette[i % 6] })) }); }
 }

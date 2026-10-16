@@ -167,7 +167,7 @@ function chartHistorico(el, cfg) {
   const faixas = []; P.forEach((p, i) => { const f = faixas[faixas.length - 1]; if (!f || f.ano !== p.ano) faixas.push({ ano: p.ano, i0: i, i1: i }); else f.i1 = i; });
   let anos = '';
   faixas.forEach((f, k) => {
-    const xa = k === 0 ? m.l : (x(f.i0 - 1) + x(f.i0)) / 2; const xb = k === faixas.length - 1 ? W - m.r : (x(f.i1) + x(f.i1 + 1)) / 2;
+    const xa = k === 0 ? m.l : x(f.i0 - 1); const xb = k === faixas.length - 1 ? W - m.r : x(f.i1); // a divisória passa pelo ponto de dezembro
     if (k > 0) anos += `<line x1="${xa.toFixed(1)}" x2="${xa.toFixed(1)}" y1="${m.t - 6}" y2="${m.t + ih}" class="hy-div"/>`;
     if (k % 2 === 1) anos += `<rect x="${xa.toFixed(1)}" y="${m.t - 6}" width="${(xb - xa).toFixed(1)}" height="${(ih + 6).toFixed(1)}" class="hy-band"/>`;
     anos += `<text x="${((xa + xb) / 2).toFixed(1)}" y="${H - 6}" text-anchor="middle" class="hy-ano">${f.ano}</text>`;
@@ -182,7 +182,7 @@ function chartHistorico(el, cfg) {
     const i = f.i1; const hoje = k === faixas.length - 1 && P[i].mes < 11; const rot = cfg.rotuloPonto ? cfg.rotuloPonto(vals[i]) : '';
     const yy = pts[i][1]; const acima = yy - 10 > m.t - 4;
     marcos += `<circle cx="${pts[i][0].toFixed(1)}" cy="${yy.toFixed(1)}" r="${hoje ? 5.5 : 4}" fill="${hoje ? cor : 'var(--surface)'}" stroke="${cor}" stroke-width="2.5"/>`;
-    if (rot && (faixas.length <= 8 || k === faixas.length - 1 || k % 2 === 0)) marcos += `<text x="${Math.min(W - m.r, Math.max(m.l + 14, pts[i][0])).toFixed(1)}" y="${(acima ? yy - 11 : yy + 18).toFixed(1)}" text-anchor="${pts[i][0] > W - m.r - 30 ? 'end' : 'middle'}" class="hy-rot">${escSvg((hoje ? 'Hoje · ' : MES[P[i].mes] + '/' + String(P[i].ano).slice(2) + ' · ') + rot)}</text>`;
+    if (rot && (faixas.length <= 8 || k === faixas.length - 1 || k % 2 === 0)) marcos += `<text x="${Math.min(W - m.r, Math.max(m.l + 14, pts[i][0])).toFixed(1)}" y="${(acima ? yy - 11 : yy + 18).toFixed(1)}" text-anchor="${pts[i][0] > W - m.r - 30 ? 'end' : 'middle'}" class="hy-rot">${escSvg((hoje ? 'Hoje · ' : '') + rot)}</text>`;
   });
   el.innerHTML = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${escSvg(cfg.aria || '')}"><defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${cor}" stop-opacity=".26"/><stop offset="1" stop-color="${cor}" stop-opacity="0"/></linearGradient></defs>${anos}${g}${area}<path d="${d}" fill="none" stroke="${cor}" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>${marcos}<line class="hv" x1="0" x2="0" y1="${m.t}" y2="${m.t + ih}" stroke="var(--ink-3)" stroke-width="1" opacity="0"/><circle class="hp" r="4.5" fill="${cor}" stroke="var(--surface)" stroke-width="2" opacity="0"/></svg>`;
   const svg = el.firstChild; const hv = svg.querySelector('.hv'); const hp = svg.querySelector('.hp');

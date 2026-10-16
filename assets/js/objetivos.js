@@ -88,6 +88,23 @@ function obj3dLigar() {
   if (typeof o3Ligar === 'function') o3Ligar(card, o.dataset.tipo, falhou); else falhou();
 }
 
+/* faixa de objetivos do card: com mais objetivos do que cabem, aparecem setas nas pontas; a rodinha do mouse e o
+   arrastar com o mouse também correm a faixa para o lado (no toque, o dedo já desliza). O objetivo em foco fica sempre à vista. */
+function objSwEstado(sw) { const w = sw.parentElement; const max = sw.scrollWidth - sw.clientWidth; w.classList.toggle('tem-esq', sw.scrollLeft > 4); w.classList.toggle('tem-dir', sw.scrollLeft < max - 4); }
+function objSwMover(d) { const sw = document.querySelector('#obj-card .obj-sw'); if (sw) sw.scrollBy({ left: d * sw.clientWidth * 0.7, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); }
+function objSwLigar() {
+  const sw = document.querySelector('#obj-card .obj-sw'); if (!sw) return;
+  const ativo = sw.querySelector('[aria-selected="true"]'); if (ativo) { const a = ativo.offsetLeft - sw.offsetLeft; if (a + ativo.offsetWidth > sw.scrollLeft + sw.clientWidth || a < sw.scrollLeft) sw.scrollLeft = a - 8; }
+  objSwEstado(sw); if (sw.dataset.ligado) return; sw.dataset.ligado = '1';
+  sw.addEventListener('scroll', () => objSwEstado(sw), { passive: true });
+  sw.addEventListener('wheel', (e) => { const max = sw.scrollWidth - sw.clientWidth; if (max <= 0 || Math.abs(e.deltaX) > Math.abs(e.deltaY)) return; const ant = sw.scrollLeft; sw.scrollLeft += e.deltaY; if (sw.scrollLeft !== ant) e.preventDefault(); }, { passive: false });
+  let ini = null; let arrastou = false;
+  sw.addEventListener('pointerdown', (e) => { if (e.pointerType === 'mouse' && e.button === 0) { ini = { x: e.clientX, l: sw.scrollLeft }; arrastou = false; } });
+  sw.addEventListener('pointermove', (e) => { if (!ini) return; const dx = e.clientX - ini.x; if (Math.abs(dx) > 5) { arrastou = true; sw.scrollLeft = ini.l - dx; } });
+  const soltar = () => { ini = null; }; sw.addEventListener('pointerup', soltar); sw.addEventListener('pointerleave', soltar);
+  sw.addEventListener('click', (e) => { if (arrastou) { e.stopPropagation(); e.preventDefault(); arrastou = false; } }, true); // soltar depois de arrastar não troca de objetivo
+  new ResizeObserver(() => objSwEstado(sw)).observe(sw);
+}
 function objCardHtml() {
   const A = objAnalise(); const g = objFoco(A);
   const vis = visualAtual(); const o3 = (tipo) => (vis === '3d' ? obj3dHtml(tipo) : ''); // visual vem da voz (prefs.js)
@@ -96,7 +113,8 @@ function objCardHtml() {
     <p class="sonho-txt">Imóvel, carro, viagem, filhos, independência: cadastre seus objetivos com valor e prazo e acompanhe cada um aqui.</p>
     <button class="btn sonho-btn" data-act="objetivo-definir">Definir meus objetivos</button></div></section>`;
   const st = OBJ_STATUS[g.status] || OBJ_STATUS['sem-valor']; const stTxt = OBJ_SONHO_ST[g.status] || st[0];
-  const sw = A.itens.length > 1 ? `<div class="obj-sw" role="tablist" aria-label="Escolher objetivo">${A.itens.map((x, k) => `<button role="tab" class="obj-chip" data-act="objetivo-foco" data-id="${esc(x.id)}" aria-selected="${x.id === g.id}" title="${esc(objNomeDe(x))}">${objIcone(x, k)}<span>${esc(objNomeDe(x))}</span></button>`).join('')}</div>` : '';
+  const seta = (d, t) => `<button class="obj-sw-seta ${d < 0 ? 'esq' : 'dir'}" data-act="obj-sw-mover" data-d="${d}" aria-label="${t}" title="${t}">${I.chev}</button>`;
+  const sw = A.itens.length > 1 ? `<div class="obj-sw-w">${seta(-1, 'Objetivos anteriores')}<div class="obj-sw" role="tablist" aria-label="Escolher objetivo">${A.itens.map((x, k) => `<button role="tab" class="obj-chip" data-act="objetivo-foco" data-id="${esc(x.id)}" aria-selected="${x.id === g.id}" title="${esc(objNomeDe(x))}">${objIcone(x, k)}<span>${esc(objNomeDe(x))}</span></button>`).join('')}</div>${seta(1, 'Próximos objetivos')}</div>` : '';
   // "E se?" (simulador do objetivo) fica no topo do card, ao lado da seta para Meus objetivos
   const sim = g.status !== 'concluido' && g.valor > 0 && g.pct > 0 ? `<button class="sonho-esse" data-act="sim-ir" aria-label="E se? Simular cenários para este objetivo" title="E se? Simular cenários para este objetivo">${typeof I_SIM !== 'undefined' ? I_SIM : ''}<span>E se?</span></button>` : '';
   return `<section class="card goal-card sonho v-${vis}" id="obj-card"><span class="sonho-foto" aria-hidden="true" style="background-image:url('${objFoto(g.tipo)}')"></span>${o3(g.tipo)}
@@ -113,7 +131,7 @@ function objCardHtml() {
 // troca de objetivo em foco sem redesenhar a página: só o card e o simulador
 function objTrocarFoco(id) {
   S.profile.objetivoFoco = id; touch('profile'); S.sim = null;
-  const c = document.getElementById('obj-card'); if (c) { c.outerHTML = objCardHtml(); const n = document.getElementById('obj-card'); if (n) n.classList.add('troca'); if (visualAtual() === '3d') obj3dLigar(); } // a foto nova entra com um esmaecer curto
+  const c = document.getElementById('obj-card'); if (c) { c.outerHTML = objCardHtml(); const n = document.getElementById('obj-card'); if (n) n.classList.add('troca'); if (visualAtual() === '3d') obj3dLigar(); objSwLigar(); } // a foto nova entra com um esmaecer curto
   if (S.simAberto) popSync(); // simulador aberto na janela (dashboard.js): passa a mostrar o novo objetivo
   const b = document.querySelector(`.obj-chip[data-id="${CSS.escape(id)}"]`); if (b) b.focus();
 }

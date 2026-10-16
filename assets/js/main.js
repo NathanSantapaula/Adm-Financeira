@@ -88,9 +88,10 @@ function onClick(e) {
   if (el) {
     const act = el.dataset.act; const p = S.plan; const ds = el.dataset;
     switch (act) {
-      case 'nav': S.view = ds.view; S.stale = false; S.maisOpen = false; S.notifOpen = false; closeAdmin(); render(); break;
+      case 'nav': if (ds.view === 'geral' && S.view !== 'geral') S.titIdx = (S.titIdx || 0) + 1; /* voltou à Visão geral: próxima frase do título */ S.view = ds.view; S.stale = false; S.maisOpen = false; S.notifOpen = false; closeAdmin(); render(); break;
       case 'mais-toggle': S.maisOpen = !S.maisOpen; render(); break;
-      case 'patr-modo': S.patrModo = ds.m; { const ctl = el.closest('.pt-ctl'); if (ctl) { ctl.outerHTML = patrCtl(); const b = document.querySelector(`.pt-ctl [data-m="${ds.m}"]`); if (b) b.focus(); } } drawPatr(); break;
+      case 'obj-sw-mover': objSwMover(+ds.d); break;
+      case 'prov-modo': S.provModo = ds.m; el.parentElement.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === el))); drawProv(); break;
       case 'patr-meta': S.patrMeta = !S.patrMeta; el.setAttribute('aria-pressed', String(S.patrMeta)); drawPatr(); break;
       case 'side-toggle': { const m = document.documentElement.classList.toggle('side-mini'); try { localStorage.setItem('fp:sideMini', m ? '1' : '0'); } catch (e) { /* ignora */ }
         renderSide(); const b = document.querySelector('.side-tog'); if (b) b.focus(); clearTimeout(resizeT); resizeT = setTimeout(drawAll, 300); break; } // gráficos acompanham a nova largura

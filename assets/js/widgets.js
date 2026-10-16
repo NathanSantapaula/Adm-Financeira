@@ -15,16 +15,15 @@ function wPatrimonio() {
     // com um período escolhido (seletor ao lado do ano), o valor é o do fim do período e o crescimento é só dele
     const [de, ate] = perIntervalo(); const ini = de ? C.patrimonio[de - 1] : C.patrimonioBase; const cres = C.patrimonio[ate] - ini;
     const dPer = Math.abs(cres) < 1 ? `<div class="c-d">Sem crescimento ${perFrase()}.</div>` : `<div class="c-d ${cres > 0 ? 'pos' : 'neg'}">${cres > 0 ? '+' : '−'} ${brl0(Math.abs(cres))} ${perFrase()}${ini > 0 ? ` (${cres > 0 ? '+' : '−'}${pct(Math.abs(cres) / ini)})` : ''}</div>`;
-    return `<section class="card hero-card"><div class="c-k hc-row"><span>${S.periodo && ate < 11 ? 'Patrimônio no fim de ' + MES_LONGO[ate] : 'Patrimônio estimado'}</span><div class="hc-acts">${histBtn()}</div></div><div class="c-big">${brl0(C.patrimonio[ate])}</div>${S.periodo ? dPer : Math.abs(ganho) < 1 ? `<div class="c-d">Nenhum aporte registrado em ${p.year}. <button class="lnk strong" data-act="nav" data-view="inv">Registrar aporte</button></div>` : `<div class="c-d ${ganho > 0 ? 'pos' : 'neg'}">${ganho > 0 ? '+' : '−'} ${brl0(Math.abs(ganho))} aportados em ${p.year}</div>`}${patrCtl()}<div class="chart" id="d-patr"></div>
+    return `<section class="card hero-card${visualAtual() === '3d' ? ' hero-3d' : ''}"><div class="c-k hc-row"><span>${S.periodo && ate < 11 ? 'Patrimônio no fim de ' + MES_LONGO[ate] : 'Patrimônio estimado'}</span><div class="hc-acts">${histBtn()}</div></div><div class="c-big" data-v="${C.patrimonio[ate]}">${brl0(C.patrimonio[ate])}</div>${S.periodo ? dPer : Math.abs(ganho) < 1 ? `<div class="c-d">Nenhum aporte registrado em ${p.year}. <button class="lnk strong" data-act="nav" data-view="inv">Registrar aporte</button></div>` : `<div class="c-d ${ganho > 0 ? 'pos' : 'neg'}">${ganho > 0 ? '+' : '−'} ${brl0(Math.abs(ganho))} aportados em ${p.year}</div>`}${patrCtl()}<div class="chart" id="d-patr"></div>
       <p class="cap">${custom ? `Patrimônio inicial de ${p.year} definido por você (${brl0(p.settings.patrimonioInicial)})` : (pr.patrimonioAno && p.year < pr.patrimonioAno ? `Estimado a partir do patrimônio informado no diagnóstico de ${pr.patrimonioAno} (${brl0(pr.patrimonioInicial)}), descontando os aportes registrados até lá` : `Patrimônio informado no diagnóstico (${brl0(pr.patrimonioInicial)}) mais os aportes registrados`)}. Valores a custo, sem a variação de mercado.</p></section>`;
   }
   const [de, ate] = perIntervalo(); const soma = (arr) => { let s = 0; for (let i = de; i <= ate; i++) s += arr[i] || 0; return s; };
   return `<section class="card hero-card"><div class="c-k hc-row"><span>Sobra para investir ${S.periodo ? perFrase() : 'em ' + p.year}</span><div class="hc-acts">${histBtn()}</div></div><div class="c-big">${brl0(soma(C.investAlocado))}</div><div class="c-d">${brl0(soma(C.receita))} de entradas e ${brl0(soma(C.despesas))} de gastos</div><div class="chart" id="d-patr"></div><p class="cap">Entradas menos gastos, mês a mês.</p></section>`;
 }
-// botões do gráfico do patrimônio: o que mostrar e a linha do ritmo da meta
+// botão do gráfico do patrimônio: a linha do ritmo da meta
 function patrCtl() {
-  const m = S.patrModo === 'aportes' ? 'aportes' : 'patr'; const b = (id, txt) => `<button data-act="patr-modo" data-m="${id}" aria-pressed="${m === id}">${txt}</button>`;
-  return `<div class="pt-ctl"><div class="pt-seg" role="group" aria-label="O que o gráfico mostra">${b('patr', 'Patrimônio')}${b('aportes', 'Aportes')}</div>${S.C.metaAno > 0 && m === 'patr' ? `<button class="pt-meta" data-act="patr-meta" aria-pressed="${!!S.patrMeta}"><i></i>Ritmo da meta</button>` : ''}</div>`;
+  return S.C.metaAno > 0 ? `<div class="pt-ctl"><button class="pt-meta" data-act="patr-meta" aria-pressed="${!!S.patrMeta}"><i></i>Ritmo da meta</button></div>` : '';
 }
 function wOrcMes() {
   const C = S.C; const m = S.periodo ? perIntervalo()[1] : mesRef(); const u = C.usoOrc[m]; const tom = u == null ? '' : u > 1 ? 'neg' : u > 0.85 ? 'warn' : '';
@@ -58,7 +57,6 @@ function wIndicadores() {
   return `<div class="stats4">${k.map((x) => `<div class="stat"><div class="c-k wg-tit">${wgIco(x[5], x[6])}<span>${esc(x[0])}</span></div><div class="c-num ${x[2] || ''}">${esc(x[1])}</div>${x[4] != null ? `<div class="bar ${x[2] || ''}"><i style="width:${Math.min(100, x[4] * 100).toFixed(1)}%"></i></div>` : ''}<div class="c-n">${esc(x[3])}</div></div>`).join('')}</div>`;
 }
 const wFluxo = () => `<section class="card"><div class="c-h"><h3>Para onde foi cada mês</h3><div class="legend"><span><i style="background:var(--c2)"></i>Gastos</span><span><i style="background:var(--c1)"></i>Sobra para investir</span></div></div><div class="chart" id="d-flow"></div></section>`;
-const wOrcamento = () => `<section class="card"><div class="c-h"><h3>Orçamento e gastos</h3><div class="legend"><span><i style="background:var(--c2)"></i>Gasto</span><span><i class="mk" style="background:var(--c4)"></i>Orçado</span></div></div><div class="chart" id="d-orc"></div></section>`;
 function wCarteira() {
   if (!inv()) return `<section class="card"><div class="c-h"><h3>Evolua para o plano Investidor</h3></div><p class="mmsg">Acompanhe patrimônio, aportes e proventos e saiba onde investir a cada aporte para manter a carteira equilibrada.</p><div class="btn-row"><button class="btn primary" data-act="upgrade" data-plano="investidor">Conhecer o plano Investidor</button></div></section>`;
   // com a Carteira liberada, a mesma composição interativa da aba Carteira (passar o mouse, entrar na classe, ir ao ativo)
@@ -75,12 +73,6 @@ function wAssessor() {
       : passos.length ? `<ul class="steps">${passos.map((s) => `<li><span>${esc(s[0])}</span><button class="btn sm" data-act="${s[1]}"${s[2] ? ` data-view="${s[2]}"` : ''}>Abrir</button></li>`).join('')}</ul>` : `<p class="mmsg">Seu planejamento está em dia. Que tal levar estes números para a revisão mensal com ${esc(CFG.consultor)}?</p>`}
     <div class="adv-line"><p class="cap keep">Dúvidas sobre o seu momento financeiro?</p><div class="btn-row"><button class="btn" data-act="contact">Falar com o ${esc(primeiroNome())}</button></div></div></section>`;
 }
-function wProventos() {
-  const C = S.C; const tot = perSoma(C.faturamento); const md = perIds().filter((i) => C.faturamento[i] > 0).length;
-  return `<section class="card"><div class="c-h"><h3>Proventos mês a mês</h3><div class="legend"><span><i style="background:var(--c3)"></i>Dividendos</span><span><i style="background:var(--c5)"></i>Renda fixa</span></div></div>
-    <p class="cap">Quanto os seus investimentos devolveram em caixa em cada mês: dividendos, JCP e rendimentos de renda fixa.</p>${tot > 0 ? '<div class="chart" id="d-prov"></div>' : '<p class="empty-s">Nenhum provento registrado neste ano.</p>'}
-    ${tot > 0 ? `<div class="p2-sts"><div class="p2-st"><small>${S.periodo ? 'No período' : 'No ano'}</small><b>${brl0(tot)}</b></div><div class="p2-st"><small>Meses com pagamento</small><b>${md}</b></div><div class="p2-st"><small>Média nesses meses</small><b>${brl0(md ? tot / md : 0)}</b></div></div>` : ''}</section>`;
-}
 function wObjLista() {
   const A = objAnalise(); if (!A.itens.length) return `<section class="card"><div class="c-h"><h3>Todos os objetivos</h3></div><p class="empty-s">Cadastre seus objetivos para acompanhar o progresso de cada um.</p><div class="btn-row"><button class="btn" data-act="objetivo-definir">Definir objetivos</button></div></section>`;
   return `<section class="card"><div class="c-h"><h3>Todos os objetivos</h3><button class="lnk strong" data-act="objetivos-abrir">Gerenciar</button></div>
@@ -95,10 +87,69 @@ function wAtalhos() {
   const m = S.year === NOW_Y ? NOW_M : S.mes; const b = (act, txt, extra) => `<button class="wg-at" data-act="${act}"${extra || ''}>${txt}</button>`;
   return `<section class="card"><div class="c-h"><h3>Atalhos</h3></div><div class="wg-ats">${b('ingest-open', 'Importar extrato')}${b('add-lanc', 'Novo gasto', ` data-mes="${m}"`)}${temRecurso('investimentos') ? b('nav', 'Registrar aporte', ' data-view="inv"') : ''}${temRecurso('carteira') ? b('nav', 'Onde investir', ' data-view="cart"') : ''}${b('objetivos-abrir', 'Meus objetivos')}${b('contact', 'Falar com o ' + esc(primeiroNome()))}</div></section>`;
 }
+
+// Proventos: total do período em destaque, divisão dividendos x renda fixa, gráfico mês a mês ou acumulado e o melhor mês
+function wProventos() {
+  const C = S.C; const ids = perIds(); const tot = perSoma(C.faturamento); const div = perSoma(C.dividendos); const rf = perSoma(C.rentab);
+  const com = ids.filter((i) => C.faturamento[i] > 0); const md = com.length; const melhor = com.reduce((b, i) => (b == null || C.faturamento[i] > C.faturamento[b] ? i : b), null);
+  if (!(tot > 0)) return `<section class="card pv-card"><div class="c-h"><h3>Proventos mês a mês</h3></div><div class="pv-vazio"><span class="pv-vazio-i">${ic(WG_IC.proventos)}</span><div><b>Nenhum provento ${perFrase()}</b><p>Dividendos, JCP e rendimentos de renda fixa que você registrar aparecem aqui, mês a mês.</p><button class="btn sm" data-act="nav" data-view="pro">Registrar proventos</button></div></div></section>`;
+  const modo = S.provModo === 'acum' ? 'acum' : 'mes'; const b = (m, t) => `<button data-act="prov-modo" data-m="${m}" aria-pressed="${modo === m}">${t}</button>`;
+  const pd = (div / tot) * 100;
+  return `<section class="card pv-card"><div class="c-h"><h3>Proventos mês a mês</h3><div class="pt-seg pv-seg" role="group" aria-label="Como ver os proventos">${b('mes', 'Mês a mês')}${b('acum', 'Acumulado')}</div></div>
+    <div class="pv-top"><div class="pv-tot"><small>Recebido ${perFrase()}</small><b>${brl0(tot)}</b></div>
+      <div class="pv-mix"><div class="pv-bar" role="img" aria-label="Dividendos ${pct(pd / 100)} e renda fixa ${pct(1 - pd / 100)}"><i style="width:${pd.toFixed(1)}%;background:var(--c3)"></i><i style="width:${(100 - pd).toFixed(1)}%;background:var(--c5)"></i></div>
+        <div class="pv-leg"><span><i style="background:var(--c3)"></i>Dividendos <b>${brl0(div)}</b></span><span><i style="background:var(--c5)"></i>Renda fixa <b>${brl0(rf)}</b></span></div></div></div>
+    <div class="chart" id="d-prov"></div>
+    <div class="pv-sts"><div class="pv-st"><small>Melhor mês</small><b>${melhor == null ? '–' : mesNome(melhor)}</b><span>${melhor == null ? '' : brl0(C.faturamento[melhor])}</span></div>
+      <div class="pv-st"><small>Média nos meses com pagamento</small><b>${brl0(md ? tot / md : 0)}</b><span>por mês</span></div>
+      <div class="pv-st"><small>Meses com pagamento</small><b>${md} de ${ids.length}</b><span>${md === ids.length ? 'todos os meses' : md ? 'continue assim' : ''}</span></div></div></section>`;
+}
+function drawProv() {
+  const el = $('#d-prov'); if (!el) return; const C = S.C; const cur = S.year === NOW_Y ? NOW_M : -1;
+  if (S.provModo === 'acum') {
+    const ids = perIds(); let s = 0; const acum = ids.map((i) => (s += C.faturamento[i] || 0)); const curJ = ids.indexOf(cur);
+    chartLine(el, { height: 190, suave: true, brilho: true, pontos: true, pontoFinal: true, teclado: true, cur: curJ, labels: ids.map((i) => MES[i]), aria: 'Proventos acumulados no período', series: [{ color: 'var(--c3)', values: acum, area: true, w: 3 }],
+      tip: (j) => `<b>${mesNome(ids[j])}</b><br>Acumulado: ${brl0(acum[j])}<br>No mês: ${brl0(C.faturamento[ids[j]])}` });
+    return;
+  }
+  chartBarsPer(el, { labels: MES, cur, height: 190, aria: 'Proventos recebidos em cada mês', bars: [{ color: 'var(--c3)', values: C.dividendos }, { color: 'var(--c5)', values: C.rentab }], tip: (i) => `<b>${mesNome(i)}</b><br>Dividendos: ${brl0(C.dividendos[i])}<br>Renda fixa: ${brl0(C.rentab[i])}<br>Total: ${brl0(C.faturamento[i])}` });
+}
+// Patrimônio ano a ano: valor de hoje em destaque, crescimento desde o primeiro ano e o fechamento de cada ano
 function wHistMini() {
-  const H = histDados();
-  return `<section class="card"><div class="c-h"><h3>Patrimônio ano a ano</h3><button class="lnk strong" data-act="hist-toggle">Abrir análise</button></div>
-    <p class="cap">Fim de cada ano de planejamento, encadeado a partir do patrimônio do diagnóstico. Valores a custo.</p>${H.temHistorico ? '<div class="chart" id="d-histmini"></div>' : `<p class="empty-s">Com dois ou mais anos de planejamento, a evolução aparece aqui.</p>`}</section>`;
+  const H = histDados(); const T = H.totais;
+  if (!H.temHistorico) return `<section class="card hm-card"><div class="c-h"><h3>Patrimônio ano a ano</h3></div><p class="empty-s">Com dois ou mais anos de planejamento, a evolução aparece aqui.</p></section>`;
+  const a0 = H.anos[0]; const sinal = (v) => (v >= 0 ? '+' : '−');
+  const chip = T.crescimentoPct != null ? `<span class="hm-chip ${T.crescimento >= 0 ? 'up' : 'down'}">${sinal(T.crescimento)}${brl0(Math.abs(T.crescimento))} (${sinal(T.crescimentoPct)}${pct(Math.abs(T.crescimentoPct))}) desde ${a0.ano}</span>` : '';
+  const anos = H.anos.filter((l) => l.preenchido).slice(-4).map((l) => `<li><small>${l.ano === NOW_Y ? 'Hoje' : l.ano}</small><b>${brl0(l.patrimonioFim)}</b>${l.variacaoPct != null ? `<span class="${l.variacao >= 0 ? 'up' : 'down'}">${sinal(l.variacaoPct)}${pct(Math.abs(l.variacaoPct))}</span>` : ''}</li>`).join('');
+  return `<section class="card hm-card"><div class="c-h"><h3>Patrimônio ano a ano</h3></div>
+    <div class="hm-top"><div class="hm-hoje"><small>Patrimônio hoje</small><b>${brl0(T.patrimonioAtual)}</b></div>${chip}</div>
+    <div class="chart" id="d-histmini"></div><ul class="hm-anos">${anos}</ul>
+    <p class="cap">Fim de cada ano de planejamento, encadeado a partir do patrimônio do diagnóstico. Valores a custo.</p></section>`;
+}
+// Orçamento e gastos: cada mês colorido pela situação (dentro, perto do limite, acima), resumo do período e detalhe do mês tocado
+const orcSit = (i) => { const C = S.C; const o = C.orcamento[i]; const g = C.despesas[i]; return !(o > 0) ? 'sem' : g > o ? 'neg' : g > o * 0.85 ? 'warn' : 'pos'; };
+const ORC_SIT = { pos: ['var(--pos)', 'Dentro do orçamento'], warn: ['var(--c4)', 'Perto do limite'], neg: ['var(--neg)', 'Acima do orçamento'], sem: ['var(--c2)', 'Sem orçamento'] };
+function wOrcamento() {
+  const C = S.C; const ids = perIds(); const lim = S.year === NOW_Y ? NOW_M : 11; const meses = ids.filter((i) => C.orcamento[i] > 0 && i <= lim);
+  const dentro = meses.filter((i) => C.despesas[i] <= C.orcamento[i]).length; const gasto = perSoma(C.despesas); const orc = perSoma(C.orcamento); const u = orc > 0 ? gasto / orc : null;
+  const tom = u == null ? '' : u > 1 ? 'neg' : u > 0.85 ? 'warn' : 'pos';
+  const leg = ['pos', 'warn', 'neg'].map((k) => `<span><i style="background:${ORC_SIT[k][0]}"></i>${ORC_SIT[k][1].replace(' do orçamento', '')}</span>`).join('') + '<span><i class="mk" style="background:var(--ink-3)"></i>Orçado</span>';
+  return `<section class="card oc-card"><div class="c-h"><h3>Orçamento e gastos</h3><div class="legend">${leg}</div></div>
+    <div class="oc-top"><div class="oc-k"><small>Gasto ${perFrase()}</small><b>${brl0(gasto)}</b><span>${orc > 0 ? 'de ' + brl0(orc) + ' orçados' : 'sem orçamento definido'}</span></div>
+      ${u != null ? `<div class="oc-uso ${tom}"><div class="oc-uso-b"><i style="width:${Math.min(100, u * 100).toFixed(1)}%"></i></div><span><b>${pct(u)}</b> do orçamento usado</span></div>` : ''}
+      <div class="oc-k oc-meses"><small>Meses dentro</small><b>${dentro} de ${meses.length}</b></div></div>
+    <div class="chart" id="d-orc"></div><p class="oc-det keep" id="orc-det" aria-live="polite">Toque num mês para ver o detalhe.</p></section>`;
+}
+function orcDetalhe(i) {
+  const el = document.getElementById('orc-det'); if (!el) return; const C = S.C; const o = C.orcamento[i]; const g = C.despesas[i]; const s = orcSit(i);
+  el.className = 'oc-det keep ' + s;
+  el.innerHTML = `<i style="background:${ORC_SIT[s][0]}"></i><span><b>${esc(mesNome(i))}</b>: ${o > 0 ? `${brl0(g)} de ${brl0(o)} (${pct(g / o)}) · ${g <= o ? 'restaram ' + brl0(o - g) : brl0(g - o) + ' acima'}` : `${brl0(g)} gastos, sem orçamento definido`}</span> <button class="lnk strong" data-act="nav" data-view="despesas">Ver gastos</button>`;
+}
+function drawOrc() {
+  const el = $('#d-orc'); if (!el) return; const C = S.C; const cur = S.year === NOW_Y ? NOW_M : -1; const sit = MES.map((_, i) => orcSit(i));
+  const so = (k) => C.despesas.map((v, i) => (sit[i] === k ? v : 0));
+  chartBarsPer(el, { labels: MES, cur, aria: 'Gastos de cada mês comparados com o orçamento', bars: ['pos', 'warn', 'neg', 'sem'].map((k) => ({ color: ORC_SIT[k][0], values: so(k) })), marks: [{ color: 'var(--ink-3)', values: C.orcamento }],
+    tip: (i) => `<b>${mesNome(i)}</b><br>Gasto: ${brl0(C.despesas[i])}<br>Orçado: ${C.orcamento[i] > 0 ? brl0(C.orcamento[i]) : 'sem orçamento'}<br>${ORC_SIT[sit[i]][1]}`, onPick: orcDetalhe });
 }
 
 /* ---------- catálogo ---------- */
@@ -223,10 +274,9 @@ function wgIcones() {
   });
 }
 function drawWidgetsExtras() {
-  wgIcones(); if (visualAtual() === '3d') obj3dLigar(); if (S.view === 'geral' && typeof cmpLigar === 'function') cmpLigar();
+  wgIcones(); objSwLigar(); if (visualAtual() === '3d') obj3dLigar(); if (S.view === 'geral' && typeof cmpLigar === 'function') cmpLigar();
   const C = S.C; const cur = S.year === NOW_Y ? NOW_M : -1;
-  chartBarsPer($('#d-orc'), { labels: MES, cur, aria: 'Gastos comparados com o orçamento de cada mês', bars: [{ color: 'var(--c2)', values: C.despesas }], marks: [{ color: 'var(--c4)', values: C.orcamento }], tip: (i) => `<b>${MES[i]}</b><br>Gasto: ${brl0(C.despesas[i])}<br>Orçado: ${C.orcamento[i] > 0 ? brl0(C.orcamento[i]) : 'sem orçamento'}` });
-  chartBarsPer($('#d-prov'), { labels: MES, cur, height: 190, aria: 'Proventos recebidos em cada mês', bars: [{ color: 'var(--c3)', values: C.dividendos }, { color: 'var(--c5)', values: C.rentab }], tip: (i) => `<b>${MES_LONGO[i]}</b><br>Dividendos: ${brl0(C.dividendos[i])}<br>Renda fixa: ${brl0(C.rentab[i])}` });
+  drawOrc(); drawProv();
   const hm = $('#d-histmini');
   if (hm) { const H = histDados(); const P = H.serie.map((p) => ({ ano: p.ano, mes: p.mes, v: p.patrimonio })); chartHistorico(hm, { pontos: P, height: 200, aria: 'Patrimônio de todos os anos', rotuloPonto: (v) => tickFmt(v), tip: (i) => `<b>${MES_LONGO[H.serie[i].mes]} de ${H.serie[i].ano}</b><br>Patrimônio: ${brl0(H.serie[i].patrimonio)}` }); }
 }
@@ -392,7 +442,7 @@ function wgAcao(act, ds) {
 function wgGestos() {
   let G = null; // gesto em andamento
   const MOUSE_MOVE = 5; const TOQUE_SEGURA = 180; const SEGURA_EDITAR = 550; const TOLERANCIA = 8;
-  const ignorar = (t) => t.closest('input, select, textarea, .wg-ctl, .info-i, .hist-btn, a, [contenteditable], .sld, .obj-sw');
+  const ignorar = (t) => t.closest('input, select, textarea, .wg-ctl, .info-i, .hist-btn, a, [contenteditable], .sld, .obj-sw, .obj-sw-seta');
   const limpar = () => { if (G) { clearTimeout(G.t); if (G.raf) cancelAnimationFrame(G.raf); } G = null; S.wgArrastando = false; };
   document.addEventListener('pointerdown', (e) => {
     if (S.screen !== 'app' || !alvoDaTela() || e.button !== 0) return;

@@ -2184,3 +2184,108 @@ button.wg-ic:active { transform: scale(.92); }
 @media (prefers-reduced-motion: reduce) { .ob3d-gl { transition: none; } }
 @media (max-width: 760px) { .ob3d-gl { right: 2%; top: 34px; width: 32%; max-width: 150px; } }
 @container sonho (min-width: 440px) { .ob3d-gl { right: -2%; top: 26px; width: 50%; } } /* card largo: o objeto fica mais à direita, longe dos valores */
+
+/* ---------- patrimônio: na voz Acolhedor (3D), número grande em degradê (só neste card) ---------- */
+.hero-card .c-big.trocando { font-variant-numeric: tabular-nums; }
+.hero-card.hero-3d .c-big { font-size: clamp(40px, 4.4vw, 56px); letter-spacing: -0.035em; line-height: 1.02; padding-bottom: 2px;
+  background: linear-gradient(100deg, var(--ink) 0%, var(--accent) 45%, var(--accent-2) 70%, var(--ink) 100%); background-size: 220% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent; animation: patr-brilho 7s ease-in-out infinite; }
+.hero-card.hero-3d .c-big.counting { color: transparent; }
+@keyframes patr-brilho { 0%, 100% { background-position: 100% 0; } 50% { background-position: 0% 0; } }
+@media (prefers-reduced-motion: reduce) { .hero-card.hero-3d .c-big { animation: none; background-position: 40% 0; } }
+
+/* ---------- proventos ---------- */
+.pv-card .c-h { align-items: center; }
+.pv-top { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px 22px; align-items: end; margin: 2px 0 10px; }
+.pv-tot small, .pv-st small, .hm-hoje small, .oc-k small { display: block; color: var(--ink-3); font-size: 12px; font-weight: 600; }
+.pv-tot b { display: block; font-size: clamp(24px, 2.4vw, 30px); font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.pv-mix { display: grid; gap: 7px; min-width: 0; }
+.pv-bar { display: flex; height: 10px; border-radius: 999px; overflow: hidden; background: var(--surface-3); gap: 2px; }
+.pv-bar i { display: block; height: 100%; border-radius: 999px; }
+.pv-leg { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12.5px; color: var(--ink-2); }
+.pv-leg span { display: inline-flex; align-items: center; gap: 6px; } .pv-leg i { width: 8px; height: 8px; border-radius: 3px; } .pv-leg b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.pv-sts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
+.pv-st { padding: 10px 12px; border-radius: 14px; background: var(--surface-2); border: 1px solid var(--line); min-width: 0; }
+.pv-st b { display: block; font-size: 15px; margin-top: 2px; font-variant-numeric: tabular-nums; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pv-st span { font-size: 12px; color: var(--ink-3); }
+.pv-vazio { display: flex; gap: 14px; align-items: center; padding: 10px 2px; }
+.pv-vazio-i { flex: none; width: 52px; height: 52px; border-radius: 16px; display: grid; place-items: center; color: var(--c3); background: color-mix(in srgb, var(--c3) 14%, transparent); }
+.pv-vazio-i svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.pv-vazio p { margin: 2px 0 8px; color: var(--ink-2); font-size: 13.5px; }
+
+/* ---------- patrimônio ano a ano ---------- */
+.hm-top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 8px 14px; margin: 2px 0 6px; }
+.hm-hoje b { display: block; font-size: clamp(26px, 2.6vw, 34px); font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.hm-chip { display: inline-flex; align-items: center; padding: 5px 11px; border-radius: 999px; font-size: 12.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.hm-chip.up { color: var(--pos); background: var(--pos-soft); } .hm-chip.down { color: var(--neg); background: var(--neg-soft); }
+.hm-anos { list-style: none; margin: 8px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(92px, 1fr)); gap: 8px; }
+.hm-anos li { padding: 9px 11px; border-radius: 14px; background: var(--surface-2); border: 1px solid var(--line); display: grid; gap: 1px; min-width: 0; }
+.hm-anos small { color: var(--ink-3); font-size: 12px; font-weight: 600; } .hm-anos b { font-size: 14.5px; font-variant-numeric: tabular-nums; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hm-anos span { font-size: 12px; font-weight: 600; } .hm-anos .up { color: var(--pos); } .hm-anos .down { color: var(--neg); }
+
+/* ---------- orçamento e gastos ---------- */
+.oc-top { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px 20px; align-items: end; margin: 2px 0 10px; }
+.oc-k b { display: block; font-size: clamp(20px, 2vw, 26px); font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.oc-k span { font-size: 12.5px; color: var(--ink-3); }
+.oc-meses { text-align: right; }
+.oc-uso { display: grid; gap: 6px; min-width: 0; font-size: 12.5px; color: var(--ink-2); }
+.oc-uso-b { height: 10px; border-radius: 999px; background: var(--surface-3); overflow: hidden; }
+.oc-uso-b i { display: block; height: 100%; border-radius: inherit; background: var(--pos); }
+.oc-uso.warn .oc-uso-b i { background: var(--c4); } .oc-uso.neg .oc-uso-b i { background: var(--neg); }
+.oc-uso b { color: var(--ink); }
+.oc-det { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: 8px 0 0; padding: 9px 12px; border-radius: 12px; background: var(--surface-2); font-size: 13px; color: var(--ink-2); }
+.oc-det i { width: 8px; height: 8px; border-radius: 50%; } .oc-det b { color: var(--ink); } .oc-det .lnk { margin-left: auto; }
+#d-orc svg { cursor: pointer; }
+
+/* composição da carteira na Visão geral: o anel cresce com o card, a lista respira e o conjunto fica no meio da altura */
+.wg .cart-exp-card:not(.expandido) { display: flex; flex-direction: column; container: cmpc / inline-size; }
+.card:not(.expandido) > .cmp.mini { flex: 1; align-content: center; grid-template-columns: clamp(130px, 40%, 200px) minmax(0, 1fr); gap: 14px 22px; }
+.card:not(.expandido) > .cmp.mini .cmp-g { width: 100%; }
+.card:not(.expandido) > .cmp.mini .cmp-c b { font-size: clamp(14px, 4.2cqi, 18px); }
+.card:not(.expandido) > .cmp.mini .cmp-l { gap: 4px; align-self: center; }
+.card:not(.expandido) > .cmp.mini .cmp-li { padding: 8px 10px; font-size: 13.5px; }
+.card:not(.expandido) > .cmp.mini .cmp-li i { width: 11px; height: 11px; }
+@container cmpc (max-width: 360px) {
+  .card:not(.expandido) > .cmp.mini { grid-template-columns: minmax(0, 1fr); justify-items: center; }
+  .card:not(.expandido) > .cmp.mini .cmp-g { width: min(100%, 170px); }
+  .card:not(.expandido) > .cmp.mini .cmp-l { width: 100%; }
+}
+
+/* proventos e orçamento se ajustam à largura do próprio card (não da tela): widgets estreitos empilham os blocos */
+.pv-card, .oc-card, .hm-card { container-type: inline-size; }
+.pv-leg span { white-space: nowrap; }
+@container (max-width: 480px) {
+  .pv-top { grid-template-columns: minmax(0, 1fr); }
+  .pv-sts { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .pv-sts .pv-st:last-child { grid-column: 1 / -1; }
+  .oc-top { grid-template-columns: minmax(0, 1fr) auto; } .oc-uso { grid-column: 1 / -1; grid-row: 2; }
+}
+@container (max-width: 300px) {
+  .pv-sts { grid-template-columns: minmax(0, 1fr); }
+  .oc-top { grid-template-columns: minmax(0, 1fr); } .oc-meses { text-align: left; } .oc-uso { grid-row: auto; }
+}
+
+/* faixa de objetivos do card: setas nas pontas quando há mais objetivos do que cabem, com a borda esmaecida */
+.obj-sw-w { position: relative; }
+.obj-sw-seta { position: absolute; top: 50%; z-index: 3; width: 30px; height: 30px; display: none; place-items: center; padding: 0; border-radius: 50%; cursor: pointer;
+  color: var(--ink); background: rgba(10, 18, 34, .78); border: 1px solid var(--line-2); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); translate: 0 -50%;
+  transition: background-color 160ms ease, transform 140ms var(--ease-out); }
+.obj-sw-seta svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.obj-sw-seta.esq { left: -6px; } .obj-sw-seta.esq svg { transform: rotate(180deg); } .obj-sw-seta.dir { right: -6px; }
+.obj-sw-w.tem-esq .obj-sw-seta.esq, .obj-sw-w.tem-dir .obj-sw-seta.dir { display: grid; }
+.obj-sw-seta:active { transform: scale(.92); }
+.obj-sw-w.tem-dir .obj-sw { -webkit-mask-image: linear-gradient(90deg, #000 78%, transparent); mask-image: linear-gradient(90deg, #000 78%, transparent); }
+.obj-sw-w.tem-esq .obj-sw { -webkit-mask-image: linear-gradient(90deg, transparent, #000 22%); mask-image: linear-gradient(90deg, transparent, #000 22%); }
+.obj-sw-w.tem-esq.tem-dir .obj-sw { -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); mask-image: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); }
+.obj-sw { cursor: grab; } .obj-sw:active { cursor: grabbing; }
+.sonho:is(.v-limpo, .v-3d:not(.sem-3d)) .obj-sw-seta { background: var(--surface); border-color: var(--line); box-shadow: var(--shadow); -webkit-backdrop-filter: none; backdrop-filter: none; }
+@media (hover: hover) and (pointer: fine) { .obj-sw-seta:hover { background: var(--accent); color: var(--on-accent); border-color: transparent; } }
+
+/* ---------- título da Visão geral como conversa ---------- */
+.wh { max-height: 2.3em; overflow: hidden; } /* nunca passa de duas linhas */
+.wh-conversa { min-height: 2.2em; } /* reserva duas linhas: digitar não empurra a página */
+.wh-cur { display: inline-block; width: .08em; height: .95em; margin-left: .06em; vertical-align: -0.08em; border-radius: 2px; background: var(--accent); animation: wh-pisca 1.05s steps(1) infinite; }
+.wh-conversa.digitando .wh-cur { animation: none; opacity: 1; }
+@keyframes wh-pisca { 0%, 55% { opacity: 1; } 56%, 100% { opacity: 0; } }
+.wh.wh-troca .wh-t { animation: wh-troca 420ms var(--ease-out); }
+@keyframes wh-troca { from { opacity: 0; filter: blur(3px); } }
+@media (prefers-reduced-motion: reduce) { .wh-cur { animation: none; } .wh.wh-troca .wh-t { animation: none; } }
