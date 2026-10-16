@@ -2150,3 +2150,42 @@ button.wg-ic:active { transform: scale(.92); }
 .card:not(.expandido) > .cmp.mini .cmp-l > li:nth-child(n+6):not(.cmp-mais) { display: none; }
 .cmp-mais { padding: 4px 6px 0; } .expandido .cmp-mais { display: none; }
 @media (max-width: 420px) { .card:not(.expandido) > .cmp.mini { grid-template-columns: 120px minmax(0, 1fr); gap: 12px; } .card:not(.expandido) > .cmp.mini .cmp-g { width: 120px; } .card:not(.expandido) > .cmp.mini .cmp-c small { display: none; } }
+
+/* =========================================================================
+   Experiência Imersiva (prévia no modo demonstração): azul-noite e cena 3D no patrimônio.
+   Os tokens valem só dentro do app (body[data-screen="app"]); a página inicial não muda.
+   ========================================================================= */
+:root[data-exp="imersiva"] body[data-screen="app"] {
+  color-scheme: dark;
+  --bg: #050B1A; --bg-alt: #07112A; --surface: #0B1630; --surface-2: #101E3D; --surface-3: #182A50;
+  --line: rgba(130, 170, 255, .14); --line-2: rgba(130, 170, 255, .24); --ink: #EEF3FF; --ink-2: #AAB8D6; --ink-3: #8494B6;
+  --accent: #58AEFF; --accent-2: #8B7BFF; --accent-soft: #0F2B57; --on-accent: #04101F;
+  --pos: #3EE08A; --neg: #FF7A8A; --warn: #FFB648; --pos-soft: #0E2C22; --warn-soft: #33270F; --neg-soft: #3A1622;
+  --c1: #4FC3FF; --c2: #8B7BFF; --c3: #5AD1E6; --c4: #FFB648; --c5: #3EE08A; --c6: #FF6B8B;
+  --glass: rgba(14, 27, 58, .55); --glass-strong: rgba(9, 19, 42, .86); --glass-border: rgba(140, 180, 255, .14); --glass-hi: rgba(160, 200, 255, .1); --glass-edge: rgba(140, 180, 255, .08);
+  --rim: linear-gradient(155deg, rgba(150, 195, 255, .34) 0%, rgba(120, 160, 255, .08) 32%, rgba(120, 160, 255, .03) 66%, rgba(79, 195, 255, .3) 100%);
+  --sheen: linear-gradient(180deg, rgba(170, 205, 255, .08), rgba(170, 205, 255, 0) 42%);
+  --shadow: 0 1px 1px rgba(0, 4, 16, .5), 0 18px 46px -20px rgba(0, 6, 24, .9), 0 0 0 1px rgba(130, 170, 255, .05);
+  --shadow-lg: 0 30px 90px -20px rgba(0, 4, 16, .95), 0 0 0 1px rgba(130, 170, 255, .08);
+  --scrim: rgba(2, 6, 18, .66); --glow: rgba(79, 195, 255, .38);
+  --ambient: radial-gradient(60vw 46vh at 6% -12%, rgba(79, 195, 255, .16), transparent 70%), radial-gradient(50vw 44vh at 100% 2%, rgba(139, 123, 255, .16), transparent 70%), radial-gradient(70vw 50vh at 50% 110%, rgba(10, 132, 255, .12), transparent 70%);
+  --accent-fill: #1A73E8;
+  background: radial-gradient(120% 80% at 50% -10%, #0C1F45 0%, #050B1A 55%) fixed, #050B1A;
+}
+:root[data-exp="imersiva"] body[data-screen="app"] .card { border-color: rgba(130, 170, 255, .12); }
+
+/* Imersiva: card do objetivo sem foto, vidro azul-noite com um brilho onde o objeto 3D flutua (dentro do card).
+   Sem WebGL, o card recebe .sem-3d e volta a ser o card normal, com a foto do objetivo. */
+:root[data-exp="imersiva"] .sonho:not(.sem-3d) .sonho-foto { display: none; }
+:root[data-exp="imersiva"] .card.goal-card.sonho:not(.sem-3d) { border-color: rgba(150, 195, 255, .2);
+  background: radial-gradient(60% 50% at 78% 34%, rgba(79, 195, 255, .24), rgba(139, 123, 255, .1) 45%, transparent 72%), linear-gradient(165deg, #12244D 0%, #0A1631 55%, #070F24 100%);
+  box-shadow: inset 0 1px 0 rgba(190, 220, 255, .14), 0 30px 70px -30px rgba(0, 6, 24, .9), 0 0 0 1px rgba(120, 170, 255, .06); }
+:root[data-exp="imersiva"] .sonho:not(.sem-3d) .sonho-c { position: relative; z-index: 5; }
+:root[data-exp="imersiva"] .sonho:not(.sem-3d) .sonho-c, :root[data-exp="imersiva"] .sonho:not(.sem-3d) .sonho-c * { text-shadow: none; }
+.ob3d { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+.sem-3d .ob3d { display: none; }
+.ob3d-gl { position: absolute; right: 2%; top: 40px; width: 56%; max-width: 240px; aspect-ratio: 1; pointer-events: none; opacity: 0; transition: opacity 500ms var(--ease-out); }
+.ob3d.gl-ok .ob3d-gl { opacity: 1; }
+.ob3d-gl canvas { display: block; width: 100%; height: 100%; }
+@media (prefers-reduced-motion: reduce) { .ob3d-gl { transition: none; } }
+@media (max-width: 760px) { .ob3d-gl { right: 2%; top: 34px; width: 32%; max-width: 150px; } }

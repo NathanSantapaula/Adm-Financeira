@@ -149,7 +149,7 @@ async function entrar(user) {
   }
   // ano em que o patrimônio do diagnóstico foi informado; contas antigas usam o primeiro ano que já tinham (o cálculo não muda)
   if (S.profile.patrimonioAno == null && Object.keys(S.plans).length) { S.profile.patrimonioAno = Math.min(...Object.keys(S.plans).map(Number)); touch('profile'); }
-  aplicarTema(S.profile.prefs.tema, false);
+  aplicarTema(S.profile.prefs.tema, false); aplicarExp();
   S.year = pickYear(); S.plan = S.plans[S.year] || null; S.mes = defaultMes(S.year);
   S.view = 'geral'; S.clients = null; S.mesesAbertos = new Set([defaultMes(S.year)]);
   S.screen = S.profile.onboarded ? 'app' : 'onboarding'; if (S.screen === 'onboarding') initOb();

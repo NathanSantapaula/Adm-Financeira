@@ -223,7 +223,7 @@ function wgIcones() {
   });
 }
 function drawWidgetsExtras() {
-  wgIcones(); if (S.view === 'geral' && typeof cmpLigar === 'function') cmpLigar();
+  wgIcones(); if (imersiva()) obj3dLigar(); if (S.view === 'geral' && typeof cmpLigar === 'function') cmpLigar();
   const C = S.C; const cur = S.year === NOW_Y ? NOW_M : -1;
   chartBarsPer($('#d-orc'), { labels: MES, cur, aria: 'Gastos comparados com o orçamento de cada mês', bars: [{ color: 'var(--c2)', values: C.despesas }], marks: [{ color: 'var(--c4)', values: C.orcamento }], tip: (i) => `<b>${MES[i]}</b><br>Gasto: ${brl0(C.despesas[i])}<br>Orçado: ${C.orcamento[i] > 0 ? brl0(C.orcamento[i]) : 'sem orçamento'}` });
   chartBarsPer($('#d-prov'), { labels: MES, cur, height: 190, aria: 'Proventos recebidos em cada mês', bars: [{ color: 'var(--c3)', values: C.dividendos }, { color: 'var(--c5)', values: C.rentab }], tip: (i) => `<b>${MES_LONGO[i]}</b><br>Dividendos: ${brl0(C.dividendos[i])}<br>Renda fixa: ${brl0(C.rentab[i])}` });
