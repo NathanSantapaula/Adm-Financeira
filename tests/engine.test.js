@@ -286,4 +286,10 @@ ok(E.planoPermite('gratis', 'orcamento') && !E.planoPermite('gratis', 'carteira'
   ok(sem.aderencia === null && sem.mesesEquilibrio === null && sem.maisLonge.length === 0, 'carteira: sem alvos definidos');
 }
 
+{ // dias úteis no Brasil (Ao vivo do globo)
+  ok(E.feriadoBR(2026, 3, 3) && E.feriadoBR(2026, 1, 16) && E.feriadoBR(2026, 1, 17) && E.feriadoBR(2026, 5, 4), 'feriados móveis de 2026: sexta santa, carnaval e Corpus Christi');
+  ok(E.feriadoBR(2026, 10, 20) && E.feriadoBR(2025, 11, 25) && !E.feriadoBR(2026, 3, 6), 'feriados fixos e dia comum');
+  ok(!E.diaUtilBR(2026, 9, 17) && !E.diaUtilBR(2026, 9, 18) && E.diaUtilBR(2026, 9, 19) && !E.diaUtilBR(2026, 9, 12), 'sábado, domingo, segunda útil e 12 de outubro');
+}
+
 process.exit(bad ? 1 : 0);

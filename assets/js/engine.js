@@ -848,9 +848,17 @@
     };
   }
 
+  /* dias úteis no Brasil: fim de semana e feriados nacionais (fixos e os que dependem da Páscoa) não contam */
+  function pascoa(y) { const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451);
+    const mes = Math.floor((h + l - 7 * m + 114) / 31); return Date.UTC(y, mes - 1, ((h + l - 7 * m + 114) % 31) + 1); }
+  function feriadoBR(y, m, d) { // m de 0 a 11
+    if (['0-1', '3-21', '4-1', '8-7', '9-12', '10-2', '10-15', '10-20', '11-25'].includes(m + '-' + d)) return true;
+    const dias = (Date.UTC(y, m, d) - pascoa(y)) / 864e5; return [-48, -47, -2, 60].includes(dias); // carnaval (seg e ter), sexta-feira santa, Corpus Christi
+  }
+  const diaUtilBR = (y, m, d) => { const s = new Date(Date.UTC(y, m, d)).getUTCDay(); return s !== 0 && s !== 6 && !feriadoBR(y, m, d); };
   const api = { PLANOS, RECURSOS, ABA_RECURSO, planoPermite, planoMinimo, planoNorm, parseDataISO, MES, MES_LONGO, TAXONOMIA, ASSET_LEVELS, QUIZ, PERFIS, RETORNO_PADRAO, CATS_DESP, CATS_RENDA, FORMATO_BACKUP,
     z, add, sub, sum, r2, norm, monthIndex, parseValor, distribuir, parcelaMeses, parcelaFim, parcelaIndice, itemValores, carryItems,
     ativoKey, buildAssetTree, rebalance, analiseInvest, analiseRenda, analiseGastos, analiseCarteira, nomeEstab, historico, ctxAno, OBJ_TIPOS, normObjetivos, analiseObjetivos, sugerirDivisao, aporteNecessario, notificacoes, scorePerfil, projetar, mesesAteMeta, simularObjetivo, migratePlan, compute, makeBackup, parseBackup,
-    templateSheets, parseImport, applyImport };
+    templateSheets, parseImport, applyImport, feriadoBR, diaUtilBR };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.FPEngine = api;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -9,7 +9,8 @@ const TEMAS = {
   custom: { nome: 'Personalizado', desc: 'Você escolhe o fundo e a cor de destaque.' },
 };
 // cores de destaque do tema Personalizado (o contraste é ajustado sozinho para o fundo escolhido)
-const CORES_DESTAQUE = [['#0A84FF', 'Azul AVEN'], ['#5E5CE6', 'Índigo'], ['#10B981', 'Esmeralda'], ['#14B8A6', 'Turquesa'], ['#E8436F', 'Rosa'], ['#F97316', 'Laranja'], ['#D4A017', 'Dourado'], ['#64748B', 'Grafite']];
+// cores bem distintas entre si (matizes espaçados no círculo de cores), para cada tema personalizado ter cara própria
+const CORES_DESTAQUE = [['#0A84FF', 'Azul AVEN'], ['#7C3AED', 'Violeta'], ['#D946EF', 'Magenta'], ['#F43F5E', 'Rubi'], ['#FF6B2C', 'Tangerina'], ['#F5B700', 'Âmbar'], ['#84CC16', 'Lima'], ['#10B981', 'Esmeralda'], ['#06B6D4', 'Ciano'], ['#64748B', 'Grafite']];
 const COR_BARRA = { light: '#F5F6F9', oled: '#000000' };
 const mqEscuro = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
 const escuroAgora = () => !!(mqEscuro && mqEscuro.matches);

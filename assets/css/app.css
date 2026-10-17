@@ -2448,3 +2448,22 @@ button.wg-ic:active { transform: scale(.92); }
 :root[data-theme="light"] .abs-txt b { color: #fff; text-shadow: 0 2px 16px color-mix(in srgb, var(--accent-2) 70%, #000); }
 :root[data-theme="light"] .abs-txt em { color: color-mix(in srgb, var(--pos) 26%, #fff); }
 @media (prefers-reduced-motion: reduce) { .abs-esfera::before, .abs-anel { animation: none; } }
+
+/* painel: ícone pequeno de cada título recolhível (admin.js, ADM_IC) */
+.dr-acc-h .dr-acc-ic { flex: none; width: 32px; height: 32px; display: grid; place-items: center; border-radius: 10px; background: var(--accent-soft); color: var(--accent); }
+.dr-acc-ic svg { width: 17px; height: 17px; stroke: currentColor; fill: none; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.dr-acc-h .dr-acc-n { flex: 1; }
+/* Globo do Patrimônio no painel: interruptor, escolhas em linha e camadas em fichas */
+.ab-adm { display: grid; gap: 12px; justify-items: stretch; }
+.ab-adm > .btn { justify-self: start; }
+.ab-fichas { display: flex; flex-wrap: wrap; gap: 8px; }
+.ab-ficha { position: relative; cursor: pointer; }
+.ab-ficha input { position: absolute; opacity: 0; pointer-events: none; }
+.ab-ficha span { display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface-2); color: var(--ink-2); font-size: 13.5px; font-weight: 600; transition: background-color var(--dur-1) ease, color var(--dur-1) ease, border-color var(--dur-1) ease; }
+.ab-ficha input:checked + span { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+.ab-ficha input:checked + span::before { content: '✓'; font-size: 12px; }
+.ab-ficha input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* "Ao vivo" fora do horário comercial (noite, fim de semana, feriado): fora do ar, em vermelho */
+.ab-vivo.fora .ab-pill { color: var(--neg); background: var(--neg-soft); }
+.ab-vivo.fora .ab-pill i { background: var(--neg); box-shadow: 0 0 10px var(--neg); animation: none; }
+.ab-vivo.fora .ab-rend { background: none; color: var(--neg); -webkit-text-fill-color: currentColor; }

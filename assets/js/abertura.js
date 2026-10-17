@@ -103,7 +103,7 @@ function abAbrir() {
     <div class="ab-marca">${logoMarca()}</div>
     <div class="ab-esq"><p class="ab-saud">${esc(saudacaoHora())}${D.nome ? ', ' + esc(D.nome) : ''}.</p>
       <h1 class="ab-tit" aria-live="polite"><span class="ab-tt"></span><span class="ab-cur" aria-hidden="true"></span></h1>
-      <div class="ab-vivo"><span class="ab-pill"><i></i>Ao vivo</span><small class="ab-desde"></small><b class="ab-rend">R$ 0,00</b><em>Simulação com 12% ao ano. Sem promessa de resultado.</em></div></div>
+      <div class="ab-vivo"><span class="ab-pill"><i></i>Ao vivo</span><small class="ab-desde"></small><b class="ab-rend">R$ 0,00</b><em>Simulação com 12% ao ano, só em dias úteis, das 9h às 18h. Sem promessa de resultado.</em></div></div>
     <div class="ab-ferr"><div class="ab-ano" role="group" aria-label="Ano do globo" hidden><button type="button" data-ano="-1" aria-label="Ano anterior">${AB_SETA_E}</button><b aria-live="polite"></b><button type="button" data-ano="1" aria-label="Próximo ano">${AB_SETA_D}</button></div>
       <button class="ab-olho" type="button"></button>
       <div class="ab-zoom" role="group" aria-label="Zoom"><button type="button" data-z="mais" aria-label="Aproximar">+</button><button type="button" data-z="menos" aria-label="Afastar">−</button><button type="button" data-z="tudo" aria-label="Ver tudo" hidden>⤢</button></div></div>
@@ -341,7 +341,7 @@ function abFixo(id, x, y, z) {
   if (g && g.id === id) { A.voo.set(id, { ox: g.x - r[0], oy: g.y - r[1], vx: g.vx, vy: g.vy }); A.arrasto = null; }
   const v = A.voo.get(id); if (v) r = [r[0] + v.ox, r[1] + v.oy, r[2]];
   // o item escolhido treme de leve (o detalhe desconta o tremor em abCardPos para não tremer junto)
-  if (A.sel && A.sel.id === id && !A.calmo) { const t = A.tc / 1000; A.trem = [Math.sin(t * 57) * 1.6, Math.cos(t * 43) * 1.3]; r = [r[0] + A.trem[0], r[1] + A.trem[1], r[2]]; }
+  if (A.sel && A.sel.id === id && !A.calmo) { const t = A.tc / 1000; A.trem = [Math.sin(t * 57) * 0.6, Math.cos(t * 43) * 0.5]; r = [r[0] + A.trem[0], r[1] + A.trem[1], r[2]]; }
   return r;
 }
 // mola de volta para a rota: devagar e com um pequeno balanço
@@ -365,15 +365,14 @@ function abTrilha(frente, t) { const A = AB; const ctx = A.ctx; if (!A.D.apo.len
 function abDiv(d, frente) { const A = AB; const ctx = A.ctx; const prof = (d.p[2] + 1) / 2; const r = 1.3 + prof * 1.6; ctx.fillStyle = abRgba(A.T.ouro, 0.3 + prof * 0.7);
   if (frente) { ctx.shadowColor = abRgba(A.T.ouro, 1); ctx.shadowBlur = 8; } ctx.beginPath(); ctx.arc(d.p[0], d.p[1], r, 0, 7); ctx.fill(); ctx.shadowBlur = 0;
   if (frente) A.alvos.push({ id: 'd' + A.div.indexOf(d.q), x: d.p[0], y: d.p[1], r: 10, tipo: 'div', d: d.q.d }); }
-// aporte: uma gema de quatro faces (luz de cima à esquerda); tamanho e brilho crescem com o valor do aporte
-function abLosango(a, frente) { const A = AB; const ctx = A.ctx; const T = A.T; const prof = (a.p[2] + 1) / 2; const s = 0.65 + 0.85 * Math.sqrt(a.a.valor / A.apoMax);
-  const h = (5 + prof * 5) * s; const al = 0.35 + prof * 0.65; const c = T.pos; const P = [[0, -h * 1.25], [h, 0], [0, h * 1.25], [-h, 0]];
+// aporte: losango; tamanho e brilho crescem com o valor do aporte
+function abLosango(a, frente) { const A = AB; const ctx = A.ctx; const T = A.T; const prof = (a.p[2] + 1) / 2; const s = 0.7 + 0.6 * Math.sqrt(a.a.valor / A.apoMax);
+  const h = (3.5 + prof * 3.5) * s; const al = 0.35 + prof * 0.65; const c = T.pos; const P = [[0, -h * 1.25], [h, 0], [0, h * 1.25], [-h, 0]];
   ctx.save(); ctx.translate(a.p[0], a.p[1]);
   if (frente) { const gr = ctx.createRadialGradient(0, 0, 0, 0, 0, h * 3.4); gr.addColorStop(0, abRgba(c, 0.42 * s * al)); gr.addColorStop(1, abRgba(c, 0)); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(0, 0, h * 3.4, 0, 7); ctx.fill(); }
-  [[3, 0, abMix(c, [255, 255, 255], 0.45)], [0, 1, c], [1, 2, abMix(c, [0, 0, 0], 0.38)], [2, 3, abMix(c, [0, 0, 0], 0.16)]].forEach(([i, j, cor]) => {
-    ctx.fillStyle = abRgba(cor, al); ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(P[i][0], P[i][1]); ctx.lineTo(P[j][0], P[j][1]); ctx.closePath(); ctx.fill(); });
+  ctx.fillStyle = abRgba(c, al); ctx.beginPath(); P.forEach((q, i) => (i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]))); ctx.closePath(); ctx.fill();
   ctx.strokeStyle = abRgba(T.luz, al * 0.75); ctx.lineWidth = 1; ctx.beginPath(); P.forEach((q, i) => (i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]))); ctx.closePath(); ctx.stroke();
-  ctx.fillStyle = `rgba(255,255,255,${0.6 * al})`; ctx.beginPath(); ctx.arc(-h * 0.3, -h * 0.5, Math.max(0.8, h * 0.17), 0, 7); ctx.fill(); ctx.restore();
+  ctx.restore();
   if (frente) A.alvos.push({ id: 'a' + a.a.mes, x: a.p[0], y: a.p[1], r: Math.max(13, h * 1.7), tipo: 'aporte', d: a.a }); }
 const abHexPts = (x, y, rr, gir) => Array.from({ length: 6 }, (_, i) => [x + Math.cos(gir + (i * Math.PI) / 3) * rr, y + Math.sin(gir + (i * Math.PI) / 3) * rr]);
 const abHexPath = (ctx, pts) => { ctx.beginPath(); pts.forEach((q, i) => (i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]))); ctx.closePath(); };
@@ -505,38 +504,45 @@ function abTitulo() {
   const apagar = () => { const tx = alvo.textContent; if (tx.length) { alvo.textContent = tx.slice(0, -1); depois(apagar, 15 + Math.random() * 15); } else { i = (i + 1) % L.length; atual = L[i] === atual && L.length > 1 ? L[(i + 1) % L.length] : L[i]; depois(() => digitar(atual, 0), 300); } };
   depois(() => digitar(atual, 0), 500);
 }
-// rendimento simulado a 12% ao ano, desde as 6h de hoje (antes das 6h, desde as 6h de ontem)
+// rendimento simulado a 12% ao ano só no horário comercial de Brasília (dias úteis, 9h às 18h), quando o dinheiro rende de fato:
+// o ano tem 252 dias úteis de 9 horas. Fora disso (noite, fim de semana, feriado) o cartão fica "Fora do ar", em vermelho
+const AB_HORARIO = [9, 18];
 function abVivo() {
-  const A = AB; const b = A.el.querySelector('.ab-rend'); const desde = A.el.querySelector('.ab-desde');
-  const agora0 = new Date(); const ini = new Date(agora0); ini.setHours(6, 0, 0, 0); const ontem = agora0 < ini; if (ontem) ini.setDate(ini.getDate() - 1);
-  desde.textContent = `Desde as 6h de ${ontem ? 'ontem' : 'hoje'}, seu patrimônio rendeu`;
-  const conta = () => { if (abOc()) { b.textContent = 'R$ •••'; return; } const s = (Date.now() - ini.getTime()) / 1000; const v = A.D.patr * (Math.pow(1 + AB_TAXA, s / 31557600) - 1);
+  const A = AB; const box = A.el.querySelector('.ab-vivo'); const b = A.el.querySelector('.ab-rend'); const desde = A.el.querySelector('.ab-desde'); const pill = A.el.querySelector('.ab-pill');
+  const [h0, h1] = AB_HORARIO; const porSeg = Math.pow(1 + AB_TAXA, 1 / (252 * (h1 - h0) * 3600)) - 1; let estado = null;
+  const conta = () => {
+    // shortcut: Brasília fixa em UTC−3 (sem horário de verão desde 2019); se voltar, trocar por Intl com America/Sao_Paulo
+    const br = new Date(Date.now() - 3 * 3600e3); const h = br.getUTCHours() + br.getUTCMinutes() / 60 + br.getUTCSeconds() / 3600;
+    const aberto = E.diaUtilBR(br.getUTCFullYear(), br.getUTCMonth(), br.getUTCDate()) && h >= h0 && h < h1;
+    if (estado !== aberto) { estado = aberto; box.classList.toggle('fora', !aberto); pill.lastChild.textContent = aberto ? 'Ao vivo' : 'Fora do ar';
+      desde.textContent = aberto ? `Desde as ${h0}h de hoje (horário de Brasília), seu patrimônio rendeu` : `Mercado fechado agora. Num dia útil inteiro, das ${h0}h às ${h1}h, seu patrimônio rende cerca de`; }
+    if (abOc()) { b.textContent = 'R$ •••'; return; }
+    const v = A.D.patr * (Math.pow(1 + porSeg, (aberto ? h - h0 : h1 - h0) * 3600) - 1);
     const [int, dec] = v.toFixed(4).split('.'); b.innerHTML = `R$ ${(+int).toLocaleString('pt-BR')},${dec.slice(0, 2)}<span>${dec.slice(2)}</span>`; };
   conta(); A.tV = setInterval(conta, 80);
 }
 
 /* ---------- Painel › Personalizar o painel › Tela de abertura ---------- */
 const AB_CAMADAS = [
-  ['titulo', 'Conversa no título', 'Frases sobre o seu momento, digitadas na hora.'],
-  ['vivo', 'Ao vivo', 'Quanto o patrimônio renderia desde as 6h, numa simulação de 12% ao ano.'],
+  ['titulo', 'Título', 'Frases sobre o seu momento, digitadas na hora.'],
+  ['vivo', 'Ao vivo', 'Quanto o patrimônio rende hoje no horário comercial (dias úteis, 9h às 18h), numa simulação de 12% ao ano.'],
   ['classes', 'Investimentos', 'Orbs que pulsam, uma por classe da carteira, do tamanho da proporção.'],
   ['objetivos', 'Objetivos', 'Cristais em órbita; o nome e o progresso aparecem ao tocar.'],
   ['aportes', 'Aportes', 'Losangos verdes, um por mês com aporte.'],
   ['dividendos', 'Dividendos', 'Pontinhos dourados, um por dividendo recebido.'],
-  ['info', 'Ícone de ajuda', 'O "i" que sobrevoa o globo e explica cada símbolo.'],
+  ['info', 'Ajuda (i)', 'O "i" que sobrevoa o globo e explica cada símbolo.'],
 ];
 function aberturaAdmHtml() {
   const op = abOpcoes(); const pode = aberturaPode();
-  const quando = [['sessao', 'Toda vez que entrar'], ['dia', 'Uma vez por dia']].map(([v, l]) => `<button class="${op.quando === v ? 'on' : ''}" data-act="ab-quando" data-v="${v}" aria-pressed="${op.quando === v}">${l}</button>`).join('');
-  const globo = [['auto', 'Completa'], ['simples', 'Simples']].map(([v, l]) => `<button class="${op.globo === v ? 'on' : ''}" data-act="ab-globo" data-v="${v}" aria-pressed="${op.globo === v}">${l}</button>`).join('');
-  const valores = [['olho', 'Como o olhinho'], ['mostrar', 'Visíveis'], ['ocultar', 'Ocultos']].map(([v, l]) => `<button class="${op.valores === v ? 'on' : ''}" data-act="ab-valores" data-v="${v}" aria-pressed="${op.valores === v}">${l}</button>`).join('');
-  return `<section class="dr-sec"><h3>Tela de abertura</h3><p class="mmsg">O seu universo financeiro antes do painel: o globo do patrimônio e, em volta, o que você escolher.</p>
-    <label class="chk"><input type="checkbox" data-abf="ligada" ${op.ligada ? 'checked' : ''}><span><b>Mostrar ao entrar</b><small>${pode ? 'Aparece antes da Visão geral.' : 'Aparece quando houver patrimônio registrado.'}</small></span></label>
-    <div class="dr-sub"><h4>Quando aparece</h4><div class="seg" role="group" aria-label="Quando a tela de abertura aparece">${quando}</div></div>
-    <div class="dr-sub"><h4>Versão do globo</h4><div class="seg" role="group" aria-label="Versão do globo">${globo}</div><small class="mmsg">A completa troca sozinha para a simples quando o aparelho não consegue rodá-la bem.</small></div>
-    <div class="dr-sub"><h4>Valores ao abrir</h4><div class="seg" role="group" aria-label="Valores ao abrir o globo">${valores}</div></div>
-    <div class="dr-sub"><h4>O que aparece</h4><div class="abas">${AB_CAMADAS.map(([k, l, d]) => `<label class="chk aba"><input type="checkbox" data-abf="${k}" ${op[k] ? 'checked' : ''}><span><b>${l}</b><small>${d}</small></span></label>`).join('')}</div></div>
-    <div class="btn-row"><button class="btn" data-act="ab-ver" ${pode ? '' : 'disabled'}>Ver a tela agora</button></div></section>`;
+  const seg = (act, campo, L, rot) => `<div class="seg" role="group" aria-label="${rot}">${L.map(([v, l]) => `<button class="${op[campo] === v ? 'on' : ''}" data-act="${act}" data-v="${v}" aria-pressed="${op[campo] === v}">${l}</button>`).join('')}</div>`;
+  // enxuto: um interruptor, três escolhas em linha e as camadas como fichas (a explicação de cada uma fica no title)
+  return `<section class="dr-sec"><h3>Globo do Patrimônio</h3><p class="mmsg">O seu patrimônio em forma de globo, ao entrar ou pelo botão do globo no topo.</p>
+    <div class="ab-adm"><label class="ap-auto"><span><b>Abrir ao entrar</b><small>${pode ? 'Antes da Visão geral.' : 'Quando houver patrimônio registrado.'}</small></span><span class="wg-sw"><input type="checkbox" data-abf="ligada" ${op.ligada ? 'checked' : ''} aria-label="Abrir o globo ao entrar"><span></span></span></label>
+    <div class="ap-custom"><div class="ap-linha"><span>Quando</span>${seg('ab-quando', 'quando', [['sessao', 'Sempre'], ['dia', '1× por dia']], 'Quando o globo abre')}</div>
+      <div class="ap-linha"><span title="Olhinho: abre como o olho do painel estiver">Valores</span>${seg('ab-valores', 'valores', [['olho', 'Olhinho'], ['mostrar', 'Visíveis'], ['ocultar', 'Ocultos']], 'Valores ao abrir o globo')}</div>
+      <div class="ap-linha"><span title="A completa vira a simples sozinha se o aparelho não der conta">Versão</span>${seg('ab-globo', 'globo', [['auto', 'Completa'], ['simples', 'Simples']], 'Versão do globo')}</div></div>
+    <div class="ab-fichas" role="group" aria-label="O que aparece no globo">${AB_CAMADAS.map(([k, l, d]) => `<label class="ab-ficha" title="${esc(d)}"><input type="checkbox" data-abf="${k}" ${op[k] ? 'checked' : ''}><span>${l}</span></label>`).join('')}</div>
+    <button class="btn" data-act="ab-ver" ${pode ? '' : 'disabled'}>Ver o globo agora</button></div></section>`;
 }
 // botão do globo no topo das telas do painel (ao lado do olho e do sino)
 const I_GLOBO = ic('<circle cx="12" cy="12" r="8.6"/><path d="M3.4 12h17.2"/><path d="M12 3.4c2.4 2.3 3.6 5.2 3.6 8.6s-1.2 6.3-3.6 8.6c-2.4-2.3-3.6-5.2-3.6-8.6S9.6 5.7 12 3.4z"/>');
