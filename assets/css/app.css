@@ -1264,11 +1264,11 @@ textarea.nota { width: 100%; min-height: 110px; padding: 12px 14px; border-radiu
 /* ---------- Central de notificações (v3.5) ---------- */
 .htools { display: flex; align-items: center; gap: 8px; }
 .notif { position: relative; }
-.bell, .olho { position: relative; width: 40px; height: 40px; border-radius: 50%; display: inline-grid; place-items: center; padding: 0; background: var(--surface-2); border: 1px solid var(--line); color: var(--ink); }
-.bell:hover, .olho:hover { background: var(--surface-3); }
+.bell, .olho, .ab-ir { position: relative; width: 40px; height: 40px; border-radius: 50%; display: inline-grid; place-items: center; padding: 0; background: var(--surface-2); border: 1px solid var(--line); color: var(--ink); }
+.bell:hover, .olho:hover, .ab-ir:hover { background: var(--surface-3); }
 .olho[aria-pressed="true"] { color: var(--accent); border-color: var(--accent-soft); background: var(--accent-soft); }
 .bell[aria-expanded="true"] { background: var(--surface-3); border-color: var(--line-2); }
-.bell svg, .olho svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.bell svg, .olho svg, .ab-ir svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .bell-n { position: absolute; top: -4px; right: -4px; min-width: 19px; height: 19px; padding: 0 5px; border-radius: 980px; background: var(--accent); color: var(--on-accent); font-size: 11px; font-weight: 700; line-height: 19px; text-align: center; box-shadow: 0 0 0 2px var(--bg); font-variant-numeric: tabular-nums; }
 .bell-n.crit { background: var(--neg); color: #fff; }
 .bell.pulso svg { animation: sino 900ms var(--ease) 1; transform-origin: 50% 15%; }
@@ -2371,3 +2371,43 @@ button.wg-ic:active { transform: scale(.92); }
   radial-gradient(50% 45% at 100% 100%, color-mix(in srgb, var(--c4) 14%, transparent), transparent 70%), var(--bg); }
 :root[data-theme="light"] .ab-tit { background: linear-gradient(100deg, var(--ink) 30%, color-mix(in srgb, var(--accent) 80%, var(--ink))); -webkit-background-clip: text; background-clip: text; color: transparent; }
 :root[data-theme="light"] .ab-tit .ab-cur { -webkit-text-fill-color: initial; }
+/* abertura: zoom (canto superior direito) e "Aproximar" no detalhe */
+.ab-zoom { display: flex; gap: 2px; padding: 4px; border-radius: 999px; border: 1px solid transparent;
+  background: var(--sheen) padding-box, linear-gradient(var(--glass-strong), var(--glass-strong)) padding-box, var(--rim) border-box; -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4); box-shadow: var(--shadow); }
+.ab-zoom button { display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--ab-ink); font-size: 20px; line-height: 1; cursor: pointer; touch-action: manipulation; transition: transform .14s cubic-bezier(.23,1,.32,1), background-color .15s ease, opacity .15s ease; }
+.ab-zoom button[hidden] { display: none; }
+.ab-zoom button:active { transform: scale(.92); }
+.ab-zoom button:disabled { opacity: .3; cursor: default; }
+.ab-zoom button:focus-visible { outline: 2px solid var(--ab-acc); outline-offset: 1px; }
+@media (hover: hover) and (pointer: fine) { .ab-zoom button:not(:disabled):hover { background: color-mix(in srgb, var(--ab-ink) 9%, transparent); } }
+/* barra do canto: ano do globo, olhinho do globo e zoom, no mesmo vidro */
+.ab-ferr { position: absolute; z-index: 3; top: max(30px, env(safe-area-inset-top)); right: 56px; display: flex; align-items: center; gap: 8px; }
+.ab-ano, .ab-olho { border: 1px solid transparent; background: var(--sheen) padding-box, linear-gradient(var(--glass-strong), var(--glass-strong)) padding-box, var(--rim) border-box;
+  -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4); box-shadow: var(--shadow); }
+.ab-ano { display: flex; align-items: center; padding: 4px; border-radius: 999px; }
+.ab-ano[hidden] { display: none; }
+.ab-ano b { min-width: 44px; text-align: center; font-size: 15px; font-weight: 700; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; color: var(--ab-ink); }
+.ab-ano button, .ab-olho { display: grid; place-items: center; width: 36px; height: 36px; padding: 0; border-radius: 50%; color: var(--ab-ink); cursor: pointer; touch-action: manipulation; transition: transform .14s cubic-bezier(.23,1,.32,1), background-color .15s ease, opacity .15s ease; }
+.ab-ano button { border: 0; background: transparent; }
+.ab-olho { width: 46px; height: 46px; }
+.ab-ano svg, .ab-olho svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.ab-olho svg { width: 20px; height: 20px; stroke-width: 1.8; }
+.ab-olho[aria-pressed="true"] { color: var(--ab-acc); background: var(--sheen) padding-box, linear-gradient(color-mix(in srgb, var(--ab-acc) 16%, var(--glass-strong)), color-mix(in srgb, var(--ab-acc) 16%, var(--glass-strong))) padding-box, var(--rim) border-box; }
+.ab-ano button:active, .ab-olho:active { transform: scale(.92); }
+.ab-ano button:disabled { opacity: .3; cursor: default; }
+.ab-ano button:focus-visible, .ab-olho:focus-visible { outline: 2px solid var(--ab-acc); outline-offset: 1px; }
+@media (hover: hover) and (pointer: fine) { .ab-ano button:not(:disabled):hover { background: color-mix(in srgb, var(--ab-ink) 9%, transparent); } }
+@media (prefers-reduced-motion: reduce) { .ab-ano button, .ab-olho { transition: none; } }
+.ab-zbtn { justify-self: start; margin-top: 8px; padding: 7px 14px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--ab-cor, var(--ab-acc)) 55%, transparent);
+  background: color-mix(in srgb, var(--ab-cor, var(--ab-acc)) 14%, transparent); color: var(--ab-ink); font: inherit; font-size: 13px; font-weight: 650; cursor: pointer; touch-action: manipulation; transition: transform .14s cubic-bezier(.23,1,.32,1); }
+.ab-zbtn:active { transform: scale(.96); }
+.ab.ab-ampliado .ab-cv { cursor: move; }
+@media (max-width: 759px) { .ab-ferr { top: max(12px, env(safe-area-inset-top)); right: 12px; gap: 6px; } .ab-zoom button, .ab-ano button { width: 34px; height: 34px; } .ab-olho { width: 44px; height: 44px; } .ab-ano b { min-width: 38px; font-size: 14px; }
+  /* no celular o zoom é pela pinça e pelos dois toques: os botões só aparecem com zoom (no lugar do ano), para não brigar com a marca */
+  .ab-zoom { display: none; } .ab.ab-ampliado .ab-zoom { display: flex; } .ab.ab-ampliado .ab-ano { display: none; } }
+@media (prefers-reduced-motion: reduce) { .ab-zoom button, .ab-zbtn { transition: none; } }
+/* com zoom, o texto da esquerda sai de cena (volta ao ver tudo) para não disputar com o globo ampliado */
+.ab-esq { transition: opacity .3s cubic-bezier(.23,1,.32,1), transform .3s cubic-bezier(.23,1,.32,1); }
+.ab.ab-ampliado .ab-esq { opacity: 0; transform: translateX(-12px); pointer-events: none; }
+.ab.ab-ampliado .ab-esq .ab-vivo { pointer-events: none; }
+@media (prefers-reduced-motion: reduce) { .ab-esq { transition: opacity .2s ease; } .ab.ab-ampliado .ab-esq { transform: none; } }
