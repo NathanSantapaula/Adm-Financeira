@@ -2364,11 +2364,10 @@ button.wg-ic:active { transform: scale(.92); }
 @media (prefers-reduced-motion: reduce) { .ab, .ab-card { animation: none; } .ab.saindo { transform: none; transition: opacity .2s ease; } .ab-cur, .ab-pill i { animation: none; } }
 /* abertura no tema claro: aurora colorida em vez de um fundo pálido */
 :root[data-theme="light"] .ab { background:
-  radial-gradient(42% 52% at 10% 6%, color-mix(in srgb, var(--c2) 24%, transparent), transparent 70%),
-  radial-gradient(40% 50% at 95% 8%, color-mix(in srgb, var(--c3) 26%, transparent), transparent 70%),
-  radial-gradient(48% 56% at 66% 47%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 72%),
-  radial-gradient(55% 45% at 28% 108%, color-mix(in srgb, var(--c6) 14%, transparent), transparent 70%),
-  radial-gradient(50% 45% at 100% 100%, color-mix(in srgb, var(--c4) 14%, transparent), transparent 70%), var(--bg); }
+  radial-gradient(46% 56% at 66% 47%, color-mix(in srgb, var(--accent) 26%, transparent), transparent 72%),
+  radial-gradient(45% 50% at 8% 4%, color-mix(in srgb, var(--accent-2) 16%, transparent), transparent 70%),
+  radial-gradient(50% 45% at 100% 100%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 70%),
+  linear-gradient(180deg, color-mix(in srgb, var(--accent) 4%, var(--bg)), var(--bg)); }
 :root[data-theme="light"] .ab-tit { background: linear-gradient(100deg, var(--ink) 30%, color-mix(in srgb, var(--accent) 80%, var(--ink))); -webkit-background-clip: text; background-clip: text; color: transparent; }
 :root[data-theme="light"] .ab-tit .ab-cur { -webkit-text-fill-color: initial; }
 /* abertura: zoom (canto superior direito) e "Aproximar" no detalhe */
@@ -2411,3 +2410,41 @@ button.wg-ic:active { transform: scale(.92); }
 .ab.ab-ampliado .ab-esq { opacity: 0; transform: translateX(-12px); pointer-events: none; }
 .ab.ab-ampliado .ab-esq .ab-vivo { pointer-events: none; }
 @media (prefers-reduced-motion: reduce) { .ab-esq { transition: opacity .2s ease; } .ab.ab-ampliado .ab-esq { transform: none; } }
+
+/* abertura, versão simples (abertura.js, abSimples): quando o globo completo não roda bem, só a esfera, o valor e dois anéis girando, em CSS */
+.ab.ab-leve .ab-cv, .ab.ab-leve .ab-zoom, .ab.ab-leve .ab-card { display: none; }
+.abs { --R: min(30vw, 30dvh); position: absolute; left: 66.5%; top: 47%; width: calc(var(--R) * 2); height: calc(var(--R) * 2); translate: -50% -50%; pointer-events: none; }
+.abs-halo { position: absolute; inset: -80%; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--ab-acc) 28%, transparent) 0, color-mix(in srgb, var(--ab-acc) 8%, transparent) 38%, transparent 68%); }
+.abs-orb { position: absolute; inset: 0; perspective: 1400px; transform-style: preserve-3d; }
+.abs-esfera { position: absolute; inset: 0; border-radius: 50%; overflow: hidden;
+  background: radial-gradient(circle at 34% 30%, color-mix(in srgb, var(--ab-acc) 32%, transparent), color-mix(in srgb, var(--ab-acc) 14%, transparent) 55%, color-mix(in srgb, var(--bg) 55%, transparent));
+  box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--ab-acc) 55%, transparent), 0 0 28px color-mix(in srgb, var(--ab-acc) 55%, transparent), inset 0 0 40px color-mix(in srgb, var(--ab-acc) 30%, transparent); }
+/* pontos do globo: uma trama que desliza na horizontal, como a esfera girando; a sombra por cima dá o volume */
+.abs-esfera::before { content: ''; position: absolute; inset: 0; background: radial-gradient(circle, color-mix(in srgb, var(--ab-acc) 85%, #fff) 0 1.1px, transparent 1.6px) 0 0 / 11px 11px; opacity: .55; animation: abs-gira 18s linear infinite; }
+.abs-esfera::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(circle at 36% 30%, transparent 30%, color-mix(in srgb, var(--bg) 70%, transparent) 100%); }
+@keyframes abs-gira { to { background-position: 110px 0; } }
+.abs-anel { position: absolute; inset: -24%; border-radius: 50%; transform-style: preserve-3d; transform: rotateX(74deg) rotateY(-12deg); animation: abs-anel 26s linear infinite; }
+.abs-anel.a1 { border: 2.5px dotted color-mix(in srgb, var(--ab-acc) 90%, transparent); box-shadow: 0 0 18px color-mix(in srgb, var(--ab-acc) 35%, transparent), inset 0 0 18px color-mix(in srgb, var(--ab-acc) 35%, transparent); }
+.abs-anel.a2 { inset: -12%; border: 1.5px solid color-mix(in srgb, var(--ab-acc) 50%, transparent); --x: 64deg; --y: 22deg; transform: rotateX(var(--x)) rotateY(var(--y)); animation: abs-anel2 34s linear infinite reverse; }
+.abs-anel i { position: absolute; top: -7px; left: calc(50% - 7px); width: 14px; height: 14px; border-radius: 50%; background: var(--ab-acc); box-shadow: 0 0 14px var(--ab-acc); }
+.abs-anel.a2 i { width: 7px; height: 7px; top: -4px; background: var(--c4); box-shadow: 0 0 12px var(--c4); }
+@keyframes abs-anel { from { transform: rotateX(74deg) rotateY(-12deg) rotateZ(0); } to { transform: rotateX(74deg) rotateY(-12deg) rotateZ(360deg); } }
+@keyframes abs-anel2 { from { transform: rotateX(64deg) rotateY(22deg) rotateZ(0); } to { transform: rotateX(64deg) rotateY(22deg) rotateZ(360deg); } }
+.abs-txt { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 2px; text-align: center; font-variant-numeric: tabular-nums; }
+.abs-txt small { font-size: max(11px, calc(var(--R) * .06)); font-weight: 600; color: var(--ab-ink-2); }
+.abs-txt b { font-size: calc(var(--R) * .2); font-weight: 780; letter-spacing: -0.03em; line-height: 1.1; color: var(--ab-ink); text-shadow: 0 0 24px color-mix(in srgb, var(--ab-acc) 70%, transparent); white-space: nowrap; }
+.abs-txt em { font-style: normal; font-size: max(10.5px, calc(var(--R) * .058)); font-weight: 650; color: var(--pos); }
+.abs-txt em.desce { color: var(--neg); }
+@media (max-width: 759px) { .abs { --R: min(31vw, 31dvh); left: 50%; } }
+/* no claro, a mesma joia do globo completo: esfera na cor de destaque, pontos e textos claros */
+:root[data-theme="light"] .abs-esfera { background: radial-gradient(circle at 34% 30%, color-mix(in srgb, var(--accent) 45%, #fff), var(--accent) 50%, color-mix(in srgb, var(--accent-2) 65%, #000));
+  box-shadow: 0 18px 60px -6px color-mix(in srgb, var(--accent) 55%, transparent), 0 0 0 2px rgba(255,255,255,.7), 0 0 22px color-mix(in srgb, var(--accent) 60%, transparent); }
+:root[data-theme="light"] .abs-esfera::before { background-image: radial-gradient(circle, rgba(255,255,255,.95) 0 1.1px, transparent 1.6px); opacity: .5; }
+:root[data-theme="light"] .abs-esfera::after { background: radial-gradient(circle at 36% 30%, transparent 35%, color-mix(in srgb, var(--accent-2) 40%, transparent) 100%); }
+:root[data-theme="light"] .abs-anel.a1 { border-color: color-mix(in srgb, var(--accent-2) 75%, #0b1020); box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 40%, transparent); }
+:root[data-theme="light"] .abs-anel.a2 { border-color: color-mix(in srgb, var(--accent) 65%, transparent); }
+:root[data-theme="light"] .abs-anel.a1 i { background: #fff; box-shadow: 0 0 0 2px var(--accent), 0 0 14px var(--accent); }
+:root[data-theme="light"] .abs-txt small { color: color-mix(in srgb, var(--accent) 15%, #fff); }
+:root[data-theme="light"] .abs-txt b { color: #fff; text-shadow: 0 2px 16px color-mix(in srgb, var(--accent-2) 70%, #000); }
+:root[data-theme="light"] .abs-txt em { color: color-mix(in srgb, var(--pos) 26%, #fff); }
+@media (prefers-reduced-motion: reduce) { .abs-esfera::before, .abs-anel { animation: none; } }

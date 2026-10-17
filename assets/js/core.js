@@ -57,7 +57,7 @@ function hydratePlan(raw) {
   return p;
 }
 // tela de abertura "Seu universo financeiro" (abertura.js): ligada, frequência e camadas que aparecem
-const ABERTURA_PADRAO = { ligada: true, quando: 'sessao', valores: 'olho', titulo: true, vivo: true, classes: true, objetivos: true, aportes: true, dividendos: true, info: true };
+const ABERTURA_PADRAO = { ligada: true, quando: 'sessao', valores: 'olho', globo: 'auto', titulo: true, vivo: true, classes: true, objetivos: true, aportes: true, dividendos: true, info: true };
 function hydrateProfile(p) {
   p = Object.assign({}, p);
   let abas = Array.isArray(p.abas) ? p.abas.filter((k) => ABA_KEYS.includes(k)) : ABA_KEYS.slice();
@@ -72,7 +72,7 @@ function hydrateProfile(p) {
   p.planoSolicitado = p.planoSolicitado === 'completo' || p.planoSolicitado === 'investidor' ? p.planoSolicitado : null;
   p.prefs = Object.assign({ tema: 'auto', voz: 'consultivo' }, p.prefs || {});
   const ab = p.abertura && typeof p.abertura === 'object' ? p.abertura : {}; p.abertura = {};
-  Object.keys(ABERTURA_PADRAO).forEach((k) => { p.abertura[k] = k === 'quando' ? (ab.quando === 'dia' ? 'dia' : 'sessao') : k === 'valores' ? (['mostrar', 'ocultar'].includes(ab.valores) ? ab.valores : 'olho') : ab[k] == null ? ABERTURA_PADRAO[k] : !!ab[k]; });
+  Object.keys(ABERTURA_PADRAO).forEach((k) => { p.abertura[k] = k === 'quando' ? (ab.quando === 'dia' ? 'dia' : 'sessao') : k === 'valores' ? (['mostrar', 'ocultar'].includes(ab.valores) ? ab.valores : 'olho') : k === 'globo' ? (ab.globo === 'simples' ? 'simples' : 'auto') : ab[k] == null ? ABERTURA_PADRAO[k] : !!ab[k]; });
   if (p.prefs.tema === 'midnight') p.prefs.tema = 'oled'; // Midnight Blue saiu: quem usava fica no escuro
   if (p.prefs.manual === 'midnight') p.prefs.manual = 'oled';
   if (!TEMAS[p.prefs.tema]) p.prefs.tema = 'auto'; if (!VOZES[p.prefs.voz]) p.prefs.voz = 'consultivo';

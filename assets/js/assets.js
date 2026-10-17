@@ -349,7 +349,7 @@ function cartExpAplica() {
   // atualização parcial (ex.: entrar numa classe da composição): o cartão já está na camada e a página não foi redesenhada
   if (ativo && !card && velho && velho.querySelector(`[data-exp="${S.cartExp}"]`)) return;
   if (velho) velho.remove();
-  document.documentElement.classList.toggle('sem-rolagem', !!card); if (!card) { S.cartExp = null; return; }
+  document.documentElement.classList.toggle('sem-rolagem', !!card || (typeof AB !== 'undefined' && !!AB)); /* o globo aberto também trava a rolagem */ if (!card) { S.cartExp = null; return; }
   const host = document.createElement('div'); host.id = 'cart-exp'; host.className = 'cart-exp-host'; host.setAttribute('role', 'dialog'); host.setAttribute('aria-modal', 'true');
   host.setAttribute('aria-label', card.querySelector('h3') ? card.querySelector('h3').textContent : 'Cartão expandido');
   host.addEventListener('click', (e) => { if (e.target === host) cartExpFechar(); });

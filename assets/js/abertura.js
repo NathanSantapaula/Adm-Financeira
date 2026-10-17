@@ -22,15 +22,26 @@ function abCorToken(el, nome) {
 function abTema() {
   const A = AB; const k = (n) => abCorToken(A.el, n); const bg = k('--bg');
   const escuro = (0.2126 * bg[0] + 0.7152 * bg[1] + 0.0722 * bg[2]) / 255 < 0.45;
-  const acc = k('--accent'); const acc2 = k('--accent-2'); const cls = ['--c1', '--c2', '--c3', '--c4', '--c6', '--c5'].map(k); const branco = [255, 255, 255];
-  A.T = { escuro, bg, ink: k('--ink'), ink2: k('--ink-2'), acc, acc2, pos: k('--pos'), neg: k('--neg'), ouro: k('--c4'), cls, obj: ['--c4', '--c6', '--c2', '--c3', '--c1'].map(k),
+  const acc = k('--accent'); const acc2 = k('--accent-2'); const cls0 = ['--c1', '--c2', '--c3', '--c4', '--c6', '--c5'].map(k); const branco = [255, 255, 255];
+  // no claro, as cores da cena saem todas da cor de destaque (tons vizinhos no círculo de cores, mesma saturação e luz):
+  // o globo é uma joia na cor de destaque e tudo em volta conversa com ela; só os dividendos guardam o dourado, de contraponto
+  const viz = (d, l) => abDeHsl(abHsl(acc)[0] + d, 0.7, l == null ? 0.52 : l);
+  const cls = escuro ? cls0 : [0, 32, -32, 64, -64, 96].map((d) => viz(d));
+  A.T = { escuro, bg, ink: k('--ink'), ink2: k('--ink-2'), acc, acc2, pos: escuro ? k('--pos') : viz(-60, 0.42), neg: k('--neg'), ouro: escuro ? k('--c4') : [226, 160, 40], cls,
+    obj: escuro ? ['--c4', '--c6', '--c2', '--c3', '--c1'].map(k) : [48, -48, 96, -96, 0].map((d) => viz(d, 0.5)),
     luz: escuro ? branco : k('--surface'), // brilho e contorno: branco no escuro, superfície no claro
     soma: escuro ? 'lighter' : 'screen', // luz que soma no escuro; no claro, "screen" clareia sobre a esfera colorida sem estourar
-    // no claro o globo vira uma joia: esfera saturada na cor de destaque, com pontos e textos claros por cima
-    esfera: escuro ? null : { brilho: abMix(acc, branco, 0.5), meio: acc, borda: abMix(acc2, [0, 0, 0], 0.3) },
-    pts: escuro ? cls : cls.map((c) => abMix(c, branco, 0.42)),
-    texto: escuro ? k('--ink') : branco, texto2: escuro ? k('--ink-2') : abMix(acc, branco, 0.82), sobe: escuro ? k('--pos') : abMix(k('--pos'), branco, 0.74) };
+    // no claro o globo vira uma joia: esfera saturada na cor de destaque, com pontos quase brancos (um toque do tom de cada classe) e textos claros
+    esfera: escuro ? null : { brilho: abMix(acc, branco, 0.55), meio: acc, borda: abMix(acc2, [0, 0, 0], 0.35) },
+    pts: escuro ? cls : cls.map((c) => abMix(c, branco, 0.7)),
+    poeira: escuro ? null : [acc, acc2, viz(32, 0.6), viz(-32, 0.6)],
+    texto: escuro ? k('--ink') : branco, texto2: escuro ? k('--ink-2') : abMix(acc, branco, 0.85), sobe: escuro ? k('--pos') : abMix(k('--pos'), branco, 0.74) };
 }
+// conversão de cor para matiz/saturação/luz e de volta (para a paleta do tema claro)
+function abHsl([r, g, b]) { r /= 255; g /= 255; b /= 255; const mx = Math.max(r, g, b), mn = Math.min(r, g, b), l = (mx + mn) / 2, d = mx - mn; if (!d) return [0, 0, l];
+  const s = d / (1 - Math.abs(2 * l - 1)); const h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return [(h * 60 + 360) % 360, s, l]; }
+function abDeHsl(h, s, l) { h = ((h % 360) + 360) % 360; const c = (1 - Math.abs(2 * l - 1)) * s, x = c * (1 - Math.abs(((h / 60) % 2) - 1)), m = l - c / 2;
+  const [r, g, b] = h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x] : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x]; return [r, g, b].map((v) => Math.round((v + m) * 255)); }
 const abMix = (a, b, f) => a.map((v, i) => Math.round(v + (b[i] - v) * f));
 // desempenho: cores em texto ficam guardadas por cor e transparência (128 níveis, abaixo do que a tela distingue),
 // em vez de montar uma string por ponto a cada quadro; o cache zera quando o tema muda
@@ -102,20 +113,43 @@ function abAbrir() {
   const cv = el.querySelector('.ab-cv'); const ctx = cv.getContext('2d');
   AB = { el, cv, ctx, D, t0: performance.now(), rotY: 0.7, rotX: -0.28, vY: 0, vX: 0, arr: null, mouse: null, alvos: [], sel: null, raf: 0, calmo: abCalmo(),
     fix: null, solta: null, z: 1, ox: 0, oy: 0, zA: 1, oxA: 0, oyA: 0, oc: D.op.valores === 'ocultar' || (D.op.valores !== 'mostrar' && !!S.privado) }; // fix: item preso no lugar; z/ox/oy: zoom e deslocamento da vista (e os alvos)
-  abTema(); abPreparar(); abTamanho();
-  // o tema pode mudar com a tela aberta (aparelho trocando de claro para escuro)
-  AB.estilos = new Map(); AB.baldes = new Map(); AB.ver = 0; AB.fonte = getComputedStyle(document.body).fontFamily;
-  AB.mo = new MutationObserver(() => { if (AB) { abTema(); AB.estilos.clear(); AB.ver++; } }); AB.mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'data-custom', 'style'] });
-  AB.ult = performance.now(); AB.tc = 0;
-  AB.ro = new ResizeObserver(abTamanho); AB.ro.observe(el);
+  AB.estilos = new Map(); AB.baldes = new Map(); AB.ver = 0; AB.fonte = getComputedStyle(document.body).fontFamily; AB.ult = performance.now(); AB.tc = 0;
+  // se o globo completo não puder rodar aqui (sem canvas, erro ao montar ou escolha do cliente), entra a versão simples
+  try {
+    if (D.op.globo === 'simples' || !ctx) throw new Error('globo simples');
+    abTema(); abPreparar(); abTamanho();
+    // o tema pode mudar com a tela aberta (aparelho trocando de claro para escuro)
+    AB.mo = new MutationObserver(() => { if (AB && !AB.leve) { abTema(); AB.estilos.clear(); AB.ver++; } }); AB.mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'data-custom', 'style'] });
+    AB.ro = new ResizeObserver(abTamanho); AB.ro.observe(el);
+  } catch (er) { abSimples(); }
   if (!D.op.titulo) el.querySelector('.ab-tit').hidden = true; if (!D.vivo) el.querySelector('.ab-vivo').hidden = true;
   abEventos(); abAnoUi(); abOlhoUi(); if (D.op.titulo) abTitulo(); if (D.vivo) abVivo();
   const b = el.querySelector('.ab-entrar'); b.addEventListener('click', abFechar); setTimeout(() => b.focus({ preventScroll: true }), 50);
-  const quadro = (agora) => { if (!AB) return; abQuadro(agora); AB.raf = requestAnimationFrame(quadro); };
-  AB.raf = requestAnimationFrame(quadro);
+  // um erro em qualquer quadro (ou um aparelho lento demais) troca para a versão simples, em vez de deixar a tela vazia
+  const quadro = (agora) => { if (!AB || AB.leve) return; try { abQuadro(agora); abVigia(agora); } catch (er) { abSimples(); return; } if (!AB.leve) AB.raf = requestAnimationFrame(quadro); };
+  if (!AB.leve) AB.raf = requestAnimationFrame(quadro);
+}
+// mede o ritmo dos quadros por 2,5 s logo depois da entrada (só com a aba visível): abaixo de 12 por segundo, vai para a versão simples
+function abVigia(agora) {
+  const A = AB; if (A.calmo || A.vigiado) return; if (document.hidden) { A.vg = null; return; }
+  if (!A.vg) { if (agora - A.t0 > 600) A.vg = { t: agora, n: 0 }; return; } A.vg.n++;
+  if (agora - A.vg.t >= 2500) { A.vigiado = true; if (A.vg.n / ((agora - A.vg.t) / 1000) < 12) abSimples(); }
+}
+/* ---------- versão simples: só o globo, o valor no meio e anéis girando (CSS, sem canvas) ---------- */
+function abSimples() {
+  const A = AB; if (!A || A.leve) return; A.leve = true; cancelAnimationFrame(A.raf);
+  if (A.ro) A.ro.disconnect(); if (A.mo) A.mo.disconnect(); A.ro = A.mo = null;
+  A.el.querySelector('.ab-card').hidden = true; A.sel = A.segura = A.sobre = null; A.z = A.zA = 1; A.ox = A.oxA = A.oy = A.oyA = 0; A.el.classList.remove('ab-ampliado'); A.el.classList.add('ab-leve');
+  const s = document.createElement('div'); s.className = 'abs';
+  s.innerHTML = `<div class="abs-halo"></div><div class="abs-orb"><div class="abs-anel a1"><i></i></div><div class="abs-anel a2"><i></i></div><div class="abs-esfera"></div></div><div class="abs-txt" aria-live="polite"></div>`;
+  A.el.insertBefore(s, A.el.querySelector('.ab-cv').nextSibling); abSimplesTxt();
+}
+function abSimplesTxt() {
+  const A = AB; if (!A || !A.leve) return; const D = A.D; const c = D.cresc;
+  A.el.querySelector('.abs-txt').innerHTML = `<small>${esc(D.rotulo)}</small><b>${abR(D.patr)}</b>${Math.abs(c) >= 1 ? `<em class="${c > 0 ? 'sobe' : 'desce'}">${c > 0 ? '+' : '−'} ${abR(Math.abs(c))} em ${D.ano}</em>` : ''}`;
 }
 function abFechar() {
-  if (!AB) return; const A = AB; AB = null; cancelAnimationFrame(A.raf); clearTimeout(A.tT); clearInterval(A.tV); A.ro.disconnect(); A.mo.disconnect();
+  if (!AB) return; const A = AB; AB = null; cancelAnimationFrame(A.raf); clearTimeout(A.tT); clearInterval(A.tV); if (A.ro) A.ro.disconnect(); if (A.mo) A.mo.disconnect();
   document.removeEventListener('keydown', A.tecla, true);
   A.el.classList.add('saindo'); document.documentElement.classList.remove('sem-rolagem');
   setTimeout(() => A.el.remove(), abCalmo() ? 0 : 520);
@@ -130,19 +164,20 @@ function abAnoUi() {
 async function abAno(dir) {
   const A = AB; if (!A || A.trocando) return; const L = abAnos(); const y = L[L.indexOf(S.year) + dir]; if (y == null) return;
   A.trocando = true; try { await switchYear(y); } finally { A.trocando = false; } if (AB !== A) return;
-  A.D = abDados(); abCard(null); A.segura = A.sobre = null; A.fix = A.solta = null; abPreparar(); A.ver++; A.zona = null; A.quadroSig = null; if (!A.calmo) A.t0 = performance.now(); abZoomEm(1, 0, 0, 0, 0);
+  A.D = abDados();
+  if (!A.leve) { abCard(null); A.segura = A.sobre = null; A.fix = A.solta = null; abPreparar(); A.ver++; A.zona = null; A.quadroSig = null; if (!A.calmo) A.t0 = performance.now(); abZoomEm(1, 0, 0, 0, 0); }
   clearTimeout(A.tT); clearInterval(A.tV); const tit = A.el.querySelector('.ab-tit'); const viv = A.el.querySelector('.ab-vivo');
   tit.hidden = !A.D.op.titulo; viv.hidden = !A.D.vivo; A.el.querySelector('.ab-tt').textContent = ''; abTamanho();
-  if (A.D.op.titulo) abTitulo(); if (A.D.vivo) abVivo(); abAnoUi();
+  if (A.D.op.titulo) abTitulo(); if (A.D.vivo) abVivo(); abAnoUi(); abSimplesTxt();
 }
 function abOlhoUi() { const b = AB.el.querySelector('.ab-olho'); const r = AB.oc ? 'Mostrar valores' : 'Ocultar valores'; b.innerHTML = AB.oc ? I_OLHO_OFF : I_OLHO; b.setAttribute('aria-pressed', AB.oc); b.setAttribute('aria-label', r); b.title = r; }
 // o olho do globo: com "como o olhinho" ele também vale para o painel; com "visíveis" ou "ocultos" fixos, vale só aqui
 function abOlho() {
-  const A = AB; A.oc = !A.oc; abOlhoUi(); if (A.sel) abCard(A.sel);
+  const A = AB; A.oc = !A.oc; abOlhoUi(); if (A.sel) abCard(A.sel); abSimplesTxt();
   if (A.D.op.valores === 'olho' && S.privado !== A.oc) { S.privado = A.oc; try { localStorage.setItem('fp:privado', S.privado ? '1' : '0'); } catch (e) { /* ignora */ } document.documentElement.dataset.privado = S.privado ? '1' : '0'; render(); }
 }
 function abTamanho() {
-  if (!AB) return; const r = AB.el.getBoundingClientRect(); const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  if (!AB || AB.leve) return; const r = AB.el.getBoundingClientRect(); const dpr = Math.min(window.devicePixelRatio || 1, 2);
   AB.W = r.width; AB.H = r.height; AB.cv.width = AB.W * dpr; AB.cv.height = AB.H * dpr; AB.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   const estreito = AB.W < 760; AB.estreito = estreito;
   AB.cx = estreito ? AB.W * 0.5 : AB.W * 0.665; AB.cy = estreito ? AB.H * 0.47 : AB.H * 0.47; AB.R = Math.min(AB.W, AB.H) * (estreito ? 0.31 : 0.3);
@@ -184,7 +219,7 @@ function abQuadro(agora) {
   A.agora = agora;
   // relógio da cena: sempre anda (só o item tocado fica parado, em abFixo)
   if (!A.calmo) A.tc += Math.min(50, agora - A.ult); A.ult = agora; const t = A.tc / 1000;
-  const entra = A.calmo ? 1 : Math.min(1, (agora - A.t0) / 1800); const e = 1 - Math.pow(1 - entra, 3);
+  const entra = A.calmo ? 1 : Math.max(0, Math.min(1, (agora - A.t0) / 1800)); const e = 1 - Math.pow(1 - entra, 3);
   // giro: sozinho devagar, arraste com inércia (a inércia some de vez quando fica imperceptível)
   if (!A.arr) { A.rotY += (A.calmo ? 0 : 0.0018) + A.vY; A.rotX = Math.max(-1.1, Math.min(1.1, A.rotX + A.vX)); A.vY *= 0.95; A.vX *= 0.95; if (Math.abs(A.vY) < 1e-6) A.vY = 0; if (Math.abs(A.vX) < 1e-6) A.vX = 0; }
   // item preso: o escolhido, o que está sob o dedo ou sob o mouse; ao trocar, o anterior volta deslizando
@@ -202,7 +237,7 @@ function abQuadro(agora) {
   const camada = (nome, fn) => { if (zoom) fn(ctx); else ctx.drawImage(abCamada(nome, fn), 0, 0, W, H); }; // com zoom, desenha direto (camada pronta perderia nitidez)
   ctx.globalCompositeOperation = 'source-over';
   // no escuro, estrelas; no claro, confete nas cores da carteira
-  A.estrelas.forEach(([x, y, r, al], i) => { ctx.fillStyle = abRgba(T.escuro ? T.luz : T.cls[i % T.cls.length], al * (T.escuro ? 1 : 0.55) * (0.75 + 0.25 * Math.sin(t * 1.3 + i))); const rr = T.escuro ? r : r * 1.6; ctx.fillRect(x * W, y * H, rr, rr); });
+  A.estrelas.forEach(([x, y, r, al], i) => { ctx.fillStyle = abRgba(T.escuro ? T.luz : T.poeira[i % 4], al * (T.escuro ? 1 : 0.4) * (0.75 + 0.25 * Math.sin(t * 1.3 + i))); const rr = T.escuro ? r : r * 1.6; ctx.fillRect(x * W, y * H, rr, rr); });
   let g = ctx.createRadialGradient(cx, cy, R * 0.6, cx, cy, R * 1.8); g.addColorStop(0, abRgba(T.acc, T.escuro ? 0.28 : 0.42)); g.addColorStop(0.45, abRgba(T.escuro ? T.acc : T.acc2, T.escuro ? 0.08 : 0.14)); g.addColorStop(1, abRgba(T.acc, 0));
   ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, R * 1.8, 0, 7); ctx.fill();
   g = ctx.createRadialGradient(cx - R * 0.32, cy - R * 0.38, R * 0.04, cx, cy, R);
@@ -395,7 +430,7 @@ function abEventos() {
   abZoomUi();
   A.el.querySelector('.ab-ano').addEventListener('click', (e) => { const b = e.target.closest('[data-ano]'); if (b && !b.disabled) abAno(+b.dataset.ano); });
   A.el.querySelector('.ab-olho').addEventListener('click', abOlho);
-  A.tecla = (e) => { if (!AB) return; const k = e.key; const gx = A.cx * A.zA + A.oxA, gy = A.cy * A.zA + A.oyA;
+  A.tecla = (e) => { if (!AB) return; const k = e.key; if (A.leve && k !== 'Escape') return; const gx = A.cx * A.zA + A.oxA, gy = A.cy * A.zA + A.oyA;
     if (k === 'Escape') { e.preventDefault(); e.stopPropagation(); if (!A.el.querySelector('.ab-card').hidden) abCard(null); else if (A.zA > 1.001) abZoomEm(1, 0, 0, 0, 0); else abFechar(); }
     else if (k === '+' || k === '=') { e.preventDefault(); abZoom(A.zA * 1.5, gx, gy); } else if (k === '-') { e.preventDefault(); abZoom(A.zA / 1.5, gx, gy); } else if (k === '0') { e.preventDefault(); abZoomEm(1, 0, 0, 0, 0); } };
   document.addEventListener('keydown', A.tecla, true);
@@ -461,10 +496,12 @@ const AB_CAMADAS = [
 function aberturaAdmHtml() {
   const op = abOpcoes(); const pode = aberturaPode();
   const quando = [['sessao', 'Toda vez que entrar'], ['dia', 'Uma vez por dia']].map(([v, l]) => `<button class="${op.quando === v ? 'on' : ''}" data-act="ab-quando" data-v="${v}" aria-pressed="${op.quando === v}">${l}</button>`).join('');
+  const globo = [['auto', 'Completa'], ['simples', 'Simples']].map(([v, l]) => `<button class="${op.globo === v ? 'on' : ''}" data-act="ab-globo" data-v="${v}" aria-pressed="${op.globo === v}">${l}</button>`).join('');
   const valores = [['olho', 'Como o olhinho'], ['mostrar', 'Visíveis'], ['ocultar', 'Ocultos']].map(([v, l]) => `<button class="${op.valores === v ? 'on' : ''}" data-act="ab-valores" data-v="${v}" aria-pressed="${op.valores === v}">${l}</button>`).join('');
   return `<section class="dr-sec"><h3>Tela de abertura</h3><p class="mmsg">O seu universo financeiro antes do painel: o globo do patrimônio e, em volta, o que você escolher.</p>
     <label class="chk"><input type="checkbox" data-abf="ligada" ${op.ligada ? 'checked' : ''}><span><b>Mostrar ao entrar</b><small>${pode ? 'Aparece antes da Visão geral.' : 'Aparece quando houver patrimônio registrado.'}</small></span></label>
     <div class="dr-sub"><h4>Quando aparece</h4><div class="seg" role="group" aria-label="Quando a tela de abertura aparece">${quando}</div></div>
+    <div class="dr-sub"><h4>Versão do globo</h4><div class="seg" role="group" aria-label="Versão do globo">${globo}</div><small class="mmsg">A completa troca sozinha para a simples quando o aparelho não consegue rodá-la bem.</small></div>
     <div class="dr-sub"><h4>Valores ao abrir</h4><div class="seg" role="group" aria-label="Valores ao abrir o globo">${valores}</div></div>
     <div class="dr-sub"><h4>O que aparece</h4><div class="abas">${AB_CAMADAS.map(([k, l, d]) => `<label class="chk aba"><input type="checkbox" data-abf="${k}" ${op[k] ? 'checked' : ''}><span><b>${l}</b><small>${d}</small></span></label>`).join('')}</div></div>
     <div class="btn-row"><button class="btn" data-act="ab-ver" ${pode ? '' : 'disabled'}>Ver a tela agora</button></div></section>`;
@@ -477,6 +514,10 @@ function aberturaCampo(t) { S.profile.abertura = Object.assign(abOpcoes(), { [t.
 function aberturaQuando(v, btn) {
   S.profile.abertura = Object.assign(abOpcoes(), { quando: v === 'dia' ? 'dia' : 'sessao' }); touch('profile');
   btn.parentNode.querySelectorAll('button').forEach((b) => { const on = b.dataset.v === S.profile.abertura.quando; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+}
+function aberturaGlobo(v, btn) {
+  S.profile.abertura = Object.assign(abOpcoes(), { globo: v === 'simples' ? 'simples' : 'auto' }); touch('profile');
+  btn.parentNode.querySelectorAll('button').forEach((b) => { const on = b.dataset.v === S.profile.abertura.globo; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
 }
 function aberturaValores(v, btn) {
   S.profile.abertura = Object.assign(abOpcoes(), { valores: ['mostrar', 'ocultar'].includes(v) ? v : 'olho' }); touch('profile');
