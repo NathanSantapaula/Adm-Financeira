@@ -20,7 +20,7 @@ function groupKeys(nodes, out) { for (const n of nodes) if (!n.leaf) { out.push(
 
 /* ---------- Investimentos e Proventos: painel de estudo + planilha recolhível ---------- */
 const PAL = ['var(--c1)', 'var(--c2)', 'var(--c3)', 'var(--c4)', 'var(--c5)', 'var(--c6)'];
-const SOBRA_COR = 'color-mix(in srgb, var(--c1) 24%, transparent)';
+const SOBRA_COR = 'color-mix(in srgb, var(--accent) 18%, transparent)';
 const mesesDecorridos =() => (S.year === NOW_Y ? NOW_M + 1 : 12);
 function analiseAtual() {
   const M = cartModel();
@@ -52,15 +52,15 @@ function planilhaHtml(kind) {
 function vazioInvest(kind) {
   return `<section class="cc-empty"><div class="cc-empty-ic" aria-hidden="true">${I[kind === 'inv' ? 'inv' : 'pro']}</div><div class="cc-empty-tx"><h3>${kind === 'inv' ? 'Traga sua carteira em um minuto' : 'Seus proventos aparecem aqui'}</h3>
     <p>${kind === 'inv' ? 'Baixe o extrato de movimentação na Área do Investidor da B3 e solte aqui: aportes, resgates e proventos de todas as corretoras entram de uma vez.' : 'Importe o extrato de movimentação da B3 para trazer dividendos, JCP e rendimentos de cada ativo, mês a mês.'}</p></div>
-    <div class="cc-empty-acts"><button class="btn primary lg" data-act="ingest-open" data-modo="corretora">Importar da corretora</button><button class="btn ghost" data-act="add-ativo">Adicionar ativo manualmente</button></div></section>`;
+    <div class="cc-empty-acts"><button class="btn primary lg" data-act="ingest-open" data-modo="corretora">Importar da corretora</button><button class="btn ghost" data-act="${kind === 'inv' ? 'aporte-novo' : 'add-ativo'}">${kind === 'inv' ? 'Novo aporte manual' : 'Adicionar ativo manualmente'}</button></div></section>`;
 }
 
 /* widgets organizáveis de Investimentos e Proventos (mesmo sistema da Visão geral; ver telaWidgetsHtml) */
 const INV_WIDGETS = [
   { id: 'indicadores', nome: () => 'Indicadores dos investimentos', desc: 'Aportado no ano, ritmo da meta, constância e diversificação.', tam: 6, tams: [6], padrao: () => true },
+  { id: 'aportes', nome: () => 'Aportes mês a mês', desc: 'O gráfico principal: quanto foi aportado em cada mês, com os valores à vista, a meta e a sobra que ficou parada.', tam: 6, tams: [4, 6], padrao: () => true },
   { id: 'quanto', nome: () => 'Quanto aportei', desc: 'Aportado no ano contra a meta, com a meta mensal editável ali mesmo.', tam: 3, tams: [2, 3, 4, 6], padrao: () => true },
   { id: 'disponivel', nome: () => 'Disponível para aportar', desc: 'Sobra do mês menos o que já foi aportado, com atalho para o novo aporte.', tam: 3, tams: [2, 3, 4, 6], padrao: () => true },
-  { id: 'aportes', nome: () => 'Aportes mês a mês', desc: 'Quanto foi aportado em cada mês, quanto da sobra ficou parado e a meta.', tam: 4, tams: [3, 4, 6], padrao: () => true },
   { id: 'onde', nome: () => 'Onde está o dinheiro', desc: 'Composição da carteira por classe e por ativo (a mesma da Carteira) e renda fixa contra o perfil.', tam: 2, tams: [2, 3, 4, 6], padrao: () => true },
   { id: 'destino', nome: () => 'Para onde foram os aportes', desc: 'Quanto você aportou em cada classe no ano.', tam: 3, tams: [2, 3, 4, 6], padrao: () => false },
   { id: 'posicoes', nome: () => 'Maiores posições', desc: 'Os ativos com mais dinheiro, a custo.', tam: 3, tams: [2, 3, 4, 6], padrao: () => true },
@@ -84,7 +84,8 @@ function painelInvest(A) {
   const k3 = kpi('Constância', `${ap.mesesComAporte} <small>de ${ap.meses} meses</small>`, 'com aporte. Aportar todo mês pesa mais que acertar o momento.', dots);
   const k4 = ca.n ? kpi('Diversificação', `≈ ${fmt1(ca.nEfetivo)} <small>${ca.nEfetivo < 1.5 ? 'ativo' : 'ativos'}</small>`, `de peso igual equivalem à sua carteira de ${ca.n}. Maior posição: ${esc(ca.maior.nome)} (${pct(ca.maior.peso)}).`)
     : kpi('Diversificação', '–', 'Sem posições ainda.');
-  const leg = legenda([...(ap.meta > 0 ? [['var(--pos)', 'Na meta']] : []), ['var(--c1)', ap.meta > 0 ? 'Abaixo da meta' : 'Aportado'], [SOBRA_COR, 'Sobra não aportada'], ...(ap.meta > 0 ? [['var(--c4)', 'Meta']] : [])]);
+  const leg = legenda([...(ap.meta > 0 ? [['var(--pos)', 'Na meta']] : []), ['var(--accent)', ap.meta > 0 ? 'Abaixo da meta' : 'Aportado'], [SOBRA_COR, 'Sobra que ficou parada'], ...(ap.meta > 0 ? [['var(--c4)', 'Meta']] : [])]);
+  const melhorI = S.C.aportes.slice(0, ap.meses).reduce((b, v, i, a) => (v > a[b] ? i : b), 0); const melhor = S.C.aportes[melhorI] || 0;
   const naMeta = ap.meta > 0 ? S.C.aportes.slice(0, ap.meses).filter((v) => v >= ap.meta - 0.005).length : 0;
   const metaEd = `<span class="ed iq-meta${ap.meta > 0 ? '' : ' z'}" data-k="ma" data-m="0" data-ri="-1" data-v="${ap.meta}" data-fmt="brl" tabindex="0" title="Toque para mudar a meta mensal de aportes">${ap.meta > 0 ? brl0(ap.meta) : 'Definir'}</span>`;
   const anelC = 326.73; const anel = `<svg class="iq-anel" viewBox="0 0 120 120" aria-hidden="true"><circle class="iq-tr" r="52" cx="60" cy="60"/><circle class="iq-pg${ap.ritmo >= 1 ? ' ok' : ''}" r="52" cx="60" cy="60" stroke-dasharray="${(Math.min(1, ap.ritmo || 0) * anelC).toFixed(1)} ${anelC}" transform="rotate(-90 60 60)"/></svg>`;
@@ -108,8 +109,10 @@ function painelInvest(A) {
       <ul class="idp-l"><li><i class="a"></i>Já investido<b>${brl0(D.aportado)}</b></li><li><i class="d"></i>Ainda disponível<b>${brl0(D.disponivel)}</b></li></ul>
       <p class="cap keep">${D.sobra < 0 ? `Os gastos de ${MES_LONGO[S.mes]} passaram das entradas em ${brl0(-D.sobra)}.` : `Sobra de ${brl0(D.sobra)} (entradas menos gastos do mês) menos o que já foi investido${S.C.dividendos[S.mes] > 0 ? `, incluindo ${brl0(S.C.dividendos[S.mes])} de dividendos reinvestidos` : ''}.`}${D.faltaMeta > 0 ? ` Faltam ${brl0(D.faltaMeta)} para a meta.` : ''}</p>
       <div class="btn-row"><button class="btn primary sm" data-act="aporte-novo">${I.plus}Novo aporte</button>${temRecurso('carteira') ? '<button class="btn sm" data-act="nav" data-view="cart">Onde investir</button>' : ''}</div></section>`,
-    aportes: `<section class="card"><div class="c-h"><h3>Aportes mês a mês</h3>${ap.meta > 0 ? `<small class="c-note">${naMeta} de ${ap.meses} ${ap.meses === 1 ? 'mês' : 'meses'} na meta</small>` : ''}</div>${leg}<div class="chart" id="inv-aportes"></div></section>`,
-    onde: `<section class="card"><div class="c-h"><h3>Onde está o dinheiro</h3></div>${cartComposicaoHtml(K)}${rfBar}</section>`,
+    aportes: `<section class="card ia"><div class="c-h"><h3>Aportes mês a mês</h3>${ap.meta > 0 ? `<small class="c-note">${naMeta} de ${ap.meses} ${ap.meses === 1 ? 'mês' : 'meses'} na meta</small>` : ''}</div>
+      <div class="ia-k"><div><small>Aportado em ${S.year}</small><b class="num">${brl0(ap.ano)}</b></div><div><small>Média por mês</small><b class="num">${brl0(ap.mediaMes)}</b></div><div><small>Melhor mês</small><b class="num">${melhor > 0 ? brl0(melhor) : '–'}</b>${melhor > 0 ? `<span>${cap(MES_LONGO[melhorI])}</span>` : ''}</div><div><small>Na meta</small><b>${ap.meta > 0 ? `${naMeta} de ${ap.meses}` : '–'}</b><span>${ap.meta > 0 ? 'meses' : 'sem meta definida'}</span></div></div>
+      ${leg}<div class="chart ia-chart" id="inv-aportes"></div></section>`,
+    onde: `<section class="card cart-exp-card" data-exp="composicao"><div class="c-h"><h3>Onde está o dinheiro</h3>${cartExpBtn('composicao')}</div>${cartComposicaoHtml(K)}${rfBar}</section>`,
     destino: `<section class="card"><div class="c-h"><h3>Para onde foram os aportes</h3><small class="c-note">${S.year}</small></div>${dst.length ? `<ul class="rank">${dst.map((c, n) => `<li><span class="rk-n">${n + 1}</span><span class="rk-l"><b title="${esc(c.label)}">${esc(c.label)}</b></span><span class="rk-t"><i style="width:${((c.value / dstMx) * 100).toFixed(1)}%;background:${PAL[n % 6]}"></i></span><span class="rk-v">${brl0(c.value)}<small>${pct(ap.ano > 0 ? c.value / ap.ano : 0)}</small></span></li>`).join('')}</ul>` : `<p class="empty-s">Nenhum aporte registrado em ${S.year}.</p>`}</section>`,
     posicoes: `<section class="card"><div class="c-h"><h3>Maiores posições</h3><small class="c-note">a custo</small></div>${top.length ? `<ul class="rank">${top.map((i, n) => `<li><span class="rk-n">${n + 1}</span><span class="rk-l"><b title="${esc(i.nome)}">${esc(i.nome)}</b><small>${esc(i.classe)}</small></span><span class="rk-t"><i style="width:${((i.valor / top[0].valor) * 100).toFixed(1)}%;background:${PAL[ca.porClasse.findIndex((c) => c.label === i.classe) % 6]}"></i></span><span class="rk-v">${brl0(i.valor)}<small>${pct(i.peso, 1)}</small></span></li>`).join('')}</ul>` : '<p class="empty-s">Sem posições.</p>'}</section>`,
     estudar: `<section class="card study"><div class="c-h"><h3>Para estudar</h3></div><ul class="insights">${ins.map(([t, x]) => `<li class="${t}">${x}</li>`).join('')}</ul></section>`,
@@ -123,8 +126,8 @@ function painelProventos(A) {
   const k3 = kpi('Yield on cost', pv.yoc == null ? '–' : pct(pv.yoc, 1), pv.yoc == null ? 'Aparece quando houver aportes e proventos.' : 'Proventos anualizados sobre o valor investido (a custo). Mostra quanto o seu dinheiro rende em caixa.');
   const k4 = kpi('Cobertura dos gastos', pv.cobertura == null ? '–' : pct(pv.cobertura, 1), pv.cobertura == null ? 'Registre gastos na aba Gastos para comparar.' : `dos seus gastos médios (${brl0(pv.gastoMedio)} por mês) já são pagos pelos proventos.`, pv.cobertura == null ? '' : barra(pv.cobertura, pv.cobertura >= 1 ? 'ok' : ''));
   const top = pv.pagadores.slice(0, 8); const heat = pv.pagadores.slice(0, 10); const max = Math.max(1, ...heat.flatMap((p) => p.pr));
-  const rank = top.length ? `<ul class="rank">${top.map((p, n) => `<li><span class="rk-n">${n + 1}</span><span class="rk-l"><b title="${esc(p.nome)}">${esc(p.nome)}</b><small>Pagou em ${p.mesesPagos} ${p.mesesPagos === 1 ? 'mês' : 'meses'}${p.yoc != null ? ` · yield ${pct(p.yoc, 1)}` : ''}</small></span><span class="rk-t"><i style="width:${((p.recebido / top[0].recebido) * 100).toFixed(1)}%;background:${p.tipo === 'RENDA FIXA' ? 'var(--c1)' : 'var(--c3)'}"></i></span><span class="rk-v">${brl0(p.recebido)}<small>${pct(pv.ano > 0 ? p.recebido / pv.ano : 0)}</small></span></li>`).join('')}</ul>` : '<p class="empty-s">Nenhum provento registrado neste ano.</p>';
   const cal = heat.length ? `<div class="heat" role="table" aria-label="Calendário de proventos por ativo"><div class="heat-r heat-h" role="row"><span role="columnheader"></span>${MES.map((m) => `<span role="columnheader">${m[0]}</span>`).join('')}</div>${heat.map((p) => `<div class="heat-r" role="row"><span class="heat-n" role="rowheader">${esc(p.nome)}</span>${p.pr.map((v, m) => `<span role="cell" class="heat-c${v > 0 ? ' on' : ''}" style="--a:${v > 0 ? (0.25 + 0.75 * (v / max)).toFixed(2) : 0}" title="${esc(p.nome)}, ${MES_LONGO[m]}: ${v > 0 ? brl(v) : 'sem pagamento'}"></span>`).join('')}</div>`).join('')}</div><p class="cap">Cada quadrado é um mês. Quanto mais forte, maior o valor. FIIs costumam pagar todo mês; ações concentram em poucos meses.</p>` : '';
+  const rank = top.length ? `<ul class="rank">${top.map((p, n) => `<li><span class="rk-n">${n + 1}</span><span class="rk-l"><b title="${esc(p.nome)}">${esc(p.nome)}</b><small>Pagou em ${p.mesesPagos} ${p.mesesPagos === 1 ? 'mês' : 'meses'}${p.yoc != null ? ` · yield ${pct(p.yoc, 1)}` : ''}</small></span><span class="rk-t"><i style="width:${((p.recebido / top[0].recebido) * 100).toFixed(1)}%;background:${p.tipo === 'RENDA FIXA' ? 'var(--c1)' : 'var(--c3)'}"></i></span><span class="rk-v">${brl0(p.recebido)}<small>${pct(pv.ano > 0 ? p.recebido / pv.ano : 0)}</small></span></li>`).join('')}</ul>` : '<p class="empty-s">Nenhum provento registrado neste ano.</p>';
   let lib = '';
   if (pv.capitalLiberdade) {
     const f = ca.total / pv.capitalLiberdade; const n = ap.mediaMes > 0 ? E.mesesAteMeta(ca.total, ap.mediaMes, ret, pv.capitalLiberdade, 1200) : null;
@@ -146,22 +149,47 @@ function viewAssets(kind) {
   const title = kind === 'inv' ? 'Investimentos' : 'Proventos';
   if (!temRecurso(rec)) return `${pageHead(title, kind === 'inv' ? 'Quanto você aplica em cada ativo.' : 'Dividendos e rendimentos recebidos.')}${lockedHtml(rec)}`;
   const sub = kind === 'inv' ? 'Quanto você investe, onde está o dinheiro e se o ritmo leva ao seu objetivo.' : 'Quanto os seus investimentos devolvem em caixa, de quem e quando.';
-  const acts = `<button class="btn primary" data-act="ingest-open" data-modo="corretora">${I.plus}Importar da corretora</button>${kind === 'inv' ? '<button class="btn" data-act="aporte-novo">Novo aporte</button>' : ''}<button class="btn" data-act="add-ativo">Adicionar ativo</button>`;
+  const acts = `<button class="btn primary" data-act="ingest-open" data-modo="corretora">${I.plus}Importar da corretora</button>${kind === 'inv' ? '<button class="btn" data-act="aporte-novo">Novo aporte</button>' : '<button class="btn" data-act="add-ativo">Adicionar ativo</button>'}`;
   if (!S.plan.ativos.length) return `${pageHead(title, sub)}${vazioInvest(kind)}`;
   const A = analiseAtual();
   return `${pageHead(title, sub, acts)}${kind === 'inv' ? painelInvest(A) : painelProventos(A)}${planilhaHtml(kind)}`;
 }
+/* Aportes mês a mês: gráfico principal da aba. Valor escrito em cada barra (na vertical quando o mês fica estreito),
+   verde quando bate a meta, sobra parada como barra fantasma, linha da meta com etiqueta e o mês atual com brilho. */
+function invAportesChart(el) {
+  const C = S.C; const meta = +S.plan.settings.metaAporte || 0; const ap = C.aportes; const cur = S.year === NOW_Y ? NOW_M : -1; const lim = S.year === NOW_Y ? NOW_M : 11;
+  const W = Math.max(280, Math.floor(el.clientWidth || 640)); const band0 = (W - 24) / 12; const deitado = band0 >= 46;
+  const m = { t: deitado ? 30 : 50, r: 12, b: 28, l: 12 }; const H = Math.max(270, Math.min(400, altura(el) + 40)); const ih = H - m.t - m.b; const band = (W - m.l - m.r) / 12;
+  const sob = C.investAlocado.map((v) => Math.max(0, v)); const hi = Math.max(100, meta * 1.12, ...ap, ...sob); const lo = Math.min(0, ...ap);
+  const y = (v) => m.t + (ih * (hi - v)) / (hi - lo); const bw = Math.min(48, band * 0.64); const bate = (v) => meta > 0 && v >= meta - 0.005; const r = Math.min(10, bw / 3);
+  const topo = (x, y1, w, h) => `M${x} ${y1 + h}V${y1 + r}Q${x} ${y1} ${x + r} ${y1}H${x + w - r}Q${x + w} ${y1} ${x + w} ${y1 + r}V${y1 + h}Z`; // barra com cantos de cima arredondados
+  let g = ''; const y0 = y(0);
+  for (let i = 0; i < 12; i++) {
+    const cx = m.l + band * (i + 0.5); const x = +(cx - bw / 2).toFixed(1); const v = ap[i]; const fut = i > lim;
+    if (sob[i] > Math.max(0, v) + 0.5) g += `<rect class="ia-sob" x="${x}" y="${y(sob[i]).toFixed(1)}" width="${bw.toFixed(1)}" height="${(y0 - y(sob[i])).toFixed(1)}" rx="${r}"/>`;
+    if (v > 0.005) { const yt = y(v); g += `<path class="ia-bar${fut ? ' fut' : ''}${i === cur ? ' cur' : ''}" style="--i:${i}" fill="url(#ia-${bate(v) ? 'ok' : 'ap'})" d="${topo(x, +yt.toFixed(1), +bw.toFixed(1), +(y0 - yt).toFixed(1))}"/>`; }
+    if (v < -0.005) g += `<rect class="ia-bar neg" style="--i:${i}" x="${x}" y="${y0.toFixed(1)}" width="${bw.toFixed(1)}" height="${(y(v) - y0).toFixed(1)}" rx="${r}"/>`;
+    if (Math.abs(v) > 0.005) { const ly = (v > 0 ? y(v) : y0) - 8; const t = escSvg(tickFmt(Math.round(v)));
+      g += deitado ? `<text class="ia-v${bate(v) ? ' ok' : ''}${fut ? ' fut' : ''}" x="${cx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="middle">${t}</text>`
+        : `<text class="ia-v${bate(v) ? ' ok' : ''}${fut ? ' fut' : ''}" transform="translate(${(cx + 4).toFixed(1)} ${ly.toFixed(1)}) rotate(-90)">${t}</text>`; }
+    g += `<text class="ia-m${i === cur ? ' cur' : ''}" x="${cx.toFixed(1)}" y="${H - 8}" text-anchor="middle">${MES[i]}</text>`;
+  }
+  const ym = y(meta); const mk = meta > 0 ? `<line class="ia-meta" x1="${m.l}" x2="${W - m.r}" y1="${ym.toFixed(1)}" y2="${ym.toFixed(1)}"/><g class="ia-meta-t" transform="translate(${W - m.r} ${(ym - 11).toFixed(1)})"><rect x="-86" y="-10" width="86" height="20" rx="10"/><text x="-43" y="4" text-anchor="middle">Meta ${escSvg(tickFmt(meta))}</text></g>` : '';
+  el.innerHTML = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Aportes de cada mês de ${S.year}${meta > 0 ? ', em verde os meses que bateram a meta' : ''}, com a sobra que ficou parada">
+    <defs><linearGradient id="ia-ap" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--accent)"/><stop offset="1" stop-color="var(--accent)" stop-opacity=".35"/></linearGradient>
+      <linearGradient id="ia-ok" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--pos)"/><stop offset="1" stop-color="var(--pos)" stop-opacity=".35"/></linearGradient></defs>
+    <line class="ia-zero" x1="${m.l}" x2="${W - m.r}" y1="${y0.toFixed(1)}" y2="${y0.toFixed(1)}"/>${g}${mk}<rect class="ia-hv" x="0" y="${m.t - 10}" width="${band.toFixed(1)}" height="${ih + 10}" rx="10" opacity="0"/></svg>`;
+  const svg = el.firstChild; const hv = svg.querySelector('.ia-hv');
+  const mostra = (e) => { const b = svg.getBoundingClientRect(); const i = Math.floor((e.clientX - b.left - m.l) / band); if (i < 0 || i > 11) { hideTip(); hv.setAttribute('opacity', '0'); return; }
+    hv.setAttribute('x', (m.l + band * i).toFixed(1)); hv.setAttribute('opacity', '1'); const v = ap[i];
+    showTip(`<b>${MES_LONGO[i]}</b><br>${v < 0 ? `Resgate: ${brl0(-v)}` : `Aportado: ${brl0(v)}`}<br>Sobra do mês: ${brl0(C.investAlocado[i])}${meta > 0 ? `<br>Meta: ${brl0(meta)} · ${bate(v) ? 'bateu a meta' : `faltaram ${brl0(meta - Math.max(0, v))}`}` : ''}`, e.clientX, e.clientY); };
+  svg.addEventListener('pointermove', mostra); svg.addEventListener('click', mostra);
+  svg.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') { hideTip(); hv.setAttribute('opacity', '0'); } });
+}
 const altura = (el) => { const c = el && el.closest('.card'); return c ? Math.max(210, Math.min(360, c.clientHeight - 96)) : 210; };
 function drawAssets() {
   if (S.screen !== 'app' || !S.plan || !S.C) return; drawCart(); const C = S.C; const cur = S.year === NOW_Y ? NOW_M : -1;
-  if (S.view === 'inv' && $('#inv-aportes')) {
-    // cada mês colorido pela meta; a parte clara é a sobra do mês que não virou aporte
-    const meta = +S.plan.settings.metaAporte || 0; const ap = C.aportes; const bate = (v) => meta > 0 && v >= meta - 0.005;
-    chartBars($('#inv-aportes'), { labels: MES, cur, height: altura($('#inv-aportes')), aria: 'Aportes por mês contra a meta, com a sobra que não foi aportada',
-      bars: [{ color: 'var(--pos)', values: ap.map((v) => (bate(v) ? v : 0)) }, { color: 'var(--c1)', values: ap.map((v) => (v > 0 && !bate(v) ? v : 0)) }, { color: SOBRA_COR, values: ap.map((v, i) => Math.max(0, C.investAlocado[i] - Math.max(0, C.aplicado[i]))) }, { color: 'var(--neg)', values: ap.map((v) => Math.min(0, v)) }],
-      marks: meta > 0 ? [{ color: 'var(--c4)', values: MES.map(() => meta) }] : [],
-      tip: (i) => `<b>${MES_LONGO[i]}</b><br>${ap[i] < 0 ? `Resgate: ${brl0(-ap[i])}` : `Aportado: ${brl0(ap[i])}`}<br>Sobra do mês: ${brl0(C.investAlocado[i])}${meta > 0 ? `<br>Meta: ${brl0(meta)} · ${bate(ap[i]) ? 'na meta' : `faltaram ${brl0(meta - Math.max(0, ap[i]))}`}` : ''}` });
-  }
+  if (S.view === 'inv' && $('#inv-aportes')) invAportesChart($('#inv-aportes'));
   if (S.view === 'inv' && $('.cmp')) cmpLigar();
   if (S.view === 'pro' && $('#pro-mes')) chartBars($('#pro-mes'), { labels: MES, cur, height: altura($('#pro-mes')), aria: 'Proventos por mês: dividendos e renda fixa', bars: [{ color: 'var(--c3)', values: C.dividendos }, { color: 'var(--c1)', values: C.rentab }],
     tip: (i) => `<b>${MES_LONGO[i]}</b><br>Dividendos e rendimentos: ${brl0(C.dividendos[i])}<br>Renda fixa: ${brl0(C.rentab[i])}<br>Total: ${brl0(C.faturamento[i])}` });
@@ -366,7 +394,7 @@ const cartExpBtn = (id) => { const on = S.cartExp === id;
 function cartExpandir(id) { S.cartExp = S.cartExp === id ? null : id; render(); const b = document.querySelector(`.cart-exp[data-w="${id}"]`); if (b) b.focus({ preventScroll: true }); }
 function cartExpFechar() { if (!S.cartExp) return; const id = S.cartExp; S.cartExp = null; render(); const b = document.querySelector(`.cart-exp[data-w="${id}"]`); if (b) b.focus({ preventScroll: true }); }
 function cartExpAplica() {
-  const velho = document.getElementById('cart-exp'); const ativo = !!S.cartExp && (S.view === 'cart' || S.view === 'geral') && S.screen === 'app';
+  const velho = document.getElementById('cart-exp'); const ativo = !!S.cartExp && (S.view === 'cart' || S.view === 'geral' || S.view === 'inv') && S.screen === 'app';
   const card = ativo ? document.querySelector(`#view [data-exp="${S.cartExp}"]`) : null;
   // atualização parcial (ex.: entrar numa classe da composição): o cartão já está na camada e a página não foi redesenhada
   if (ativo && !card && velho && velho.querySelector(`[data-exp="${S.cartExp}"]`)) return;
@@ -432,20 +460,40 @@ function suggest(level, a) {
   });
   return [...own];
 }
-// novo aporte (ou resgate) num ativo que já existe: soma ao mês escolhido na planilha do ano
+// Novo aporte: num ativo que já existe ou num ativo novo, cadastrado aqui mesmo; o valor soma ao mês escolhido na planilha do ano
 function openAporte() {
-  const p = S.plan; const grupos = {}; p.ativos.forEach((a) => { (grupos[a.classe] = grupos[a.classe] || []).push(a); });
-  openModal({ title: 'Novo aporte', ok: 'Registrar',
-    body: `<label class="fld"><span>Ativo</span><select name="ativo">${Object.keys(grupos).map((c) => `<optgroup label="${esc(c)}">${grupos[c].map((a) => `<option value="${esc(a.id)}">${esc(a.nome)}</option>`).join('')}</optgroup>`).join('')}</select></label>
+  const p = S.plan; const grupos = {}; p.ativos.forEach((a) => { (grupos[a.classe] = grupos[a.classe] || []).push(a); }); const tem = p.ativos.length > 0;
+  const form = openModal({ title: 'Novo aporte', ok: 'Registrar',
+    body: `${tem ? '<div class="seg ap-modo" role="radiogroup" aria-label="Onde aplicar"><label><input type="radio" name="modo" value="ex" checked><span>Ativo que já tenho</span></label><label><input type="radio" name="modo" value="novo"><span>Ativo novo</span></label></div>' : '<input type="hidden" name="modo" value="novo">'}
+      <div data-modo="ex"${tem ? '' : ' hidden'}><label class="fld"><span>Ativo</span><select name="ativo">${Object.keys(grupos).map((c) => `<optgroup label="${esc(c)}">${grupos[c].map((a) => `<option value="${esc(a.id)}">${esc(a.nome)}</option>`).join('')}</optgroup>`).join('')}</select></label></div>
+      <div data-modo="novo"${tem ? ' hidden' : ''}><label class="fld"><span>Nome do ativo <small>(código, banco ou título)</small></span><input name="nome" autocomplete="off" placeholder="Ex.: PETR4, CDB Banco X"></label>
+        <div class="fld-2"><label class="fld"><span>Tipo</span><input name="tipo" list="dl-tipo" value="BOLSA DE VALORES"></label><label class="fld"><span>Classe</span><input name="classe" list="dl-classe" placeholder="Ex.: Ações"></label></div></div>
       <div class="fld-2"><label class="fld"><span>Operação</span><select name="op"><option value="1">Aporte</option><option value="-1">Resgate</option></select></label><label class="fld"><span>Mês</span><select name="mes">${MES_LONGO.map((m, i) => `<option value="${i}"${i === S.mes ? ' selected' : ''}>${m}</option>`).join('')}</select></label></div>
       <label class="fld"><span>Valor (R$)</span><input name="valor" inputmode="decimal" placeholder="0,00" autocomplete="off"></label>
-      <p class="mmsg small">O valor é somado ao que o ativo já tem no mês, em ${S.year}. Ativo novo? Use “Adicionar ativo”.</p>`,
+      <p class="mmsg small">O valor é somado ao que o ativo já tem no mês, em ${S.year}.</p><datalist id="dl-tipo"></datalist><datalist id="dl-classe"></datalist>`,
     onOk: (d, err) => {
-      const a = p.ativos.find((x) => x.id === d.ativo); const v = E.parseValor(d.valor || ''); const m = +d.mes;
-      if (!a) return bad(err, 'Escolha o ativo.');
-      if (!(v > 0)) return bad(err, 'Informe um valor maior que zero, como 1.500,00.');
+      const v = parseReais(d.valor || ''); const m = +d.mes; let a;
+      if (d.modo === 'novo') {
+        const tipo = matchCase(d.tipo, suggest('tipo', {})).toUpperCase(); const classe = matchCase(d.classe, suggest('classe', { tipo })); const nome = (d.nome || '').trim();
+        if (!tipo || !classe || !nome) return bad(err, 'Preencha nome, tipo e classe do ativo novo.');
+        if (!(v > 0)) return bad(err, 'Informe um valor maior que zero, como 1.500,00.');
+        a = ativoInserir({ tipo, classe, grupo: null, subgrupo: null, nome });
+      } else {
+        a = p.ativos.find((x) => x.id === d.ativo); if (!a) return bad(err, 'Escolha o ativo.');
+        if (!(v > 0)) return bad(err, 'Informe um valor maior que zero, como 1.500,00.');
+      }
       a.ap[m] = E.r2((+a.ap[m] || 0) + v * +d.op); commit(); toast(`${+d.op > 0 ? 'Aporte' : 'Resgate'} registrado em ${a.nome}, ${MES_LONGO[m]}.`);
     } });
+  const fill = (id, arr) => { $('#' + id).innerHTML = arr.map((x) => `<option value="${esc(x)}"></option>`).join(''); };
+  const sync = () => { const novo = form.elements.modo.value === 'novo'; form.querySelector('[data-modo="ex"]').hidden = novo; form.querySelector('[data-modo="novo"]').hidden = !novo;
+    fill('dl-tipo', suggest('tipo', {})); fill('dl-classe', suggest('classe', { tipo: matchCase(form.elements.tipo.value, suggest('tipo', {})) })); };
+  form.addEventListener('input', sync); sync();
+}
+// insere o ativo junto dos parecidos (mesmo tipo, classe, grupo e subgrupo), como no cadastro
+function ativoInserir(a) {
+  const p = S.plan; const na = Object.assign({ id: uid(), ap: z12(), pr: z12() }, a); const same = (x, lv) => lv.every((k) => (x[k] || null) === (na[k] || null)); let at = -1;
+  for (const lv of [['tipo', 'classe', 'grupo', 'subgrupo'], ['tipo', 'classe', 'grupo'], ['tipo', 'classe'], ['tipo']]) { for (let i = p.ativos.length - 1; i >= 0; i--) if (same(p.ativos[i], lv)) { at = i; break; } if (at >= 0) break; }
+  p.ativos.splice(at >= 0 ? at + 1 : p.ativos.length, 0, na); return na;
 }
 const matchCase = (val, list) => { const t = (val || '').trim(); const f = list.find((x) => x.toLowerCase() === t.toLowerCase()); return f || t; };
 function openAtivo(id) {
@@ -467,11 +515,7 @@ function openAtivo(id) {
       if (!tipo || !a.classe || !nome) return bad(err, 'Preencha tipo, classe e nome do ativo.');
       if (a.subgrupo && !a.grupo) return bad(err, 'Para usar um subgrupo, informe também o grupo.');
       if (a0) Object.assign(a0, a, { nome });
-      else {
-        const na = Object.assign({ id: uid(), nome, ap: z12(), pr: z12() }, a); const same = (x, lv) => lv.every((k) => (x[k] || null) === (na[k] || null)); let at = -1;
-        for (const lv of [['tipo', 'classe', 'grupo', 'subgrupo'], ['tipo', 'classe', 'grupo'], ['tipo', 'classe'], ['tipo']]) { for (let i = p.ativos.length - 1; i >= 0; i--) if (same(p.ativos[i], lv)) { at = i; break; } if (at >= 0) break; }
-        p.ativos.splice(at >= 0 ? at + 1 : p.ativos.length, 0, na);
-      }
+      else ativoInserir(Object.assign(a, { nome }));
       commit();
     },
   });

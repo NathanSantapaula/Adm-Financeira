@@ -274,6 +274,12 @@ body[data-screen="auth"] .main, body[data-screen="onboarding"] .main, body[data-
 .seg { display: inline-flex; background: var(--surface-3); border-radius: 980px; padding: 3px; }
 .seg button { border: 0; background: transparent; padding: 6px 16px; border-radius: 980px; font-weight: 500; font-size: 14px; color: var(--ink-2); }
 .seg button.on { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+/* Novo aporte: escolha entre ativo que já tem e ativo novo (rádios com cara de .seg) */
+.ap-modo { display: flex; margin-bottom: 14px; } .ap-modo label { flex: 1; position: relative; }
+.ap-modo input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.ap-modo span { display: block; text-align: center; padding: 8px 12px; border-radius: 980px; font-weight: 500; font-size: 14px; color: var(--ink-2); }
+.ap-modo input:checked + span { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+.ap-modo input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
 .lcat { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 12px; overflow: hidden; }
 .lcat-h { display: flex; align-items: center; gap: 8px; padding: 12px 14px 12px 10px; }
 .lcat-h h3 { font-size: 17px; font-weight: 700; letter-spacing: -0.015em; flex: 1; }
@@ -1167,6 +1173,28 @@ textarea.nota { width: 100%; min-height: 110px; padding: 12px 14px; border-radiu
 .idp-l li { display: flex; align-items: center; gap: 8px; } .idp-l i { width: 10px; height: 10px; border-radius: 3px; flex: none; } .idp-l b { margin-left: auto; color: var(--ink); }
 .idp .btn-row { margin-top: 12px; }
 @media (prefers-reduced-motion: reduce) { .iq-pg, .idp-b i { transition: none; } }
+/* Aportes mês a mês (gráfico principal de Investimentos, desenhado por invAportesChart) */
+.card.ia { background: radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 60%), radial-gradient(90% 80% at 100% 100%, color-mix(in srgb, var(--pos) 10%, transparent), transparent 60%), var(--surface); }
+.ia-k { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 4px 0 14px; }
+.ia-k > div { min-width: 0; padding: 12px 14px; border-radius: 16px; background: color-mix(in srgb, var(--surface-2) 70%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 14%, transparent); }
+.ia-k small { display: block; color: var(--ink-3); font-size: 12px; } .ia-k b { display: block; font-size: 22px; font-weight: 750; letter-spacing: -0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ia-k span { color: var(--ink-2); font-size: 12px; }
+.ia-k > div:first-child b { background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 55%, var(--pos))); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.ia-chart { margin-top: 8px; }
+.ia-chart svg { display: block; overflow: visible; }
+.ia-zero { stroke: var(--line-2); stroke-width: 1; }
+.ia-sob { fill: color-mix(in srgb, var(--accent) 10%, transparent); stroke: color-mix(in srgb, var(--accent) 45%, transparent); stroke-width: 1.2; stroke-dasharray: 4 4; }
+.ia-bar { transform-box: fill-box; transform-origin: 50% 100%; animation: ia-sobe .7s var(--ease) both; animation-delay: calc(var(--i) * 45ms); }
+.ia-bar.cur { filter: drop-shadow(0 0 10px color-mix(in srgb, var(--accent) 70%, transparent)); }
+.ia-bar.fut { opacity: .4; } .ia-bar.neg { fill: var(--neg); transform-origin: 50% 0; }
+.ia-v { font-size: 12px; font-weight: 700; fill: var(--ink); font-variant-numeric: tabular-nums; paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; } .ia-v.ok { fill: var(--pos); } .ia-v.fut { fill: var(--ink-3); }
+.ia-m { font-size: 12px; fill: var(--ink-3); } .ia-m.cur { fill: var(--ink); font-weight: 700; }
+.ia-meta { stroke: var(--c4); stroke-width: 2; stroke-dasharray: 6 5; }
+.ia-meta-t rect { fill: var(--c4); } .ia-meta-t text { font-size: 11.5px; font-weight: 700; fill: var(--bg); }
+.ia-hv { fill: color-mix(in srgb, var(--accent) 8%, transparent); pointer-events: none; transition: x var(--dur-1) var(--ease); }
+@keyframes ia-sobe { from { transform: scaleY(0); opacity: 0; } }
+@media (max-width: 760px) { .ia-k { grid-template-columns: repeat(2, minmax(0, 1fr)); } .ia-k b { font-size: 19px; } }
+@media (prefers-reduced-motion: reduce) { .ia-bar { animation: none; } .ia-hv { transition: none; } }
 
 .rank { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
 .rank li { display: grid; grid-template-columns: 22px minmax(0, 1.1fr) minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 8px 6px; border-radius: var(--r-md); transition: background-color var(--dur-1) var(--ease); }
