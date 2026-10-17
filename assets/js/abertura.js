@@ -112,7 +112,7 @@ function abAbrir() {
   document.body.appendChild(el); document.documentElement.classList.add('sem-rolagem');
   const cv = el.querySelector('.ab-cv'); const ctx = cv.getContext('2d');
   AB = { el, cv, ctx, D, t0: performance.now(), rotY: 0.7, rotX: -0.28, vY: 0, vX: 0, arr: null, mouse: null, alvos: [], sel: null, raf: 0, calmo: abCalmo(),
-    fix: null, solta: null, z: 1, ox: 0, oy: 0, zA: 1, oxA: 0, oyA: 0, oc: D.op.valores === 'ocultar' || (D.op.valores !== 'mostrar' && !!S.privado) }; // fix: item preso no lugar; z/ox/oy: zoom e deslocamento da vista (e os alvos)
+    fix: null, solta: null, voo: new Map(), arrasto: null, z: 1, ox: 0, oy: 0, zA: 1, oxA: 0, oyA: 0, oc: D.op.valores === 'ocultar' || (D.op.valores !== 'mostrar' && !!S.privado) }; // fix: item preso no lugar; z/ox/oy: zoom e deslocamento da vista (e os alvos)
   AB.estilos = new Map(); AB.baldes = new Map(); AB.ver = 0; AB.fonte = getComputedStyle(document.body).fontFamily; AB.ult = performance.now(); AB.tc = 0;
   // se o globo completo não puder rodar aqui (sem canvas, erro ao montar ou escolha do cliente), entra a versão simples
   try {
@@ -165,7 +165,7 @@ async function abAno(dir) {
   const A = AB; if (!A || A.trocando) return; const L = abAnos(); const y = L[L.indexOf(S.year) + dir]; if (y == null) return;
   A.trocando = true; try { await switchYear(y); } finally { A.trocando = false; } if (AB !== A) return;
   A.D = abDados();
-  if (!A.leve) { abCard(null); A.segura = A.sobre = null; A.fix = A.solta = null; abPreparar(); A.ver++; A.zona = null; A.quadroSig = null; if (!A.calmo) A.t0 = performance.now(); abZoomEm(1, 0, 0, 0, 0); }
+  if (!A.leve) { abCard(null); A.segura = A.sobre = null; A.fix = A.solta = A.arrasto = null; A.voo.clear(); abPreparar(); A.ver++; A.zona = null; A.quadroSig = null; if (!A.calmo) A.t0 = performance.now(); abZoomEm(1, 0, 0, 0, 0); }
   clearTimeout(A.tT); clearInterval(A.tV); const tit = A.el.querySelector('.ab-tit'); const viv = A.el.querySelector('.ab-vivo');
   tit.hidden = !A.D.op.titulo; viv.hidden = !A.D.vivo; A.el.querySelector('.ab-tt').textContent = ''; abTamanho();
   if (A.D.op.titulo) abTitulo(); if (A.D.vivo) abVivo(); abAnoUi(); abSimplesTxt();
@@ -198,6 +198,7 @@ function abPreparar() {
   A.anel = []; for (let i = 0; i < 700; i++) { const a = rnd() * Math.PI * 2; const rr = 1.18 + rnd() * 0.16; A.anel.push({ a, rr, b: 0.15 + rnd() * 0.35 }); }
   A.estrelas = []; for (let i = 0; i < 260; i++) A.estrelas.push([rnd(), rnd(), rnd() * 1.2 + 0.2, 0.12 + rnd() * 0.5]);
   A.div = A.D.div.map((d) => ({ d, inc: (rnd() - 0.5) * 2.4, fase: rnd() * Math.PI * 2, rr: 1.07 + rnd() * 0.1, vel: 0.08 + rnd() * 0.1, gir: rnd() * 6 }));
+  A.apoMax = Math.max(1, ...A.D.apo.map((a) => a.valor));
   A.nos = !A.D.op.classes ? [] : A.D.classes.map((c, i, arr) => { const n = arr.length; const la = Math.asin(1 - (2 * (i + 0.5)) / n) * 0.85; return { c, la, lo: i * 2.4 + 0.4 }; });
 }
 
@@ -218,12 +219,14 @@ function abQuadro(agora) {
   if (!(W > 0 && H > 0 && A.cv.width > 0)) return; // tela ainda sem tamanho (aba oculta): nada a desenhar
   A.agora = agora;
   // relógio da cena: sempre anda (só o item tocado fica parado, em abFixo)
-  if (!A.calmo) A.tc += Math.min(50, agora - A.ult); A.ult = agora; const t = A.tc / 1000;
+  const dt = Math.min(50, agora - A.ult) / 1000; if (!A.calmo) A.tc += dt * 1000; A.ult = agora; const t = A.tc / 1000; abVoo(dt);
   const entra = A.calmo ? 1 : Math.max(0, Math.min(1, (agora - A.t0) / 1800)); const e = 1 - Math.pow(1 - entra, 3);
   // giro: sozinho devagar, arraste com inércia (a inércia some de vez quando fica imperceptível)
   if (!A.arr) { A.rotY += (A.calmo ? 0 : 0.0018) + A.vY; A.rotX = Math.max(-1.1, Math.min(1.1, A.rotX + A.vX)); A.vY *= 0.95; A.vX *= 0.95; if (Math.abs(A.vY) < 1e-6) A.vY = 0; if (Math.abs(A.vX) < 1e-6) A.vX = 0; }
   // item preso: o escolhido, o que está sob o dedo ou sob o mouse; ao trocar, o anterior volta deslizando
-  const alvo = A.sel || A.segura || A.sobre; const id = alvo ? alvo.id : null;
+  // o item arrastado ou em voo não fica preso pelo mouse em cima (só um toque o prende)
+  const sobre = A.sobre && !A.voo.has(A.sobre.id) && !(A.arrasto && A.arrasto.id === A.sobre.id) ? A.sobre : null;
+  const alvo = A.sel || A.segura || sobre; const id = alvo ? alvo.id : null;
   if ((A.fix ? A.fix.id : null) !== id) { if (A.fix && A.fix.p) A.solta = { id: A.fix.id, p: A.fix.p, t: agora }; A.fix = id ? { id } : null; }
   // zoom: aproxima dos alvos com suavidade (sem suavidade com "reduzir movimento")
   const kz = A.calmo ? 1 : 0.22; A.z += (A.zA - A.z) * kz; A.ox += (A.oxA - A.ox) * kz; A.oy += (A.oyA - A.oy) * kz;
@@ -313,6 +316,10 @@ function abQuadro(agora) {
   if (e < 1) textos(ctx); else camada('textos', textos);
   // o item escolhido fica marcado (a linha não engrossa com o zoom)
   if (A.sel) { const a = A.alvos.find((x) => x.id === A.sel.id) || A.sel;
+    // brilho que pulsa na cor do item
+    const pu = A.calmo ? 0.6 : 0.5 + 0.5 * Math.sin(t * 5); const cor = A.selCor || T.acc; const rg = a.r * (2 + 0.5 * pu);
+    const gl = ctx.createRadialGradient(a.x, a.y, a.r * 0.3, a.x, a.y, rg); gl.addColorStop(0, abRgba(cor, 0.45 + 0.3 * pu)); gl.addColorStop(1, abRgba(cor, 0));
+    ctx.globalCompositeOperation = T.escuro ? 'lighter' : 'source-over'; ctx.fillStyle = gl; ctx.beginPath(); ctx.arc(a.x, a.y, rg, 0, 7); ctx.fill(); ctx.globalCompositeOperation = 'source-over';
     ctx.strokeStyle = abRgba(T.escuro ? T.luz : T.ink, 0.85); ctx.lineWidth = 2 / A.z; ctx.beginPath(); ctx.arc(a.x, a.y, a.r + 4, 0, 7); ctx.stroke(); }
   if (zoom || A.sel) abCardPos();
 }
@@ -325,11 +332,22 @@ function abZona() {
 // posição de desenho de um item: o item preso fica onde estava quando foi tocado; o que acabou de ser solto
 // volta deslizando (450 ms) para a posição real dele, que continuou andando
 function abFixo(id, x, y, z) {
-  const A = AB; const f = A.fix;
-  if (f && f.id === id) { if (!f.p) f.p = [x, y, z]; return f.p; }
-  const s = A.solta; if (s && s.id === id) { const k = A.calmo ? 1 : Math.min(1, (A.agora - s.t) / 450); if (k >= 1) { A.solta = null; return [x, y, z]; }
-    const q = 1 - Math.pow(1 - k, 3); return [s.p[0] + (x - s.p[0]) * q, s.p[1] + (y - s.p[1]) * q, z]; }
-  return [x, y, z];
+  const A = AB; const g = A.arrasto;
+  if (g && g.id === id && !g.solto) return [g.x, g.y, 1]; // sob o dedo, sempre na frente
+  let r = [x, y, z]; const f = A.fix; const s = A.solta;
+  if (f && f.id === id) { if (!f.p) f.p = [x, y, z]; r = f.p; }
+  else if (s && s.id === id) { const k = A.calmo ? 1 : Math.min(1, (A.agora - s.t) / 450); if (k >= 1) A.solta = null; else { const q = 1 - Math.pow(1 - k, 3); r = [s.p[0] + (x - s.p[0]) * q, s.p[1] + (y - s.p[1]) * q, z]; } }
+  // solto depois de arrastado: vira um desvio da rota, que uma mola leva de volta (abVoo)
+  if (g && g.id === id) { A.voo.set(id, { ox: g.x - r[0], oy: g.y - r[1], vx: g.vx, vy: g.vy }); A.arrasto = null; }
+  const v = A.voo.get(id); if (v) r = [r[0] + v.ox, r[1] + v.oy, r[2]];
+  // o item escolhido treme de leve (o detalhe desconta o tremor em abCardPos para não tremer junto)
+  if (A.sel && A.sel.id === id && !A.calmo) { const t = A.tc / 1000; A.trem = [Math.sin(t * 57) * 1.6, Math.cos(t * 43) * 1.3]; r = [r[0] + A.trem[0], r[1] + A.trem[1], r[2]]; }
+  return r;
+}
+// mola de volta para a rota: devagar e com um pequeno balanço
+function abVoo(dt) {
+  AB.voo.forEach((v, id) => { v.vx += (-7 * v.ox - 3.2 * v.vx) * dt; v.vy += (-7 * v.oy - 3.2 * v.vy) * dt; v.ox += v.vx * dt; v.oy += v.vy * dt;
+    if (Math.hypot(v.ox, v.oy) < 0.4 && Math.hypot(v.vx, v.vy) < 6) AB.voo.delete(id); });
 }
 // camada do tamanho da tela, desenhada uma vez e copiada pixel a pixel enquanto tamanho, tema e valores não mudam
 function abCamada(nome, desenha) {
@@ -347,10 +365,16 @@ function abTrilha(frente, t) { const A = AB; const ctx = A.ctx; if (!A.D.apo.len
 function abDiv(d, frente) { const A = AB; const ctx = A.ctx; const prof = (d.p[2] + 1) / 2; const r = 1.3 + prof * 1.6; ctx.fillStyle = abRgba(A.T.ouro, 0.3 + prof * 0.7);
   if (frente) { ctx.shadowColor = abRgba(A.T.ouro, 1); ctx.shadowBlur = 8; } ctx.beginPath(); ctx.arc(d.p[0], d.p[1], r, 0, 7); ctx.fill(); ctx.shadowBlur = 0;
   if (frente) A.alvos.push({ id: 'd' + A.div.indexOf(d.q), x: d.p[0], y: d.p[1], r: 10, tipo: 'div', d: d.q.d }); }
-function abLosango(a, frente) { const A = AB; const ctx = A.ctx; const prof = (a.p[2] + 1) / 2; const tam = 8 + prof * 7; const al = 0.35 + prof * 0.65;
-  ctx.save(); ctx.translate(a.p[0], a.p[1]); ctx.rotate(Math.PI / 4); ctx.fillStyle = abRgba(A.T.pos, al); if (frente) { ctx.shadowColor = abRgba(A.T.pos, 1); ctx.shadowBlur = 14; } ctx.fillRect(-tam / 2, -tam / 2, tam, tam); ctx.shadowBlur = 0;
-  ctx.strokeStyle = abRgba(A.T.luz, al); ctx.lineWidth = 1.3; ctx.strokeRect(-tam / 2, -tam / 2, tam, tam); ctx.restore();
-  if (frente) A.alvos.push({ id: 'a' + a.a.mes, x: a.p[0], y: a.p[1], r: 15, tipo: 'aporte', d: a.a }); }
+// aporte: uma gema de quatro faces (luz de cima à esquerda); tamanho e brilho crescem com o valor do aporte
+function abLosango(a, frente) { const A = AB; const ctx = A.ctx; const T = A.T; const prof = (a.p[2] + 1) / 2; const s = 0.65 + 0.85 * Math.sqrt(a.a.valor / A.apoMax);
+  const h = (5 + prof * 5) * s; const al = 0.35 + prof * 0.65; const c = T.pos; const P = [[0, -h * 1.25], [h, 0], [0, h * 1.25], [-h, 0]];
+  ctx.save(); ctx.translate(a.p[0], a.p[1]);
+  if (frente) { const gr = ctx.createRadialGradient(0, 0, 0, 0, 0, h * 3.4); gr.addColorStop(0, abRgba(c, 0.42 * s * al)); gr.addColorStop(1, abRgba(c, 0)); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(0, 0, h * 3.4, 0, 7); ctx.fill(); }
+  [[3, 0, abMix(c, [255, 255, 255], 0.45)], [0, 1, c], [1, 2, abMix(c, [0, 0, 0], 0.38)], [2, 3, abMix(c, [0, 0, 0], 0.16)]].forEach(([i, j, cor]) => {
+    ctx.fillStyle = abRgba(cor, al); ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(P[i][0], P[i][1]); ctx.lineTo(P[j][0], P[j][1]); ctx.closePath(); ctx.fill(); });
+  ctx.strokeStyle = abRgba(T.luz, al * 0.75); ctx.lineWidth = 1; ctx.beginPath(); P.forEach((q, i) => (i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]))); ctx.closePath(); ctx.stroke();
+  ctx.fillStyle = `rgba(255,255,255,${0.6 * al})`; ctx.beginPath(); ctx.arc(-h * 0.3, -h * 0.5, Math.max(0.8, h * 0.17), 0, 7); ctx.fill(); ctx.restore();
+  if (frente) A.alvos.push({ id: 'a' + a.a.mes, x: a.p[0], y: a.p[1], r: Math.max(13, h * 1.7), tipo: 'aporte', d: a.a }); }
 const abHexPts = (x, y, rr, gir) => Array.from({ length: 6 }, (_, i) => [x + Math.cos(gir + (i * Math.PI) / 3) * rr, y + Math.sin(gir + (i * Math.PI) / 3) * rr]);
 const abHexPath = (ctx, pts) => { ctx.beginPath(); pts.forEach((q, i) => (i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]))); ctx.closePath(); };
 // objetivo: cristal hexagonal com facetas, anéis em hexágono pulsando e o progresso desenhado na borda
@@ -407,7 +431,12 @@ function abEventos() {
     if (pinca && dedos.size === 2) { const [a, b] = [...dedos.values()]; const m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
       const z = Math.max(1, Math.min(AB_ZMAX, pinca.z0 * Math.hypot(a[0] - b[0], a[1] - b[1]) / pinca.d0));
       const [ox, oy] = abLimita(z, m[0] - pinca.s[0] * z, m[1] - pinca.s[1] * z); A.z = A.zA = z; A.ox = A.oxA = ox; A.oy = A.oyA = oy; abZoomUi(); return; }
-    if (A.arr) { const dx = e.clientX - A.arr[0], dy = e.clientY - A.arr[1]; andou += Math.abs(dx) + Math.abs(dy); if (andou >= 6) { A.segura = null; if (A.sel) abCard(null); } /* virou arraste: solta */
+    if (A.arr) { const dx = e.clientX - A.arr[0], dy = e.clientY - A.arr[1]; andou += Math.abs(dx) + Math.abs(dy);
+      // segurou um item e arrastou: ele vem junto com o dedo (e pode ser arremessado ao soltar)
+      if (andou >= 6 && A.segura && !A.calmo && !A.arrasto) { const s = A.segura; A.arrasto = { id: s.id, x: s.x, y: s.y, vx: 0, vy: 0, t: performance.now() }; A.voo.delete(s.id); A.fix = A.solta = null; }
+      if (A.arrasto) { const g = A.arrasto; const q = abCena(p[0], p[1]); const agora = performance.now(); const d = Math.max(0.008, (agora - g.t) / 1000);
+        g.vx = g.vx * 0.5 + ((q[0] - g.x) / d) * 0.5; g.vy = g.vy * 0.5 + ((q[1] - g.y) / d) * 0.5; g.x = q[0]; g.y = q[1]; g.t = agora; A.segura = null; if (A.sel) abCard(null); A.arr = [e.clientX, e.clientY]; return; }
+      if (andou >= 6) { A.segura = null; if (A.sel) abCard(null); } /* virou arraste: solta */
       if (A.zA > 1.001) { [A.ox, A.oy] = abLimita(A.z, A.ox + dx, A.oy + dy); A.oxA = A.ox; A.oyA = A.oy; } // com zoom, arrastar move a vista
       else { A.rotY += dx * 0.006; A.rotX = Math.max(-1.1, Math.min(1.1, A.rotX + dy * 0.004)); A.vY = dx * 0.0016; A.vX = dy * 0.001; }
       A.arr = [e.clientX, e.clientY]; }
@@ -417,11 +446,14 @@ function abEventos() {
   // dois toques rápidos no mesmo lugar aproximam (ou voltam a ver tudo, se já estiver perto)
   const soltar = (e) => { dedos.delete(e.pointerId); if (pinca) { if (dedos.size < 2) pinca = null; A.arr = null; return; }
     if (!A.arr) return; A.arr = null;
+    // arremesso: a velocidade do fim do arraste (parado antes de soltar, só volta), limitada para não sumir da tela
+    if (A.arrasto) { const g = A.arrasto; const parado = performance.now() - g.t > 90; const lim = 2400; const v = Math.hypot(g.vx, g.vy) || 1; const k = parado ? 0 : Math.min(1, lim / v);
+      g.vx *= k; g.vy *= k; g.solto = true; A.segura = null; ini = null; return; }
     if (andou < 6 && ini) { const p = local(e); const agora = performance.now();
       if (ultToque && agora - ultToque.t < 320 && Math.hypot(p[0] - ultToque.p[0], p[1] - ultToque.p[1]) < 30) { ultToque = null; if (A.zA < 1.9) abZoom(2.2, p[0], p[1]); else abZoomEm(1, 0, 0, 0, 0); }
       else { ultToque = { t: agora, p }; abTocar(A.segura || abAlvo(abCena(p[0], p[1]))); } }
     A.segura = null; ini = null; };
-  cv.addEventListener('pointerup', soltar); cv.addEventListener('pointercancel', (e) => { dedos.delete(e.pointerId); pinca = null; A.arr = null; A.segura = null; });
+  cv.addEventListener('pointerup', soltar); cv.addEventListener('pointercancel', (e) => { dedos.delete(e.pointerId); pinca = null; A.arr = null; A.segura = null; if (A.arrasto) { A.arrasto.vx = A.arrasto.vy = 0; A.arrasto.solto = true; } });
   cv.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') { A.mouse = null; A.sobre = null; } });
   cv.addEventListener('wheel', (e) => { e.preventDefault(); const p = local(e); abZoom(A.zA * Math.exp(-e.deltaY * (e.deltaMode ? 0.05 : 0.0018)), p[0], p[1]); }, { passive: false });
   // botões: aproximam e afastam em torno do centro do globo como ele está na tela
@@ -447,7 +479,7 @@ function abCard(a) {
   else if (a.tipo === 'objetivo') { cor = T.obj[d.k]; const ok = d.status === 'concluido'; h = `<small>Objetivo</small><b>${esc(d.nome)}</b><span class="ab-v">${abR(d.saldo)} <em>de ${abR(d.valor)}</em></span><span>${ok ? 'Conquistado' : pct(d.progresso) + ' do caminho'}${!ok && d.previsto ? ` · previsto para ${esc(MES_LONGO[d.previsto.mes])} de ${d.previsto.ano}` : ''}</span>`; }
   else if (a.tipo === 'info') { h = `<small>O que você está vendo</small><ul class="ab-leg"><li><i style="background:var(--c1)"></i>O globo é o seu patrimônio; as cores são as classes da carteira.</li>${A.D.op.classes ? '<li><i class="o"></i>Orbs que pulsam: cada classe, do tamanho da proporção.</li>' : ''}${A.D.apo.length ? '<li><i class="l"></i>Losangos verdes: os aportes de cada mês.</li>' : ''}${A.D.div.length ? '<li><i style="background:var(--c4)"></i>Pontinhos dourados: cada dividendo recebido.</li>' : ''}${A.D.objs.length ? '<li><i class="h"></i>Cristais em órbita: os seus objetivos. Toque para ver o nome e o progresso.</li>' : ''}</ul><span>Arraste para girar. Toque em qualquer ponto para ver o detalhe. Para aproximar, use a roda do mouse, dois dedos, dois toques ou os botões + e −; com zoom, arrastar move a vista.</span>`; }
   const perto = A.zA > 1.9; const zb = a.tipo === 'info' ? '' : `<button class="ab-zbtn" type="button">${perto ? 'Ver tudo' : 'Aproximar'}</button>`;
-  el.style.setProperty('--ab-cor', abRgba(cor, 1)); el.innerHTML = `<button class="ab-x" type="button" aria-label="Fechar">×</button>${h}${zb}`; el.hidden = false;
+  A.selCor = cor; A.trem = null; el.style.setProperty('--ab-cor', abRgba(cor, 1)); el.innerHTML = `<button class="ab-x" type="button" aria-label="Fechar">×</button>${h}${zb}`; el.hidden = false;
   el.querySelector('.ab-x').addEventListener('click', () => abCard(null));
   const btn = el.querySelector('.ab-zbtn'); if (btn) btn.addEventListener('click', () => { if (perto) abZoomEm(1, 0, 0, 0, 0); else abZoomEm(2.4, a.x, a.y, A.W * (A.estreito ? 0.5 : 0.6), A.H * (A.estreito ? 0.36 : 0.45)); abCard(a); });
   A.cardPos = null; abCardPos();
@@ -455,7 +487,7 @@ function abCard(a) {
 // o detalhe fica ao lado do item, na posição dele na tela (que muda com o zoom)
 function abCardPos() {
   const A = AB; const el = A.el.querySelector('.ab-card'); if (el.hidden || !A.sel) return;
-  const a = A.alvos.find((x) => x.id === A.sel.id) || A.sel; const X = a.x * A.z + A.ox, Y = a.y * A.z + A.oy, r = a.r * A.z;
+  const a = A.alvos.find((x) => x.id === A.sel.id) || A.sel; const tr = A.trem || [0, 0]; const X = (a.x - tr[0]) * A.z + A.ox, Y = (a.y - tr[1]) * A.z + A.oy, r = a.r * A.z;
   const chave = [Math.round(X), Math.round(Y), el.offsetWidth].join(); if (chave === A.cardPos) return; A.cardPos = chave;
   const w = el.offsetWidth, hh = el.offsetHeight; let x = X + r + 10, y = Y - hh / 2; if (x + w > A.W - 16) x = X - r - 10 - w; x = Math.max(16, Math.min(A.W - w - 16, x)); y = Math.max(16, Math.min(A.H - hh - 90, y));
   el.style.left = x + 'px'; el.style.top = y + 'px';
