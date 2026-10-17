@@ -28,7 +28,7 @@ function insights() {
   if (T.poupanca != null && T.receita > 0 && T.poupanca >= 0) out.push({ t: T.poupanca >= 0.2 ? 'pos' : 'info', x: voz('poupanca', Object.assign({ pct: pct(T.poupanca), valor: brl0(T.investAlocado) }, vm)) });
   else if (T.despesas > T.receita && T.despesas > 0) out.push({ t: 'warn', x: voz('deficit', Object.assign({ valor: brl0(T.despesas - T.receita) }, vm)), a: ['nav', 'rendas', 'Conferir rendas'] });
   const ma = metaDoAporte();
-  if (inv && ma > 0 && C.aportes[m] !== 0) out.push({ t: C.aportes[m] >= ma ? 'pos' : 'info', x: voz('aporte_mes', Object.assign({ valor: brl0(C.aportes[m]), pct: pct(C.aportes[m] / ma), meta: brl0(ma) }, vm)) });
+  if (inv && ma > 0 && C.aplicado[m] !== 0) out.push({ t: C.aplicado[m] >= (C.metaAporteMes[m] || ma) ? 'pos' : 'info', x: voz('aporte_mes', Object.assign({ valor: brl0(C.aplicado[m]), pct: pct(C.aplicado[m] / (C.metaAporteMes[m] || ma)), meta: brl0(C.metaAporteMes[m] || ma) }, vm)) });
   if (temRecurso('carteira') && S.plan.ativos.length) {
     try { const M = cartModel(); if (M.rb.W > 0) { const w = M.items.slice().sort((a, b) => a.desvio - b.desvio)[0]; if (w && w.desvio < -1) out.push({ t: 'info', x: voz('carteira_desvio', { ativo: w.a.nome, pp: Math.abs(w.desvio).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) }), a: ['nav', 'cart', 'Ver onde investir'] }); } } catch (e) { /* sem carteira */ }
   }
@@ -434,7 +434,7 @@ function histAcao(act, ds) {
    Planos com investimentos: constância dos aportes contra a meta mensal. Plano Organização: gastos fixos e variáveis. */
 function painel2Dados() {
   const C = S.C; const ult = S.year === NOW_Y ? NOW_M : S.year < NOW_Y ? 11 : -1; const mm = C.metaAporteMes || MES.map(() => metaDoAporte()); // meta de cada mês
-  const ap = C.aportes.map((v) => Math.max(0, +v || 0)); const [de, ate] = perIntervalo(); const fim = Math.min(ate, ult); const meses = Math.max(0, fim - de + 1);
+  const ap = C.aplicado.map((v) => Math.max(0, +v || 0)); const [de, ate] = perIntervalo(); const fim = Math.min(ate, ult); const meses = Math.max(0, fim - de + 1);
   const trecho = ap.slice(de, de + meses); const dentro = trecho.map((v, k) => mm[de + k] > 0 && v >= mm[de + k] - 0.5); const meta = Math.max(0, ...mm.slice(de, de + meses));
   let seq = 0; for (let i = dentro.length - 1; i >= 0 && dentro[i]; i--) seq++;
   const comAporte = trecho.filter((v) => v > 0).length; const media = meses > 0 ? trecho.reduce((a, v) => a + v, 0) / meses : 0;
@@ -448,7 +448,7 @@ function painel2Html() {
       ? `<div class="p2-sts">${st('Meses na meta', `${D.naMeta} de ${D.meses}`)}${st('Sequência atual', D.seq ? `${D.seq} ${D.seq === 1 ? 'mês' : 'meses'}` : '–')}${st('Média por mês', brl0(D.media))}</div>`
       : `<div class="p2-sts">${st('Meses com aporte', `${D.comAporte} de ${D.meses}`)}${st('Média por mês', brl0(D.media))}<div class="p2-st"><small>Meta mensal</small><button class="lnk strong" data-act="admin-open">Definir</button></div></div>`;
     return `<section class="card"><div class="c-h"><h3>Constância dos aportes</h3><div class="legend"><span><i style="background:var(--accent)"></i>Aporte</span>${D.meta > 0 ? '<span><i class="mk" style="background:var(--c4)"></i>Meta</span>' : ''}</div></div>
-      <p class="cap">Dinheiro novo investido em cada mês (sem contar proventos reinvestidos), comparado com a sua meta mensal. Constância pesa mais que o valor de um mês isolado.</p>
+      <p class="cap">Quanto foi aportado em cada mês (do bolso e com dividendos reinvestidos), comparado com a meta do mês. Constância pesa mais que o valor de um mês isolado.</p>
       <div class="chart" id="d-p2"></div>${stats}</section>`;
   }
   const cats = (S.plan.catsDesp || []).filter((c) => E.sum(S.C.despCat[c.id] || []) > 0);

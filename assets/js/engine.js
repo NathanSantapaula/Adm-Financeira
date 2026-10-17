@@ -213,9 +213,9 @@
     const investAlocado = sub(receita, despesas);
     const poupanca = receita.map((r, m) => (r > 0 ? investAlocado[m] / r : null));
     const aportes = sub(aplicado, dividendos);
-    const diferenca = sub(investAlocado, aportes);
+    const diferenca = sub(investAlocado, aplicado); // sobra que ficou sem aplicar (o mesmo que o Disponível para aportar)
     const metaAporteMes = z().map((_, m) => (plan.metasAporte && plan.metasAporte[m] != null ? +plan.metasAporte[m] : metaAporte)); // meta de aporte de cada mês (ajuste do mês ou a padrão)
-    const meta = dividendos.map((d, m) => metaAporteMes[m] + d);
+    const meta = metaAporteMes.slice(); // dividendo reinvestido já conta no aplicado, então a meta não soma dividendos
     const faturamento = add(dividendos, rentab);
     const patrimonioAnoCustom = st.patrimonioInicial != null && st.patrimonioInicial !== '' ? (+st.patrimonioInicial || 0) : null;
     const base = patrimonioAnoCustom !== null ? patrimonioAnoCustom : ((+ctx.patrimonioInicial || 0) + (+ctx.prevAplicado || 0));
@@ -447,11 +447,12 @@
     const itens = (o.itens || []).map((i) => ({ nome: i.nome, tipo: i.tipo, classe: i.classe || 'Outros', valor: Math.max(0, +i.valor || 0), ap: i.ap || z(), pr: i.pr || z() }));
     const total = itens.reduce((s, i) => s + i.valor, 0);
     // aportes
-    const aportesAte = ate(C.aportes); const mesesComAporte = C.aportes.slice(de, meses).filter((v) => v > 0.5).length;
+    const aportesAte = ate(C.aplicado); const mesesComAporte = C.aplicado.slice(de, meses).filter((v) => v > 0.5).length; // aportado = tudo o que foi aplicado (bolso + dividendos reinvestidos)
+    const deDividendos = r2(Math.max(0, Math.min(ate(C.dividendos), aportesAte))); const doBolso = r2(aportesAte - deDividendos);
     const metaMes = o.metaMes || z().map(() => meta); const metaAte = r2(metaMes.slice(de, meses).reduce((s, v) => s + (+v || 0), 0));
-    const aporte = { ano: r2(noPer(C.aportes)), ateAgora: r2(aportesAte), mediaMes: r2(aportesAte / N), mesesComAporte, meses: N, constancia: mesesComAporte / N,
+    const aporte = { ano: r2(noPer(C.aplicado)), ateAgora: r2(aportesAte), doBolso, deDividendos, mediaMes: r2(aportesAte / N), mesesComAporte, meses: N, constancia: mesesComAporte / N,
       meta, metaAte, ritmo: metaAte > 0 ? aportesAte / metaAte : null, faltaMeta: metaAte > 0 ? r2(Math.max(0, metaAte - aportesAte)) : null,
-      porMes: C.aportes.map((v, m) => m >= de && m < meses && v > 0.5), metaMes, taxaRenda: ate(C.receita) > 0 ? aportesAte / ate(C.receita) : null };
+      porMes: C.aplicado.map((v, m) => m >= de && m < meses && v > 0.5), metaMes, taxaRenda: ate(C.receita) > 0 ? aportesAte / ate(C.receita) : null };
     const apCls = {}; itens.forEach((i) => { apCls[i.classe] = (apCls[i.classe] || 0) + noPer(i.ap); });
     aporte.porClasse = Object.keys(apCls).map((k) => ({ label: k, value: r2(apCls[k]) })).filter((c) => c.value > 0.005).sort((a, b) => b.value - a.value);
     // composição e concentração
@@ -481,7 +482,7 @@
     const de = o.mes; const ate = o.ate == null ? de : Math.max(de, o.ate); const n = ate - de + 1; // um mês ou um intervalo (soma os meses)
     const tot = (arr) => (arr || []).slice(de, ate + 1).reduce((s, v) => s + (+v || 0), 0);
     const sobra = r2(tot(o.C.investAlocado)); const aportado = r2(tot(o.C.aplicado)); const meta = o.metaMes ? r2(tot(o.metaMes)) : (+o.meta || 0) * n;
-    return { sobra, aportado, disponivel: r2(Math.max(0, sobra - aportado)), excedente: r2(Math.max(0, aportado - Math.max(0, sobra))), meta, meses: n, faltaMeta: meta > 0 ? r2(Math.max(0, meta - tot(o.C.aportes))) : null, acimaMeta: meta > 0 ? r2(Math.max(0, tot(o.C.aportes) - meta)) : null };
+    return { sobra, aportado, disponivel: r2(Math.max(0, sobra - aportado)), excedente: r2(Math.max(0, aportado - Math.max(0, sobra))), meta, meses: n, faltaMeta: meta > 0 ? r2(Math.max(0, meta - aportado)) : null, acimaMeta: meta > 0 ? r2(Math.max(0, aportado - meta)) : null };
   }
 
   /* ---------- Análise da renda: fontes, previsibilidade, estabilidade, poupança e comprometimento ----------
@@ -709,8 +710,8 @@
       if (!(apl > 0)) {
         if (dia >= 10) push(`lem:ap:${per}`, 'lembrete', sobraAnt > 0 ? 'oportunidade' : 'info', sobraAnt > 0 ? 'n_aporte_sobra' : meta > 0 ? 'n_aporte_meta' : 'n_aporte', { meta, sobra: sobraAnt, mesAnt: m > 0 ? MES_LONGO[m - 1] : '' }, nav('Aportar agora', 'inv'));
       } else if (meta > 0) {
-        if (aporte >= meta) push(`meta:${per}`, 'conquista', 'positivo', 'n_meta_batida', { valor: aporte, meta }, nav('Ver aportes', 'inv'));
-        else if (dia >= 20) push(`lem:apfalta:${per}`, 'lembrete', 'info', 'n_aporte_falta', { valor: aporte, meta, falta: meta - aporte }, nav('Aportar agora', 'inv'));
+        if (apl >= meta) push(`meta:${per}`, 'conquista', 'positivo', 'n_meta_batida', { valor: apl, meta }, nav('Ver aportes', 'inv'));
+        else if (dia >= 20) push(`lem:apfalta:${per}`, 'lembrete', 'info', 'n_aporte_falta', { valor: apl, meta, falta: meta - apl }, nav('Aportar agora', 'inv'));
       }
       const prov = (+C.dividendos[m] || 0) + (+C.rentab[m] || 0);
       if (prov > 0) push(`prov:${per}`, 'conquista', 'positivo', 'n_proventos', { valor: prov, cobre: gasto > 0 ? prov / gasto : 0 }, nav('Ver proventos', 'pro'));

@@ -40,8 +40,8 @@ function planilhaHtml(kind) {
   const rows = assetRows(tree, kind, field, flt, 0); b += rows;
   if (flt && !rows) b += `<tr class="r-note"><td class="lab" colspan="14"><div class="in"><span>Nenhum ativo encontrado para “${esc(S.filter[kind])}”.</span></div></td></tr>`;
   if (kind === 'inv') {
-    b += labRow('Aportes', C.aportes, { cls: 'r-g' }) + labRow('Dividendos reinvestidos', C.dividendos, { cls: 'r-g' }) + labRow('Total aplicado no mês', C.aplicado, { cls: 'r-total' })
-      + labRow('Diferença (sobra do mês menos aportes)', C.diferenca, { cls: 'r-g' }) + labRow('Meta (aporte mensal mais dividendos)', C.meta, { cls: 'r-total' });
+    b += labRow('Do bolso', C.aportes, { cls: 'r-g' }) + labRow('Dividendos reinvestidos', C.dividendos, { cls: 'r-g' }) + labRow('Total aplicado no mês', C.aplicado, { cls: 'r-total' })
+      + labRow('Diferença (sobra do mês menos o aplicado)', C.diferenca, { cls: 'r-g' }) + labRow('Meta de aporte do mês', C.meta, { cls: 'r-total' });
   } else b += labRow('Rentabilidade da renda fixa', C.rentab, { cls: 'r-g' }) + labRow('Dividendos', C.dividendos, { cls: 'r-g' }) + labRow('Total de proventos', C.faturamento, { cls: 'r-total' });
   const aberto = !!S.planilha[kind];
   const tools = `<div class="sheet-tools"><input class="search" type="search" data-filter="${kind}" placeholder="Buscar ativo" value="${esc(S.filter[kind])}" aria-label="Buscar ativo"><button class="btn sm" data-act="expand-all" data-kind="${kind}">Expandir</button><button class="btn sm" data-act="collapse-all" data-kind="${kind}">Recolher</button></div>`;
@@ -75,22 +75,24 @@ const PRO_WIDGETS = [
 ];
 function painelInvest(A) {
   const ap = A.aporte; const ca = A.carteira; const pr = S.profile; const ret = +pr.retornoAnual || 0;
-  const divAte = E.r2(S.C.dividendos.slice(0, ap.meses).reduce((s, v) => s + v, 0)); const reinv = divAte > 0 ? ` Somando ${brl0(divAte)} de dividendos reinvestidos, ${brl0(ap.ateAgora + divAte)} investidos.` : ''; // "investido" = aplicado (como na Visão geral); "aportado" = só dinheiro novo
-  const k1 = kpi(`Aportado ${perFrase()}`, `<span class="num">${brl0(ap.ano)}</span>`, ap.ano > 0 ? `Dinheiro novo. Média de ${brl0(ap.mediaMes)} por mês${ateMes()}.${reinv}` : 'Nenhum aporte registrado ainda.');
+  const reinv = ap.deDividendos > 0 ? ` Inclui ${brl0(ap.deDividendos)} de dividendos reinvestidos.` : ''; // aportado = do bolso + dividendos reinvestidos (mesma janela do período)
+  const fB = ap.ateAgora > 0 ? (ap.doBolso / ap.ateAgora) * 100 : 0;
+  const k1 = kpi('De onde veio o aporte', `<span class="num">${brl0(ap.ateAgora)}</span>`, ap.ateAgora > 0 ? `${brl0(ap.doBolso)} do seu bolso e ${brl0(ap.deDividendos)} de dividendos reinvestidos ${perFrase()}${ateMes()}.` : 'Nenhum aporte registrado ainda.', ap.ateAgora > 0 ? `<span class="kbar dup" aria-hidden="true"><i style="width:${fB.toFixed(1)}%"></i><i class="dv" style="width:${(100 - fB).toFixed(1)}%"></i></span>` : '');
   const k2 = kpi('Da renda para investimentos', ap.taxaRenda == null ? '–' : pct(ap.taxaRenda), ap.taxaRenda == null ? 'Aparece quando houver entradas registradas em Rendas.' : `das entradas ${perFrase()} viraram aporte.`, ap.taxaRenda == null ? '' : barra(ap.taxaRenda, ap.taxaRenda >= 0.2 ? 'ok' : ''));
   const JN = perJanela(); const dots = `<span class="dots" aria-hidden="true">${MES.map((m, i) => `<i class="${ap.porMes[i] ? 'on' : i < JN.de || i >= JN.meses ? 'fut' : ''}" title="${m}"></i>`).join('')}</span>`;
   const k3 = kpi('Constância', `${ap.mesesComAporte} <small>de ${ap.meses} meses</small>`, 'com aporte. Aportar todo mês pesa mais que acertar o momento.', dots);
   const k4 = ca.n ? kpi('Diversificação', `≈ ${fmt1(ca.nEfetivo)} <small>${ca.nEfetivo < 1.5 ? 'ativo' : 'ativos'}</small>`, `de peso igual equivalem à sua carteira de ${ca.n}. Maior posição: ${esc(ca.maior.nome)} (${pct(ca.maior.peso)}).`)
     : kpi('Diversificação', '–', 'Sem posições ainda.');
   const leg = legenda([...(ap.metaAte > 0 ? [['var(--pos)', 'Na meta']] : []), ['var(--accent)', ap.metaAte > 0 ? 'Abaixo da meta' : 'Aportado'], [SOBRA_COR, 'Sobra que ficou parada'], ...(ap.metaAte > 0 ? [['var(--c4)', 'Meta']] : [])]);
-  const naMeta = S.C.aportes.slice(JN.de, JN.meses).filter((v, k) => { const mt = S.C.metaAporteMes[JN.de + k]; return mt > 0 && v >= mt - 0.005; }).length; // cada mês contra a meta dele
+  const naMeta = S.C.aplicado.slice(JN.de, JN.meses).filter((v, k) => { const mt = S.C.metaAporteMes[JN.de + k]; return mt > 0 && v >= mt - 0.005; }).length; // cada mês contra a meta dele
   const [qDe, qAte] = perIntervalo(); const umMes = S.periodo && qDe === qAte ? qDe : null; const mm = S.C.metaAporteMes; const proprio = umMes != null && S.plan.metasAporte[umMes] != null; const nProp = S.plan.metasAporte.filter((v) => v != null).length;
   const metaMesEd = umMes == null ? '' : `<span class="ed iq-meta${mm[umMes] > 0 ? '' : ' z'}" data-k="mam" data-m="${umMes}" data-ri="-1" data-v="${mm[umMes]}" data-custom="${proprio ? 1 : 0}" data-fmt="brl" tabindex="0" title="Toque para mudar a meta de ${MES_LONGO[umMes]}">${mm[umMes] > 0 ? brl0(mm[umMes]) : 'Definir'}</span>`;
   const metaEd = `<span class="ed iq-meta${ap.meta > 0 ? '' : ' z'}" data-k="ma" data-m="0" data-ri="-1" data-v="${ap.meta}" data-fmt="brl" tabindex="0" title="Toque para mudar a meta mensal de aportes">${ap.meta > 0 ? brl0(ap.meta) : 'Definir'}</span>`;
   const anelC = 326.73; const anel = `<svg class="iq-anel" viewBox="0 0 120 120" aria-hidden="true"><circle class="iq-tr" r="52" cx="60" cy="60"/><circle class="iq-pg${ap.ritmo >= 1 ? ' ok' : ''}" r="52" cx="60" cy="60" stroke-dasharray="${(Math.min(1, ap.ritmo || 0) * anelC).toFixed(1)} ${anelC}" transform="rotate(-90 60 60)"/></svg>`;
   const iqSub = ap.metaAte > 0 ? `${ap.ritmo >= 1 ? `${brl0(ap.ateAgora - ap.metaAte)} acima da meta` : `Faltam ${brl0(ap.faltaMeta)} para a meta`}${ateMes()}. Média de ${brl0(ap.mediaMes)} por mês.${reinv}` : `Defina a meta mensal para acompanhar o ritmo.${reinv}`;
   const [dDe, dAte] = S.periodo ? perIntervalo() : [S.mes, S.mes]; const dRot = dDe === dAte ? 'em ' + MES_LONGO[dDe] : perFrase(); const dDiv = S.C.dividendos.slice(dDe, dAte + 1).reduce((a, v) => a + v, 0); // segue o período escolhido
-  const D = E.disponivelAporte({ C: S.C, mes: dDe, ate: dAte, metaMes: S.C.metaAporteMes }); const dMx = Math.max(D.aportado + D.disponivel, 1); const w = (v) => `${((Math.max(0, v) / dMx) * 100).toFixed(1)}%`;
+  const D = E.disponivelAporte({ C: S.C, mes: dDe, ate: dAte, metaMes: S.C.metaAporteMes });
+  const redondo = D.sobra > 0.5 && Math.abs(D.sobra - D.aportado) < 0.5; const exc = D.excedente >= 0.5; /* valores abaixo de meio real somem no arredondamento da tela */ const dMx = Math.max(D.aportado + D.disponivel, 1); const w = (v) => `${((Math.max(0, v) / dMx) * 100).toFixed(1)}%`;
   const { K } = cartAnalise(); const dst = ap.porClasse; const dstMx = dst.length ? dst[0].value : 1;
   const perfil = pr.perfilInvestidor && E.PERFIS[pr.perfilInvestidor.resultado];
   const rfBar = ca.total > 0 ? `<div class="rfbv"><div class="rfbv-l"><span>Renda fixa <b>${pct(ca.pesoRF)}</b></span><span>Renda variável <b>${pct(ca.pesoBolsa)}</b></span></div><span class="rfbv-t"><i style="width:${(ca.pesoRF * 100).toFixed(1)}%"></i>${perfil ? `<em style="left:${perfil.alvo.rendaFixa}%" title="Referência do perfil ${esc(perfil.nome)}"></em>` : ''}</span>${perfil ? `<small>Marca: referência do perfil ${esc(perfil.nome)} (${perfil.alvo.rendaFixa}% em renda fixa).</small>` : ''}</div>` : '';
@@ -104,9 +106,9 @@ function painelInvest(A) {
     indicadores: `<div class="kpis">${k1}${k2}${k3}${k4}</div>`,
     quanto: `<section class="card iq"><div class="c-h"><h3>Quanto aportei</h3></div><div class="iq-b"><div class="iq-g">${anel}<div class="iq-c"><b>${ap.metaAte > 0 ? pct(ap.ritmo) : '–'}</b><small>da meta</small></div></div>
       <div class="iq-t"><small>Aportado ${perFrase()}${ateMes()}</small><div class="iq-v num">${brl0(ap.ateAgora)}</div><div class="iq-m">${umMes != null ? `Meta de ${MES_LONGO[umMes]}: ${metaMesEd}${proprio ? `<button class="lnk" data-act="meta-padrao" data-m="${umMes}">Usar a padrão (${brl0(ap.meta)})</button>` : ''}` : `Meta mensal padrão: ${metaEd}`}</div>${umMes != null ? '' : `<small class="iq-dica">${nProp ? `${nProp} ${nProp === 1 ? 'mês tem' : 'meses têm'} meta própria. ` : ''}Escolha um mês no calendário para dar a ele uma meta diferente.</small>`}<small class="iq-s">${iqSub}</small></div></div></section>`,
-    disponivel: `<section class="card idp"><div class="c-h"><h3>Disponível para aportar ${dRot}</h3></div><div class="idp-v num">${brl0(D.disponivel)}</div>${D.excedente > 0 ? `<p class="idp-alerta" role="status">Aportou ${brl0(D.excedente)} além do que sobrou ${dRot}. O dinheiro veio de reservas ou de entradas que não estão registradas.</p>` : ''}
+    disponivel: `<section class="card idp${redondo ? ' redondo' : ''}"><div class="c-h"><h3>Disponível para aportar ${dRot}</h3></div>${redondo ? `<div class="idp-v ok">${I.check}Tudo investido</div><p class="idp-ok" role="status">A sobra ${dRot} foi investida por inteiro: entradas, gastos e aportes fecham certinho.</p>` : `<div class="idp-v num">${brl0(D.disponivel)}</div>`}${exc ? `<p class="idp-alerta" role="status">Aportou ${brl0(D.excedente)} além do que sobrou ${dRot}. O dinheiro veio de reservas ou de entradas que não estão registradas.</p>` : ''}
       <span class="idp-b" aria-hidden="true"><i class="a" style="width:${w(D.aportado - D.excedente)}"></i><i class="x" style="width:${w(D.excedente)}"></i><i class="d" style="width:${w(D.disponivel)}"></i></span>
-      <ul class="idp-l"><li><i class="a"></i>Já investido<b>${brl0(D.aportado)}</b></li><li><i class="d"></i>Ainda disponível<b>${brl0(D.disponivel)}</b></li>${D.excedente > 0 ? `<li class="neg"><i class="x"></i>Passou da sobra<b>${brl0(D.excedente)}</b></li>` : ''}${D.acimaMeta > 0 ? `<li class="idp-meta ok">Acima da meta<b>${brl0(D.acimaMeta)}</b></li>` : D.faltaMeta > 0 ? `<li class="idp-meta">Falta para a meta<b>${brl0(D.faltaMeta)}</b></li>` : ''}</ul>
+      <ul class="idp-l"><li><i class="a"></i>Já investido<b>${brl0(D.aportado)}</b></li>${D.disponivel >= 0.5 ? `<li><i class="d"></i>Ainda disponível<b>${brl0(D.disponivel)}</b></li>` : ''}${exc ? `<li class="neg"><i class="x"></i>Passou da sobra<b>${brl0(D.excedente)}</b></li>` : ''}${D.acimaMeta >= 0.5 ? `<li class="idp-meta ok">Acima da meta<b>${brl0(D.acimaMeta)}</b></li>` : D.faltaMeta >= 0.5 ? `<li class="idp-meta">Falta para a meta<b>${brl0(D.faltaMeta)}</b></li>` : ''}</ul>
       <p class="cap keep">${D.sobra < 0 ? `Os gastos ${dRot} passaram das entradas em ${brl0(-D.sobra)}.` : `Sobra de ${brl0(D.sobra)} (entradas menos gastos ${dDe === dAte ? 'do mês' : 'do período'}) menos o que já foi investido${dDiv > 0 ? `, incluindo ${brl0(dDiv)} de dividendos reinvestidos` : ''}.`}</p>
       <div class="btn-row"><button class="btn primary sm" data-act="aporte-novo">${I.plus}Novo aporte</button>${temRecurso('carteira') ? '<button class="btn sm" data-act="nav" data-view="cart">Onde investir</button>' : ''}</div></section>`,
     aportes: `<section class="card"><div class="c-h"><h3>Aportes mês a mês</h3>${ap.metaAte > 0 ? `<small class="c-note">${naMeta} de ${ap.meses} ${ap.meses === 1 ? 'mês' : 'meses'} na meta</small>` : ''}</div>
@@ -174,7 +176,7 @@ function viewAssets(kind) {
 /* Aportes mês a mês: barras no mesmo estilo dos outros gráficos, com o valor escrito em cada barra (na vertical quando
    o mês fica estreito), verde quando bate a meta daquele mês, a sobra parada em tom claro e a meta de cada mês como traço. */
 function invAportesChart(el) {
-  const C = S.C; const mm = C.metaAporteMes || new Array(12).fill(0); const ap = C.aportes; const cur = S.year === NOW_Y ? NOW_M : -1; const lim = S.year === NOW_Y ? NOW_M : 11;
+  const C = S.C; const mm = C.metaAporteMes || new Array(12).fill(0); const ap = C.aplicado; /* aportado = bolso + dividendos reinvestidos */ const cur = S.year === NOW_Y ? NOW_M : -1; const lim = S.year === NOW_Y ? NOW_M : 11;
   const ids = perIds(); const nb = ids.length; const W = Math.max(280, Math.floor(el.clientWidth || 640)); const deitado = (W - 24) / nb >= 46; // só os meses do período
   const m = { t: deitado ? 24 : 44, r: 6, b: 24, l: 6 }; const H = Math.max(240, Math.min(360, altura(el))); const ih = H - m.t - m.b; const band = (W - m.l - m.r) / nb;
   const sob = C.investAlocado.map((v) => Math.max(0, v)); const hi = Math.max(100, ...ids.map((i) => Math.max(ap[i], sob[i], mm[i] * 1.08))); const lo = Math.min(0, ...ids.map((i) => ap[i]));
@@ -195,7 +197,8 @@ function invAportesChart(el) {
   const svg = el.firstChild; const hv = svg.querySelector('.ia-hv');
   const mostra = (e) => { const b = svg.getBoundingClientRect(); const j = Math.floor((e.clientX - b.left - m.l) / band); const i = ids[j]; if (j < 0 || j >= nb) { hideTip(); hv.setAttribute('opacity', '0'); return; }
     hv.setAttribute('x', (m.l + band * j).toFixed(1)); hv.setAttribute('opacity', '1'); const v = ap[i];
-    showTip(`<b>${MES_LONGO[i]}</b><br>${v < 0 ? `Resgate: ${brl0(-v)}` : `Aportado: ${brl0(v)}`}<br>Sobra do mês: ${brl0(C.investAlocado[i])}${mm[i] > 0 ? `<br>Meta do mês: ${brl0(mm[i])} · ${bate(i) ? 'bateu a meta' : `faltaram ${brl0(mm[i] - Math.max(0, v))}`}` : ''}`, e.clientX, e.clientY); };
+    const dv = Math.min(+C.dividendos[i] || 0, Math.max(0, v));
+    showTip(`<b>${MES_LONGO[i]}</b><br>${v < 0 ? `Resgate: ${brl0(-v)}` : `Aportado: ${brl0(v)}${dv > 0 ? ` (${brl0(v - dv)} do bolso e ${brl0(dv)} de dividendos)` : ''}`}<br>Sobra do mês: ${brl0(C.investAlocado[i])}${mm[i] > 0 ? `<br>Meta do mês: ${brl0(mm[i])} · ${bate(i) ? 'bateu a meta' : `faltaram ${brl0(mm[i] - Math.max(0, v))}`}` : ''}`, e.clientX, e.clientY); };
   svg.addEventListener('pointermove', mostra); svg.addEventListener('click', mostra);
   svg.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') { hideTip(); hv.setAttribute('opacity', '0'); } });
 }

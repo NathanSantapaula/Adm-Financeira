@@ -32,7 +32,7 @@ ok(C.orcamento[0] === 3000 && C.orcamento[1] === 2500, 'orçamento: padrão do a
 ok(Math.abs(C.restante[0] - (3000 - C.despesas[0])) < 0.01 && Math.abs(C.usoOrc[1] - 0.84) < 0.001, 'restante e uso do orçamento');
 ok(Math.abs(C.receita[2] - 8050) < 0.01 && Math.abs(C.investAlocado[2] - (8050 - C.despesas[2])) < 0.01, 'receita inclui dividendos; sobra para investir');
 ok(Math.abs(C.patrimonio[0] - 16500) < 0.01 && Math.abs(C.patrimonio[11] - (15000 + 18000)) < 0.01, 'patrimônio acumulado (inicial + anos anteriores + aportes)');
-ok(Math.abs(C.meta[2] - 1050) < 0.01 && C.metaAno === C.T.meta, 'meta mensal = meta de aporte + dividendos');
+ok(Math.abs(C.meta[2] - 1000) < 0.01 && C.metaAno === C.T.meta, 'meta mensal = meta de aporte (dividendo reinvestido já conta no aplicado)');
 
 // --- carteira
 let r = E.rebalance([{ w: 50, v: 600 }, { w: 50, v: 400 }], 200);
@@ -99,7 +99,7 @@ ok(E.planoPermite('gratis', 'orcamento') && !E.planoPermite('gratis', 'carteira'
   ok(V.carteira.total === 0 && V.carteira.nEfetivo === 0 && V.proventos.yoc === null && V.proventos.cobertura === null && V.aporte.ritmo === null, 'análise: carteira vazia não gera divisão por zero');
   // período (de, ate): só os meses da janela entram nas somas e nas médias
   const P = E.analiseInvest({ C, de: 1, ate: 2, meses: 3, metaAporte: 1500, itens: plan.ativos.map((a) => ({ nome: a.nome, tipo: a.tipo, classe: a.classe, valor: E.sum(a.ap), ap: a.ap, pr: a.pr })) });
-  ok(P.aporte.meses === 2 && P.aporte.metaAte === 3000 && Math.abs(P.aporte.ateAgora - (C.aportes[1] + C.aportes[2])) < 0.01 && Math.abs(P.aporte.ano - P.aporte.ateAgora) < 0.01 && !P.aporte.porMes[0], 'análise: período só com os meses escolhidos');
+  ok(P.aporte.meses === 2 && P.aporte.metaAte === 3000 && Math.abs(P.aporte.ateAgora - (C.aplicado[1] + C.aplicado[2])) < 0.01 && Math.abs(P.aporte.doBolso + P.aporte.deDividendos - P.aporte.ateAgora) < 0.01 && Math.abs(P.aporte.deDividendos - (C.dividendos[1] + C.dividendos[2])) < 0.01 && Math.abs(P.aporte.ano - P.aporte.ateAgora) < 0.01 && !P.aporte.porMes[0], 'análise: período só com os meses escolhidos');
   ok(Math.abs(P.proventos.ano - (C.faturamento[1] + C.faturamento[2])) < 0.01 && Math.abs(P.proventos.mediaMes - P.proventos.ano / 2) < 0.01, 'análise: proventos do período');
 }
 
@@ -108,7 +108,7 @@ ok(E.planoPermite('gratis', 'orcamento') && !E.planoPermite('gratis', 'carteira'
   // aplicado inclui dividendos reinvestidos (já somados na sobra); a meta compara só o dinheiro novo (aportes)
   const Cd = { investAlocado: [5000, 1000, -300], aplicado: [2100, 1500, 0], aportes: [2000, 1500, 0] };
   const a = E.disponivelAporte({ C: Cd, mes: 0, meta: 3200 });
-  ok(a.sobra === 5000 && a.aportado === 2100 && a.disponivel === 2900 && a.faltaMeta === 1200, 'disponível: sobra menos aplicado, falta para a meta pelos aportes');
+  ok(a.sobra === 5000 && a.aportado === 2100 && a.disponivel === 2900 && a.faltaMeta === 1100, 'disponível: sobra menos aplicado, falta para a meta pelo aplicado (dividendo reinvestido conta)');
   const b = E.disponivelAporte({ C: Cd, mes: 1, meta: 0 }); const c = E.disponivelAporte({ C: Cd, mes: 2, meta: 1000 });
   ok(b.disponivel === 0 && b.faltaMeta === null && c.disponivel === 0 && c.faltaMeta === 1000, 'disponível: nunca negativo; sem meta, sem falta');
   const r = E.disponivelAporte({ C: Cd, mes: 0, ate: 1, meta: 1000 }); // intervalo: soma os meses
@@ -125,12 +125,12 @@ ok(E.planoPermite('gratis', 'orcamento') && !E.planoPermite('gratis', 'carteira'
     despesas: [{ id: 'd', cat: 'fixa', area: 'Moradia', nome: 'Aluguel', valores: new Array(12).fill(7500) }], lancamentos: [{ id: 'l', data: '2026-10-05', valor: 640, cat: 'variavel', nome: 'Mercado' }],
     ativos: [{ id: 'a', tipo: 'BOLSA DE VALORES', classe: 'FIIs', nome: 'MXRF11', ap: z12().fill(2400), pr: z12().fill(88) }] };
   const Cp = E.compute(pl, { patrimonioInicial: 0 }); const dp = E.disponivelAporte({ C: Cp, mes: 9, meta: 2400 });
-  ok(Cp.receita[9] === 12088 && Cp.despesas[9] === 8140 && dp.sobra === 3948 && dp.aportado === 2400 && dp.disponivel === 1548 && Cp.aportes[9] === 2312 && dp.faltaMeta === 88, 'contas: entradas, gastos, sobra, investido e disponível fecham');
+  ok(Cp.receita[9] === 12088 && Cp.despesas[9] === 8140 && dp.sobra === 3948 && dp.aportado === 2400 && dp.disponivel === 1548 && Cp.aportes[9] === 2312 && dp.faltaMeta === 0 && dp.acimaMeta === 0, 'contas: entradas, gastos, sobra, investido e disponível fecham');
   // meta por mês: o ajuste do mês vale no lugar da meta padrão
   const pm = Object.assign({}, pl, { settings: { metaAporte: 2000 }, metasAporte: [null, 3000].concat(new Array(10).fill(null)) }); const Cm = E.compute(pm, { patrimonioInicial: 0 });
-  ok(Cm.metaAporteMes[0] === 2000 && Cm.metaAporteMes[1] === 3000 && Cm.meta[1] === 3000 + Cm.dividendos[1], 'meta por mês: ajuste do mês no lugar da meta padrão');
+  ok(Cm.metaAporteMes[0] === 2000 && Cm.metaAporteMes[1] === 3000 && Cm.meta[1] === 3000, 'meta por mês: ajuste do mês no lugar da meta padrão');
   const Am = E.analiseInvest({ C: Cm, meses: 2, metaAporte: 2000, metaMes: Cm.metaAporteMes, itens: [] });
-  ok(Am.aporte.metaAte === 5000 && Math.abs(Am.aporte.taxaRenda - (Cm.aportes[0] + Cm.aportes[1]) / (Cm.receita[0] + Cm.receita[1])) < 1e-9, 'análise: meta somada mês a mês e parte das entradas que virou aporte');
+  ok(Am.aporte.metaAte === 5000 && Math.abs(Am.aporte.taxaRenda - (Cm.aplicado[0] + Cm.aplicado[1]) / (Cm.receita[0] + Cm.receita[1])) < 1e-9, 'análise: meta somada mês a mês e parte das entradas que virou aporte');
 }
 
 
