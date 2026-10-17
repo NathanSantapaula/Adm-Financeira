@@ -1174,12 +1174,6 @@ textarea.nota { width: 100%; min-height: 110px; padding: 12px 14px; border-radiu
 .idp .btn-row { margin-top: 12px; }
 @media (prefers-reduced-motion: reduce) { .iq-pg, .idp-b i { transition: none; } }
 /* Aportes mês a mês (gráfico principal de Investimentos, desenhado por invAportesChart) */
-.card.ia { background: radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 60%), radial-gradient(90% 80% at 100% 100%, color-mix(in srgb, var(--pos) 10%, transparent), transparent 60%), var(--surface); }
-.ia-k { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin: 4px 0 14px; }
-.ia-k > div { min-width: 0; padding: 12px 14px; border-radius: 16px; background: color-mix(in srgb, var(--surface-2) 70%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 14%, transparent); }
-.ia-k small { display: block; color: var(--ink-3); font-size: 12px; } .ia-k b { display: block; font-size: 22px; font-weight: 750; letter-spacing: -0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.ia-k span { color: var(--ink-2); font-size: 12px; }
-.ia-k > div:first-child b { background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 55%, var(--pos))); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 .ia-chart { margin-top: 8px; }
 .ia-chart svg { display: block; overflow: visible; }
 .ia-zero { stroke: var(--line-2); stroke-width: 1; }
@@ -1193,7 +1187,6 @@ textarea.nota { width: 100%; min-height: 110px; padding: 12px 14px; border-radiu
 .ia-meta-t rect { fill: var(--c4); } .ia-meta-t text { font-size: 11.5px; font-weight: 700; fill: var(--bg); }
 .ia-hv { fill: color-mix(in srgb, var(--accent) 8%, transparent); pointer-events: none; transition: x var(--dur-1) var(--ease); }
 @keyframes ia-sobe { from { transform: scaleY(0); opacity: 0; } }
-@media (max-width: 760px) { .ia-k { grid-template-columns: repeat(2, minmax(0, 1fr)); } .ia-k b { font-size: 19px; } }
 @media (prefers-reduced-motion: reduce) { .ia-bar { animation: none; } .ia-hv { transition: none; } }
 
 .rank { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
@@ -1217,7 +1210,13 @@ textarea.nota { width: 100%; min-height: 110px; padding: 12px 14px; border-radiu
 .heat-h span { color: var(--ink-3); font-size: 11px; text-align: center; font-weight: 600; }
 .heat-n { font-size: 12.5px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .heat-c { height: 18px; border-radius: 4px; background: var(--surface-2); }
-.heat-c.on { background: color-mix(in srgb, var(--c3) calc(var(--a) * 100%), var(--surface-2)); }
+.heat-c.on { background: color-mix(in srgb, var(--cor, var(--c3)) calc(var(--a) * 100%), var(--surface-2)); }
+/* calendário de proventos: tocar num quadrado mostra o valor num balão por cima, sem mudar a altura do widget */
+.pcal { position: relative; }
+.pcal .heat-c { cursor: pointer; outline: 2px solid transparent; outline-offset: 1px; transition: outline-color var(--dur-1) var(--ease); }
+.pcal .heat-c:hover, .pcal .heat-c.sel { outline-color: color-mix(in srgb, var(--ink) 35%, transparent); }
+.pcal-tip { position: absolute; z-index: 2; pointer-events: none; white-space: nowrap; padding: 6px 10px; border-radius: 10px; font-size: 12.5px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--ink);
+  border: 1px solid transparent; background: linear-gradient(var(--glass-strong), var(--glass-strong)) padding-box, var(--rim) border-box; box-shadow: var(--shadow); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); animation: rise 180ms var(--ease) both; }
 
 .lib .lib-v { font-size: 34px; font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; margin: 2px 0 10px; }
 .lib p { color: var(--ink-2); font-size: 14px; line-height: 1.5; margin: 12px 0 0; } .lib p b { color: var(--ink); } .lib .cap { font-size: 12.5px; color: var(--ink-3); }
@@ -2537,3 +2536,23 @@ button.wg-ic:active { transform: scale(.92); }
 .ap-roda-t { flex: 1 1 160px; min-width: 0; display: grid; gap: 6px; }
 .ap-roda-t > small { color: var(--ink-3); font-size: 12.5px; line-height: 1.4; }
 .ap-roda-o { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-2); }
+/* Meus objetivos: escolha do objeto 3D do "Outro", com miniatura de cada um */
+.o3-esc { margin: 10px 0 0; min-width: 0; }
+.o3-esc summary { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface-2); cursor: pointer; list-style: none; }
+.o3-esc summary::-webkit-details-marker { display: none; }
+.o3-esc summary img { width: 40px; height: 40px; flex: none; } .o3-esc summary span { display: grid; min-width: 0; flex: 1; }
+.o3-esc summary small { font-size: 11.5px; color: var(--ink-3); } .o3-esc summary b { font-size: 14px; }
+.o3-esc summary em { font-style: normal; font-size: 13px; font-weight: 600; color: var(--accent); }
+.o3-esc[open] summary em { visibility: hidden; }
+.o3-esc summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* aberta: uma linha que desliza para o lado (cerca de 4 a 5 à vista), sem mostrar a coleção inteira de uma vez */
+.o3-esc fieldset { display: grid; grid-auto-flow: column; grid-auto-columns: 76px; gap: 6px; margin: 8px 0 0; padding: 2px 2px 8px; border: 0; min-width: 0; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; scrollbar-width: thin; }
+.o3-esc fieldset .o3-op { scroll-snap-align: start; }
+.o3-op { position: relative; cursor: pointer; }
+.o3-op input { position: absolute; opacity: 0; pointer-events: none; }
+.o3-op span { display: grid; justify-items: center; gap: 2px; padding: 6px 4px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface-2); text-align: center; }
+.o3-op img { width: 48px; height: 48px; }
+.o3-op small { font-size: 11px; line-height: 1.2; color: var(--ink-2); }
+.o3-op input:checked + span { border-color: var(--accent); background: var(--accent-soft); }
+.o3-op input:checked + span small { color: var(--accent); font-weight: 650; }
+.o3-op input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }

@@ -84,6 +84,15 @@ const OBJ_3D_TIPOS = ['casamento', 'carro', 'imovel', 'viagem', 'filhos', 'educa
 // coletânea do objetivo "Outro": o cliente escolhe o objeto 3D (os novos e os dos outros tipos)
 const OBJ_3D_ESCOLHA = [['outro', 'Estrela'], ['cartao', 'Cartão Legacy XP'], ['trofeu', 'Troféu'], ['presente', 'Presente'], ['diamante', 'Diamante'], ['reserva', 'Moedas'], ['casamento', 'Alianças'],
   ['imovel', 'Casa'], ['carro', 'Carro'], ['viagem', 'Viagem'], ['educacao', 'Educação'], ['filhos', 'Filhos'], ['negocio', 'Negócio'], ['independencia', 'Liberdade'], ['aposentadoria', 'Aposentadoria']];
+// escolha do objeto 3D com a miniatura de cada um (desenhadas uma vez pelo obj3d.js; sem WebGL, só o nome)
+function objEscolha3d(g) {
+  const at = g.icone || 'outro'; if (typeof o3Miniaturas === 'function') setTimeout(objMiniLigar, 0);
+  const atual = OBJ_3D_ESCOLHA.find(([v]) => v === at) || OBJ_3D_ESCOLHA[0]; const srcA = typeof O3_MINI !== 'undefined' && O3_MINI.get(atual[0]);
+  // fechado mostra só o escolhido; aberto, uma faixa de uma linha que desliza para o lado
+  return `<details class="o3-esc"><summary><img alt="" data-o3="${atual[0]}" ${srcA ? `src="${srcA}"` : 'hidden'}><span><small>Objeto 3D</small><b>${esc(atual[1])}</b></span><em>Trocar</em></summary><fieldset><legend class="sr">Objeto 3D</legend>${OBJ_3D_ESCOLHA.map(([v, n]) => { const src = typeof O3_MINI !== 'undefined' && O3_MINI.get(v);
+    return `<label class="o3-op" title="${esc(n)}"><input type="radio" name="i-${esc(g.id)}" data-objf="icone" data-id="${esc(g.id)}" value="${v}" ${v === at ? 'checked' : ''}><span><img alt="" data-o3="${v}" ${src ? `src="${src}"` : 'hidden'}><small>${esc(n)}</small></span></label>`; }).join('')}</fieldset></details>`;
+}
+function objMiniLigar() { o3Miniaturas(OBJ_3D_ESCOLHA.map(([v]) => v)).then((M) => document.querySelectorAll('img[data-o3]').forEach((im) => { const s = M.get(im.dataset.o3); if (s) { im.src = s; im.hidden = false; } })); }
 const obj3dDe = (g) => (g.tipo === 'outro' && g.icone ? g.icone : g.tipo);
 const obj3dHtml = (tipo) => `<div class="ob3d" aria-hidden="true" data-tipo="${OBJ_3D_TIPOS.includes(tipo) ? tipo : 'outro'}"><div class="ob3d-gl"></div></div>`;
 function obj3dLigar() {
@@ -120,7 +129,7 @@ function objCardHtml() {
   const seta = (d, t) => `<button class="obj-sw-seta ${d < 0 ? 'esq' : 'dir'}" data-act="obj-sw-mover" data-d="${d}" aria-label="${t}" title="${t}">${I.chev}</button>`;
   const sw = A.itens.length > 1 ? `<div class="obj-sw-w">${seta(-1, 'Objetivos anteriores')}<div class="obj-sw" role="tablist" aria-label="Escolher objetivo">${A.itens.map((x, k) => `<button role="tab" class="obj-chip" data-act="objetivo-foco" data-id="${esc(x.id)}" aria-selected="${x.id === g.id}" title="${esc(objNomeDe(x))}">${objIcone(x, k)}<span>${esc(objNomeDe(x))}</span></button>`).join('')}</div>${seta(1, 'Próximos objetivos')}</div>` : '';
   // "E se?" (simulador do objetivo) fica no topo do card, ao lado da seta para Meus objetivos
-  const sim = g.status !== 'concluido' && g.valor > 0 && g.pct > 0 ? `<button class="sonho-esse" data-act="sim-ir" aria-label="E se? Simular cenários para este objetivo" title="E se? Simular cenários para este objetivo">${typeof I_SIM !== 'undefined' ? I_SIM : ''}<span>E se?</span></button>` : '';
+  const sim = g.status !== 'concluido' && g.valor > 0 ? `<button class="sonho-esse" data-act="sim-ir" aria-label="E se? Simular cenários para este objetivo" title="E se? Simular cenários para este objetivo">${typeof I_SIM !== 'undefined' ? I_SIM : ''}<span>E se?</span></button>` : '';
   return `<section class="card goal-card sonho v-${vis}" id="obj-card"><span class="sonho-foto" aria-hidden="true" style="background-image:url('${objFoto(g.tipo)}')"></span>${o3(obj3dDe(g))}
     <div class="sonho-c">
       <div class="sonho-top"><span class="sonho-k">Seu próximo objetivo</span><span class="sonho-acts">${sim}<button class="sonho-ger" data-act="objetivos-abrir" aria-label="Meus objetivos" title="Meus objetivos">${OBJ_I_SETA}</button></span></div>
@@ -167,7 +176,7 @@ function objetivosHtml() {
         <label class="fld"><span>Ano limite</span><input data-objf="ano" data-id="${esc(g.id)}" inputmode="numeric" maxlength="4" value="${g.ano || ''}" placeholder="${NOW_Y + (OBJ_PRAZO[g.tipo] || 5)}"></label>
         <label class="fld"><span>Como conta</span>${sel('m-' + g.id, [['fatia', 'Separa uma fatia'], ['marco', 'Só atingir o valor']], g.modo).replace('<select', `<select data-objf="modo" data-id="${esc(g.id)}"`)}</label>
         ${g.modo === 'marco' ? '' : `<label class="fld"><span>Fatia (%)</span><input data-objf="pct" data-id="${esc(g.id)}" inputmode="numeric" maxlength="3" value="${g.pct}"></label>`}
-        ${g.tipo === 'outro' ? `<label class="fld"><span>Objeto 3D</span>${sel('i-' + g.id, OBJ_3D_ESCOLHA, g.icone || 'outro').replace('<select', `<select data-objf="icone" data-id="${esc(g.id)}"`)}</label>` : ''}</div>
+      </div>${g.tipo === 'outro' ? objEscolha3d(g) : ''}
       <div class="obj-prog"><span class="kbar" style="--cor:${objCor(i)}"><i style="width:${(g.progresso * 100).toFixed(1)}%"></i></span><small>${pct(g.progresso)} · ${brl0(g.saldo)} de ${brl0(g.valor)}</small></div>
       <p class="obj-frase">${esc(objFrase(g))}</p></li>`; };
   return `<section class="dr-sec obj-topo"><p class="mmsg">A fatia de cada objetivo divide o seu patrimônio (${brl0(B.patrimonio)}) e o aporte mensal (${brl0(B.aporte)}) entre as metas. A soma vai até 100%. Objetivos de "Só atingir o valor" não separam fatia: contam o patrimônio inteiro.</p>${barra}${leg}

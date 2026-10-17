@@ -97,6 +97,10 @@ ok(E.planoPermite('gratis', 'orcamento') && !E.planoPermite('gratis', 'carteira'
   const pc = A.aporte.porClasse; ok(pc.length > 0 && pc.every((c, i) => c.value > 0 && (!i || pc[i - 1].value >= c.value)) && Math.abs(pc.reduce((s, c) => s + c.value, 0) - plan.ativos.reduce((s, a) => s + Math.max(0, E.sum(a.ap)), 0)) < 0.01, 'análise: aportes do ano por classe, do maior para o menor');
   const V = E.analiseInvest({ C: E.compute(E.migratePlan({ year: 2026 }, () => 'z'), {}), meses: 12, itens: [] });
   ok(V.carteira.total === 0 && V.carteira.nEfetivo === 0 && V.proventos.yoc === null && V.proventos.cobertura === null && V.aporte.ritmo === null, 'análise: carteira vazia não gera divisão por zero');
+  // período (de, ate): só os meses da janela entram nas somas e nas médias
+  const P = E.analiseInvest({ C, de: 1, ate: 2, meses: 3, metaAporte: 1500, itens: plan.ativos.map((a) => ({ nome: a.nome, tipo: a.tipo, classe: a.classe, valor: E.sum(a.ap), ap: a.ap, pr: a.pr })) });
+  ok(P.aporte.meses === 2 && P.aporte.metaAte === 3000 && Math.abs(P.aporte.ateAgora - (C.aportes[1] + C.aportes[2])) < 0.01 && Math.abs(P.aporte.ano - P.aporte.ateAgora) < 0.01 && !P.aporte.porMes[0], 'análise: período só com os meses escolhidos');
+  ok(Math.abs(P.proventos.ano - (C.faturamento[1] + C.faturamento[2])) < 0.01 && Math.abs(P.proventos.mediaMes - P.proventos.ano / 2) < 0.01, 'análise: proventos do período');
 }
 
 // --- disponível para aportar: sobra do mês menos o que já foi aportado nele; a meta é só referência
@@ -124,6 +128,8 @@ ok(E.planoPermite('gratis', 'orcamento') && !E.planoPermite('gratis', 'carteira'
   const R = E.analiseRenda({ C, meses: 4, rendaCats: [{ id: 'fixa', nome: 'Renda fixa' }, { id: 'extra', nome: 'Renda extra' }],
     rendas: [{ id: 's', cat: 'fixa', nome: 'Salário', valores: z12([10000, 10000, 10000, 10000]) }, { id: 'f', cat: 'extra', nome: 'Freela', valores: z12([0, 0, 2000, 0]) }] });
   ok(R.nFontes === 2 && R.maior.nome === 'Salário' && R.maior.recorrente && !R.fontes[1].recorrente && Math.abs(R.pesoMaior - 40000 / 42000) < 1e-9, 'renda: fontes, maior fonte e recorrência');
+  const Rp = E.analiseRenda({ C, de: 2, ate: 3, meses: 4, rendaCats: [{ id: 'fixa', nome: 'Renda fixa' }, { id: 'extra', nome: 'Renda extra' }], rendas: [{ id: 's', cat: 'fixa', nome: 'Salário', valores: z12([10000, 10000, 10000, 10000]) }, { id: 'f', cat: 'extra', nome: 'Freela', valores: z12([0, 0, 2000, 0]) }] });
+  ok(Rp.meses === 2 && Rp.ateAgora === 22200 && Rp.mediaMes === 11100 && Rp.anoPrevisto === 22200, 'renda: período só com os meses escolhidos');
   ok(Math.abs(R.previsibilidade - 40000 / 42000) < 1e-9 && R.recorrenteMes === 10000 && Math.abs(R.comprometimento - 0.5) < 1e-9, 'renda: previsibilidade e comprometimento dos gastos fixos');
   ok(R.ateAgora === 42400 && Math.abs(R.poupanca - (42400 - 28000) / 42400) < 1e-9 && Math.abs(R.passiva - 400 / 42400) < 1e-9 && R.reserva[0] === 42000, 'renda: poupança, renda passiva e reserva sugerida');
   ok(R.min === 10100 && R.max === 12100 && R.cv > 0 && R.cv < 0.1 && R.mesesSemRenda === 0, 'renda: estabilidade (mínimo, máximo e variação)');
@@ -288,6 +294,8 @@ ok(E.planoPermite('gratis', 'orcamento') && !E.planoPermite('gratis', 'carteira'
   ok(Math.abs(E.sum(A.porMes) - A.total) < 0.01 && Math.abs(A.fixosMes[0] - 2000) < 0.01 && Math.abs(A.variaveisMes[2] - 1599.9) < 0.01, 'gastos: fixos e variáveis por mês');
   const F = E.analiseGastos({ ano: 2026, mes: -1, meses: 3, entradas: ents.concat([{ m: 6, dia: 0, valor: 2000, cat: fixa, area: 'Moradia', nome: 'Aluguel', tipo: 'prev' }]), catsDesp: cats, orcamento: orc });
   ok(Math.abs(F.mediaMes - A.total / 3) < 0.01, 'gastos: média do ano só com os meses decorridos (previsto futuro fora)');
+  const Gp = E.analiseGastos({ ano: 2026, mes: -1, de: 1, ate: 2, meses: 3, entradas: ents, catsDesp: cats, orcamento: orc });
+  ok(Math.abs(Gp.total - (2639.9 + 3599.9)) < 0.01 && Math.abs(Gp.mediaMes - Gp.total / 2) < 0.01 && Gp.orcamento === 3000, 'gastos: período só com os meses escolhidos');
 }
 
 // --- análise da carteira contra o alvo (aba Carteira)

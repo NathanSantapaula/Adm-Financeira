@@ -14,7 +14,7 @@ const metaDoAporte = () => +S.plan.settings.metaAporte || 0;
 function projecaoObjetivo() {
   const A = objAnalise(); const g = objFoco(A); const B = objBase();
   if (!g) return { ob: {}, patr: B.patrimonio, aporte: B.aporte, meses: null, ano: null, fatia: 1, n: 0 };
-  return { ob: g, patr: g.saldo, aporte: g.aporte, meses: g.meses, ano: g.previsto ? g.previsto.ano : null, fatia: (+g.pct || 0) / 100, n: A.itens.length };
+  return { ob: g, patr: g.saldo, aporte: g.aporte, meses: g.meses, ano: g.previsto ? g.previsto.ano : null, fatia: g.modo === 'marco' ? 1 : (+g.pct || 0) / 100, n: A.itens.length };
 }
 
 function insights() {
@@ -50,6 +50,8 @@ const btnAcao = (a, cls) => `<button class="${cls || 'lnk strong'}" data-act="${
 const PER_ATALHOS = [[3, 'Últimos 3 meses'], [6, 'Últimos 6 meses'], [12, 'Ano todo']];
 const perRef = () => (S.year === NOW_Y ? NOW_M : 11);
 function perIntervalo() { const p = S.periodo; return p ? [Math.min(p.de, p.ate), Math.max(p.de, p.ate)] : [0, 11]; }
+// janela das análises das abas: meses do período até o mês atual (ou o período inteiro, se ele ainda não começou)
+function perJanela() { const [de, ate] = perIntervalo(); const dec = mesesDecorridos(); return { de, ate, meses: de >= dec ? ate + 1 : Math.min(ate + 1, dec) }; }
 const perIds = () => { const [de, ate] = perIntervalo(); const r = []; for (let i = de; i <= ate; i++) r.push(i); return r; };
 const perSoma = (arr) => perIds().reduce((a, i) => a + (+arr[i] || 0), 0);
 // barras mês a mês só nos meses do período: cfg traz arrays de 12 meses, e cur/tip/onPick usam o mês do ano

@@ -186,11 +186,13 @@ function alternarPrivado() {
   const b = document.querySelector('.olho'); if (b) b.focus();
   toast(S.privado ? 'Valores ocultos. Os percentuais continuam visíveis.' : 'Valores visíveis.');
 }
+const PER_TELAS = ['inv', 'pro', 'rendas', 'despesas'];
 function yearControl(extra) {
   const ys = Object.keys(S.plans).map(Number).sort();
   const list = ys.map((y) => `<button class="yr-opt${y === S.year ? ' on' : ''}" data-act="year-pick" data-year="${y}">${y}${y === S.year ? I.check : ''}</button>`).join('');
   const sino = typeof sinoHtml === 'function' ? sinoHtml() : '';
-  const globo = typeof aberturaBtnHtml === 'function' ? aberturaBtnHtml() : '';
+  const globo = S.view === 'geral' && typeof aberturaBtnHtml === 'function' ? aberturaBtnHtml() : ''; // o globo só abre pela Visão geral
+  if (extra == null && PER_TELAS.includes(S.view) && typeof periodoHtml === 'function') extra = periodoHtml(); // período nas abas que acompanham (como na Visão geral)
   return `<div class="htools">${olhoHtml()}${globo}${sino}${extra || ''}<div class="year"><button class="year-pill" data-act="year-toggle" aria-haspopup="true" aria-expanded="${S.yearOpen}"><span>${S.year}</span>${I.down}</button>
     ${S.yearOpen ? `<div class="popover" role="dialog" aria-label="Escolher ano"><div class="pop-t">Planejamento de</div><div class="yr-list">${list}</div>
       <form class="yr-new" data-form="year"><label class="pop-t" for="yr-in">Outro ano</label><div class="act-row"><input id="yr-in" name="ano" class="in-s left" inputmode="numeric" maxlength="4" placeholder="Ex.: ${NOW_Y + 1}" autocomplete="off"><button class="btn primary" type="submit">Abrir</button></div><div class="merr" role="alert"></div></form></div>` : ''}</div></div>`;

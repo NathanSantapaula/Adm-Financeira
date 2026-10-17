@@ -24,13 +24,13 @@ const SOBRA_COR = 'color-mix(in srgb, var(--accent) 18%, transparent)';
 const mesesDecorridos =() => (S.year === NOW_Y ? NOW_M + 1 : 12);
 function analiseAtual() {
   const M = cartModel();
-  return E.analiseInvest({ C: S.C, meses: mesesDecorridos(), metaAporte: +S.plan.settings.metaAporte || 0,
+  return E.analiseInvest({ C: S.C, ...perJanela(), metaAporte: +S.plan.settings.metaAporte || 0,
     itens: M.items.map((i) => ({ nome: i.a.nome, tipo: i.a.tipo, classe: i.a.classe, valor: i.valor, ap: i.a.ap, pr: i.a.pr })) });
 }
 const kpi = (rot, val, sub, extra, cls) => `<section class="kpi${cls ? ' ' + cls : ''}"><small class="kpi-k">${rot}</small><div class="kpi-v">${val}</div>${extra || ''}<p class="kpi-s">${sub}</p></section>`;
 const barra = (f, tom) => `<span class="kbar${tom ? ' ' + tom : ''}" aria-hidden="true"><i style="width:${(Math.max(0, Math.min(1, f || 0)) * 100).toFixed(1)}%"></i></span>`;
 const legenda = (itens) => `<ul class="leg">${itens.map(([c, l]) => `<li><i style="background:${c}"></i>${esc(l)}</li>`).join('')}</ul>`;
-const ateMes = () => (S.year === NOW_Y ? ` até ${MES_LONGO[NOW_M]}` : '');
+const ateMes = () => (S.year === NOW_Y && !S.periodo ? ` até ${MES_LONGO[NOW_M]}` : ''); // com período, o texto já diz quais meses (perFrase)
 const fmt1 = (v) => (+v).toLocaleString('pt-BR', { maximumFractionDigits: 1 });
 
 function planilhaHtml(kind) {
@@ -76,17 +76,16 @@ const PRO_WIDGETS = [
 function painelInvest(A) {
   const ap = A.aporte; const ca = A.carteira; const pr = S.profile; const ret = +pr.retornoAnual || 0;
   const divAte = E.r2(S.C.dividendos.slice(0, ap.meses).reduce((s, v) => s + v, 0)); const reinv = divAte > 0 ? ` Somando ${brl0(divAte)} de dividendos reinvestidos, ${brl0(ap.ateAgora + divAte)} investidos.` : ''; // "investido" = aplicado (como na Visão geral); "aportado" = só dinheiro novo
-  const k1 = kpi(`Aportado em ${S.year}`, `<span class="num">${brl0(ap.ano)}</span>`, ap.ano > 0 ? `Dinheiro novo. Média de ${brl0(ap.mediaMes)} por mês${ateMes()}.${reinv}` : 'Nenhum aporte registrado ainda.');
+  const k1 = kpi(`Aportado ${perFrase()}`, `<span class="num">${brl0(ap.ano)}</span>`, ap.ano > 0 ? `Dinheiro novo. Média de ${brl0(ap.mediaMes)} por mês${ateMes()}.${reinv}` : 'Nenhum aporte registrado ainda.');
   const k2 = ap.meta > 0
     ? kpi('Ritmo da meta de aporte', pct(ap.ritmo), ap.ritmo >= 1 ? `Acima da meta: ${brl0(ap.ateAgora - ap.metaAte)} a mais${ateMes()}.` : `Faltam ${brl0(ap.faltaMeta)} para a meta de ${brl0(ap.meta)} por mês${ateMes()}.`, barra(ap.ritmo, ap.ritmo >= 1 ? 'ok' : ap.ritmo < 0.6 ? 'warn' : ''))
     : kpi('Ritmo da meta de aporte', '–', '<button class="lnk strong" data-act="admin-open">Definir a meta mensal</button> para acompanhar o ritmo.');
-  const dots = `<span class="dots" aria-hidden="true">${MES.map((m, i) => `<i class="${ap.porMes[i] ? 'on' : i >= ap.meses ? 'fut' : ''}" title="${m}"></i>`).join('')}</span>`;
+  const JN = perJanela(); const dots = `<span class="dots" aria-hidden="true">${MES.map((m, i) => `<i class="${ap.porMes[i] ? 'on' : i < JN.de || i >= JN.meses ? 'fut' : ''}" title="${m}"></i>`).join('')}</span>`;
   const k3 = kpi('Constância', `${ap.mesesComAporte} <small>de ${ap.meses} meses</small>`, 'com aporte. Aportar todo mês pesa mais que acertar o momento.', dots);
   const k4 = ca.n ? kpi('Diversificação', `≈ ${fmt1(ca.nEfetivo)} <small>${ca.nEfetivo < 1.5 ? 'ativo' : 'ativos'}</small>`, `de peso igual equivalem à sua carteira de ${ca.n}. Maior posição: ${esc(ca.maior.nome)} (${pct(ca.maior.peso)}).`)
     : kpi('Diversificação', '–', 'Sem posições ainda.');
   const leg = legenda([...(ap.meta > 0 ? [['var(--pos)', 'Na meta']] : []), ['var(--accent)', ap.meta > 0 ? 'Abaixo da meta' : 'Aportado'], [SOBRA_COR, 'Sobra que ficou parada'], ...(ap.meta > 0 ? [['var(--c4)', 'Meta']] : [])]);
-  const melhorI = S.C.aportes.slice(0, ap.meses).reduce((b, v, i, a) => (v > a[b] ? i : b), 0); const melhor = S.C.aportes[melhorI] || 0;
-  const naMeta = ap.meta > 0 ? S.C.aportes.slice(0, ap.meses).filter((v) => v >= ap.meta - 0.005).length : 0;
+  const naMeta = ap.meta > 0 ? S.C.aportes.slice(JN.de, JN.meses).filter((v) => v >= ap.meta - 0.005).length : 0;
   const metaEd = `<span class="ed iq-meta${ap.meta > 0 ? '' : ' z'}" data-k="ma" data-m="0" data-ri="-1" data-v="${ap.meta}" data-fmt="brl" tabindex="0" title="Toque para mudar a meta mensal de aportes">${ap.meta > 0 ? brl0(ap.meta) : 'Definir'}</span>`;
   const anelC = 326.73; const anel = `<svg class="iq-anel" viewBox="0 0 120 120" aria-hidden="true"><circle class="iq-tr" r="52" cx="60" cy="60"/><circle class="iq-pg${ap.ritmo >= 1 ? ' ok' : ''}" r="52" cx="60" cy="60" stroke-dasharray="${(Math.min(1, ap.ritmo || 0) * anelC).toFixed(1)} ${anelC}" transform="rotate(-90 60 60)"/></svg>`;
   const iqSub = ap.meta > 0 ? `${ap.ritmo >= 1 ? `${brl0(ap.ateAgora - ap.metaAte)} acima da meta` : `Faltam ${brl0(ap.faltaMeta)} para a meta`}${ateMes()}. Média de ${brl0(ap.mediaMes)} por mês.${reinv}` : `Defina a meta mensal para acompanhar o ritmo.${reinv}`;
@@ -99,34 +98,51 @@ function painelInvest(A) {
   if (ca.maior) ins.push(ca.maior.peso > 0.25 ? ['warn', `<b>${esc(ca.maior.nome)}</b> concentra ${pct(ca.maior.peso)} da carteira. Se ele cair 20%, a carteira inteira cai ${pct(ca.maior.peso * 0.2, 1)}.`] : ['ok', `Nenhum ativo passa de 25% da carteira: o risco de um único ativo está diluído.`]);
   if (perfil && ca.total > 0) { const dif = (ca.pesoRF * 100) - perfil.alvo.rendaFixa; ins.push([Math.abs(dif) > 10 ? 'warn' : 'ok', `Perfil ${esc(perfil.nome)}: referência de ${perfil.alvo.rendaFixa}% em renda fixa. Você está com ${pct(ca.pesoRF)}${Math.abs(dif) > 10 ? `, ${fmt1(Math.abs(dif))} pontos percentuais ${dif > 0 ? 'acima' : 'abaixo'}. A aba Carteira mostra onde colocar o próximo aporte para reequilibrar.` : ', dentro da faixa.'}`]); }
   if (ap.mediaMes > 0) { const fv = E.projetar(ca.total, ap.mediaMes, ret, 120).pop(); ins.push(['info', `Mantendo ${brl0(ap.mediaMes)} por mês e retorno hipotético de ${fmt1(ret)}% ao ano, a carteira chegaria a <b>${brl0(fv)}</b> em 10 anos, sendo ${brl0(ca.total + ap.mediaMes * 120)} de dinheiro aportado. O resto é efeito dos juros compostos. Ilustração, não promessa.`]); }
-  if (ap.meses - ap.mesesComAporte >= 2) ins.push(['info', `${ap.meses - ap.mesesComAporte} meses sem aporte em ${S.year}. Um aporte automático no dia do salário costuma resolver.`]);
+  if (ap.meses - ap.mesesComAporte >= 2) ins.push(['info', `${ap.meses - ap.mesesComAporte} meses sem aporte ${perFrase()}. Um aporte automático no dia do salário costuma resolver.`]);
   return telaWidgetsHtml('invest', {
     indicadores: `<div class="kpis">${k1}${k2}${k3}${k4}</div>`,
     quanto: `<section class="card iq"><div class="c-h"><h3>Quanto aportei</h3></div><div class="iq-b"><div class="iq-g">${anel}<div class="iq-c"><b>${ap.meta > 0 ? pct(ap.ritmo) : '–'}</b><small>da meta</small></div></div>
-      <div class="iq-t"><small>Aportado em ${S.year}${ateMes()}</small><div class="iq-v num">${brl0(ap.ateAgora)}</div><div class="iq-m">Meta mensal: ${metaEd}</div><small class="iq-s">${iqSub}</small></div></div></section>`,
+      <div class="iq-t"><small>Aportado ${perFrase()}${ateMes()}</small><div class="iq-v num">${brl0(ap.ateAgora)}</div><div class="iq-m">Meta mensal: ${metaEd}</div><small class="iq-s">${iqSub}</small></div></div></section>`,
     disponivel: `<section class="card idp"><div class="c-h"><h3>Disponível para aportar em ${MES_LONGO[S.mes]}</h3></div><div class="idp-v num">${brl0(D.disponivel)}</div>
       <span class="idp-b" aria-hidden="true"><i class="a" style="width:${w(D.aportado)}"></i><i class="d" style="width:${w(D.disponivel)}"></i></span>
       <ul class="idp-l"><li><i class="a"></i>Já investido<b>${brl0(D.aportado)}</b></li><li><i class="d"></i>Ainda disponível<b>${brl0(D.disponivel)}</b></li></ul>
       <p class="cap keep">${D.sobra < 0 ? `Os gastos de ${MES_LONGO[S.mes]} passaram das entradas em ${brl0(-D.sobra)}.` : `Sobra de ${brl0(D.sobra)} (entradas menos gastos do mês) menos o que já foi investido${S.C.dividendos[S.mes] > 0 ? `, incluindo ${brl0(S.C.dividendos[S.mes])} de dividendos reinvestidos` : ''}.`}${D.faltaMeta > 0 ? ` Faltam ${brl0(D.faltaMeta)} para a meta.` : ''}</p>
       <div class="btn-row"><button class="btn primary sm" data-act="aporte-novo">${I.plus}Novo aporte</button>${temRecurso('carteira') ? '<button class="btn sm" data-act="nav" data-view="cart">Onde investir</button>' : ''}</div></section>`,
-    aportes: `<section class="card ia"><div class="c-h"><h3>Aportes mês a mês</h3>${ap.meta > 0 ? `<small class="c-note">${naMeta} de ${ap.meses} ${ap.meses === 1 ? 'mês' : 'meses'} na meta</small>` : ''}</div>
-      <div class="ia-k"><div><small>Aportado em ${S.year}</small><b class="num">${brl0(ap.ano)}</b></div><div><small>Média por mês</small><b class="num">${brl0(ap.mediaMes)}</b></div><div><small>Melhor mês</small><b class="num">${melhor > 0 ? brl0(melhor) : '–'}</b>${melhor > 0 ? `<span>${cap(MES_LONGO[melhorI])}</span>` : ''}</div><div><small>Na meta</small><b>${ap.meta > 0 ? `${naMeta} de ${ap.meses}` : '–'}</b><span>${ap.meta > 0 ? 'meses' : 'sem meta definida'}</span></div></div>
+    aportes: `<section class="card"><div class="c-h"><h3>Aportes mês a mês</h3>${ap.meta > 0 ? `<small class="c-note">${naMeta} de ${ap.meses} ${ap.meses === 1 ? 'mês' : 'meses'} na meta</small>` : ''}</div>
       ${leg}<div class="chart ia-chart" id="inv-aportes"></div></section>`,
     onde: `<section class="card cart-exp-card" data-exp="composicao"><div class="c-h"><h3>Onde está o dinheiro</h3>${cartExpBtn('composicao')}</div>${cartComposicaoHtml(K)}${rfBar}</section>`,
-    destino: `<section class="card"><div class="c-h"><h3>Para onde foram os aportes</h3><small class="c-note">${S.year}</small></div>${dst.length ? `<ul class="rank">${dst.map((c, n) => `<li><span class="rk-n">${n + 1}</span><span class="rk-l"><b title="${esc(c.label)}">${esc(c.label)}</b></span><span class="rk-t"><i style="width:${((c.value / dstMx) * 100).toFixed(1)}%;background:${PAL[n % 6]}"></i></span><span class="rk-v">${brl0(c.value)}<small>${pct(ap.ano > 0 ? c.value / ap.ano : 0)}</small></span></li>`).join('')}</ul>` : `<p class="empty-s">Nenhum aporte registrado em ${S.year}.</p>`}</section>`,
+    destino: `<section class="card"><div class="c-h"><h3>Para onde foram os aportes</h3><small class="c-note">${perFrase()}</small></div>${dst.length ? `<ul class="rank">${dst.map((c, n) => `<li><span class="rk-n">${n + 1}</span><span class="rk-l"><b title="${esc(c.label)}">${esc(c.label)}</b></span><span class="rk-t"><i style="width:${((c.value / dstMx) * 100).toFixed(1)}%;background:${PAL[n % 6]}"></i></span><span class="rk-v">${brl0(c.value)}<small>${pct(ap.ano > 0 ? c.value / ap.ano : 0)}</small></span></li>`).join('')}</ul>` : `<p class="empty-s">Nenhum aporte registrado em ${S.year}.</p>`}</section>`,
     posicoes: `<section class="card"><div class="c-h"><h3>Maiores posições</h3><small class="c-note">a custo</small></div>${top.length ? `<ul class="rank">${top.map((i, n) => `<li><span class="rk-n">${n + 1}</span><span class="rk-l"><b title="${esc(i.nome)}">${esc(i.nome)}</b><small>${esc(i.classe)}</small></span><span class="rk-t"><i style="width:${((i.valor / top[0].valor) * 100).toFixed(1)}%;background:${PAL[ca.porClasse.findIndex((c) => c.label === i.classe) % 6]}"></i></span><span class="rk-v">${brl0(i.valor)}<small>${pct(i.peso, 1)}</small></span></li>`).join('')}</ul>` : '<p class="empty-s">Sem posições.</p>'}</section>`,
     estudar: `<section class="card study"><div class="c-h"><h3>Para estudar</h3></div><ul class="insights">${ins.map(([t, x]) => `<li class="${t}">${x}</li>`).join('')}</ul></section>`,
   });
 }
 
+/* Calendário de proventos: todos os pagadores (antes eram só os 10 maiores). Quanto mais forte o quadrado, maior o valor.
+   Tocar num quadrado mostra o valor num balão sobre ele (provCalSel), sem render() e sem mudar o tamanho do widget. */
+const provCor = (p) => (p.tipo === 'RENDA FIXA' ? 'var(--c1)' : 'var(--c3)');
+function provCalHtml(pv) {
+  const ps = pv.pagadores; const max = Math.max(1, ...ps.flatMap((p) => p.pr));
+  return `<div class="pcal"><div class="heat" role="table" aria-label="Calendário de proventos por ativo"><div class="heat-r heat-h" role="row"><span role="columnheader"></span>${MES.map((m) => `<span role="columnheader">${m[0]}</span>`).join('')}</div>
+    ${ps.map((p) => `<div class="heat-r" role="row" style="--cor:${provCor(p)}"><span class="heat-n" role="rowheader" title="${esc(p.nome)}">${esc(p.nome)}</span>${p.pr.map((v, m) => { const t = `${esc(p.nome)} · ${MES[m]}: ${v > 0 ? brl(v) : 'sem pagamento'}`;
+      return `<span role="cell" class="heat-c${v > 0 ? ' on' : ''}" data-act="prov-cel" data-t="${t}" aria-label="${t}" style="--a:${v > 0 ? (0.25 + 0.75 * (v / max)).toFixed(2) : 0}"></span>`; }).join('')}</div>`).join('')}
+  </div></div><p class="cap">Toque num quadrado para ver o valor. Quanto mais forte, maior o valor. FIIs costumam pagar todo mês; ações concentram em poucos meses.</p>`;
+}
+function provCalSel(el) {
+  const box = el.closest('.pcal'); const velho = box.querySelector('.heat-c.sel'); const tip = box.querySelector('.pcal-tip'); if (tip) tip.remove();
+  if (velho) velho.classList.remove('sel'); if (velho === el) return; // tocar de novo fecha
+  el.classList.add('sel'); const b = document.createElement('span'); b.className = 'pcal-tip'; b.setAttribute('role', 'status'); b.textContent = el.dataset.t; box.appendChild(b);
+  const r = el.getBoundingClientRect(); const R = box.getBoundingClientRect(); const w = b.offsetWidth;
+  b.style.left = `${Math.max(0, Math.min(R.width - w, r.left - R.left + r.width / 2 - w / 2))}px`; const y = r.top - R.top - b.offsetHeight - 6;
+  b.style.top = `${y >= 0 ? y : r.bottom - R.top + 6}px`; // na primeira linha, o balão vai para baixo
+}
+
 function painelProventos(A) {
   const pv = A.proventos; const ca = A.carteira; const ap = A.aporte; const ret = +S.profile.retornoAnual || 0;
-  const k1 = kpi(`Recebido em ${S.year}`, `<span class="num">${brl0(pv.ano)}</span>`, `Dividendos ${brl0(pv.dividendos)} · Renda fixa ${brl0(pv.rentab)}.`);
+  const k1 = kpi(`Recebido ${perFrase()}`, `<span class="num">${brl0(pv.ano)}</span>`, `Dividendos ${brl0(pv.dividendos)} · Renda fixa ${brl0(pv.rentab)}.`);
   const k2 = kpi('Média por mês', `<span class="num">${brl0(pv.mediaMes)}</span>`, `Cerca de ${brl(pv.porDia)} por dia. ${pv.mesesComProvento} de ${ap.meses} meses com proventos.`);
   const k3 = kpi('Yield on cost', pv.yoc == null ? '–' : pct(pv.yoc, 1), pv.yoc == null ? 'Aparece quando houver aportes e proventos.' : 'Proventos anualizados sobre o valor investido (a custo). Mostra quanto o seu dinheiro rende em caixa.');
   const k4 = kpi('Cobertura dos gastos', pv.cobertura == null ? '–' : pct(pv.cobertura, 1), pv.cobertura == null ? 'Registre gastos na aba Gastos para comparar.' : `dos seus gastos médios (${brl0(pv.gastoMedio)} por mês) já são pagos pelos proventos.`, pv.cobertura == null ? '' : barra(pv.cobertura, pv.cobertura >= 1 ? 'ok' : ''));
-  const top = pv.pagadores.slice(0, 8); const heat = pv.pagadores.slice(0, 10); const max = Math.max(1, ...heat.flatMap((p) => p.pr));
-  const cal = heat.length ? `<div class="heat" role="table" aria-label="Calendário de proventos por ativo"><div class="heat-r heat-h" role="row"><span role="columnheader"></span>${MES.map((m) => `<span role="columnheader">${m[0]}</span>`).join('')}</div>${heat.map((p) => `<div class="heat-r" role="row"><span class="heat-n" role="rowheader">${esc(p.nome)}</span>${p.pr.map((v, m) => `<span role="cell" class="heat-c${v > 0 ? ' on' : ''}" style="--a:${v > 0 ? (0.25 + 0.75 * (v / max)).toFixed(2) : 0}" title="${esc(p.nome)}, ${MES_LONGO[m]}: ${v > 0 ? brl(v) : 'sem pagamento'}"></span>`).join('')}</div>`).join('')}</div><p class="cap">Cada quadrado é um mês. Quanto mais forte, maior o valor. FIIs costumam pagar todo mês; ações concentram em poucos meses.</p>` : '';
+  const top = pv.pagadores.slice(0, 8);
   const rank = top.length ? `<ul class="rank">${top.map((p, n) => `<li><span class="rk-n">${n + 1}</span><span class="rk-l"><b title="${esc(p.nome)}">${esc(p.nome)}</b><small>Pagou em ${p.mesesPagos} ${p.mesesPagos === 1 ? 'mês' : 'meses'}${p.yoc != null ? ` · yield ${pct(p.yoc, 1)}` : ''}</small></span><span class="rk-t"><i style="width:${((p.recebido / top[0].recebido) * 100).toFixed(1)}%;background:${p.tipo === 'RENDA FIXA' ? 'var(--c1)' : 'var(--c3)'}"></i></span><span class="rk-v">${brl0(p.recebido)}<small>${pct(pv.ano > 0 ? p.recebido / pv.ano : 0)}</small></span></li>`).join('')}</ul>` : '<p class="empty-s">Nenhum provento registrado neste ano.</p>';
   let lib = '';
   if (pv.capitalLiberdade) {
@@ -140,7 +156,7 @@ function painelProventos(A) {
     mensal: `<section class="card"><div class="c-h"><h3>Proventos mês a mês</h3>${legenda([['var(--c3)', 'Dividendos e rendimentos'], ['var(--c1)', 'Renda fixa']])}</div><div class="chart" id="pro-mes"></div></section>`,
     independencia: lib || `<section class="card"><div class="c-h"><h3>Seu número da independência</h3></div><p class="empty-s">Aparece quando houver proventos, posições e gastos registrados: mostra quanto você precisaria investido para os proventos pagarem seus gastos.</p></section>`,
     pagadores: `<section class="card"><div class="c-h"><h3>Quem mais paga</h3></div>${rank}</section>`,
-    calendario: `<section class="card"><div class="c-h"><h3>Calendário de pagamentos</h3></div>${cal || '<p class="empty-s">O calendário aparece quando houver proventos registrados.</p>'}</section>`,
+    calendario: `<section class="card"><div class="c-h"><h3>Calendário de pagamentos</h3></div>${pv.pagadores.length ? provCalHtml(pv) : '<p class="empty-s">O calendário aparece quando houver proventos registrados.</p>'}</section>`,
   });
 }
 
@@ -158,14 +174,14 @@ function viewAssets(kind) {
    verde quando bate a meta, sobra parada como barra fantasma, linha da meta com etiqueta e o mês atual com brilho. */
 function invAportesChart(el) {
   const C = S.C; const meta = +S.plan.settings.metaAporte || 0; const ap = C.aportes; const cur = S.year === NOW_Y ? NOW_M : -1; const lim = S.year === NOW_Y ? NOW_M : 11;
-  const W = Math.max(280, Math.floor(el.clientWidth || 640)); const band0 = (W - 24) / 12; const deitado = band0 >= 46;
-  const m = { t: deitado ? 30 : 50, r: 12, b: 28, l: 12 }; const H = Math.max(270, Math.min(400, altura(el) + 40)); const ih = H - m.t - m.b; const band = (W - m.l - m.r) / 12;
-  const sob = C.investAlocado.map((v) => Math.max(0, v)); const hi = Math.max(100, meta * 1.12, ...ap, ...sob); const lo = Math.min(0, ...ap);
+  const ids = perIds(); const nb = ids.length; const W = Math.max(280, Math.floor(el.clientWidth || 640)); const band0 = (W - 24) / nb; const deitado = band0 >= 46; // só os meses do período
+  const m = { t: deitado ? 30 : 50, r: 12, b: 28, l: 12 }; const H = Math.max(270, Math.min(400, altura(el) + 40)); const ih = H - m.t - m.b; const band = (W - m.l - m.r) / nb;
+  const sob = C.investAlocado.map((v) => Math.max(0, v)); const hi = Math.max(100, meta * 1.12, ...ids.map((i) => ap[i]), ...ids.map((i) => sob[i])); const lo = Math.min(0, ...ids.map((i) => ap[i]));
   const y = (v) => m.t + (ih * (hi - v)) / (hi - lo); const bw = Math.min(48, band * 0.64); const bate = (v) => meta > 0 && v >= meta - 0.005; const r = Math.min(10, bw / 3);
   const topo = (x, y1, w, h) => `M${x} ${y1 + h}V${y1 + r}Q${x} ${y1} ${x + r} ${y1}H${x + w - r}Q${x + w} ${y1} ${x + w} ${y1 + r}V${y1 + h}Z`; // barra com cantos de cima arredondados
   let g = ''; const y0 = y(0);
-  for (let i = 0; i < 12; i++) {
-    const cx = m.l + band * (i + 0.5); const x = +(cx - bw / 2).toFixed(1); const v = ap[i]; const fut = i > lim;
+  for (let j = 0; j < nb; j++) {
+    const i = ids[j]; const cx = m.l + band * (j + 0.5); const x = +(cx - bw / 2).toFixed(1); const v = ap[i]; const fut = i > lim;
     if (sob[i] > Math.max(0, v) + 0.5) g += `<rect class="ia-sob" x="${x}" y="${y(sob[i]).toFixed(1)}" width="${bw.toFixed(1)}" height="${(y0 - y(sob[i])).toFixed(1)}" rx="${r}"/>`;
     if (v > 0.005) { const yt = y(v); g += `<path class="ia-bar${fut ? ' fut' : ''}${i === cur ? ' cur' : ''}" style="--i:${i}" fill="url(#ia-${bate(v) ? 'ok' : 'ap'})" d="${topo(x, +yt.toFixed(1), +bw.toFixed(1), +(y0 - yt).toFixed(1))}"/>`; }
     if (v < -0.005) g += `<rect class="ia-bar neg" style="--i:${i}" x="${x}" y="${y0.toFixed(1)}" width="${bw.toFixed(1)}" height="${(y(v) - y0).toFixed(1)}" rx="${r}"/>`;
@@ -180,8 +196,8 @@ function invAportesChart(el) {
       <linearGradient id="ia-ok" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--pos)"/><stop offset="1" stop-color="var(--pos)" stop-opacity=".35"/></linearGradient></defs>
     <line class="ia-zero" x1="${m.l}" x2="${W - m.r}" y1="${y0.toFixed(1)}" y2="${y0.toFixed(1)}"/>${g}${mk}<rect class="ia-hv" x="0" y="${m.t - 10}" width="${band.toFixed(1)}" height="${ih + 10}" rx="10" opacity="0"/></svg>`;
   const svg = el.firstChild; const hv = svg.querySelector('.ia-hv');
-  const mostra = (e) => { const b = svg.getBoundingClientRect(); const i = Math.floor((e.clientX - b.left - m.l) / band); if (i < 0 || i > 11) { hideTip(); hv.setAttribute('opacity', '0'); return; }
-    hv.setAttribute('x', (m.l + band * i).toFixed(1)); hv.setAttribute('opacity', '1'); const v = ap[i];
+  const mostra = (e) => { const b = svg.getBoundingClientRect(); const j = Math.floor((e.clientX - b.left - m.l) / band); const i = ids[j]; if (j < 0 || j >= nb) { hideTip(); hv.setAttribute('opacity', '0'); return; }
+    hv.setAttribute('x', (m.l + band * j).toFixed(1)); hv.setAttribute('opacity', '1'); const v = ap[i];
     showTip(`<b>${MES_LONGO[i]}</b><br>${v < 0 ? `Resgate: ${brl0(-v)}` : `Aportado: ${brl0(v)}`}<br>Sobra do mês: ${brl0(C.investAlocado[i])}${meta > 0 ? `<br>Meta: ${brl0(meta)} · ${bate(v) ? 'bateu a meta' : `faltaram ${brl0(meta - Math.max(0, v))}`}` : ''}`, e.clientX, e.clientY); };
   svg.addEventListener('pointermove', mostra); svg.addEventListener('click', mostra);
   svg.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') { hideTip(); hv.setAttribute('opacity', '0'); } });
@@ -191,7 +207,7 @@ function drawAssets() {
   if (S.screen !== 'app' || !S.plan || !S.C) return; drawCart(); const C = S.C; const cur = S.year === NOW_Y ? NOW_M : -1;
   if (S.view === 'inv' && $('#inv-aportes')) invAportesChart($('#inv-aportes'));
   if (S.view === 'inv' && $('.cmp')) cmpLigar();
-  if (S.view === 'pro' && $('#pro-mes')) chartBars($('#pro-mes'), { labels: MES, cur, height: altura($('#pro-mes')), aria: 'Proventos por mês: dividendos e renda fixa', bars: [{ color: 'var(--c3)', values: C.dividendos }, { color: 'var(--c1)', values: C.rentab }],
+  if (S.view === 'pro' && $('#pro-mes')) chartBarsPer($('#pro-mes'), { labels: MES, cur, height: altura($('#pro-mes')), aria: 'Proventos por mês: dividendos e renda fixa', bars: [{ color: 'var(--c3)', values: C.dividendos }, { color: 'var(--c1)', values: C.rentab }],
     tip: (i) => `<b>${MES_LONGO[i]}</b><br>Dividendos e rendimentos: ${brl0(C.dividendos[i])}<br>Renda fixa: ${brl0(C.rentab[i])}<br>Total: ${brl0(C.faturamento[i])}` });
 }
 

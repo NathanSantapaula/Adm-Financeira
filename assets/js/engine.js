@@ -440,17 +440,18 @@
      itens: [{ nome, tipo, classe, valor (posição atual), ap[12], pr[12] }]
      C: saída de compute() do ano. meses: meses já decorridos no ano (1 a 12). Tudo a custo, sem cotação de mercado. */
   function analiseInvest(o) {
-    const C = o.C; const meses = Math.max(1, Math.min(12, o.meses || 12)); const meta = +o.metaAporte || 0;
-    const ate = (arr) => arr.slice(0, meses).reduce((s, v) => s + (+v || 0), 0);
+    const C = o.C; const meses = Math.max(1, Math.min(12, o.meses || 12)); const meta = +o.metaAporte || 0; const de = Math.max(0, Math.min(meses - 1, +o.de || 0)); const N = meses - de; const fim = o.ate == null ? 11 : Math.max(de, Math.min(11, +o.ate)); // período: de..fim (meses decorridos até meses - 1)
+    const noPer = (arr) => (arr || []).slice(de, fim + 1).reduce((s, v) => s + (+v || 0), 0);
+    const ate = (arr) => arr.slice(de, meses).reduce((s, v) => s + (+v || 0), 0);
     const itens = (o.itens || []).map((i) => ({ nome: i.nome, tipo: i.tipo, classe: i.classe || 'Outros', valor: Math.max(0, +i.valor || 0), ap: i.ap || z(), pr: i.pr || z() }));
     const total = itens.reduce((s, i) => s + i.valor, 0);
     // aportes
-    const aportesAte = ate(C.aportes); const mesesComAporte = C.aportes.slice(0, meses).filter((v) => v > 0.5).length;
-    const metaAte = meta * meses;
-    const aporte = { ano: sum(C.aportes), ateAgora: r2(aportesAte), mediaMes: r2(aportesAte / meses), mesesComAporte, meses, constancia: mesesComAporte / meses,
+    const aportesAte = ate(C.aportes); const mesesComAporte = C.aportes.slice(de, meses).filter((v) => v > 0.5).length;
+    const metaAte = meta * N;
+    const aporte = { ano: r2(noPer(C.aportes)), ateAgora: r2(aportesAte), mediaMes: r2(aportesAte / N), mesesComAporte, meses: N, constancia: mesesComAporte / N,
       meta, metaAte, ritmo: metaAte > 0 ? aportesAte / metaAte : null, faltaMeta: metaAte > 0 ? r2(Math.max(0, metaAte - aportesAte)) : null,
-      porMes: C.aportes.map((v, m) => m < meses && v > 0.5) };
-    const apCls = {}; itens.forEach((i) => { apCls[i.classe] = (apCls[i.classe] || 0) + sum(i.ap); });
+      porMes: C.aportes.map((v, m) => m >= de && m < meses && v > 0.5) };
+    const apCls = {}; itens.forEach((i) => { apCls[i.classe] = (apCls[i.classe] || 0) + noPer(i.ap); });
     aporte.porClasse = Object.keys(apCls).map((k) => ({ label: k, value: r2(apCls[k]) })).filter((c) => c.value > 0.005).sort((a, b) => b.value - a.value);
     // composição e concentração
     const pos = itens.filter((i) => i.valor > 0).map((i) => Object.assign(i, { peso: total > 0 ? i.valor / total : 0 })).sort((a, b) => b.valor - a.valor);
@@ -461,15 +462,15 @@
     const carteira = { total: r2(total), n: pos.length, posicoes: pos, porClasse, maior: pos[0] || null, hhi, nEfetivo: hhi > 0 ? 1 / hhi : 0, pesoRF: total > 0 ? rf / total : 0, pesoBolsa: total > 0 ? 1 - rf / total : 0 };
     // proventos
     const provAte = ate(C.faturamento); const despAte = ate(C.despesas);
-    const mediaProv = provAte / meses; const mediaDesp = despAte / meses; const anual = mediaProv * 12;
+    const mediaProv = provAte / N; const mediaDesp = despAte / N; const anual = mediaProv * 12;
     const yoc = total > 0 && anual > 0 ? anual / total : null;
-    const pagadores = itens.map((i) => { const recebido = i.pr.reduce((s, v) => s + (+v || 0), 0); const ateI = ate(i.pr);
-      return { nome: i.nome, tipo: i.tipo, classe: i.classe, recebido: r2(recebido), mesesPagos: i.pr.filter((v) => v > 0).length, pr: i.pr, yoc: i.valor > 0 && ateI > 0 ? (ateI / meses * 12) / i.valor : null }; })
+    const pagadores = itens.map((i) => { const recebido = noPer(i.pr); const ateI = ate(i.pr);
+      return { nome: i.nome, tipo: i.tipo, classe: i.classe, recebido: r2(recebido), mesesPagos: i.pr.slice(de, fim + 1).filter((v) => v > 0).length, pr: i.pr, yoc: i.valor > 0 && ateI > 0 ? (ateI / N * 12) / i.valor : null }; })
       .filter((x) => x.recebido > 0).sort((a, b) => b.recebido - a.recebido);
-    const proventos = { ano: sum(C.faturamento), dividendos: sum(C.dividendos), rentab: sum(C.rentab), ateAgora: r2(provAte), mediaMes: r2(mediaProv), porDia: r2(mediaProv / 30),
+    const proventos = { ano: r2(noPer(C.faturamento)), dividendos: r2(noPer(C.dividendos)), rentab: r2(noPer(C.rentab)), ateAgora: r2(provAte), mediaMes: r2(mediaProv), porDia: r2(mediaProv / 30),
       anualizado: r2(anual), yoc, cobertura: mediaDesp > 0 ? mediaProv / mediaDesp : null, gastoMedio: r2(mediaDesp),
       capitalLiberdade: yoc && mediaDesp > 0 ? r2((mediaDesp * 12) / yoc) : null, pagadores,
-      mesesComProvento: C.faturamento.slice(0, meses).filter((v) => v > 0).length };
+      mesesComProvento: C.faturamento.slice(de, meses).filter((v) => v > 0).length };
     return { aporte, carteira, proventos };
   }
 
@@ -483,27 +484,29 @@
   /* ---------- Análise da renda: fontes, previsibilidade, estabilidade, poupança e comprometimento ----------
      C: compute() do ano; rendas/rendaCats: do plano; meses: meses decorridos (1 a 12). */
   function analiseRenda(o) {
-    const C = o.C; const meses = Math.max(1, Math.min(12, o.meses || 12)); const ate = (arr) => (arr || []).slice(0, meses).reduce((s, v) => s + (+v || 0), 0);
+    const C = o.C; const meses = Math.max(1, Math.min(12, o.meses || 12)); const de = Math.max(0, Math.min(meses - 1, +o.de || 0)); const N = meses - de; const fim = o.ate == null ? 11 : Math.max(de, Math.min(11, +o.ate)); // período: de..fim (meses decorridos até meses - 1)
+    const noPer = (arr) => (arr || []).slice(de, fim + 1).reduce((s, v) => s + (+v || 0), 0);
+    const ate = (arr) => (arr || []).slice(de, meses).reduce((s, v) => s + (+v || 0), 0);
     const cats = {}; (o.rendaCats || []).forEach((c) => { cats[c.id] = c.nome; });
-    const minRec = Math.max(1, Math.ceil(meses * 0.75));
-    const fontes = (o.rendas || []).map((r) => { const v = r.valores || z(); const a = ate(v); const n = v.slice(0, meses).filter((x) => x > 0).length; const seguidos = meses >= 3 && v.slice(meses - 3, meses).every((x) => x > 0);
-      return { id: r.id, nome: r.nome, cat: r.cat, catNome: cats[r.cat] || 'Outras', total: sum(v), ate: r2(a), mesesCom: n, recorrente: n >= minRec || seguidos, valores: v }; })
+    const minRec = Math.max(1, Math.ceil(N * 0.75));
+    const fontes = (o.rendas || []).map((r) => { const v = r.valores || z(); const a = ate(v); const n = v.slice(de, meses).filter((x) => x > 0).length; const seguidos = N >= 3 && v.slice(meses - 3, meses).every((x) => x > 0);
+      return { id: r.id, nome: r.nome, cat: r.cat, catNome: cats[r.cat] || 'Outras', total: r2(noPer(v)), ate: r2(a), mesesCom: n, recorrente: n >= minRec || seguidos, valores: v }; })
       .filter((f) => f.total > 0 || f.ate > 0).sort((a, b) => b.ate - a.ate || b.total - a.total);
     const rendasAte = ate(C.rendas); const divAte = ate(C.dividendos); const receitaAte = ate(C.receita); const despAte = ate(C.despesas);
     const recorrenteAte = fontes.filter((f) => f.recorrente).reduce((s, f) => s + f.ate, 0);
-    const mensal = C.receita.slice(0, meses); const comRenda = mensal.filter((v) => v > 0);
+    const mensal = C.receita.slice(de, meses); const comRenda = mensal.filter((v) => v > 0);
     const media = comRenda.length ? comRenda.reduce((s, v) => s + v, 0) / comRenda.length : 0;
     const dp = comRenda.length ? Math.sqrt(comRenda.reduce((s, v) => s + (v - media) * (v - media), 0) / comRenda.length) : 0;
-    const fixaAte = ate((C.despCat || {}).fixa); const gastoMedio = despAte / meses; const recMes = recorrenteAte / meses;
+    const fixaAte = ate((C.despCat || {}).fixa); const gastoMedio = despAte / N; const recMes = recorrenteAte / N;
     return {
-      meses, ateAgora: r2(receitaAte), rendasAte: r2(rendasAte), dividendosAte: r2(divAte), mediaMes: r2(receitaAte / meses), anoPrevisto: sum(C.receita),
+      meses: N, ateAgora: r2(receitaAte), rendasAte: r2(rendasAte), dividendosAte: r2(divAte), mediaMes: r2(receitaAte / N), anoPrevisto: r2(noPer(C.receita)),
       fontes, nFontes: fontes.length, maior: fontes[0] || null, pesoMaior: fontes[0] && rendasAte > 0 ? fontes[0].ate / rendasAte : null,
       previsibilidade: rendasAte > 0 ? recorrenteAte / rendasAte : null, recorrenteMes: r2(recMes),
       min: comRenda.length ? Math.min(...comRenda) : 0, max: comRenda.length ? Math.max(...comRenda) : 0, media: r2(media),
       cv: comRenda.length >= 3 && media > 0 ? dp / media : null, mesesSemRenda: mensal.filter((v) => !(v > 0)).length,
-      poupanca: receitaAte > 0 ? (receitaAte - despAte) / receitaAte : null, sobraMes: r2((receitaAte - despAte) / meses),
-      passiva: receitaAte > 0 ? divAte / receitaAte : null, passivaMes: r2(divAte / meses), coberturaPassiva: despAte > 0 ? divAte / despAte : null,
-      comprometimento: recMes > 0 && fixaAte > 0 ? (fixaAte / meses) / recMes : null, fixosMes: r2(fixaAte / meses),
+      poupanca: receitaAte > 0 ? (receitaAte - despAte) / receitaAte : null, sobraMes: r2((receitaAte - despAte) / N),
+      passiva: receitaAte > 0 ? divAte / receitaAte : null, passivaMes: r2(divAte / N), coberturaPassiva: despAte > 0 ? divAte / despAte : null,
+      comprometimento: recMes > 0 && fixaAte > 0 ? (fixaAte / N) / recMes : null, fixosMes: r2(fixaAte / N),
       gastoMedio: r2(gastoMedio), reserva: [r2(gastoMedio * 6), r2(gastoMedio * 12)],
       porCat: (o.rendaCats || []).map((c) => ({ id: c.id, nome: c.nome, valores: (C.rendaCat || {})[c.id] || z() })).filter((c) => sum(c.valores) > 0),
     };
@@ -778,23 +781,24 @@
   }
   function analiseGastos(o) {
     const ano = +o.ano || new Date().getFullYear(); const mes = o.mes == null ? -1 : +o.mes; const meses = Math.max(0, Math.min(12, o.meses == null ? 12 : +o.meses));
+    const de = mes < 0 ? Math.max(0, Math.min(11, +o.de || 0)) : 0; const fim = mes < 0 && o.ate != null ? Math.max(de, Math.min(11, +o.ate)) : 11; // visão do ano: só os meses do período
     const cats = o.catsDesp || []; const orc = o.orcamento || z();
     const ents = (o.entradas || []).filter((e) => Math.abs(+e.valor || 0) >= 0.005 && e.m >= 0 && e.m < 12);
-    const per = mes < 0 ? ents : ents.filter((e) => e.m === mes);
+    const per = mes < 0 ? ents.filter((e) => e.m >= de && e.m <= fim) : ents.filter((e) => e.m === mes);
     const somar = (arr) => r2(arr.reduce((s, e) => s + (+e.valor || 0), 0));
     const nomeCat = (id) => (cats.find((c) => c.id === id) || {}).nome || 'Sem categoria';
     const hojeNoPer = !!(o.hoje && (mes < 0 || o.hoje.mes === mes));
     // série do ano: total, fixos e variáveis por mês
     const porMes = z(); const fixos = z(); const variaveis = z();
     ents.forEach((e) => { const v = +e.valor || 0; porMes[e.m] += v; (ehFixa(cats, e.cat) ? fixos : variaveis)[e.m] += v; });
-    const total = somar(per); const orcP = mes < 0 ? sum(orc) : (+orc[mes] || 0);
+    const total = somar(per); const orcP = mes < 0 ? sum(orc.slice(de, fim + 1)) : (+orc[mes] || 0);
     const fixoP = r2(per.filter((e) => ehFixa(cats, e.cat)).reduce((s, e) => s + (+e.valor || 0), 0));
     const nReais = per.filter((e) => e.tipo === 'real').length;
     // comparação: o mês contra a média dos até 3 meses anteriores com gasto; o ano contra nada
     const anteriores = []; if (mes >= 0) for (let k = mes - 1; k >= 0 && anteriores.length < 3; k--) if (porMes[k] > 0.005) anteriores.push(k);
     const base = anteriores.length ? r2(anteriores.reduce((s, k) => s + porMes[k], 0) / anteriores.length) : null;
     const delta = base > 0 ? total / base - 1 : null;
-    const mesesConta = mes < 0 ? Math.max(1, meses || 12) : 1;
+    const mesesConta = mes < 0 ? Math.max(1, (meses || 12) - de) : 1;
     // ritmo do mês: gasto acumulado dia a dia, projeção e quanto ainda cabe por dia
     let ritmo = null;
     if (mes >= 0) {
@@ -852,7 +856,7 @@
     }).filter(Boolean).sort((a, b) => b.valor - a.valor);
     return {
       mes, total, orcamento: r2(orcP), uso: orcP > 0 ? total / orcP : null, restante: orcP > 0 ? r2(orcP - total) : null,
-      nReais, nPrev: per.length - nReais, fixos: fixoP, pctFixos: total > 0 ? fixoP / total : null, mediaMes: r2((mes < 0 ? somar(per.filter((e) => e.m < mesesConta)) : total) / mesesConta),
+      nReais, nPrev: per.length - nReais, fixos: fixoP, pctFixos: total > 0 ? fixoP / total : null, mediaMes: r2((mes < 0 ? somar(per.filter((e) => e.m < de + mesesConta)) : total) / mesesConta),
       base, baseMeses: anteriores.length, delta, ritmo, porMes: porMes.map(r2), fixosMes: fixos.map(r2), variaveisMes: variaveis.map(r2),
       porCat, porArea, mudou, top, estab, semana: semana.map(r2), semanaQtd, recorrentes, recorrentesMes: r2(recorrentes.reduce((s, r) => s + r.media, 0)),
       parcelas, parcelasMes: r2(parcelas.reduce((s, x) => s + x.valor, 0)), parcelasRestante: r2(parcelas.reduce((s, x) => s + x.restante, 0)),

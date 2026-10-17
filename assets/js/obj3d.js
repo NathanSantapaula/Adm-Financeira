@@ -313,17 +313,33 @@ function o3Criar() {
   O3.ro = new ResizeObserver(o3Tamanho);
 }
 function o3Descartar(o) { o.traverse((n) => { if (n.geometry) n.geometry.dispose(); const ms = Array.isArray(n.material) ? n.material : n.material ? [n.material] : []; ms.forEach((m) => { if (m.bumpMap) m.bumpMap.dispose(); if (m.map) m.map.dispose(); if (!Object.values(O3.M).includes(m)) m.dispose(); }); }); }
-function o3Objeto(tipo) {
-  if (O3.tipo === tipo && O3.obj) return; const T = THREE;
-  if (O3.obj) { O3.pivo.remove(O3.obj); o3Descartar(O3.obj); }
-  const o = (O3_OBJ[tipo] || O3_OBJ.outro)(O3.M);
+// monta um objeto pronto para a cena: cores convertidas e enquadrado (sempre o mesmo espaço, centralizado)
+function o3Montar(tipo, M) {
+  const T = THREE; const o = (O3_OBJ[tipo] || O3_OBJ.outro)(M);
   // as cores foram escritas em sRGB (como no CSS); o renderizador trabalha em linear: converte uma vez por material
   o.traverse((n) => { (Array.isArray(n.material) ? n.material : n.material ? [n.material] : []).forEach((m) => {
     if (m.userData.lin) return; m.userData.lin = true; ['color', 'emissive', 'sheen'].forEach((k) => { if (m[k] && m[k].isColor) m[k].convertSRGBToLinear(); }); }); });
-  // enquadra: o objeto ocupa sempre o mesmo espaço, centralizado
   const cx = new T.Box3().setFromObject(o); const tam = cx.getSize(new T.Vector3()); const centro = cx.getCenter(new T.Vector3());
   const k = (2.05 / Math.max(tam.x, tam.y, tam.z * 0.8)) * (o.userData.zoom || 1); const roda = new T.Group(); o.position.sub(centro); roda.add(o); roda.scale.setScalar(k);
-  O3.pivo.add(roda); O3.obj = roda; O3.tipo = tipo; O3.entrada = performance.now();
+  return roda;
+}
+function o3Objeto(tipo) {
+  if (O3.tipo === tipo && O3.obj) return;
+  if (O3.obj) { O3.pivo.remove(O3.obj); o3Descartar(O3.obj); }
+  const roda = o3Montar(tipo, O3.M); O3.pivo.add(roda); O3.obj = roda; O3.tipo = tipo; O3.entrada = performance.now();
+}
+// miniaturas para escolher o objeto do "Outro": cada um desenhado uma vez num renderizador pequeno à parte e guardado como imagem
+const O3_MINI = new Map();
+function o3Miniaturas(tipos) {
+  if (!o3Suporta()) return Promise.resolve(O3_MINI);
+  return o3Biblioteca().then(() => {
+    const falta = tipos.filter((t) => !O3_MINI.has(t)); if (!falta.length) return O3_MINI; const T = THREE;
+    const r = new T.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true }); r.setSize(120, 120, false); r.outputEncoding = T.sRGBEncoding; r.toneMapping = T.ACESFilmicToneMapping; r.setClearColor(0x000000, 0);
+    const sc = new T.Scene(); sc.environment = o3Estudio(r); const cam = new T.PerspectiveCamera(30, 1, 0.1, 50); cam.position.set(0, 0, 5);
+    const luz = new T.DirectionalLight(0xFFFFFF, 1.6); luz.position.set(3, 4, 5); sc.add(luz, new T.HemisphereLight(0xD6E8FF, 0x0B1630, 0.5)); const M = o3Mat();
+    falta.forEach((t) => { const o = o3Montar(t, M); sc.add(o); r.render(sc, cam); O3_MINI.set(t, r.domElement.toDataURL('image/png')); sc.remove(o); });
+    r.dispose(); r.forceContextLoss(); return O3_MINI;
+  }).catch(() => O3_MINI);
 }
 function o3Tamanho() { if (!O3 || !O3.host) return; const w = O3.host.clientWidth; const h = O3.host.clientHeight; if (!w || !h) return; O3.renderer.setSize(w, h, false); O3.camera.aspect = w / h; O3.camera.updateProjectionMatrix(); o3Quadro(performance.now()); }
 const o3Saida = (x) => 1 - Math.pow(1 - x, 3);

@@ -72,7 +72,7 @@ const G_WIDGETS = [
   { id: 'semana', nome: () => 'Por dia da semana', desc: 'Em que dias você mais gasta.', tam: 3, tams: [3, 4, 6], padrao: () => false },
 ];
 const gEstado = () => (S.gf = S.gf || { q: '', cat: '', tipo: 'todos', area: '', agrupar: 'data', lim: 80 });
-const gMesNome = () => (S.gPer === 'ano' ? String(S.year) : MES_LONGO[S.mes]);
+const gMesNome = () => { if (S.gPer !== 'ano') return MES_LONGO[S.mes]; if (!S.periodo) return String(S.year); const [de, ate] = perIntervalo(); return de === ate ? MES_LONGO[de] : `${MES_LONGO[de]} a ${MES_LONGO[ate]}`; };
 const gSinal = (d) => (d == null ? '' : `${d >= 0 ? '+' : '−'}${pct(Math.abs(d))}`);
 const DIA_SEM = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 
@@ -83,7 +83,7 @@ function gastosDados() {
   for (let m = 0; m < 12; m++) entradasMes(m).forEach((e) => { e.m = m; ents.push(e); });
   const parcelados = S.plan.despesas.concat(planCtx().carry).filter((it) => it.parcel);
   const hoje = S.year === NOW_Y ? { mes: NOW_M, dia: new Date().getDate() } : null;
-  const G = E.analiseGastos({ ano: S.year, mes: S.gPer === 'ano' ? -1 : S.mes, meses: mesesDecorridos(), entradas: ents, catsDesp: S.plan.catsDesp, orcamento: S.C.orcamento, hoje, parcelados });
+  const G = E.analiseGastos({ ano: S.year, mes: S.gPer === 'ano' ? -1 : S.mes, ...perJanela(), entradas: ents, catsDesp: S.plan.catsDesp, orcamento: S.C.orcamento, hoje, parcelados });
   S.gCache = { seq: S.renderSeq, plan: S.plan, ents, G }; return S.gCache;
 }
 
@@ -92,7 +92,7 @@ function gPeriodo() {
   const C = S.C; const ano = S.gPer === 'ano';
   const chips = MES.map((m, i) => { const u = C.usoOrc[i]; const tom = u == null ? '' : u > 1 ? ' neg' : u > 0.85 ? ' warn' : C.despesas[i] > 0 ? ' ok' : '';
     return `<button class="g-mes${!ano && S.mes === i ? ' on' : ''}${S.year === NOW_Y && i === NOW_M ? ' now' : ''}" data-act="g-mes" data-m="${i}" aria-pressed="${!ano && S.mes === i}"><span>${m}</span><i class="g-dot${tom}" aria-hidden="true"></i></button>`; }).join('');
-  return `<div class="g-per"><div class="seg" role="group" aria-label="Período"><button class="${ano ? '' : 'on'}" data-act="g-per" data-per="mes" aria-pressed="${!ano}">Mês</button><button class="${ano ? 'on' : ''}" data-act="g-per" data-per="ano" aria-pressed="${ano}">Ano</button></div>
+  return `<div class="g-per"><div class="seg" role="group" aria-label="Período"><button class="${ano ? '' : 'on'}" data-act="g-per" data-per="mes" aria-pressed="${!ano}">Mês</button><button class="${ano ? 'on' : ''}" data-act="g-per" data-per="ano" aria-pressed="${ano}">${S.periodo ? 'Período' : 'Ano'}</button></div>
     ${ano ? '' : `<div class="g-meses" role="group" aria-label="Mês">${chips}</div>`}</div>`;
 }
 
@@ -109,7 +109,7 @@ function gNumeros(G) {
     const r = G.ritmo; const acima = G.orcamento > 0 && r.projecao > G.orcamento;
     k2 = kpi('Projeção do mês', `<span class="num${acima ? ' neg' : ''}">${brl0(r.projecao)}</span>`, `No ritmo de ${brl0(r.porDia)} por dia.${r.cabeDia != null ? (r.cabeDia > 0 ? ` Para fechar no orçamento, até ${brl0(r.cabeDia)} por dia daqui em diante.` : ' O orçamento do mês já foi usado.') : ''}`);
   } else if (!ano) k2 = kpi('Média por dia', `<span class="num">${brl0(G.ritmo ? G.ritmo.mediaDia : 0)}</span>`, `nos ${G.ritmo ? G.ritmo.dias : 30} dias de ${esc(nomeP)}.`);
-  else k2 = kpi('Média por mês', `<span class="num">${brl0(G.mediaMes)}</span>`, `${mesesDecorridos()} ${mesesDecorridos() === 1 ? 'mês' : 'meses'}${ateMes()}.`);
+  else k2 = kpi('Média por mês', `<span class="num">${brl0(G.mediaMes)}</span>`, `${perJanela().meses - perJanela().de} ${perJanela().meses - perJanela().de === 1 ? 'mês' : 'meses'}${ateMes()}.`);
   let k3;
   if (!ano) k3 = G.delta == null ? kpi('Contra a média', '–', 'Aparece quando houver gastos nos meses anteriores.')
     : kpi('Contra a média', `<span class="${G.delta > 0.1 ? 'neg' : G.delta < -0.05 ? 'pos' : ''}">${gSinal(G.delta)}</span>`, `Média dos ${G.baseMeses} ${G.baseMeses === 1 ? 'mês anterior' : 'meses anteriores'}: ${brl0(G.base)}.${S.year === NOW_Y && S.mes === NOW_M ? ' O mês ainda está em andamento.' : ''}`);
@@ -245,7 +245,7 @@ function drawGastos() {
   const el = (id) => document.getElementById(id); if (!el('g-mensal') && !el('g-ritmo') && !el('g-semana')) return;
   const { G } = gastosDados(); const C = S.C; const cur = S.year === NOW_Y ? NOW_M : -1;
   if (el('g-mensal')) { const sit = MES.map((_, i) => orcSit(i)); // mesma regra de cor do widget de orçamento da Visão geral
-    chartBars(el('g-mensal'), { labels: MES, cur: S.gPer === 'ano' ? cur : S.mes, height: altura(el('g-mensal')), aria: 'Gastos de cada mês na cor da situação do orçamento, com o orçado marcado. Toque em um mês para abri-lo.',
+    (S.gPer === 'ano' ? chartBarsPer : chartBars)(el('g-mensal'), { labels: MES, cur: S.gPer === 'ano' ? cur : S.mes, height: altura(el('g-mensal')), aria: 'Gastos de cada mês na cor da situação do orçamento, com o orçado marcado. Toque em um mês para abri-lo.',
       bars: ['pos', 'warn', 'neg', 'sem'].map((k) => ({ color: ORC_SIT[k][0], values: C.despesas.map((v, i) => (sit[i] === k ? v : 0)) })), marks: [{ color: 'var(--ink-3)', values: C.orcamento }],
       onPick: (i) => { S.gPer = 'mes'; S.mes = i; render(); },
       tip: (i) => `<b>${cap(MES_LONGO[i])}</b><br>Gasto: ${brl0(C.despesas[i])} (fixos ${brl0(G.fixosMes[i])}, variáveis ${brl0(G.variaveisMes[i])})<br>Orçado: ${C.orcamento[i] > 0 ? `${brl0(C.orcamento[i])} · ${C.despesas[i] <= C.orcamento[i] ? 'sobraram ' + brl0(C.orcamento[i] - C.despesas[i]) : brl0(C.despesas[i] - C.orcamento[i]) + ' acima'}` : 'sem orçamento'}` }); }
@@ -270,7 +270,7 @@ const R_WIDGETS = [
   { id: 'fontes', nome: () => 'De onde vem', desc: 'Ranking das fontes de renda, recorrentes ou eventuais.', tam: 3, tams: [2, 3, 4, 6], padrao: () => true },
   { id: 'estudar', nome: () => 'Para estudar', desc: 'Leituras automáticas: dependência de uma fonte, oscilação, gastos fixos e poupança.', tam: 3, tams: [2, 3, 4, 6], padrao: () => true },
 ];
-function analiseRendaAtual() { return E.analiseRenda({ C: S.C, meses: mesesDecorridos(), rendas: S.plan.rendas, rendaCats: S.plan.rendaCats }); }
+function analiseRendaAtual() { return E.analiseRenda({ C: S.C, ...perJanela(), rendas: S.plan.rendas, rendaCats: S.plan.rendaCats }); }
 function detalheRendas() {
   const p = S.plan; const C = S.C; const m = S.mes;
   let body = '';
@@ -303,7 +303,7 @@ function viewRendas() {
       <div class="cc-empty-acts"><button class="btn primary lg" data-act="add-item" data-kind="renda">Adicionar renda</button><button class="btn ghost" data-act="ingest-open">Importar do extrato</button></div></section>${detalheRendas()}`;
   }
   const R = analiseRendaAtual(); const ate = ateMes();
-  const k1 = kpi(S.year === NOW_Y ? `Entradas${ate}` : `Entradas em ${S.year}`, `<span class="num">${brl0(R.ateAgora)}</span>`, `Média de ${brl0(R.mediaMes)} por mês.${S.year === NOW_Y && R.anoPrevisto > R.ateAgora + 1 ? ` Previsto no ano: ${brl0(R.anoPrevisto)}.` : ''}`);
+  const k1 = kpi(S.periodo ? `Entradas ${perFrase()}` : S.year === NOW_Y ? `Entradas${ate}` : `Entradas em ${S.year}`, `<span class="num">${brl0(R.ateAgora)}</span>`, `Média de ${brl0(R.mediaMes)} por mês.${S.year === NOW_Y && R.anoPrevisto > R.ateAgora + 1 ? ` Previsto no ano: ${brl0(R.anoPrevisto)}.` : ''}`);
   const k2 = R.previsibilidade == null ? kpi('Previsibilidade', '–', 'Aparece quando houver rendas registradas.')
     : kpi('Previsibilidade', pct(R.previsibilidade), `da renda vem de fontes que se repetem todo mês (${brl0(R.recorrenteMes)} por mês).`, barra(R.previsibilidade, R.previsibilidade >= 0.8 ? 'ok' : R.previsibilidade < 0.5 ? 'warn' : ''));
   const k3 = R.poupanca == null ? kpi('Taxa de poupança', '–', 'Aparece quando houver entradas.')
@@ -341,7 +341,7 @@ function drawLedger() {
   if (S.view === 'despesas') drawGastos();
   if (S.view === 'rendas' && $('#r-chart')) {
     const cats = S.plan.rendaCats.filter((c) => E.sum(C.rendaCat[c.id] || E.z()) > 0);
-    chartBars($('#r-chart'), { labels: MES, cur, height: typeof altura === 'function' ? altura($('#r-chart')) : 210, aria: 'Entradas por mês por categoria, com o total de gastos marcado. Clique em um mês para ver o detalhe.',
+    chartBarsPer($('#r-chart'), { labels: MES, cur, height: typeof altura === 'function' ? altura($('#r-chart')) : 210, aria: 'Entradas por mês por categoria, com o total de gastos marcado. Clique em um mês para ver o detalhe.',
       bars: cats.map((c, i) => ({ color: PAL[i % 6], values: C.rendaCat[c.id] })).concat([{ color: 'var(--c3)', values: C.dividendos }]), marks: [{ color: 'var(--c6)', values: C.despesas }],
       onPick: (i) => { S.mes = i; S.modo = 'mes'; S.planilha.rendas = true; render(); const sec = document.querySelector('.sheet-sec'); if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' }); },
       tip: (i) => `<b>${MES_LONGO[i]}</b>${cats.map((c) => `<br>${esc(c.nome)}: ${brl0(C.rendaCat[c.id][i])}`).join('')}<br>Proventos: ${brl0(C.dividendos[i])}<br>Gastos: ${brl0(C.despesas[i])}<br><b>${C.receita[i] - C.despesas[i] >= 0 ? 'Sobrou' : 'Faltou'}: ${brl0(Math.abs(C.receita[i] - C.despesas[i]))}</b>` });
