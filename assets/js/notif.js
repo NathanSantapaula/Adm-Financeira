@@ -133,8 +133,8 @@ function notifContexto() {
   let carteira = null;
   if (temRecurso('carteira') && (plan.ativos || []).length) {
     try {
-      const m = hoje.getMonth(); const meta = +plan.settings.metaAporte || 0;
-      const M = cartModel({ plan, C, mes: m, aporte: meta > 0 ? meta : Math.max(0, C.investAlocado[m]) });
+      const m = hoje.getMonth();
+      const M = cartModel({ plan, C, mes: m, aporte: E.disponivelAporte({ C, mes: m }).disponivel });
       carteira = { somaAlvo: M.sumAlvo, aporte: M.aporte, itens: M.items.map((i) => ({ nome: i.a.nome, pctAtual: i.pctAtual, pctAlvo: i.pctAlvo, sug: i.sug })) };
     } catch (e) { carteira = null; }
   }

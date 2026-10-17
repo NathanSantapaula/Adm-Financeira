@@ -113,6 +113,7 @@ function onClick(e) {
       case 'ing-ia': ingRefinar(); break;
       case 'tema': definirTema(ds.tema); break;
       case 'tema-cor': definirCor(ds.campo, ds.v); break;
+      case 'tema-roda': { const c = rodaCor(el, e); if (c) definirCor('cor', c); break; }
       case 'voz': definirVoz(ds.voz); break;
       case 'rec-aplicar': recAplicar(); break;
       case 'rec-add': recAdd(); break;
@@ -139,6 +140,7 @@ function onClick(e) {
       case 'year-pick': if (+ds.year !== S.year) switchYear(+ds.year); else { S.yearOpen = false; render(); } break;
       case 'create-plan': createPlan(S.year || NOW_Y, null); break;
       case 'add-ativo': openAtivo(); break;
+      case 'aporte-novo': openAporte(); break;
       case 'edit-ativo': openAtivo(ds.id); break;
       case 'cart-norm': cartNormalize(); break;
       case 'cart-equal': cartEqual(); break;

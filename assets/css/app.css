@@ -1140,6 +1140,33 @@ textarea.nota { width: 100%; min-height: 110px; padding: 12px 14px; border-radiu
 .rfbv-t i { display: block; height: 100%; border-radius: var(--r-pill) 0 0 var(--r-pill); background: var(--c1); }
 .rfbv-t em { position: absolute; top: -4px; bottom: -4px; width: 3px; margin-left: -1.5px; border-radius: 2px; background: var(--ink); box-shadow: 0 0 0 2px var(--surface); }
 .rfbv small { color: var(--ink-3); font-size: 12px; }
+/* Investimentos: Quanto aportei (anel contra a meta, meta editável) e Disponível para aportar */
+.iq-b { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.iq-g { position: relative; width: 120px; height: 120px; flex: none; }
+.iq-anel { width: 100%; height: 100%; display: block; }
+.iq-anel circle { fill: none; stroke-width: 11; }
+.iq-tr { stroke: var(--surface-2); }
+.iq-pg { stroke: var(--accent); stroke-linecap: round; transition: stroke-dasharray var(--dur-2) var(--ease); filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 45%, transparent)); }
+.iq-pg.ok { stroke: var(--pos); filter: drop-shadow(0 0 6px color-mix(in srgb, var(--pos) 45%, transparent)); }
+.iq-c { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
+.iq-c b { font-size: 22px; letter-spacing: -0.02em; } .iq-c small { color: var(--ink-3); font-size: 11.5px; }
+.iq-t { flex: 1 1 160px; min-width: 0; display: grid; gap: 4px; }
+.iq-t > small { color: var(--ink-3); font-size: 12.5px; }
+.iq-v { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; }
+.iq-m { font-size: 13.5px; color: var(--ink-2); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.iq-meta { cursor: text; font-weight: 600; color: var(--ink); padding: 2px 6px; border-radius: 8px; border-bottom: 2px dashed var(--line-2); min-width: 64px; }
+.iq-meta:hover, .iq-meta:focus-visible { background: var(--surface-2); }
+.iq-meta.z { color: var(--accent); }
+.iq-meta.editing { padding: 0; border: 0; } .iq-meta .cell-input { text-align: left; width: 130px; }
+.iq-s { color: var(--ink-2); font-size: 12.5px; line-height: 1.45; }
+.idp-v { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; margin: 2px 0 10px; }
+.idp-b { display: flex; height: 10px; border-radius: var(--r-pill); background: var(--surface-2); overflow: hidden; }
+.idp-b i { display: block; height: 100%; transition: width var(--dur-2) var(--ease); }
+.idp-b .a, .idp-l i.a { background: var(--accent); } .idp-b .d, .idp-l i.d { background: color-mix(in srgb, var(--accent) 30%, transparent); }
+.idp-l { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 6px; font-size: 13px; color: var(--ink-2); }
+.idp-l li { display: flex; align-items: center; gap: 8px; } .idp-l i { width: 10px; height: 10px; border-radius: 3px; flex: none; } .idp-l b { margin-left: auto; color: var(--ink); }
+.idp .btn-row { margin-top: 12px; }
+@media (prefers-reduced-motion: reduce) { .iq-pg, .idp-b i { transition: none; } }
 
 .rank { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
 .rank li { display: grid; grid-template-columns: 22px minmax(0, 1.1fr) minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 8px 6px; border-radius: var(--r-md); transition: background-color var(--dur-1) var(--ease); }
@@ -2340,7 +2367,7 @@ button.wg-ic:active { transform: scale(.92); }
   background: var(--sheen) padding-box, linear-gradient(160deg, color-mix(in srgb, var(--ab-cor, var(--ab-acc)) 12%, var(--glass-strong)), var(--glass-strong)) padding-box, linear-gradient(155deg, color-mix(in srgb, var(--ab-cor, var(--ab-acc)) 70%, transparent), color-mix(in srgb, var(--ab-cor, var(--ab-acc)) 20%, transparent)) border-box;
   font-size: 13px; color: var(--ab-ink-2); animation: ab-card .2s cubic-bezier(.23,1,.32,1) both; }
 @keyframes ab-card { from { opacity: 0; transform: scale(.96); } }
-.ab-card[hidden], .ab-tit[hidden], .ab-vivo[hidden] { display: none; }
+.ab-card[hidden], .ab-tit[hidden], .ab-vivo[hidden], .ab-rend[hidden] { display: none; }
 .ab-card small { font-size: 13.5px; font-weight: 700; color: var(--ab-cor, var(--ab-acc)); }
 .ab-card b { font-size: 16px; font-weight: 700; color: var(--ab-ink); }
 .ab-card .ab-v { font-size: 22px; font-weight: 780; letter-spacing: -0.02em; color: var(--ab-ink); font-variant-numeric: tabular-nums; }
@@ -2467,3 +2494,18 @@ button.wg-ic:active { transform: scale(.92); }
 .ab-vivo.fora .ab-pill { color: var(--neg); background: var(--neg-soft); }
 .ab-vivo.fora .ab-pill i { background: var(--neg); box-shadow: 0 0 10px var(--neg); animation: none; }
 .ab-vivo.fora .ab-rend { background: none; color: var(--neg); -webkit-text-fill-color: currentColor; }
+/* "Outra cor": anel com todas as cores em volta da cor atual; o seletor do aparelho fica por cima, invisível */
+.ap-livre { position: relative; display: inline-block; cursor: pointer; background: radial-gradient(circle, var(--c) 0 42%, transparent 46%), conic-gradient(red, yellow, lime, cyan, blue, magenta, red); }
+.ap-livre input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: 0; padding: 0; }
+.ap-livre:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* roda de cores do Personalizado: tom em volta (0° no topo), intensidade do centro (cinza) para a borda; posições em rodaPos (prefs.js) */
+.ap-rodabox { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.ap-roda { position: relative; width: 176px; height: 176px; flex: none; border-radius: 50%; cursor: crosshair; touch-action: manipulation;
+  background: radial-gradient(circle closest-side, hsl(0 0% 52%) 12%, hsl(0 0% 52% / 0) 94%), conic-gradient(hsl(0 100% 52%), hsl(60 100% 52%), hsl(120 100% 52%), hsl(180 100% 52%), hsl(240 100% 52%), hsl(300 100% 52%), hsl(360 100% 52%));
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .12), 0 6px 22px color-mix(in srgb, var(--accent) 22%, transparent); }
+.ap-roda .ap-cor, .ap-roda-m { position: absolute; width: 22px; height: 22px; translate: -50% -50%; box-shadow: 0 0 0 2px var(--surface), 0 2px 6px rgba(0, 0, 0, .3); }
+.ap-roda .ap-cor[aria-pressed="true"], .ap-roda-m { width: 30px; height: 30px; z-index: 1; box-shadow: 0 0 0 3px var(--surface), 0 0 0 5px var(--ink); }
+.ap-roda-m { border-radius: 50%; background: var(--c); pointer-events: none; }
+.ap-roda-t { flex: 1 1 160px; min-width: 0; display: grid; gap: 6px; }
+.ap-roda-t > small { color: var(--ink-3); font-size: 12.5px; line-height: 1.4; }
+.ap-roda-o { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-2); }

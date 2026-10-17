@@ -11,7 +11,17 @@ const TEMAS = {
 // cores de destaque do tema Personalizado (o contraste é ajustado sozinho para o fundo escolhido)
 // cores bem distintas entre si (matizes espaçados no círculo de cores), para cada tema personalizado ter cara própria
 const CORES_DESTAQUE = [['#0A84FF', 'Azul AVEN'], ['#7C3AED', 'Violeta'], ['#D946EF', 'Magenta'], ['#F43F5E', 'Rubi'], ['#FF6B2C', 'Tangerina'], ['#F5B700', 'Âmbar'], ['#84CC16', 'Lima'], ['#10B981', 'Esmeralda'], ['#06B6D4', 'Ciano'], ['#64748B', 'Grafite']];
-const COR_BARRA = { light: '#F5F6F9', oled: '#000000' };
+// matiz (0–360) e saturação (0–1) de um #rrggbb, e o caminho de volta
+const hexHs = (hex) => { const [r, g, b] = hexRgb(hex).map((v) => v / 255); const mx = Math.max(r, g, b); const d = mx - Math.min(r, g, b); const l = mx - d / 2;
+  const h = !d ? 0 : mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return [(h * 60 + 360) % 360, d ? Math.min(1, d / (1 - Math.abs(2 * l - 1))) : 0]; };
+const hslHex = (h, s, l) => { const a = s * Math.min(l, 1 - l); const f = (n) => { const k = (n + h / 30) % 12; return Math.round(255 * (l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1)))).toString(16).padStart(2, '0'); }; return `#${f(0)}${f(8)}${f(4)}`; };
+// na roda: ângulo = matiz (0° no topo, sentido horário), distância do centro = saturação (12% a 94% do raio)
+const rodaPos = (c) => { const [h, s] = hexHs(c); const a = (h * Math.PI) / 180; const r = 0.12 + 0.82 * s; return `left:${(50 + 50 * r * Math.sin(a)).toFixed(1)}%;top:${(50 - 50 * r * Math.cos(a)).toFixed(1)}%`; };
+function rodaCor(el, e) {
+  const b = el.getBoundingClientRect(); const x = e.clientX - b.left - b.width / 2; const y = e.clientY - b.top - b.height / 2; const d = Math.hypot(x, y) / (b.width / 2);
+  return d > 1 ? null : hslHex(((Math.atan2(x, -y) * 180) / Math.PI + 360) % 360, Math.min(1, Math.max(0, (d - 0.12) / 0.82)), 0.52);
+}
+const COR_BARRA ={ light: '#F5F6F9', oled: '#000000' };
 const mqEscuro = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
 const escuroAgora = () => !!(mqEscuro && mqEscuro.matches);
 
@@ -117,6 +127,8 @@ function definirTema(pref) {
 }
 function definirCor(campo, valor) {
   if (!S.profile) return; const p = S.profile.prefs; p.custom = Object.assign({ base: 'light', cor: '#0A84FF' }, p.custom);
+  // escolher uma cor estando no Claro ou no Escuro já leva para o Personalizado com o mesmo fundo
+  if (campo === 'cor' && p.manual !== 'custom') p.custom.base = (p.tema === 'auto' ? escuroAgora() : p.tema === 'oled') ? 'oled' : 'light';
   if (campo === 'base') p.custom.base = valor === 'oled' ? 'oled' : 'light'; else if (/^#[0-9a-f]{6}$/i.test(valor || '')) p.custom.cor = valor;
   p.manual = 'custom'; if (p.tema !== 'auto') p.tema = 'custom'; touch('profile'); aplicarTema(p.tema, true); if (S.adminOpen) renderAdmin();
 }
@@ -126,9 +138,15 @@ function prefsHtml() {
   const amostra = (id) => `<span class="ap-sw" aria-hidden="true">${(id === 'custom' ? [k.base === 'oled' ? '#000000' : '#F5F6F9', k.cor] : TEMAS[id].sw).map((c) => `<i style="background:${c}"></i>`).join('')}</span>`;
   const opcoes = ['light', 'oled', 'custom'].map((id) => `<button class="ap-op" data-act="tema" data-tema="${id}" aria-pressed="${escolhido === id}">${amostra(id)}<span><b>${TEMAS[id].nome}</b><small>${TEMAS[id].desc}</small></span></button>`).join('');
   const fundo = [['light', 'Claro'], ['oled', 'Escuro']].map(([v, l]) => `<button class="${k.base === v ? 'on' : ''}" data-act="tema-cor" data-campo="base" data-v="${v}" aria-pressed="${k.base === v}"${auto ? ' disabled' : ''}>${l}</button>`).join('');
-  const cores = CORES_DESTAQUE.map(([c, n]) => `<button class="ap-cor" style="--c:${c}" data-act="tema-cor" data-campo="cor" data-v="${c}" aria-pressed="${k.cor.toLowerCase() === c.toLowerCase()}" aria-label="${n}" title="${n}"></button>`).join('');
-  const custom = escolhido === 'custom' ? `<div class="ap-custom"><div class="ap-linha"><span>Fundo${auto ? ' <small>(segue o aparelho)</small>' : ''}</span><div class="seg" role="group" aria-label="Fundo do tema personalizado">${fundo}</div></div>
-    <div class="ap-linha"><span>Cor de destaque</span><div class="ap-cores" role="group" aria-label="Cor de destaque">${cores}</div></div></div>` : '';
+  // roda de cores: cada sugestão fica no seu tom (ângulo) e intensidade (distância do centro); tocar em qualquer ponto escolhe aquele tom
+  const pre = CORES_DESTAQUE.find(([c]) => c.toLowerCase() === k.cor.toLowerCase());
+  const cores = CORES_DESTAQUE.map(([c, n]) => `<button class="ap-cor" style="--c:${c};${rodaPos(c)}" data-act="tema-cor" data-campo="cor" data-v="${c}" aria-pressed="${escolhido === 'custom' && pre && pre[0] === c}" aria-label="${n}" title="${n}"></button>`).join('');
+  const marca = escolhido === 'custom' && !pre ? `<i class="ap-roda-m" style="--c:${k.cor};${rodaPos(k.cor)}" aria-hidden="true"></i>` : '';
+  // "Outra cor" abre o seletor do aparelho (e serve a quem usa teclado); o contraste é ajustado sozinho
+  const livre = `<label class="ap-cor ap-livre" title="Outra cor" style="--c:${k.cor}"><input type="color" data-tema-livre value="${k.cor}" aria-label="Escolher outra cor de destaque"></label>`;
+  const custom = `<div class="ap-custom"><div class="ap-linha"><span>Cor de destaque</span><div class="ap-rodabox"><div class="ap-roda" data-act="tema-roda" role="group" aria-label="Roda de cores">${cores}${marca}</div>
+      <div class="ap-roda-t"><b>${escolhido !== 'custom' ? 'Escolha uma cor' : pre ? pre[1] : 'Cor própria'}</b><small>Em volta da roda muda o tom; do centro para a borda, a intensidade. Toque em qualquer ponto.</small><span class="ap-roda-o">${livre}<small>Outra cor</small></span></div></div></div>
+    ${escolhido === 'custom' ? `<div class="ap-linha"><span>Fundo${auto ? ' <small>(segue o aparelho)</small>' : ''}</span><div class="seg" role="group" aria-label="Fundo do tema personalizado">${fundo}</div></div>` : ''}</div>`;
   const vozes = Object.keys(VOZES).map((v) => `<button class="ap-voz" data-act="voz" data-voz="${v}" aria-pressed="${tomAtual() === v}"><b>${VOZES[v].nome}</b><small>${VOZES[v].desc}</small></button>`).join('');
   // dentro da página "Personalizar o painel" (admin.js): cada uma vira um título com setinha (admAcordeao)
   return `<section class="dr-sec"><h3>Aparência</h3>

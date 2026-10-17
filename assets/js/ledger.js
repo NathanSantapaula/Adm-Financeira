@@ -137,7 +137,9 @@ function gWidgets(G) {
   if (!ano && G.ritmo) add('ritmo', gCard('ritmo', 'Ritmo do mês', `<div class="chart" id="g-ritmo"></div>${legenda([['var(--c1)', 'Gasto acumulado']].concat(G.ritmo.diaAtual ? [['var(--c3)', 'Projeção']] : []).concat(G.orcamento > 0 ? [['var(--c4)', 'Orçamento']] : []))}
     <p class="cap">Gastos previstos e parcelas entram no dia 1; os lançamentos reais, no dia em que aconteceram.</p>`));
   // mês a mês
-  add('mensal', gCard('mensal', 'Mês a mês', `<div class="chart" id="g-mensal"></div>${legenda([['var(--c2)', 'Fixos'], ['var(--c1)', 'Variáveis'], ['var(--c4)', 'Orçamento']])}<p class="cap">Toque em um mês para vê-lo.</p>`));
+  { const C = S.C; const lim = S.year === NOW_Y ? NOW_M : 11; const comOrc = MES.map((_, i) => i).filter((i) => i <= lim && C.orcamento[i] > 0); const dentro = comOrc.filter((i) => C.despesas[i] <= C.orcamento[i]).length;
+    add('mensal', gCard('mensal', 'Mês a mês', `${legenda(['pos', 'warn', 'neg', 'sem'].map((k) => ORC_SIT[k]).concat([['var(--ink-3)', 'Orçado']]))}<div class="chart" id="g-mensal"></div><p class="cap">Cada mês na cor do orçamento. Toque em um mês para abri-lo.</p>`,
+      comOrc.length ? `<small class="c-note">${dentro} de ${comOrc.length} ${comOrc.length === 1 ? 'mês' : 'meses'} dentro</small>` : '')); }
   // o que mudou
   if (!ano) add('mudou', gCard('mudou', 'O que mudou', G.baseMeses ? (G.mudou.length ? `<ul class="g-lista">${G.mudou.map((x) => `<li><button class="g-li" data-act="g-area" data-area="${esc(x.nome)}"><span><b>${esc(x.nome)}</b><small>${esc(x.catNome)} · média ${brl0(x.media)}</small></span><span class="g-li-v"><b>${brl0(x.agora)}</b><small class="${x.dif > 0 ? 'neg' : 'pos'}">${x.pct == null ? 'novo no período' : gSinal(x.pct)}</small></span></button></li>`).join('')}</ul>`
     : gVazio('Nenhuma área fugiu da média dos meses anteriores.')) : gVazio('Aparece quando houver gastos nos meses anteriores.'), `<small class="c-note">contra ${G.baseMeses || 0} ${G.baseMeses === 1 ? 'mês anterior' : 'meses anteriores'}</small>`));
@@ -212,7 +214,7 @@ function gLancamentos() {
 function viewDespesas() {
   const p = S.plan; RI = 0; FIRST_ED = true; const mr = S.year === NOW_Y ? NOW_M : S.mes;
   const vazio = !p.lancamentos.length && !(S.C.T.despesas > 0) && !(S.C.T.orcamento > 0);
-  const acts = `<button class="btn primary" data-act="ingest-open">${I.plus}Importar extrato</button><button class="btn" data-act="cats" data-kind="desp">Categorias</button>${yearControl()}`;
+  const acts = `<button class="btn primary" data-act="ingest-open">${I.plus}Importar extrato</button><button class="btn" data-act="add-lanc" data-mes="${S.gPer === 'ano' ? mr : S.mes}">Novo gasto</button><button class="btn" data-act="cats" data-kind="desp">Categorias</button>${yearControl()}`;
   const head = `<div class="page-h"><div><h2 class="title">Gastos</h2><p class="sub">Escolha o mês ou o ano: os números, as análises e a lista mostram o mesmo período.</p></div><div class="acts">${acts}</div></div>`;
   if (vazio) return `${head}<section class="cc-empty"><div class="cc-empty-ic" aria-hidden="true">${I.plus}</div><div class="cc-empty-tx"><h3>Seu ${S.year} começa pelo extrato</h3><p>Arraste o CSV ou OFX do seu banco: categorizamos tudo e você só confere. Leva menos de um minuto.</p></div><div class="cc-empty-acts"><button class="btn primary lg" data-act="ingest-open">Importar extrato</button><button class="btn ghost" data-act="add-lanc" data-mes="${mr}">Lançar manualmente</button></div></section>`;
   const { G } = gastosDados();
@@ -242,10 +244,11 @@ function drawGastos() {
   const bar = document.querySelector('.g-meses'); const on = bar && bar.querySelector('.g-mes.on'); if (on) bar.scrollLeft = Math.max(0, on.offsetLeft - (bar.clientWidth - on.offsetWidth) / 2);
   const el = (id) => document.getElementById(id); if (!el('g-mensal') && !el('g-ritmo') && !el('g-semana')) return;
   const { G } = gastosDados(); const C = S.C; const cur = S.year === NOW_Y ? NOW_M : -1;
-  if (el('g-mensal')) chartBars(el('g-mensal'), { labels: MES, cur: S.gPer === 'ano' ? cur : S.mes, height: 190, aria: 'Gastos fixos e variáveis por mês, com o orçamento marcado. Toque em um mês para vê-lo.',
-    bars: [{ color: 'var(--c2)', values: G.fixosMes }, { color: 'var(--c1)', values: G.variaveisMes }], marks: [{ color: 'var(--c4)', values: C.orcamento }],
-    onPick: (i) => { S.gPer = 'mes'; S.mes = i; render(); },
-    tip: (i) => `<b>${cap(MES_LONGO[i])}</b><br>Fixos: ${brl0(G.fixosMes[i])}<br>Variáveis: ${brl0(G.variaveisMes[i])}<br>Total: ${brl0(G.porMes[i])}<br>Orçado: ${C.orcamento[i] > 0 ? brl0(C.orcamento[i]) : 'sem orçamento'}` });
+  if (el('g-mensal')) { const sit = MES.map((_, i) => orcSit(i)); // mesma regra de cor do widget de orçamento da Visão geral
+    chartBars(el('g-mensal'), { labels: MES, cur: S.gPer === 'ano' ? cur : S.mes, height: altura(el('g-mensal')), aria: 'Gastos de cada mês na cor da situação do orçamento, com o orçado marcado. Toque em um mês para abri-lo.',
+      bars: ['pos', 'warn', 'neg', 'sem'].map((k) => ({ color: ORC_SIT[k][0], values: C.despesas.map((v, i) => (sit[i] === k ? v : 0)) })), marks: [{ color: 'var(--ink-3)', values: C.orcamento }],
+      onPick: (i) => { S.gPer = 'mes'; S.mes = i; render(); },
+      tip: (i) => `<b>${cap(MES_LONGO[i])}</b><br>Gasto: ${brl0(C.despesas[i])} (fixos ${brl0(G.fixosMes[i])}, variáveis ${brl0(G.variaveisMes[i])})<br>Orçado: ${C.orcamento[i] > 0 ? `${brl0(C.orcamento[i])} · ${C.despesas[i] <= C.orcamento[i] ? 'sobraram ' + brl0(C.orcamento[i] - C.despesas[i]) : brl0(C.despesas[i] - C.orcamento[i]) + ' acima'}` : 'sem orçamento'}` }); }
   if (el('g-ritmo') && G.ritmo) {
     const r = G.ritmo; const dias = Array.from({ length: r.dias }, (_, i) => String(i + 1)); const ate = r.diaAtual || r.dias;
     const real = r.acum.map((v, i) => (i < ate ? v : null));

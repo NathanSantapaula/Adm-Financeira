@@ -241,6 +241,45 @@ const O3_OBJ = {
     const m1 = o3Moeda(M); m1.scale.setScalar(0.55); m1.position.set(0.95, 0.75, 0.2); m1.rotation.set(1.2, 0.2, 0.4); g.add(m1);
     g.rotation.set(0.25, -0.5, 0); return g;
   },
+  // coletânea para o objetivo "Outro" (o cliente escolhe o objeto em Meus objetivos)
+  cartao(M) { // cartão Legacy da XP: metal preto, chip dourado e gravação clara
+    const T = THREE; const w = 1.7, h = 1.07, r = 0.09; const s = new T.Shape();
+    s.moveTo(-w / 2 + r, -h / 2); s.lineTo(w / 2 - r, -h / 2); s.quadraticCurveTo(w / 2, -h / 2, w / 2, -h / 2 + r); s.lineTo(w / 2, h / 2 - r); s.quadraticCurveTo(w / 2, h / 2, w / 2 - r, h / 2);
+    s.lineTo(-w / 2 + r, h / 2); s.quadraticCurveTo(-w / 2, h / 2, -w / 2, h / 2 - r); s.lineTo(-w / 2, -h / 2 + r); s.quadraticCurveTo(-w / 2, -h / 2, -w / 2 + r, -h / 2);
+    const geo = new T.ExtrudeGeometry(s, { depth: 0.03, bevelEnabled: true, bevelThickness: 0.012, bevelSize: 0.012, bevelSegments: 4, curveSegments: 10 }); geo.center();
+    const metal = new T.MeshPhysicalMaterial({ color: 0x15171B, metalness: 0.85, roughness: 0.28, clearcoat: 1, clearcoatRoughness: 0.08 });
+    const g = new T.Group(); g.add(new T.Mesh(geo, metal));
+    const face = o3Textura((x, W, H) => { x.clearRect(0, 0, W, H);
+      const lu = x.createLinearGradient(0, 0, W, H); lu.addColorStop(0, 'rgba(255,255,255,0)'); lu.addColorStop(0.45, 'rgba(255,255,255,.07)'); lu.addColorStop(0.55, 'rgba(255,255,255,0)'); x.fillStyle = lu; x.fillRect(0, 0, W, H);
+      x.fillStyle = '#ECEFF3'; x.font = `800 ${H * 0.2}px Arial, sans-serif`; x.textBaseline = 'top'; x.fillText('XP', W * 0.07, H * 0.09);
+      x.font = `600 ${H * 0.075}px Arial, sans-serif`; x.fillStyle = '#C9CED6'; const t = 'L E G A C Y'; x.fillText(t, W * 0.07, H * 0.8);
+      x.strokeStyle = '#C9CED6'; x.lineWidth = H * 0.018; for (let i = 0; i < 3; i++) { x.beginPath(); x.arc(W * 0.86, H * 0.47, H * (0.05 + i * 0.045), -0.7, 0.7); x.stroke(); } }, 512, 322);
+    const pl = new T.Mesh(new T.PlaneGeometry(w * 0.98, h * 0.98), new T.MeshBasicMaterial({ map: face, transparent: true })); pl.position.z = 0.0285; g.add(pl);
+    const chip = new T.Mesh(new T.BoxGeometry(0.22, 0.17, 0.012), M.ouro); chip.position.set(-0.52, 0.02, 0.028); g.add(chip);
+    g.rotation.set(-0.3, 0.45, 0.08); return g;
+  },
+  trofeu(M) {
+    const T = THREE; const g = new T.Group();
+    g.add(new T.Mesh(new T.LatheGeometry([V2(0, 0.05), V2(0.5, 0.95), V2(0.56, 1.05), V2(0.52, 1.07), V2(0.44, 0.97), V2(0, 0.2)].map((v) => V2(v.x, v.y - 0.3)), 64), M.ouro));
+    [-1, 1].forEach((d) => { const a = new T.Mesh(new T.TorusGeometry(0.2, 0.04, 16, 40, Math.PI * 1.2), M.ouro); a.position.set(d * 0.5, 0.42, 0); a.rotation.z = d > 0 ? -0.6 : Math.PI + 0.6; g.add(a); });
+    const haste = new T.Mesh(new T.CylinderGeometry(0.06, 0.09, 0.4, 24), M.ouro); haste.position.y = -0.45; g.add(haste);
+    const base = new T.Mesh(new T.BoxGeometry(0.62, 0.18, 0.62), M.marinho || M.ouro); base.position.y = -0.72; g.add(base);
+    g.rotation.set(0.15, -0.3, 0); return g;
+  },
+  presente(M) {
+    const T = THREE; const g = new T.Group();
+    g.add(new T.Mesh(new T.BoxGeometry(1, 0.8, 1), M.azul));
+    const tampa = new T.Mesh(new T.BoxGeometry(1.08, 0.2, 1.08), M.azul); tampa.position.y = 0.48; g.add(tampa);
+    [[0.14, 1.02, 1.1], [1.1, 1.02, 0.14]].forEach(([x, y, z]) => { const f = new T.Mesh(new T.BoxGeometry(x, y, z), M.ouro); f.position.y = 0.1; g.add(f); });
+    [-1, 1].forEach((d) => { const l = new T.Mesh(new T.TorusGeometry(0.17, 0.05, 16, 40), M.ouro); l.position.set(d * 0.16, 0.7, 0); l.rotation.set(0, d * 0.5, d * 0.5); g.add(l); });
+    g.rotation.set(0.35, -0.6, 0); return g;
+  },
+  diamante(M) {
+    const T = THREE; const g = new T.Group();
+    g.add(new T.Mesh(new T.LatheGeometry([V2(0, -0.85), V2(0.78, 0.12), V2(0.8, 0.2), V2(0.5, 0.48), V2(0, 0.5)], 12), M.diamante));
+    [[0.95, 0.6, 0.2, 0.12], [-0.95, -0.3, -0.2, 0.09]].forEach(([x, y, z, r]) => { const b = new T.Mesh(new T.OctahedronGeometry(r, 0), M.diamante); b.position.set(x, y, z); g.add(b); });
+    g.rotation.set(0.3, 0.2, 0); return g;
+  },
   outro(M) {
     const T = THREE; const s = new T.Shape(); for (let i = 0; i < 10; i++) { const r = i % 2 ? 0.38 : 0.95; const a = (i / 10) * Math.PI * 2 + Math.PI / 2; const x = Math.cos(a) * r; const y = Math.sin(a) * r; if (i) s.lineTo(x, y); else s.moveTo(x, y); } s.closePath();
     const geo = new T.ExtrudeGeometry(s, { depth: 0.16, bevelEnabled: true, bevelThickness: 0.12, bevelSize: 0.1, bevelSegments: 10, curveSegments: 4 }); geo.center();

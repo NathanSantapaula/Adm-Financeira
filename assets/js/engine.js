@@ -450,6 +450,8 @@
     const aporte = { ano: sum(C.aportes), ateAgora: r2(aportesAte), mediaMes: r2(aportesAte / meses), mesesComAporte, meses, constancia: mesesComAporte / meses,
       meta, metaAte, ritmo: metaAte > 0 ? aportesAte / metaAte : null, faltaMeta: metaAte > 0 ? r2(Math.max(0, metaAte - aportesAte)) : null,
       porMes: C.aportes.map((v, m) => m < meses && v > 0.5) };
+    const apCls = {}; itens.forEach((i) => { apCls[i.classe] = (apCls[i.classe] || 0) + sum(i.ap); });
+    aporte.porClasse = Object.keys(apCls).map((k) => ({ label: k, value: r2(apCls[k]) })).filter((c) => c.value > 0.005).sort((a, b) => b.value - a.value);
     // composição e concentração
     const pos = itens.filter((i) => i.valor > 0).map((i) => Object.assign(i, { peso: total > 0 ? i.valor / total : 0 })).sort((a, b) => b.valor - a.valor);
     const hhi = pos.reduce((s, i) => s + i.peso * i.peso, 0);
@@ -469,6 +471,13 @@
       capitalLiberdade: yoc && mediaDesp > 0 ? r2((mediaDesp * 12) / yoc) : null, pagadores,
       mesesComProvento: C.faturamento.slice(0, meses).filter((v) => v > 0).length };
     return { aporte, carteira, proventos };
+  }
+
+  /* Disponível para aportar no mês: sobra (entradas menos gastos) menos o já aplicado nele. A meta só serve de referência.
+     aplicado inclui os dividendos reinvestidos, que já entram na sobra; a falta para a meta usa os aportes (dinheiro novo), como o ritmo. */
+  function disponivelAporte(o) {
+    const m = o.mes; const sobra = r2(+o.C.investAlocado[m] || 0); const aportado = r2(+o.C.aplicado[m] || 0); const meta = +o.meta || 0;
+    return { sobra, aportado, disponivel: r2(Math.max(0, sobra - aportado)), meta, faltaMeta: meta > 0 ? r2(Math.max(0, meta - (+o.C.aportes[m] || 0))) : null };
   }
 
   /* ---------- Análise da renda: fontes, previsibilidade, estabilidade, poupança e comprometimento ----------
@@ -521,7 +530,9 @@
       id: typeof x.id === 'string' && x.id ? x.id.slice(0, 40) : newId(), tipo: tipoObjValido(x.tipo) ? x.tipo : 'outro',
       nome: typeof x.nome === 'string' ? x.nome.trim().slice(0, 60) : '', valor: Math.max(0, +x.valor || 0),
       ano: Number.isInteger(+x.ano) && +x.ano >= 1990 && +x.ano <= 2100 && x.ano !== null && x.ano !== '' ? +x.ano : null,
-      pct: Math.max(0, Math.min(100, Math.round(+x.pct || 0))) }));
+      // modo "marco": basta o patrimônio total chegar ao valor (não separa fatia); "fatia": reserva uma parte do patrimônio e do aporte
+      modo: x.modo === 'marco' ? 'marco' : 'fatia', icone: typeof x.icone === 'string' ? x.icone.replace(/[^a-z]/g, '').slice(0, 20) : '',
+      pct: x.modo === 'marco' ? 0 : Math.max(0, Math.min(100, Math.round(+x.pct || 0))) }));
     const tot = sum(out.map((x) => x.pct)); if (tot > 100) { const nv = repartir(out.map((x) => x.pct), 100); out.forEach((x, i) => { x.pct = nv[i]; }); }
     return out;
   }
@@ -537,12 +548,12 @@
     const h = o.hoje instanceof Date ? { ano: o.hoje.getFullYear(), mes: o.hoje.getMonth() } : (o.hoje || { ano: 2000, mes: 0 });
     const patr = Math.max(0, +o.patrimonio || 0); const ap = Math.max(0, +o.aporte || 0); const ret = +o.retorno || 0;
     const itens = (o.objetivos || []).map((g) => {
-      const f = (+g.pct || 0) / 100; const saldo = patr * f; const aporte = ap * f; const valor = +g.valor || 0; const prazo = prazoMeses(g.ano, h);
+      const marco = g.modo === 'marco'; const f = marco ? 1 : (+g.pct || 0) / 100; const saldo = patr * f; const aporte = ap * f; const valor = +g.valor || 0; const prazo = prazoMeses(g.ano, h);
       const meses = valor > 0 ? mesesAteMeta(saldo, aporte, ret, valor, 1200) : null;
       const prev = meses != null ? { ano: h.ano + Math.floor((h.mes + meses) / 12), mes: (h.mes + meses) % 12 } : null;
       const necessario = valor > 0 && prazo != null ? aporteNecessario(saldo, valor, ret, prazo) : null;
       let status;
-      if (!(valor > 0)) status = 'sem-valor'; else if (saldo >= valor) status = 'concluido'; else if (!(f > 0)) status = 'sem-divisao';
+      if (!(valor > 0)) status = 'sem-valor'; else if (saldo >= valor) status = 'concluido'; else if (!marco && !(f > 0)) status = 'sem-divisao';
       else if (meses == null) status = 'fora'; else if (prazo == null) status = 'sem-prazo'; else if (meses <= prazo) status = 'no-prazo'; else status = 'atrasado';
       return Object.assign({}, g, { saldo: r2(saldo), aporte: r2(aporte), progresso: valor > 0 ? Math.min(1, saldo / valor) : 0, falta: r2(Math.max(0, valor - saldo)), prazo, meses, previsto: prev,
         necessario: necessario == null ? null : r2(necessario), extra: necessario == null ? null : r2(Math.max(0, necessario - aporte)), status,
@@ -559,7 +570,7 @@
   function sugerirDivisao(o) {
     const h = o.hoje instanceof Date ? { ano: o.hoje.getFullYear(), mes: o.hoje.getMonth() } : (o.hoje || { ano: 2000, mes: 0 });
     const lista = o.objetivos || [];
-    const pesos = lista.map((g) => { const v = +g.valor || 0; if (!(v > 0)) return 0; const n = prazoMeses(g.ano, h); return aporteNecessario(0, v, o.retorno, n == null ? 240 : Math.max(1, n)); });
+    const pesos = lista.map((g) => { const v = +g.valor || 0; if (!(v > 0) || g.modo === 'marco') return 0; const n = prazoMeses(g.ano, h); return aporteNecessario(0, v, o.retorno, n == null ? 240 : Math.max(1, n)); });
     const pct = repartir(pesos, 100); const out = {}; lista.forEach((g, i) => { out[g.id] = pct[i]; }); return out;
   }
 
@@ -841,7 +852,7 @@
     }).filter(Boolean).sort((a, b) => b.valor - a.valor);
     return {
       mes, total, orcamento: r2(orcP), uso: orcP > 0 ? total / orcP : null, restante: orcP > 0 ? r2(orcP - total) : null,
-      nReais, nPrev: per.length - nReais, fixos: fixoP, pctFixos: total > 0 ? fixoP / total : null, mediaMes: r2(total / mesesConta),
+      nReais, nPrev: per.length - nReais, fixos: fixoP, pctFixos: total > 0 ? fixoP / total : null, mediaMes: r2((mes < 0 ? somar(per.filter((e) => e.m < mesesConta)) : total) / mesesConta),
       base, baseMeses: anteriores.length, delta, ritmo, porMes: porMes.map(r2), fixosMes: fixos.map(r2), variaveisMes: variaveis.map(r2),
       porCat, porArea, mudou, top, estab, semana: semana.map(r2), semanaQtd, recorrentes, recorrentesMes: r2(recorrentes.reduce((s, r) => s + r.media, 0)),
       parcelas, parcelasMes: r2(parcelas.reduce((s, x) => s + x.valor, 0)), parcelasRestante: r2(parcelas.reduce((s, x) => s + x.restante, 0)),
@@ -858,7 +869,7 @@
   const diaUtilBR = (y, m, d) => { const s = new Date(Date.UTC(y, m, d)).getUTCDay(); return s !== 0 && s !== 6 && !feriadoBR(y, m, d); };
   const api = { PLANOS, RECURSOS, ABA_RECURSO, planoPermite, planoMinimo, planoNorm, parseDataISO, MES, MES_LONGO, TAXONOMIA, ASSET_LEVELS, QUIZ, PERFIS, RETORNO_PADRAO, CATS_DESP, CATS_RENDA, FORMATO_BACKUP,
     z, add, sub, sum, r2, norm, monthIndex, parseValor, distribuir, parcelaMeses, parcelaFim, parcelaIndice, itemValores, carryItems,
-    ativoKey, buildAssetTree, rebalance, analiseInvest, analiseRenda, analiseGastos, analiseCarteira, nomeEstab, historico, ctxAno, OBJ_TIPOS, normObjetivos, analiseObjetivos, sugerirDivisao, aporteNecessario, notificacoes, scorePerfil, projetar, mesesAteMeta, simularObjetivo, migratePlan, compute, makeBackup, parseBackup,
+    ativoKey, buildAssetTree, rebalance, analiseInvest, disponivelAporte, analiseRenda, analiseGastos, analiseCarteira, nomeEstab, historico, ctxAno, OBJ_TIPOS, normObjetivos, analiseObjetivos, sugerirDivisao, aporteNecessario, notificacoes, scorePerfil, projetar, mesesAteMeta, simularObjetivo, migratePlan, compute, makeBackup, parseBackup,
     templateSheets, parseImport, applyImport, feriadoBR, diaUtilBR };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.FPEngine = api;
 })(typeof window !== 'undefined' ? window : globalThis);

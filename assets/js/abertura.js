@@ -103,7 +103,7 @@ function abAbrir() {
     <div class="ab-marca">${logoMarca()}</div>
     <div class="ab-esq"><p class="ab-saud">${esc(saudacaoHora())}${D.nome ? ', ' + esc(D.nome) : ''}.</p>
       <h1 class="ab-tit" aria-live="polite"><span class="ab-tt"></span><span class="ab-cur" aria-hidden="true"></span></h1>
-      <div class="ab-vivo"><span class="ab-pill"><i></i>Ao vivo</span><small class="ab-desde"></small><b class="ab-rend">R$ 0,00</b><em>Simulação com 12% ao ano, só em dias úteis, das 9h às 18h. Sem promessa de resultado.</em></div></div>
+      <div class="ab-vivo"><span class="ab-pill"><i></i>Ao vivo</span><small class="ab-desde"></small><b class="ab-rend">R$ 0,00</b></div></div>
     <div class="ab-ferr"><div class="ab-ano" role="group" aria-label="Ano do globo" hidden><button type="button" data-ano="-1" aria-label="Ano anterior">${AB_SETA_E}</button><b aria-live="polite"></b><button type="button" data-ano="1" aria-label="Próximo ano">${AB_SETA_D}</button></div>
       <button class="ab-olho" type="button"></button>
       <div class="ab-zoom" role="group" aria-label="Zoom"><button type="button" data-z="mais" aria-label="Aproximar">+</button><button type="button" data-z="menos" aria-label="Afastar">−</button><button type="button" data-z="tudo" aria-label="Ver tudo" hidden>⤢</button></div></div>
@@ -515,9 +515,9 @@ function abVivo() {
     const br = new Date(Date.now() - 3 * 3600e3); const h = br.getUTCHours() + br.getUTCMinutes() / 60 + br.getUTCSeconds() / 3600;
     const aberto = E.diaUtilBR(br.getUTCFullYear(), br.getUTCMonth(), br.getUTCDate()) && h >= h0 && h < h1;
     if (estado !== aberto) { estado = aberto; box.classList.toggle('fora', !aberto); pill.lastChild.textContent = aberto ? 'Ao vivo' : 'Fora do ar';
-      desde.textContent = aberto ? `Desde as ${h0}h de hoje (horário de Brasília), seu patrimônio rendeu` : `Mercado fechado agora. Num dia útil inteiro, das ${h0}h às ${h1}h, seu patrimônio rende cerca de`; }
-    if (abOc()) { b.textContent = 'R$ •••'; return; }
-    const v = A.D.patr * (Math.pow(1 + porSeg, (aberto ? h - h0 : h1 - h0) * 3600) - 1);
+      desde.textContent = aberto ? `Desde as ${h0}h de hoje (horário de Brasília), estimamos que seu patrimônio rendeu` : `Mercado fechado agora. Volta às ${h0}h do próximo dia útil.`; b.hidden = !aberto; }
+    if (!aberto) return; if (abOc()) { b.textContent = 'R$ •••'; return; }
+    const v = A.D.patr * (Math.pow(1 + porSeg, (h - h0) * 3600) - 1);
     const [int, dec] = v.toFixed(4).split('.'); b.innerHTML = `R$ ${(+int).toLocaleString('pt-BR')},${dec.slice(0, 2)}<span>${dec.slice(2)}</span>`; };
   conta(); A.tV = setInterval(conta, 80);
 }
@@ -525,7 +525,7 @@ function abVivo() {
 /* ---------- Painel › Personalizar o painel › Tela de abertura ---------- */
 const AB_CAMADAS = [
   ['titulo', 'Título', 'Frases sobre o seu momento, digitadas na hora.'],
-  ['vivo', 'Ao vivo', 'Quanto o patrimônio rende hoje no horário comercial (dias úteis, 9h às 18h), numa simulação de 12% ao ano.'],
+  ['vivo', 'Ao vivo', 'Quanto o patrimônio rende hoje no horário comercial (dias úteis, 9h às 18h), numa estimativa.'],
   ['classes', 'Investimentos', 'Orbs que pulsam, uma por classe da carteira, do tamanho da proporção.'],
   ['objetivos', 'Objetivos', 'Cristais em órbita; o nome e o progresso aparecem ao tocar.'],
   ['aportes', 'Aportes', 'Losangos verdes, um por mês com aporte.'],

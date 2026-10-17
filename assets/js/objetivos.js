@@ -80,7 +80,11 @@ function objTitulo(g) {
 /* ---------- Experiência Imersiva: objeto 3D do objetivo dentro do card ----------
    O 3D de verdade (WebGL) fica em obj3d.js. Aqui fica só o lugar dele no card. Se o aparelho não tiver WebGL
    ou a biblioteca não carregar, o card recebe .sem-3d e mostra a foto do objetivo, como no visual normal. */
-const OBJ_3D_TIPOS = ['casamento', 'carro', 'imovel', 'viagem', 'filhos', 'educacao', 'reserva', 'independencia', 'aposentadoria', 'negocio', 'outro'];
+const OBJ_3D_TIPOS = ['casamento', 'carro', 'imovel', 'viagem', 'filhos', 'educacao', 'reserva', 'independencia', 'aposentadoria', 'negocio', 'outro', 'cartao', 'trofeu', 'presente', 'diamante'];
+// coletânea do objetivo "Outro": o cliente escolhe o objeto 3D (os novos e os dos outros tipos)
+const OBJ_3D_ESCOLHA = [['outro', 'Estrela'], ['cartao', 'Cartão Legacy XP'], ['trofeu', 'Troféu'], ['presente', 'Presente'], ['diamante', 'Diamante'], ['reserva', 'Moedas'], ['casamento', 'Alianças'],
+  ['imovel', 'Casa'], ['carro', 'Carro'], ['viagem', 'Viagem'], ['educacao', 'Educação'], ['filhos', 'Filhos'], ['negocio', 'Negócio'], ['independencia', 'Liberdade'], ['aposentadoria', 'Aposentadoria']];
+const obj3dDe = (g) => (g.tipo === 'outro' && g.icone ? g.icone : g.tipo);
 const obj3dHtml = (tipo) => `<div class="ob3d" aria-hidden="true" data-tipo="${OBJ_3D_TIPOS.includes(tipo) ? tipo : 'outro'}"><div class="ob3d-gl"></div></div>`;
 function obj3dLigar() {
   const card = document.getElementById('obj-card'); const o = card && card.querySelector('.ob3d'); if (!o) return;
@@ -117,7 +121,7 @@ function objCardHtml() {
   const sw = A.itens.length > 1 ? `<div class="obj-sw-w">${seta(-1, 'Objetivos anteriores')}<div class="obj-sw" role="tablist" aria-label="Escolher objetivo">${A.itens.map((x, k) => `<button role="tab" class="obj-chip" data-act="objetivo-foco" data-id="${esc(x.id)}" aria-selected="${x.id === g.id}" title="${esc(objNomeDe(x))}">${objIcone(x, k)}<span>${esc(objNomeDe(x))}</span></button>`).join('')}</div>${seta(1, 'Próximos objetivos')}</div>` : '';
   // "E se?" (simulador do objetivo) fica no topo do card, ao lado da seta para Meus objetivos
   const sim = g.status !== 'concluido' && g.valor > 0 && g.pct > 0 ? `<button class="sonho-esse" data-act="sim-ir" aria-label="E se? Simular cenários para este objetivo" title="E se? Simular cenários para este objetivo">${typeof I_SIM !== 'undefined' ? I_SIM : ''}<span>E se?</span></button>` : '';
-  return `<section class="card goal-card sonho v-${vis}" id="obj-card"><span class="sonho-foto" aria-hidden="true" style="background-image:url('${objFoto(g.tipo)}')"></span>${o3(g.tipo)}
+  return `<section class="card goal-card sonho v-${vis}" id="obj-card"><span class="sonho-foto" aria-hidden="true" style="background-image:url('${objFoto(g.tipo)}')"></span>${o3(obj3dDe(g))}
     <div class="sonho-c">
       <div class="sonho-top"><span class="sonho-k">Seu próximo objetivo</span><span class="sonho-acts">${sim}<button class="sonho-ger" data-act="objetivos-abrir" aria-label="Meus objetivos" title="Meus objetivos">${OBJ_I_SETA}</button></span></div>
       <h3 class="sonho-t">${esc(objTitulo(g))}</h3>
@@ -153,7 +157,7 @@ function objetivosHtml() {
   const L = objLista(); const A = objAnalise(); const B = objBase();
   if (!L.length) return `<section class="dr-sec"><h3>Qual é o seu primeiro objetivo?</h3><p class="mmsg">Escolha um tipo. Depois você define valor, prazo e quanto do patrimônio vai para ele, e pode cadastrar quantos objetivos quiser.</p>${objTiposHtml('objetivo-novo')}</section>`;
   const barra = `<div class="obj-div" role="img" aria-label="Divisão do patrimônio entre os objetivos">${A.itens.map((g, i) => (g.pct > 0 ? `<i style="width:${g.pct}%;background:${objCor(i)}" title="${esc(objNomeDe(g))}: ${g.pct}%"></i>` : '')).join('')}${A.livre > 0 ? `<i class="livre" style="width:${A.livre}%" title="Sem destino: ${A.livre}%"></i>` : ''}</div>`;
-  const leg = `<ul class="leg obj-leg">${A.itens.map((g, i) => `<li><i style="background:${objCor(i)}"></i>${esc(objNomeDe(g))} ${g.pct}%</li>`).join('')}${A.livre > 0 ? `<li><i class="livre"></i>Sem destino ${A.livre}%</li>` : ''}</ul>`;
+  const leg = `<ul class="leg obj-leg">${A.itens.map((g, i) => (g.modo === 'marco' ? '' : `<li><i style="background:${objCor(i)}"></i>${esc(objNomeDe(g))} ${g.pct}%</li>`)).join('')}${A.livre > 0 ? `<li><i class="livre"></i>Sem destino ${A.livre}%</li>` : ''}</ul>`;
   const card = (g, i) => { const st = OBJ_STATUS[g.status] || OBJ_STATUS['sem-valor'];
     return `<li class="obj-card" data-id="${esc(g.id)}">
       <div class="obj-card-h">${objIcone(g, i)}<input class="obj-nome" data-objf="nome" data-id="${esc(g.id)}" value="${esc(g.nome)}" placeholder="${esc(objNome(g.tipo))}" aria-label="Nome do objetivo" maxlength="60"><span class="obj-st ${st[1]}">${st[0]}</span>
@@ -161,10 +165,12 @@ function objetivosHtml() {
       <div class="obj-campos"><label class="fld"><span>Tipo</span>${sel('t-' + g.id, E.OBJ_TIPOS, g.tipo).replace('<select', `<select data-objf="tipo" data-id="${esc(g.id)}"`)}</label>
         <label class="fld"><span>Valor alvo (R$)</span><input data-objf="valor" data-id="${esc(g.id)}" inputmode="decimal" value="${g.valor ? (oculto() ? '' : nf.format(g.valor)) : ''}" placeholder="${oculto() ? 'Valor oculto' : 'Ex.: 300.000,00'}"></label>
         <label class="fld"><span>Ano limite</span><input data-objf="ano" data-id="${esc(g.id)}" inputmode="numeric" maxlength="4" value="${g.ano || ''}" placeholder="${NOW_Y + (OBJ_PRAZO[g.tipo] || 5)}"></label>
-        <label class="fld"><span>Fatia (%)</span><input data-objf="pct" data-id="${esc(g.id)}" inputmode="numeric" maxlength="3" value="${g.pct}"></label></div>
+        <label class="fld"><span>Como conta</span>${sel('m-' + g.id, [['fatia', 'Separa uma fatia'], ['marco', 'Só atingir o valor']], g.modo).replace('<select', `<select data-objf="modo" data-id="${esc(g.id)}"`)}</label>
+        ${g.modo === 'marco' ? '' : `<label class="fld"><span>Fatia (%)</span><input data-objf="pct" data-id="${esc(g.id)}" inputmode="numeric" maxlength="3" value="${g.pct}"></label>`}
+        ${g.tipo === 'outro' ? `<label class="fld"><span>Objeto 3D</span>${sel('i-' + g.id, OBJ_3D_ESCOLHA, g.icone || 'outro').replace('<select', `<select data-objf="icone" data-id="${esc(g.id)}"`)}</label>` : ''}</div>
       <div class="obj-prog"><span class="kbar" style="--cor:${objCor(i)}"><i style="width:${(g.progresso * 100).toFixed(1)}%"></i></span><small>${pct(g.progresso)} · ${brl0(g.saldo)} de ${brl0(g.valor)}</small></div>
       <p class="obj-frase">${esc(objFrase(g))}</p></li>`; };
-  return `<section class="dr-sec obj-topo"><p class="mmsg">A fatia de cada objetivo divide o seu patrimônio (${brl0(B.patrimonio)}) e o aporte mensal (${brl0(B.aporte)}) entre as metas. A soma vai até 100%.</p>${barra}${leg}
+  return `<section class="dr-sec obj-topo"><p class="mmsg">A fatia de cada objetivo divide o seu patrimônio (${brl0(B.patrimonio)}) e o aporte mensal (${brl0(B.aporte)}) entre as metas. A soma vai até 100%. Objetivos de "Só atingir o valor" não separam fatia: contam o patrimônio inteiro.</p>${barra}${leg}
       <div class="btn-row"><button class="btn sm" data-act="objetivo-dividir">Dividir pelo prazo</button>${A.livre > 0 && L.length ? `<button class="btn sm" data-act="objetivo-completar">Dar os ${A.livre}% livres ao 1º objetivo</button>` : ''}</div></section>
     <section class="dr-sec"><ul class="obj-lista">${A.itens.map(card).join('')}</ul></section>
     <section class="dr-sec"><h3>Adicionar objetivo</h3>${objTiposHtml('objetivo-novo')}</section>
@@ -216,6 +222,8 @@ function objCampo(t) {
   const k = t.dataset.objf;
   if (k === 'nome') g.nome = t.value.trim().slice(0, 60);
   else if (k === 'tipo') g.tipo = t.value;
+  else if (k === 'modo') { g.modo = t.value === 'marco' ? 'marco' : 'fatia'; if (g.modo === 'marco') g.pct = 0; }
+  else if (k === 'icone') g.icone = OBJ_3D_ESCOLHA.some(([v]) => v === t.value) ? t.value : '';
   else if (k === 'valor') { if (oculto() && !t.value.trim()) return; const v = t.value.trim() === '' ? 0 : parseReais(t.value); if (Number.isNaN(v) || v < 0) { toast('Valor inválido. Use números como 250.000,00.'); t.value = g.valor ? nf.format(g.valor) : ''; return; } g.valor = v; }
   else if (k === 'ano') { const a = parseInt(t.value, 10); if (t.value.trim() === '') g.ano = null; else if (!anoValido(a)) { toast('Informe um ano entre 1990 e 2100.'); t.value = g.ano || ''; return; } else g.ano = a; }
   else if (k === 'pct') {

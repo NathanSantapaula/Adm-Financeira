@@ -94,8 +94,25 @@ ok(E.planoPermite('gratis', 'orcamento') && !E.planoPermite('gratis', 'carteira'
   ok(A.proventos.ano === 70 && Math.abs(A.proventos.mediaMes - 70 / 3) < 0.01 && Math.abs(A.proventos.yoc - (70 / 3 * 12) / 5000) < 1e-6 && Math.abs(A.proventos.cobertura - (70 / 3) / 1000) < 1e-6, 'análise: média mensal, yield on cost e cobertura dos gastos');
   ok(A.proventos.capitalLiberdade > 0 && Math.abs(A.proventos.capitalLiberdade - 12000 / A.proventos.yoc) < 0.01 && A.proventos.pagadores[0].nome === 'HGLG11' && A.proventos.pagadores[0].mesesPagos === 3, 'análise: capital para cobrir os gastos e ranking de pagadores');
   ok(A.aporte.mesesComAporte === 2 && A.aporte.meses === 3 && A.aporte.metaAte === 4500 && A.aporte.porMes.filter(Boolean).length === 2, 'análise: constância e meta proporcional aos meses');
+  const pc = A.aporte.porClasse; ok(pc.length > 0 && pc.every((c, i) => c.value > 0 && (!i || pc[i - 1].value >= c.value)) && Math.abs(pc.reduce((s, c) => s + c.value, 0) - plan.ativos.reduce((s, a) => s + Math.max(0, E.sum(a.ap)), 0)) < 0.01, 'análise: aportes do ano por classe, do maior para o menor');
   const V = E.analiseInvest({ C: E.compute(E.migratePlan({ year: 2026 }, () => 'z'), {}), meses: 12, itens: [] });
   ok(V.carteira.total === 0 && V.carteira.nEfetivo === 0 && V.proventos.yoc === null && V.proventos.cobertura === null && V.aporte.ritmo === null, 'análise: carteira vazia não gera divisão por zero');
+}
+
+// --- disponível para aportar: sobra do mês menos o que já foi aportado nele; a meta é só referência
+{
+  // aplicado inclui dividendos reinvestidos (já somados na sobra); a meta compara só o dinheiro novo (aportes)
+  const Cd = { investAlocado: [5000, 1000, -300], aplicado: [2100, 1500, 0], aportes: [2000, 1500, 0] };
+  const a = E.disponivelAporte({ C: Cd, mes: 0, meta: 3200 });
+  ok(a.sobra === 5000 && a.aportado === 2100 && a.disponivel === 2900 && a.faltaMeta === 1200, 'disponível: sobra menos aplicado, falta para a meta pelos aportes');
+  const b = E.disponivelAporte({ C: Cd, mes: 1, meta: 0 }); const c = E.disponivelAporte({ C: Cd, mes: 2, meta: 1000 });
+  ok(b.disponivel === 0 && b.faltaMeta === null && c.disponivel === 0 && c.faltaMeta === 1000, 'disponível: nunca negativo; sem meta, sem falta');
+  // contas batem de ponta a ponta: rendas + dividendos − gastos (previstos e lançados) − aplicado = disponível da Carteira
+  const z12 = () => new Array(12).fill(0); const pl = { v: 2, year: 2026, settings: {}, rendaCats: E.CATS_RENDA(), catsDesp: E.CATS_DESP(), orcamento: new Array(12).fill(null), rendas: [{ id: 'r', cat: 'fixa', nome: 'Salário', valores: new Array(12).fill(12000) }],
+    despesas: [{ id: 'd', cat: 'fixa', area: 'Moradia', nome: 'Aluguel', valores: new Array(12).fill(7500) }], lancamentos: [{ id: 'l', data: '2026-10-05', valor: 640, cat: 'variavel', nome: 'Mercado' }],
+    ativos: [{ id: 'a', tipo: 'BOLSA DE VALORES', classe: 'FIIs', nome: 'MXRF11', ap: z12().fill(2400), pr: z12().fill(88) }] };
+  const Cp = E.compute(pl, { patrimonioInicial: 0 }); const dp = E.disponivelAporte({ C: Cp, mes: 9, meta: 2400 });
+  ok(Cp.receita[9] === 12088 && Cp.despesas[9] === 8140 && dp.sobra === 3948 && dp.aportado === 2400 && dp.disponivel === 1548 && Cp.aportes[9] === 2312 && dp.faltaMeta === 88, 'contas: entradas, gastos, sobra, investido e disponível fecham');
 }
 
 
@@ -269,6 +286,8 @@ ok(E.planoPermite('gratis', 'orcamento') && !E.planoPermite('gratis', 'carteira'
   const A = E.analiseGastos({ ano: 2026, mes: -1, meses: 3, entradas: ents, catsDesp: cats, orcamento: orc });
   ok(Math.abs(A.total - (2539.9 + 2639.9 + 3599.9)) < 0.01 && Math.abs(A.mediaMes - A.total / 3) < 0.01 && A.ritmo === null && A.delta === null, 'gastos: visão do ano');
   ok(Math.abs(E.sum(A.porMes) - A.total) < 0.01 && Math.abs(A.fixosMes[0] - 2000) < 0.01 && Math.abs(A.variaveisMes[2] - 1599.9) < 0.01, 'gastos: fixos e variáveis por mês');
+  const F = E.analiseGastos({ ano: 2026, mes: -1, meses: 3, entradas: ents.concat([{ m: 6, dia: 0, valor: 2000, cat: fixa, area: 'Moradia', nome: 'Aluguel', tipo: 'prev' }]), catsDesp: cats, orcamento: orc });
+  ok(Math.abs(F.mediaMes - A.total / 3) < 0.01, 'gastos: média do ano só com os meses decorridos (previsto futuro fora)');
 }
 
 // --- análise da carteira contra o alvo (aba Carteira)
@@ -290,6 +309,13 @@ ok(E.planoPermite('gratis', 'orcamento') && !E.planoPermite('gratis', 'carteira'
   ok(E.feriadoBR(2026, 3, 3) && E.feriadoBR(2026, 1, 16) && E.feriadoBR(2026, 1, 17) && E.feriadoBR(2026, 5, 4), 'feriados móveis de 2026: sexta santa, carnaval e Corpus Christi');
   ok(E.feriadoBR(2026, 10, 20) && E.feriadoBR(2025, 11, 25) && !E.feriadoBR(2026, 3, 6), 'feriados fixos e dia comum');
   ok(!E.diaUtilBR(2026, 9, 17) && !E.diaUtilBR(2026, 9, 18) && E.diaUtilBR(2026, 9, 19) && !E.diaUtilBR(2026, 9, 12), 'sábado, domingo, segunda útil e 12 de outubro');
+}
+
+{ // objetivo de marco: conta o patrimônio inteiro e não ocupa fatia
+  const L = E.normObjetivos({ objetivos: [{ id: 'm', tipo: 'independencia', valor: 1000, modo: 'marco', pct: 40 }, { id: 'f', tipo: 'viagem', valor: 1000, pct: 50, icone: 'cartao!' }] });
+  ok(L[0].pct === 0 && L[0].modo === 'marco' && L[1].modo === 'fatia' && L[1].icone === 'cartao', 'objetivos: marco sem fatia e ícone saneado');
+  const A = E.analiseObjetivos({ objetivos: L, patrimonio: 800, aporte: 100, retorno: 0, hoje: { ano: 2026, mes: 0 } });
+  ok(A.itens[0].saldo === 800 && A.itens[0].status !== 'sem-divisao' && A.itens[1].saldo === 400 && A.pctAlocado === 50, 'objetivos: marco usa o patrimônio total; fatia usa a parte dela');
 }
 
 process.exit(bad ? 1 : 0);
