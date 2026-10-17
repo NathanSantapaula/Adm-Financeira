@@ -142,6 +142,7 @@ function onClick(e) {
       case 'create-plan': createPlan(S.year || NOW_Y, null); break;
       case 'add-ativo': openAtivo(); break;
       case 'aporte-novo': openAporte(); break;
+      case 'meta-padrao': S.plan.metasAporte[+ds.m] = null; commit(); break;
       case 'edit-ativo': openAtivo(ds.id); break;
       case 'cart-norm': cartNormalize(); break;
       case 'cart-equal': cartEqual(); break;

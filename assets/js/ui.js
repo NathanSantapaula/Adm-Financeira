@@ -104,6 +104,7 @@ function applyCell(ds, val, empty) {
   else if (ds.k === 'dv') { const d = p.despesas.find((x) => x.id === ds.id); if (d && !d.parcel) d.valores[m] = val; }
   else if (ds.k === 'orc') p.orcamento[m] = empty ? null : val;
   else if (ds.k === 'ma') p.settings.metaAporte = Math.max(0, empty ? 0 : val);
+  else if (ds.k === 'mam') { p.metasAporte = p.metasAporte || new Array(12).fill(null); p.metasAporte[m] = empty ? null : Math.max(0, val); }
   else if (ds.k === 'ap' || ds.k === 'pr') { const a = p.ativos.find((x) => x.id === ds.id); if (a) a[ds.k][m] = val; }
   else if (CART_FIELD[ds.k]) { const e = cartEntry(ds.id, true); e[CART_FIELD[ds.k]] = empty && ds.k !== 'al' ? null : val; }
   return kindOf(ds.k);
@@ -128,15 +129,16 @@ function startEdit(el, seed) {
     if (done) return;
     const ri = +el.dataset.ri; const m = +el.dataset.m;
     if (mode === 'cancel') { done = true; paintCell(el, cur); el.focus(); return; }
-    const raw = inp.value.replace('%', ''); const empty = raw.trim() === ''; const val = el.dataset.k === 'ma' ? (empty ? 0 : parseReais(raw)) : E.parseValor(raw); // meta: "2.200" = dois mil e duzentos
+    const raw = inp.value.replace('%', ''); const empty = raw.trim() === ''; const val = el.dataset.k === 'ma' || el.dataset.k === 'mam' ? (empty ? 0 : parseReais(raw)) : E.parseValor(raw); // meta: "2.200" = dois mil e duzentos
     if (Number.isNaN(val)) {
       if (dir) { inp.classList.add('bad'); inp.select(); toast('Valor inválido. Use números como 1.234,56'); return; }
       done = true; paintCell(el, cur); toast('Valor inválido. A edição foi descartada.'); return;
     }
     done = true;
-    const optional = el.dataset.k === 'orc' || (CART_FIELD[el.dataset.k] && el.dataset.k !== 'al');
-    const changed = Math.abs(val - cur) >= 0.005 || (empty && optional && !el.classList.contains('auto') && el.dataset.k !== 'orc');
-    const orcChanged = el.dataset.k === 'orc' && (empty ? el.dataset.custom === '1' : Math.abs(val - cur) >= 0.005);
+    const vazioVolta = el.dataset.k === 'orc' || el.dataset.k === 'mam'; // apagar volta ao valor padrão (orçamento, meta do mês)
+    const optional = vazioVolta || (CART_FIELD[el.dataset.k] && el.dataset.k !== 'al');
+    const changed = Math.abs(val - cur) >= 0.005 || (empty && optional && !el.classList.contains('auto') && !vazioVolta);
+    const orcChanged = vazioVolta && (empty ? el.dataset.custom === '1' : Math.abs(val - cur) >= 0.005);
     if (changed || orcChanged) { const kind = applyCell(el.dataset, val, empty); touch(kind); }
     if (dir) { const nxt = neighbor(ri, m, dir); S.pendingFocus = nxt || { ri, m }; S.stale = false; paintCell(el, val); render(); }
     else { paintCell(el, val); if (changed || orcChanged) S.stale = true; }

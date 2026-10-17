@@ -214,7 +214,7 @@ function gLancamentos() {
 function viewDespesas() {
   const p = S.plan; RI = 0; FIRST_ED = true; const mr = S.year === NOW_Y ? NOW_M : S.mes;
   const vazio = !p.lancamentos.length && !(S.C.T.despesas > 0) && !(S.C.T.orcamento > 0);
-  const acts = `<button class="btn primary" data-act="ingest-open">${I.plus}Importar extrato</button><button class="btn" data-act="add-lanc" data-mes="${S.gPer === 'ano' ? mr : S.mes}">Novo gasto</button><button class="btn" data-act="cats" data-kind="desp">Categorias</button>${yearControl()}`;
+  const acts = `<button class="btn primary" data-act="ingest-open">${I.plus}Importar extrato</button><button class="btn" data-act="add-lanc" data-mes="${S.gPer === 'ano' ? mr : S.mes}">Novo gasto</button>${yearControl()}`;
   const head = `<div class="page-h"><div><h2 class="title">Gastos</h2><p class="sub">Escolha o mês ou o ano: os números, as análises e a lista mostram o mesmo período.</p></div><div class="acts">${acts}</div></div>`;
   if (vazio) return `${head}<section class="cc-empty"><div class="cc-empty-ic" aria-hidden="true">${I.plus}</div><div class="cc-empty-tx"><h3>Seu ${S.year} começa pelo extrato</h3><p>Arraste o CSV ou OFX do seu banco: categorizamos tudo e você só confere. Leva menos de um minuto.</p></div><div class="cc-empty-acts"><button class="btn primary lg" data-act="ingest-open">Importar extrato</button><button class="btn ghost" data-act="add-lanc" data-mes="${mr}">Lançar manualmente</button></div></section>`;
   const { G } = gastosDados();
@@ -449,9 +449,9 @@ function desfazerBaixa(l) {
   if (it && it.baixas && d) delete it.baixas[d.ano + '-' + d.mes];
 }
 const tipoDaCategoria = (catId) => { const c = S.plan.catsDesp.find((x) => x.id === catId); return c && (c.id === 'fixa' || E.norm(c.nome).includes('fixa')) ? 'fixa' : 'variavel'; };
+const CAT_NOVA = '__nova';
 function openLanc(id, preset) {
   const p = S.plan; preset = preset || {};
-  if (!p.catsDesp.length) { toast('Crie uma categoria primeiro.'); openCats('desp'); return; }
   const l = id ? p.lancamentos.find((x) => x.id === id) : null; const mes = preset.mes != null ? preset.mes : S.year === NOW_Y ? NOW_M : S.mes; const h = new Date();
   const dataPad = l ? l.data : (S.year === h.getFullYear() && mes === h.getMonth() ? `${h.getFullYear()}-${pad2(h.getMonth() + 1)}-${pad2(h.getDate())}` : `${S.year}-${pad2(mes + 1)}-01`);
   const aprender = !!(l && l.origem && l.origem !== 'manual');
@@ -460,7 +460,8 @@ function openLanc(id, preset) {
     body: `<div class="fld-2"><label class="fld"><span>Data</span><input type="date" name="data" value="${esc(dataPad)}"></label><label class="fld"><span>Valor (R$)</span><input name="valor" inputmode="decimal" value="${l ? esc(String(Math.abs(l.valor)).replace('.', ',')) : ''}" placeholder="0,00" autocomplete="off"></label></div>
       <label class="fld"><span>Descrição</span><input name="desc" value="${esc(l ? l.desc : '')}" autocomplete="off"></label>
       <label class="chk"><input type="checkbox" name="estorno" ${l && l.valor < 0 ? 'checked' : ''}><span><b>É estorno ou reembolso</b><small>Reduz o gasto do mês em vez de somar.</small></span></label>
-      <label class="fld"><span>Categoria</span>${sel('cat', p.catsDesp.map((c) => [c.id, c.nome]), l ? l.cat : p.catsDesp[0].id)}</label>
+      <label class="fld"><span>Categoria</span>${sel('cat', p.catsDesp.map((c) => [c.id, c.nome]).concat([[CAT_NOVA, '+ Nova categoria']]), l ? l.cat : p.catsDesp.length ? p.catsDesp[0].id : CAT_NOVA)}</label>
+      <label class="fld" data-cat-nova${p.catsDesp.length && !(l && !l.cat) ? ' hidden' : ''}><span>Nome da nova categoria</span><input name="catNova" autocomplete="off" placeholder="Ex.: Pets"></label>${p.catsDesp.length ? '<button type="button" class="lnk lanc-cats" data-act="cats" data-kind="desp">Organizar categorias</button>' : ''}
       <div class="fld-2"><label class="fld"><span>Área <small>(ex.: Moradia)</small></span><input name="area" list="dl-area" value="${esc(l ? l.area : '')}" autocomplete="off"></label><label class="fld"><span>Subárea <small>(opcional)</small></span><input name="sub" list="dl-sub" value="${esc(l ? l.sub || '' : '')}" autocomplete="off"></label></div>
       ${aprender ? '<label class="chk"><input type="checkbox" name="lembrar" checked><span><b>Lembrar para lançamentos parecidos</b><small>Nas próximas importações, este estabelecimento já entra com esta categoria.</small></span></label>' : ''}
       ${dlist('dl-area', p.despesas.map((x) => x.area).concat(p.lancamentos.map((x) => x.area)))}${dlist('dl-sub', p.despesas.map((x) => x.sub).concat(p.lancamentos.map((x) => x.sub)))}`,
@@ -470,6 +471,10 @@ function openLanc(id, preset) {
       if (!dt || !/^\d{4}-\d{2}-\d{2}$/.test(data) || !anoValido(dt.ano)) return bad(err, 'Informe uma data válida.');
       const v = E.parseValor(d.valor); if (Number.isNaN(v) || v === 0) return bad(err, 'Informe o valor do lançamento.');
       const desc = (d.desc || '').trim(); if (!desc) return bad(err, 'Informe a descrição.');
+      if (d.cat === CAT_NOVA) { // categoria nova criada aqui mesmo; com o mesmo nome de uma que já existe, usa a existente
+        const nome = (d.catNova || '').trim(); if (!nome) return bad(err, 'Informe o nome da nova categoria.');
+        const ja = p.catsDesp.find((c) => E.norm(c.nome) === E.norm(nome)); d.cat = ja ? ja.id : uid(); if (!ja) p.catsDesp.push({ id: d.cat, nome });
+      }
       const dados = { data, desc, valor: E.r2(d.estorno ? -Math.abs(v) : Math.abs(v)), cat: d.cat, area: (d.area || '').trim() || 'Outros', sub: (d.sub || '').trim() };
       const alvo = dt.ano === S.year ? p : ensurePlan(dt.ano);
       if (l) { if (alvo !== p) { desfazerBaixa(l); p.lancamentos = p.lancamentos.filter((x) => x.id !== l.id); Object.assign(l, dados); alvo.lancamentos.push(l); savePlanNow(dt.ano); } else Object.assign(l, dados); }
@@ -479,5 +484,6 @@ function openLanc(id, preset) {
       commit();
     },
   });
+  const nova = f.querySelector('[data-cat-nova]'); f.elements.cat.addEventListener('change', () => { nova.hidden = f.elements.cat.value !== CAT_NOVA; if (!nova.hidden) f.elements.catNova.focus(); });
   return f;
 }

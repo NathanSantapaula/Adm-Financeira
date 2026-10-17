@@ -433,12 +433,12 @@ function histAcao(act, ds) {
 /* ---------- Segundo gráfico da Visão geral (no lugar de "Orçamento e gastos") ----------
    Planos com investimentos: constância dos aportes contra a meta mensal. Plano Organização: gastos fixos e variáveis. */
 function painel2Dados() {
-  const C = S.C; const ult = S.year === NOW_Y ? NOW_M : S.year < NOW_Y ? 11 : -1; const meta = metaDoAporte();
+  const C = S.C; const ult = S.year === NOW_Y ? NOW_M : S.year < NOW_Y ? 11 : -1; const mm = C.metaAporteMes || MES.map(() => metaDoAporte()); // meta de cada mês
   const ap = C.aportes.map((v) => Math.max(0, +v || 0)); const [de, ate] = perIntervalo(); const fim = Math.min(ate, ult); const meses = Math.max(0, fim - de + 1);
-  const trecho = ap.slice(de, de + meses); const dentro = trecho.map((v) => meta > 0 && v >= meta - 0.5);
+  const trecho = ap.slice(de, de + meses); const dentro = trecho.map((v, k) => mm[de + k] > 0 && v >= mm[de + k] - 0.5); const meta = Math.max(0, ...mm.slice(de, de + meses));
   let seq = 0; for (let i = dentro.length - 1; i >= 0 && dentro[i]; i--) seq++;
   const comAporte = trecho.filter((v) => v > 0).length; const media = meses > 0 ? trecho.reduce((a, v) => a + v, 0) / meses : 0;
-  return { ap, meta, meses, naMeta: dentro.filter(Boolean).length, seq, comAporte, media };
+  return { ap, meta, mm, meses, naMeta: dentro.filter(Boolean).length, seq, comAporte, media };
 }
 function painel2Html() {
   if (temRecurso('investimentos')) {
@@ -462,8 +462,8 @@ function drawPainel2() {
   const el = $('#d-p2'); if (!el) return; const C = S.C; const cur = S.year === NOW_Y ? NOW_M : -1;
   if (temRecurso('investimentos')) {
     const D = painel2Dados();
-    chartBarsPer(el, { labels: MES, cur, height: 190, aria: 'Aportes de cada mês comparados com a meta mensal', bars: [{ color: 'var(--accent)', values: D.ap }], marks: D.meta > 0 ? [{ color: 'var(--c4)', values: MES.map(() => D.meta) }] : [],
-      tip: (i) => `<b>${MES_LONGO[i][0].toUpperCase() + MES_LONGO[i].slice(1)}</b><br>Aporte: ${brl0(D.ap[i])}${D.meta > 0 ? `<br>Meta: ${brl0(D.meta)}<br>${D.ap[i] >= D.meta - 0.5 ? 'Na meta' : i <= (S.year === NOW_Y ? NOW_M : 11) ? `Faltaram ${brl0(D.meta - D.ap[i])}` : ''}` : ''}` });
+    chartBarsPer(el, { labels: MES, cur, height: 190, aria: 'Aportes de cada mês comparados com a meta mensal', bars: [{ color: 'var(--accent)', values: D.ap }], marks: D.meta > 0 ? [{ color: 'var(--c4)', values: D.mm }] : [],
+      tip: (i) => `<b>${MES_LONGO[i][0].toUpperCase() + MES_LONGO[i].slice(1)}</b><br>Aporte: ${brl0(D.ap[i])}${D.mm[i] > 0 ? `<br>Meta: ${brl0(D.mm[i])}<br>${D.ap[i] >= D.mm[i] - 0.5 ? 'Na meta' : i <= (S.year === NOW_Y ? NOW_M : 11) ? `Faltaram ${brl0(D.mm[i] - D.ap[i])}` : ''}` : ''}` });
     return;
   }
   const cats = (S.plan.catsDesp || []).filter((c) => E.sum(C.despCat[c.id] || []) > 0); const cores = ['var(--c2)', 'var(--c4)', 'var(--c3)', 'var(--c5)', 'var(--c6)', 'var(--c1)'];

@@ -113,12 +113,24 @@ ok(E.planoPermite('gratis', 'orcamento') && !E.planoPermite('gratis', 'carteira'
   ok(b.disponivel === 0 && b.faltaMeta === null && c.disponivel === 0 && c.faltaMeta === 1000, 'disponível: nunca negativo; sem meta, sem falta');
   const r = E.disponivelAporte({ C: Cd, mes: 0, ate: 1, meta: 1000 }); // intervalo: soma os meses
   ok(r.sobra === 6000 && r.aportado === 3600 && r.disponivel === 2400 && r.faltaMeta === 0 && r.meses === 2, 'disponível: intervalo de meses soma sobra, investido e meta');
+  const ex = E.disponivelAporte({ C: { investAlocado: [1000], aplicado: [1500], aportes: [1500] }, mes: 0, meta: 1200 });
+  ok(ex.disponivel === 0 && ex.excedente === 500, 'disponível: aportou além da sobra vira excedente');
+  ok(ex.acimaMeta === 300 && ex.faltaMeta === 0, 'disponível: o que passou da meta');
+  const neg = E.disponivelAporte({ C: { investAlocado: [-700], aplicado: [500], aportes: [500] }, mes: 0 });
+  ok(neg.excedente === 500 && neg.disponivel === 0, 'disponível: com sobra negativa, todo o aporte passou da sobra');
+  const mm = E.disponivelAporte({ C: Cd, mes: 0, ate: 1, metaMes: [3000, 500] });
+  ok(mm.meta === 3500 && mm.faltaMeta === 0, 'disponível: meta de cada mês somada no intervalo');
   // contas batem de ponta a ponta: rendas + dividendos − gastos (previstos e lançados) − aplicado = disponível da Carteira
   const z12 = () => new Array(12).fill(0); const pl = { v: 2, year: 2026, settings: {}, rendaCats: E.CATS_RENDA(), catsDesp: E.CATS_DESP(), orcamento: new Array(12).fill(null), rendas: [{ id: 'r', cat: 'fixa', nome: 'Salário', valores: new Array(12).fill(12000) }],
     despesas: [{ id: 'd', cat: 'fixa', area: 'Moradia', nome: 'Aluguel', valores: new Array(12).fill(7500) }], lancamentos: [{ id: 'l', data: '2026-10-05', valor: 640, cat: 'variavel', nome: 'Mercado' }],
     ativos: [{ id: 'a', tipo: 'BOLSA DE VALORES', classe: 'FIIs', nome: 'MXRF11', ap: z12().fill(2400), pr: z12().fill(88) }] };
   const Cp = E.compute(pl, { patrimonioInicial: 0 }); const dp = E.disponivelAporte({ C: Cp, mes: 9, meta: 2400 });
   ok(Cp.receita[9] === 12088 && Cp.despesas[9] === 8140 && dp.sobra === 3948 && dp.aportado === 2400 && dp.disponivel === 1548 && Cp.aportes[9] === 2312 && dp.faltaMeta === 88, 'contas: entradas, gastos, sobra, investido e disponível fecham');
+  // meta por mês: o ajuste do mês vale no lugar da meta padrão
+  const pm = Object.assign({}, pl, { settings: { metaAporte: 2000 }, metasAporte: [null, 3000].concat(new Array(10).fill(null)) }); const Cm = E.compute(pm, { patrimonioInicial: 0 });
+  ok(Cm.metaAporteMes[0] === 2000 && Cm.metaAporteMes[1] === 3000 && Cm.meta[1] === 3000 + Cm.dividendos[1], 'meta por mês: ajuste do mês no lugar da meta padrão');
+  const Am = E.analiseInvest({ C: Cm, meses: 2, metaAporte: 2000, metaMes: Cm.metaAporteMes, itens: [] });
+  ok(Am.aporte.metaAte === 5000 && Math.abs(Am.aporte.taxaRenda - (Cm.aportes[0] + Cm.aportes[1]) / (Cm.receita[0] + Cm.receita[1])) < 1e-9, 'análise: meta somada mês a mês e parte das entradas que virou aporte');
 }
 
 

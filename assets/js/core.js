@@ -51,6 +51,7 @@ function hydratePlan(raw) {
   p.despesas = (p.despesas || []).map((d) => Object.assign({ sub: '' }, d, { id: d.id || uid(), valores: f12(d.valores, 0) }));
   p.lancamentos = (Array.isArray(p.lancamentos) ? p.lancamentos : []).map((l) => Object.assign({ sub: '', area: 'Outros' }, l, { id: l.id || uid(), valor: +l.valor || 0 })).filter((l) => /^\d{4}-\d{2}-\d{2}/.test(l.data));
   p.ingestao = Object.assign({ chaves: {}, arquivos: [] }, p.ingestao || {});
+  p.metasAporte = Array.isArray(p.metasAporte) ? p.metasAporte.slice(0, 12).concat(new Array(12).fill(null)).slice(0, 12).map((x) => (x == null ? null : +x)) : new Array(12).fill(null); // meta de aporte de cada mês (vazio = a padrão)
   p.orcamento = Array.isArray(p.orcamento) ? p.orcamento.slice(0, 12).concat(new Array(12).fill(null)).slice(0, 12).map((x) => (x == null ? null : +x)) : new Array(12).fill(null);
   p.ativos = (p.ativos || []).map((a) => Object.assign({}, a, { id: a.id || uid(), grupo: a.grupo || null, subgrupo: a.subgrupo || null, ap: f12(a.ap, 0), pr: f12(a.pr, 0) }));
   p.updatedAt = p.updatedAt || 0;
@@ -84,7 +85,7 @@ function hydrateProfile(p) {
   return p;
 }
 function blankPlan(year, base) {
-  const p = { v: 2, year, updatedAt: Date.now(), settings: { metaAporte: 0, metaInvAno: 0, orcPadrao: 0, patrimonioInicial: null }, rendaCats: E.CATS_RENDA(), rendas: [], catsDesp: E.CATS_DESP(), despesas: [], lancamentos: [], ingestao: { chaves: {}, arquivos: [] }, orcamento: new Array(12).fill(null), ativos: [] };
+  const p = { v: 2, year, updatedAt: Date.now(), settings: { metaAporte: 0, metaInvAno: 0, orcPadrao: 0, patrimonioInicial: null }, rendaCats: E.CATS_RENDA(), rendas: [], catsDesp: E.CATS_DESP(), despesas: [], lancamentos: [], ingestao: { chaves: {}, arquivos: [] }, orcamento: new Array(12).fill(null), metasAporte: new Array(12).fill(null), ativos: [] };
   if (base) {
     p.settings = Object.assign({}, base.settings, { metaInvAno: 0, patrimonioInicial: null });
     p.rendaCats = clone(base.rendaCats); p.catsDesp = clone(base.catsDesp);
