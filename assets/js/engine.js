@@ -477,8 +477,10 @@
   /* Disponível para aportar no mês: sobra (entradas menos gastos) menos o já aplicado nele. A meta só serve de referência.
      aplicado inclui os dividendos reinvestidos, que já entram na sobra; a falta para a meta usa os aportes (dinheiro novo), como o ritmo. */
   function disponivelAporte(o) {
-    const m = o.mes; const sobra = r2(+o.C.investAlocado[m] || 0); const aportado = r2(+o.C.aplicado[m] || 0); const meta = +o.meta || 0;
-    return { sobra, aportado, disponivel: r2(Math.max(0, sobra - aportado)), meta, faltaMeta: meta > 0 ? r2(Math.max(0, meta - (+o.C.aportes[m] || 0))) : null };
+    const de = o.mes; const ate = o.ate == null ? de : Math.max(de, o.ate); const n = ate - de + 1; // um mês ou um intervalo (soma os meses)
+    const tot = (arr) => (arr || []).slice(de, ate + 1).reduce((s, v) => s + (+v || 0), 0);
+    const sobra = r2(tot(o.C.investAlocado)); const aportado = r2(tot(o.C.aplicado)); const meta = (+o.meta || 0) * n;
+    return { sobra, aportado, disponivel: r2(Math.max(0, sobra - aportado)), meta, meses: n, faltaMeta: meta > 0 ? r2(Math.max(0, meta - tot(o.C.aportes))) : null };
   }
 
   /* ---------- Análise da renda: fontes, previsibilidade, estabilidade, poupança e comprometimento ----------

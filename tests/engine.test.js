@@ -111,6 +111,8 @@ ok(E.planoPermite('gratis', 'orcamento') && !E.planoPermite('gratis', 'carteira'
   ok(a.sobra === 5000 && a.aportado === 2100 && a.disponivel === 2900 && a.faltaMeta === 1200, 'disponível: sobra menos aplicado, falta para a meta pelos aportes');
   const b = E.disponivelAporte({ C: Cd, mes: 1, meta: 0 }); const c = E.disponivelAporte({ C: Cd, mes: 2, meta: 1000 });
   ok(b.disponivel === 0 && b.faltaMeta === null && c.disponivel === 0 && c.faltaMeta === 1000, 'disponível: nunca negativo; sem meta, sem falta');
+  const r = E.disponivelAporte({ C: Cd, mes: 0, ate: 1, meta: 1000 }); // intervalo: soma os meses
+  ok(r.sobra === 6000 && r.aportado === 3600 && r.disponivel === 2400 && r.faltaMeta === 0 && r.meses === 2, 'disponível: intervalo de meses soma sobra, investido e meta');
   // contas batem de ponta a ponta: rendas + dividendos − gastos (previstos e lançados) − aplicado = disponível da Carteira
   const z12 = () => new Array(12).fill(0); const pl = { v: 2, year: 2026, settings: {}, rendaCats: E.CATS_RENDA(), catsDesp: E.CATS_DESP(), orcamento: new Array(12).fill(null), rendas: [{ id: 'r', cat: 'fixa', nome: 'Salário', valores: new Array(12).fill(12000) }],
     despesas: [{ id: 'd', cat: 'fixa', area: 'Moradia', nome: 'Aluguel', valores: new Array(12).fill(7500) }], lancamentos: [{ id: 'l', data: '2026-10-05', valor: 640, cat: 'variavel', nome: 'Mercado' }],
