@@ -7,6 +7,7 @@
 /* ---------- textos ---------- */
 const NOTIF_TIT = {
   n_comecar: 'Vamos começar o seu planejamento',
+  n_lim_passou: '{area} passou do limite', n_lim_perto: '{area} perto do limite',
   n_orc_estouro: 'Orçamento de {mes} estourado', n_orc_90: 'Orçamento de {mes} quase no limite', n_orc_ritmo: 'Gastos acima do ritmo do mês',
   n_orc_75: '{pct} do orçamento de {mes} usado', n_orc_definir: 'Defina o orçamento de {mes}', n_area_alta: 'Gasto fora do padrão em {area}',
   n_entradas_falta: 'Hora de registrar as entradas', n_entradas_conferir: 'Confira as entradas de {mes}', n_extrato: 'Importe o extrato de {mes}',
@@ -19,6 +20,8 @@ const NOTIF_TIT = {
 const NOTIF_VOZ = {
   consultivo: {
     n_comecar: 'Importe o extrato do banco ou cadastre suas rendas. A partir daí eu acompanho orçamento, aportes e carteira e aviso você por aqui.',
+    n_lim_passou: 'Os gastos com {area} em {mes} passaram do limite de {limite} em {valor}. Vale ver o que dá para segurar até o fim do mês.',
+    n_lim_perto: 'Você já usou {pct} do limite de {area} em {mes}. Restam {restante}.',
     n_orc_estouro: 'Os gastos de {mes} passaram do orçamento em {valor} ({pct} usado). Vale olhar onde dá para segurar até o fim do mês.',
     n_orc_90: 'Você já usou {pct} do orçamento de {mes}. Restam {restante}, e {prazo}.',
     n_orc_ritmo: 'No ritmo atual, {mes} fecharia em {projecao}, {excesso} acima do orçamento. Para ficar no limite, o ideal é gastar até {porDia} por dia.',
@@ -46,6 +49,8 @@ const NOTIF_VOZ = {
   },
   direto: {
     n_comecar: 'Importe o extrato ou cadastre rendas. O resto eu acompanho.',
+    n_lim_passou: '{area}: {valor} acima do limite de {limite}.',
+    n_lim_perto: '{area}: {pct} do limite usado. Restam {restante}.',
     n_orc_estouro: '{mes}: {valor} acima do orçamento. Segure os gastos.',
     n_orc_90: '{pct} do orçamento de {mes} usado. Restam {restante}.',
     n_orc_ritmo: 'Nesse ritmo, {mes} fecha em {projecao} ({excesso} acima). Limite: {porDia} por dia.',
@@ -73,6 +78,8 @@ const NOTIF_VOZ = {
   },
   acolhedor: {
     n_comecar: 'Vamos começar? Importe o extrato ou cadastre suas rendas e, daqui em diante, eu fico de olho em tudo para você.',
+    n_lim_passou: '{area} passou um pouco do combinado: {valor} acima do limite de {limite}. Sem culpa, dá para equilibrar nas próximas semanas.',
+    n_lim_perto: 'Só um toque: {area} já está em {pct} do limite deste mês. Ainda há {restante}.',
     n_orc_estouro: 'O orçamento de {mes} passou em {valor}. Acontece! Vamos olhar juntos onde dá para ajustar até o fim do mês?',
     n_orc_90: 'Atenção carinhosa: {pct} do orçamento de {mes} já foi usado. Ainda há {restante}, e {prazo}.',
     n_orc_ritmo: 'Se o ritmo continuar, {mes} fecharia em {projecao}, {excesso} acima do planejado. Gastando até {porDia} por dia, você chega lá tranquilo.',
@@ -109,7 +116,7 @@ const NOTIF_GRUPOS = {
 };
 const NOTIF_FILTROS = [['todas', 'Todas'], ['orcamento', 'Orçamento'], ['lembrete', 'Lembretes'], ['oportunidade', 'Carteira']];
 const I_SINO = ic('<path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 1.5h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>');
-const NOTIF_MOEDA = ['valor', 'restante', 'projecao', 'excesso', 'media', 'meta', 'falta', 'sobra', 'porDia', 'aporte'];
+const NOTIF_MOEDA = ['limite', 'valor', 'restante', 'projecao', 'excesso', 'media', 'meta', 'falta', 'sobra', 'porDia', 'aporte'];
 
 /* ---------- estado (lido, dispensado) ---------- */
 const hojeISO = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };

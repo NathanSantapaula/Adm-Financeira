@@ -25,6 +25,7 @@ const ADM_FIXAS = new Set(['plano', 'sessao']); // sempre abertas
 // ícone pequeno de cada título (traço, 24x24), ao lado do nome
 const ADM_IC = {
   'metas-e-ponto-de-partida': '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1"/>',
+  'minhas-instituicoes': '<path d="M3.5 9.5 12 4l8.5 5.5M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3.5 19.5h17"/>',
   'anos-de-planejamento': '<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
   telas: '<rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/>',
   'abas-do-menu': '<path d="M4 6h16M4 12h16M4 18h10"/>',
@@ -78,6 +79,7 @@ function adminHtml() {
       <div class="field-row"><div>Meta de investimento de ${pl.year}<small>Opcional. Se vazio, soma as metas mensais.</small></div><input class="in-s" data-setting="metaInvAno" inputmode="decimal" value="${pl.settings.metaInvAno ? nf.format(pl.settings.metaInvAno) : ''}" placeholder="—" aria-label="Meta de investimento do ano"></div>
       <div class="field-row"><div>Patrimônio inicial de ${pl.year}<small>O que você tinha investido no início deste ano. Vazio = automático (patrimônio informado mais os aportes dos anos anteriores).</small></div><input class="in-s" data-setting="patrimonioInicial" inputmode="decimal" value="${pl.settings.patrimonioInicial != null ? nf.format(pl.settings.patrimonioInicial) : ''}" placeholder="0,00" aria-label="Patrimônio inicial do ano"></div>` : ''}
       ${objetivosLinkHtml()}</section>
+    ${instAdmHtml()}
     <section class="dr-sec"><h3>Anos de planejamento</h3><ul class="yrs">${years.map((y) => `<li><b>${y}</b>${years.length > 1 ? `<button class="btn sm danger" data-act="del-year" data-year="${y}">Excluir</button>` : ''}</li>`).join('')}</ul>
       <form data-form="year" class="yr-new"><label class="pop-t" for="yr-adm">Adicionar ou abrir outro ano</label><div class="act-row"><input id="yr-adm" name="ano" class="in-s left" inputmode="numeric" maxlength="4" placeholder="Ex.: ${NOW_Y + 1}" autocomplete="off"><button class="btn primary" type="submit">Abrir</button></div></form></section>`;
   if (G && G.id === 'personalizar') return `<section class="dr-sec"><h3>Telas</h3>${['geral', 'gastos', 'rendas', 'invest', 'proventos', 'carteira'].filter((k) => !PAINEIS[k].recurso || temRecurso(PAINEIS[k].recurso)).map(painelLinkHtml).join('')}</section>
@@ -252,6 +254,7 @@ function onAdminChange(t) {
   }
   if (t.matches('[data-objf]')) { objCampo(t); return true; }
   if (t.matches('[data-painel-on]')) { painelLigar(t); return true; }
+  if (t.matches('[data-inst-minha]')) { instMinhaAlternar(t.dataset.instMinha, t.checked); return true; }
   if (t.matches('[data-tema-livre]')) { definirCor('cor', t.value); return true; }
   if (t.matches('[data-tema-auto]')) { definirTema(t.checked ? 'auto-on' : 'auto-off'); return true; }
   if (t.matches('[data-abf]')) { aberturaCampo(t); return true; }

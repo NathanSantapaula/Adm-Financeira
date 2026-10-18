@@ -46,7 +46,7 @@ function indiceMeses() {
 function entradasMes(m) {
   const p = S.plan; const ano = S.year; const out = [];
   const ix = CC_IDX && CC_IDX.plan === p && CC_IDX.ano === ano ? CC_IDX : indiceMeses();
-  ix.reais[m].forEach(([l, d]) => { out.push({ tipo: 'real', id: l.id, cat: l.cat, area: l.area || 'Outros', sub: l.sub || '', nome: l.desc, valor: +l.valor, dia: d.dia, origem: l.origem || 'manual', itemId: l.itemId }); });
+  ix.reais[m].forEach(([l, d]) => { out.push({ tipo: 'real', id: l.id, cat: l.cat, area: l.area || 'Outros', sub: l.sub || '', nome: l.desc, valor: +l.valor, dia: d.dia, origem: l.origem || 'manual', itemId: l.itemId, inst: l.inst || '' }); });
   ix.itens.forEach(([it, vals]) => {
     const v = vals[m]; if (Math.abs(v) < 0.005) return;
     out.push({ tipo: 'prev', id: it.id, cat: it.cat, area: it.area || 'Outros', sub: it.sub || '', nome: it.nome, valor: v, dia: 0, parcela: it.parcel ? `${E.parcelaIndice(it.parcel, ano, m)}/${it.parcel.n}` : '', herdado: it.herdado || null });
@@ -69,6 +69,8 @@ const G_WIDGETS = [
   { id: 'mudou', nome: () => 'O que mudou', desc: 'Áreas que subiram ou caíram em relação à média dos meses anteriores. Só na visão de um mês.', tam: 3, tams: [2, 3, 4, 6], padrao: () => false },
   { id: 'estab', nome: () => 'Onde você mais compra', desc: 'Estabelecimentos agrupados pelo nome, com número de compras e total.', tam: 3, tams: [2, 3, 4, 6], padrao: () => false },
   { id: 'recorr', nome: () => 'Assinaturas e contas recorrentes', desc: 'O que se repete todo mês com valor parecido.', tam: 3, tams: [2, 3, 4, 6], padrao: () => false },
+  { id: 'inst', nome: () => 'Por instituição', desc: 'Quanto saiu por banco, cartão ou carteira no período, com o ícone de cada um.', tam: 3, tams: [2, 3, 4, 6], padrao: () => true },
+  { id: 'limites', nome: () => 'Limites por área', desc: 'Um limite por mês para as áreas que você escolher, com aviso ao chegar perto.', tam: 3, tams: [2, 3, 4, 6], padrao: () => true },
   { id: 'semana', nome: () => 'Por dia da semana', desc: 'Em que dias você mais gasta.', tam: 3, tams: [3, 4, 6], padrao: () => false },
 ];
 const gEstado = () => (S.gf = S.gf || { q: '', cat: '', tipo: 'todos', area: '', agrupar: 'data', lim: 80 });
@@ -148,13 +150,26 @@ function gWidgets(G) {
   // onde mais compra
   add('estab', gCard('estab', 'Onde você mais compra', G.estab.length ? `<ul class="g-lista">${G.estab.map((x) => `<li><button class="g-li" data-act="g-busca" data-q="${esc(x.k)}"><span><b>${esc(x.nome)}</b><small>${x.qtd} ${x.qtd === 1 ? 'compra' : 'compras'} · média de ${brl(x.media)}</small></span><span class="g-li-v"><b>${brl0(x.total)}</b><small>${pct(x.pct)}</small></span></button></li>`).join('')}</ul>` : gVazio('Aparece quando houver lançamentos reais (importados ou lançados à mão).')));
   // recorrentes
-  add('recorr', gCard('recorr', 'Assinaturas e contas recorrentes', G.recorrentes.length ? `<ul class="g-lista">${G.recorrentes.slice(0, 8).map((x) => `<li><button class="g-li" data-act="g-busca" data-q="${esc(E.nomeEstab(x.nome))}"><span><b>${esc(x.nome)}</b><small>em ${x.meses} meses · último em ${MES[x.ultimoMes]}</small></span><span class="g-li-v"><b>${brl(x.media)}</b><small>por mês</small></span></button></li>`).join('')}</ul>
+  add('recorr', gCard('recorr', 'Assinaturas e contas recorrentes', G.recorrentes.length ? `<ul class="g-lista">${G.recorrentes.slice(0, 8).map((x) => `<li class="g-rec"><button class="g-li" data-act="g-busca" data-q="${esc(E.nomeEstab(x.nome))}"><span><b>${esc(x.nome)}</b><small>em ${x.meses} meses · último em ${MES[x.ultimoMes]}</small></span><span class="g-li-v"><b>${brl(x.media)}</b><small>por mês</small></span></button>${gEhFixo(x.nome) ? '<span class="badge prev">Fixo</span>' : x.ultimoMes < 11 ? `<button class="btn sm" data-act="g-fixo" data-nome="${esc(x.nome)}" data-valor="${x.ultimo}" data-m="${x.ultimoMes}">Tornar fixo</button>` : ''}</li>`).join('')}</ul>
     <p class="g-foot">Somam cerca de <b>${brl0(G.recorrentesMes)}</b> por mês${G.recorrentes.length > 8 ? ` (${G.recorrentes.length} no total)` : ''}.</p>` : gVazio('Nada se repetiu com valor parecido em vários meses até aqui.')));
   // parcelamentos
   add('parc', gCard('parc', 'Parcelamentos em andamento', G.parcelas.length ? `<ul class="g-lista">${G.parcelas.map((x) => `<li><div class="g-li"><span><b>${esc(x.nome)}</b><small>Parcela ${x.i} de ${x.n} · termina em ${MES[x.fim.mes]}/${String(x.fim.ano).slice(2)}</small></span><span class="g-li-v"><b>${brl(x.valor)}</b><small>faltam ${brl0(x.restante)}</small></span></div></li>`).join('')}</ul>
     <p class="g-foot"><b>${brl0(G.parcelasMes)}</b> por mês em parcelas; ainda faltam <b>${brl0(G.parcelasRestante)}</b>.</p>` : gVazio('Nenhum parcelamento correndo neste período.'), `<button class="lnk strong" data-act="add-item" data-kind="desp">Novo parcelamento</button>`));
   // dia da semana
   add('semana', gCard('semana', 'Por dia da semana', G.semana.some((v) => v > 0) ? `<div class="chart" id="g-semana"></div>` : gVazio('Aparece quando houver lançamentos reais com data.')));
+  // por instituição: só lançamentos reais (os previstos não têm onde foram pagos); tocar filtra a lista
+  { const meses = new Set(G.mes >= 0 ? [G.mes] : perIds()); const soma = {}; let tot = 0;
+    gastosDados().ents.forEach((e) => { if (e.tipo !== 'real' || !meses.has(e.m) || !(e.valor > 0)) return; const k = instDe(e.inst) ? e.inst : ''; soma[k] = (soma[k] || 0) + e.valor; tot += e.valor; });
+    const L = Object.keys(soma).map((k) => ({ k, v: soma[k] })).sort((a, b) => b.v - a.v); const mx = L.length ? L[0].v : 1;
+    add('inst', gCard('inst', 'Por instituição', L.length ? `<ul class="g-areas">${L.map((x) => { const nome = x.k ? instDe(x.k)[1] : 'Sem instituição';
+      return `<li><button class="g-area g-inst" ${x.k ? `data-act="g-busca" data-q="${esc(nome)}"` : 'disabled'}>${instIcone(x.k)}<span class="g-area-n"><b>${esc(nome)}</b></span>
+        <span class="g-area-t"><i style="width:${((x.v / mx) * 100).toFixed(1)}%;background:${x.k ? instDe(x.k)[2] : 'var(--ink-3)'}"></i></span><span class="g-area-v"><b>${brl0(x.v)}</b><small>${pct(x.v / tot)}</small></span></button></li>`; }).join('')}</ul>
+      ${soma[''] ? '<p class="cap">Marque "Pago com" nos lançamentos para separar o que está sem instituição.</p>' : ''}` : gVazio('Sem lançamentos reais neste período.'))); }
+  // limites por área: sempre de um mês (o escolhido; na visão do ano, o mês atual)
+  { const m = G.mes >= 0 ? G.mes : S.year === NOW_Y ? NOW_M : 11; const L = E.analiseLimites((S.plan.settings || {}).limites, E.gastosAreaMes(S.plan, planCtx().carry, m)); const cor = { ok: 'var(--pos)', perto: 'var(--warn)', passou: 'var(--neg)' };
+    add('limites', gCard('limites', 'Limites por área', L.length ? `<ul class="g-areas">${L.map((x) => `<li><button class="g-area g-lim ${x.sit}" data-act="g-limite" data-area="${esc(x.area)}" title="Alterar o limite de ${esc(x.area)}"><span class="g-area-n"><b>${esc(x.area)}</b><small>${x.sit === 'passou' ? `${brl0(-x.falta)} acima` : `restam ${brl0(x.falta)}`}</small></span>
+        <span class="g-area-t"><i style="width:${Math.min(100, x.uso * 100).toFixed(1)}%;background:${cor[x.sit]}"></i></span><span class="g-area-v"><b>${brl0(x.gasto)}</b><small>de ${brl0(x.limite)}</small></span></button></li>`).join('')}</ul>`
+      : gVazio('Defina um limite por mês para as áreas que pesam mais, como Alimentação ou Lazer.'), `<button class="lnk strong" data-act="g-limite">${L.length ? 'Novo limite' : 'Definir limite'}</button>`)); }
   return telaWidgetsHtml('gastos', html);
 }
 const gAcaoEnt = (e) => (e.tipo === 'real' ? `data-act="edit-lanc" data-id="${esc(e.id)}"` : e.herdado ? `data-act="year-pick" data-year="${e.herdado}"` : `data-act="edit-item" data-kind="desp" data-id="${esc(e.id)}"`);
@@ -164,14 +179,14 @@ function gFiltrar(ents) {
   const f = gEstado(); const q = E.norm(f.q); const ano = S.gPer === 'ano';
   return ents.filter((e) => (ano || e.m === S.mes) && (!f.cat || e.cat === f.cat) && (!f.area || e.area === f.area)
     && (f.tipo === 'todos' || (f.tipo === 'real' ? e.tipo === 'real' : f.tipo === 'prev' ? e.tipo !== 'real' : e.tipo === 'real' && e.origem && e.origem !== 'manual'))
-    && (!q || E.norm(e.nome + ' ' + e.area + ' ' + (e.sub || '')).includes(q) || E.nomeEstab(e.nome).includes(q)));
+    && (!q || E.norm(e.nome + ' ' + e.area + ' ' + (e.sub || '') + ' ' + ((instDe(e.inst) || [])[1] || '')).includes(q) || E.nomeEstab(e.nome).includes(q)));
 }
 function gLinha(e) {
   const catN = (S.plan.catsDesp.find((c) => c.id === e.cat) || {}).nome || 'Sem categoria';
   const b = [];
   if (e.tipo === 'prev') { b.push('<span class="badge prev">Previsto</span>'); if (e.parcela) b.push(`<span class="badge parc">Parcela ${e.parcela}</span>`); if (e.herdado) b.push(`<span class="badge">de ${e.herdado}</span>`); }
   else { if (e.origem === 'csv' || e.origem === 'ofx' || e.origem === 'import') b.push('<span class="badge imp">Importado</span>'); if (e.origem === 'ia') b.push('<span class="badge ia">IA</span>'); if (e.itemId) b.push('<span class="badge prev">Conciliado</span>'); }
-  return `<li class="g-ent"><button class="g-ent-b" ${gAcaoEnt(e)}><span class="g-ent-n"><b>${esc(e.nome)}</b><small>${b.length ? `<span class="ent-b">${b.join('')}</span>` : ''}${esc(catN)} · ${esc(e.area)}${e.sub ? ' › ' + esc(e.sub) : ''}</small></span>
+  return `<li class="g-ent"><button class="g-ent-b" ${gAcaoEnt(e)}>${instIcone(e.inst)}<span class="g-ent-n"><b>${esc(e.nome)}</b><small>${b.length ? `<span class="ent-b">${b.join('')}</span>` : ''}${esc(catN)} · ${esc(e.area)}${e.sub ? ' › ' + esc(e.sub) : ''}</small></span>
     <span class="g-ent-v${e.valor < 0 ? ' pos' : ''}">${e.valor < 0 ? '−' : ''}${brl(Math.abs(e.valor))}</span></button></li>`;
 }
 function gListaHtml() {
@@ -228,6 +243,8 @@ function gAcao(act, ds) {
     case 'g-mes': S.gPer = 'mes'; S.mes = +ds.m; f.lim = 80; render(); return true;
     case 'g-tipo': f.tipo = ds.v; gListaAtualiza(); document.querySelectorAll('[data-act="g-tipo"]').forEach((b) => { const on = b.dataset.v === ds.v; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); }); return true;
     case 'g-agrup': f.agrupar = ds.v; gListaAtualiza(); document.querySelectorAll('[data-act="g-agrup"]').forEach((b) => { const on = b.dataset.v === ds.v; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); }); return true;
+    case 'g-limite': gLimite(ds.area || ''); return true;
+    case 'g-fixo': gTornarFixo(ds.nome, +ds.valor, +ds.m); return true;
     case 'g-area': f.area = ds.area || ''; f.lim = 80; if (f.area && !S.planilha.gastos) { S.planilha.gastos = true; render(); } else gListaAtualiza(); if (f.area) gIrLista(); return true;
     case 'g-busca': f.q = ds.q || ''; f.area = ''; f.lim = 80; if (!S.planilha.gastos) { S.planilha.gastos = true; render(); } else { const i = document.querySelector('[data-gf="q"]'); if (i) i.value = f.q; gListaAtualiza(); } gIrLista(); return true;
     case 'g-limpa': Object.assign(f, { q: '', cat: '', tipo: 'todos', area: '', lim: 80 }); render(); return true;
@@ -449,16 +466,83 @@ function desfazerBaixa(l) {
   if (it && it.baixas && d) delete it.baixas[d.ano + '-' + d.mes];
 }
 const tipoDaCategoria = (catId) => { const c = S.plan.catsDesp.find((x) => x.id === catId); return c && (c.id === 'fixa' || E.norm(c.nome).includes('fixa')) ? 'fixa' : 'variavel'; };
+// recorrente que já tem gasto fixo (mesmo estabelecimento)
+const gEhFixo = (nome) => { const k = E.nomeEstab(nome); return !!k && S.plan.despesas.some((it) => !it.parcel && E.nomeEstab(it.nome) === k); };
+// "Tornar fixo": um gasto fixo com o último valor, nos meses depois do último lançamento, copiando categoria, área e instituição dele
+function gTornarFixo(nome, valor, m) {
+  const p = S.plan; const k = E.nomeEstab(nome); if (!k || !(valor > 0) || gEhFixo(nome)) return;
+  const ult = p.lancamentos.filter((l) => E.nomeEstab(l.desc) === k).sort((a, b) => (a.data < b.data ? 1 : -1))[0] || {};
+  p.despesas.push({ id: uid(), cat: ult.cat || (p.catsDesp[0] || {}).id, area: ult.area || 'Outros', sub: ult.sub || '', nome, inst: ult.inst || '', valores: E.repetirValores(valor, m) });
+  touch('plan'); render(); toast(`“${nome}” agora é um gasto fixo de ${brl(valor)} por mês até dezembro.`);
+}
+// limite de uma área (por mês, vale para o ano do planejamento); valor vazio ou zero remove
+function gLimite(area) {
+  const p = S.plan; const lim = (p.settings.limites = p.settings.limites || {}); const atual = area ? +lim[area] || 0 : 0;
+  const areas = [...new Set(p.despesas.map((x) => x.area).concat(p.lancamentos.map((x) => x.area)).filter(Boolean))].sort();
+  openModal({ title: area ? `Limite de ${area}` : 'Novo limite por área', ok: 'Salvar', danger: atual ? 'Remover' : null,
+    body: `<label class="fld"><span>Área</span><input name="area" list="dl-lim" value="${esc(area)}" autocomplete="off" ${area ? 'readonly' : ''} placeholder="Ex.: Alimentação"></label>${dlist('dl-lim', areas)}
+      <label class="fld"><span>Limite por mês (R$)</span><input name="valor" inputmode="decimal" value="${atual ? esc(String(atual).replace('.', ',')) : ''}" placeholder="0,00" autocomplete="off"></label>
+      <p class="cap keep">Avisamos quando os gastos da área chegarem a 80% do limite e quando passarem dele.</p>`,
+    onDanger: () => { delete lim[area]; touch('plan'); render(); },
+    onOk: (d, err) => { const a = String(d.area || '').trim(); if (!a) { err('Informe a área.'); return false; }
+      const v = d.valor && String(d.valor).trim() ? parseReais(d.valor) : 0; if (Number.isNaN(v) || v < 0) { err('Informe um valor válido.'); return false; }
+      const k = Object.keys(lim).find((x) => E.norm(x) === E.norm(a)) || a; if (v > 0) lim[k] = E.r2(v); else delete lim[k]; touch('plan'); render(); } });
+}
 const CAT_NOVA = '__nova';
+/* instituição de pagamento de cada gasto: ícone no jeito dos ícones da Apple, que se adaptam ao tema.
+   A logo é só o símbolo (assets/img/inst, fontes em CREDITOS.md), aplicado como máscara: assim a cor dele pode mudar.
+   Estilos (S.profile.instEstilo, no <html> como data-icones): "cor" (fundo na cor da instituição, símbolo claro),
+   "escuro" (fundo grafite, símbolo na cor da instituição), "tingido" (vidro na cor de destaque, símbolo de uma cor só)
+   e "auto" (cor no tema claro, escuro no escuro, tingido no personalizado).
+   id, nome, cor da instituição, cor do símbolo sobre ela, sigla (sem logo), tamanho do símbolo no ícone (0 = sigla) */
+const INSTITUICOES = [
+  ['nubank', 'Nubank', '#820AD1', '#fff', 'nu', 0.6], ['itau', 'Itaú', '#1A5493', '#FFF212', 'itaú', 0.84], ['bradesco', 'Bradesco', '#CC092F', '#fff', 'B', 0.62],
+  ['santander', 'Santander', '#EC0000', '#fff', 'S', 0.58], ['bb', 'Banco do Brasil', '#FCFC30', '#465EFF', 'BB', 0.62], ['caixa', 'Caixa', '#005CA9', '#fff', 'CX', 0.8],
+  ['xp', 'XP', '#000000', '#fff', 'xp', 0], ['btg', 'BTG Pactual', '#0D2B5E', '#fff', 'btg', 0.7], ['inter', 'Inter', '#FF7A00', '#fff', 'in', 0.8],
+  ['c6', 'C6 Bank', '#1A1A1A', '#fff', 'C6', 0.6], ['picpay', 'PicPay', '#21C25E', '#fff', 'pp', 0.54], ['mercadopago', 'Mercado Pago', '#00B1EA', '#fff', 'mp', 0.68],
+  ['sicoob', 'Sicoob', '#003641', '#C9D200', 'sc', 0.58], ['dinheiro', 'Dinheiro', '#2E7D32', '#fff', 'R$', 0], ['outra', 'Outra', '#6B7280', '#fff', '•', 0],
+];
+const instDe = (id) => INSTITUICOES.find((x) => x[0] === id) || null;
+const instMinhas = () => (S.profile && S.profile.instituicoes) || [];
+const INST_ESTILOS = [['auto', 'Automático'], ['cor', 'Cor'], ['escuro', 'Escuro'], ['tingido', 'Tingido']];
+// ícone da instituição; sem instituição, um ícone vazio (mantém a lista alinhada)
+function instIcone(id, cls) {
+  const i = instDe(id); const c = 'inst-ic' + (cls ? ' ' + cls : ''); if (!i) return `<span class="${c} vazio" aria-hidden="true"></span>`;
+  const u = new URL(`assets/img/inst/${i[0]}.svg`, document.baseURI).href; // endereço completo: url() relativa numa variável CSS seria lida a partir do app.css
+  return `<span class="${c}" style="--ib:${i[2]};--if:${i[3]}" role="img" aria-label="${esc(i[1])}" title="${esc(i[1])}">${i[5] ? `<i style="--m:url(${u});--k:${i[5]}"></i>` : `<b>${esc(i[4])}</b>`}</span>`;
+}
+// fichas: as minhas como escolha única (formulário) ou todas para marcar (painel e "Editar" no formulário)
+const instFicha = (id, tipo, on, extra) => `<label class="inst-pill"><input type="${tipo}" ${extra} ${on ? 'checked' : ''}><span>${id ? instIcone(id) + esc(instDe(id)[1]) : 'Não informar'}</span></label>`;
+const instTodasHtml = (attr) => INSTITUICOES.map(([id]) => instFicha(id, 'checkbox', instMinhas().includes(id), `${attr}="${id}"`)).join('');
+function instMinhaAlternar(id, on) { if (!instDe(id)) return; const m = instMinhas().filter((x) => x !== id); if (on) m.push(id); S.profile.instituicoes = INSTITUICOES.map((x) => x[0]).filter((x) => m.includes(x)); touch('profile'); }
+function instEstiloDefinir(v, btn) {
+  S.profile.instEstilo = INST_ESTILOS.some((x) => x[0] === v) ? v : 'auto'; touch('profile'); document.documentElement.dataset.icones = S.profile.instEstilo;
+  btn.parentNode.querySelectorAll('button').forEach((b) => { const on = b.dataset.v === S.profile.instEstilo; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+}
+// Painel › Planejamento › Minhas instituições: o cliente marca antes as que usa; só elas aparecem ao lançar um gasto
+function instAdmHtml() {
+  const e = (S.profile && S.profile.instEstilo) || 'auto';
+  return `<section class="dr-sec"><h3>Minhas instituições</h3><p class="mmsg">Bancos, cartões e carteiras que você usa. Só eles aparecem ao lançar um gasto.</p>
+    <div class="inst-pills">${instTodasHtml('data-inst-minha')}</div>
+    <div class="ap-linha inst-estilo"><span>Ícones</span><div class="seg" role="group" aria-label="Estilo dos ícones">${INST_ESTILOS.map(([v, l]) => `<button class="${e === v ? 'on' : ''}" data-act="inst-estilo" data-v="${v}" aria-pressed="${e === v}">${l}</button>`).join('')}</div></div></section>`;
+}
 function openLanc(id, preset) {
   const p = S.plan; preset = preset || {};
   const l = id ? p.lancamentos.find((x) => x.id === id) : null; const mes = preset.mes != null ? preset.mes : S.year === NOW_Y ? NOW_M : S.mes; const h = new Date();
   const dataPad = l ? l.data : (S.year === h.getFullYear() && mes === h.getMonth() ? `${h.getFullYear()}-${pad2(h.getMonth() + 1)}-${pad2(h.getDate())}` : `${S.year}-${pad2(mes + 1)}-01`);
   const aprender = !!(l && l.origem && l.origem !== 'manual');
+  // novo gasto já vem com a instituição usada por último
+  const instPad = l ? l.inst || '' : ([...p.lancamentos].reverse().find((x) => x.inst && instMinhas().includes(x.inst)) || {}).inst || '';
+  // as minhas (e a deste gasto, se não for mais uma delas)
+  const instOps = (sel) => [''].concat([...new Set(instMinhas().concat(sel ? [sel] : []))].filter(instDe)).map((v) => instFicha(v, 'radio', v === sel, `name="inst" value="${v}"`)).join('');
   const f = openModal({
     title: l ? 'Editar lançamento' : 'Novo lançamento', danger: l ? 'Excluir' : null,
     body: `<div class="fld-2"><label class="fld"><span>Data</span><input type="date" name="data" value="${esc(dataPad)}"></label><label class="fld"><span>Valor (R$)</span><input name="valor" inputmode="decimal" value="${l ? esc(String(Math.abs(l.valor)).replace('.', ',')) : ''}" placeholder="0,00" autocomplete="off"></label></div>
       <label class="fld"><span>Descrição</span><input name="desc" value="${esc(l ? l.desc : '')}" autocomplete="off"></label>
+      <fieldset class="fld inst-esc"><legend>Pago com</legend><div class="inst-pills" id="inst-minhas" role="radiogroup" aria-label="Instituição de pagamento">${instOps(instPad)}</div>
+        <button type="button" class="lnk" id="inst-editar" aria-expanded="${instMinhas().length ? 'false' : 'true'}" aria-controls="inst-todas">${instMinhas().length ? 'Editar minhas instituições' : 'Escolher as instituições que você usa'}</button>
+        <div class="inst-pills inst-todas" id="inst-todas" ${instMinhas().length ? 'hidden' : ''}>${instTodasHtml('data-inst-form')}</div></fieldset>
+      ${l && l.itemId ? '' : '<label class="chk"><input type="checkbox" name="repetir"><span><b>Repetir todo mês</b><small>Vira um gasto fixo com este valor nos meses seguintes, até dezembro. Ao lançar o de cada mês, ele já é conferido com o fixo e não conta duas vezes.</small></span></label>'}
       <label class="chk"><input type="checkbox" name="estorno" ${l && l.valor < 0 ? 'checked' : ''}><span><b>É estorno ou reembolso</b><small>Reduz o gasto do mês em vez de somar.</small></span></label>
       <label class="fld"><span>Categoria</span>${sel('cat', p.catsDesp.map((c) => [c.id, c.nome]).concat([[CAT_NOVA, '+ Nova categoria']]), l ? l.cat : p.catsDesp.length ? p.catsDesp[0].id : CAT_NOVA)}</label>
       <label class="fld" data-cat-nova${p.catsDesp.length && !(l && !l.cat) ? ' hidden' : ''}><span>Nome da nova categoria</span><input name="catNova" autocomplete="off" placeholder="Ex.: Pets"></label>${p.catsDesp.length ? '<button type="button" class="lnk lanc-cats" data-act="cats" data-kind="desp">Organizar categorias</button>' : ''}
@@ -475,15 +559,25 @@ function openLanc(id, preset) {
         const nome = (d.catNova || '').trim(); if (!nome) return bad(err, 'Informe o nome da nova categoria.');
         const ja = p.catsDesp.find((c) => E.norm(c.nome) === E.norm(nome)); d.cat = ja ? ja.id : uid(); if (!ja) p.catsDesp.push({ id: d.cat, nome });
       }
-      const dados = { data, desc, valor: E.r2(d.estorno ? -Math.abs(v) : Math.abs(v)), cat: d.cat, area: (d.area || '').trim() || 'Outros', sub: (d.sub || '').trim() };
+      const dados = { data, desc, valor: E.r2(d.estorno ? -Math.abs(v) : Math.abs(v)), cat: d.cat, area: (d.area || '').trim() || 'Outros', sub: (d.sub || '').trim(), inst: instDe(d.inst) ? d.inst : '' };
       const alvo = dt.ano === S.year ? p : ensurePlan(dt.ano);
       if (l) { if (alvo !== p) { desfazerBaixa(l); p.lancamentos = p.lancamentos.filter((x) => x.id !== l.id); Object.assign(l, dados); alvo.lancamentos.push(l); savePlanNow(dt.ano); } else Object.assign(l, dados); }
       else { alvo.lancamentos.push(Object.assign({ id: uid(), origem: 'manual' }, dados)); if (alvo !== p) savePlanNow(dt.ano); }
+      // gastos que se repetem: o lançamento novo cumpre o gasto fixo do mês (não conta duas vezes), ou vira um gasto fixo até dezembro
+      const lanc = l || alvo.lancamentos[alvo.lancamentos.length - 1]; let aviso = '';
+      if (!l && dados.valor > 0) { const fx = E.acharFixo(alvo.despesas, desc, dt.ano, dt.mes); if (fx) { lanc.itemId = fx.id; fx.baixas = Object.assign({}, fx.baixas, { [dt.ano + '-' + dt.mes]: lanc.id }); aviso = `Conciliado com o gasto fixo “${fx.nome}”.`; } }
+      if (d.repetir && dados.valor > 0 && !lanc.itemId && dt.mes < 11) { alvo.despesas.push({ id: uid(), cat: dados.cat, area: dados.area, sub: dados.sub, nome: desc, inst: dados.inst, valores: E.repetirValores(dados.valor, dt.mes) }); aviso = `“${desc}” vai se repetir todo mês até dezembro, como gasto fixo.`; }
+      if (aviso) setTimeout(() => toast(aviso), 0);
       if (d.lembrar) { S.profile.regras = FPIngest.aprenderRegra(S.profile.regras, { descricao: desc, destino: 'despesa', catTipo: tipoDaCategoria(dados.cat), area: dados.area, sub: dados.sub, ativo: null }); touch('profile'); }
       if (dt.ano === S.year) { S.mesesAbertos.add(dt.mes); S.mes = dt.mes; } else toast(`Lançamento salvo no planejamento de ${dt.ano}.`);
       commit();
     },
   });
+  // editar as minhas aqui mesmo, sem perder o que já foi digitado: marcar ou desmarcar refaz só a fileira de escolha
+  const ed = f.querySelector('#inst-editar'); const todas = f.querySelector('#inst-todas');
+  ed.addEventListener('click', () => { todas.hidden = !todas.hidden; ed.setAttribute('aria-expanded', !todas.hidden); ed.textContent = todas.hidden ? 'Editar minhas instituições' : 'Pronto'; });
+  todas.addEventListener('change', (ev) => { const t = ev.target; if (!t.dataset.instForm) return; instMinhaAlternar(t.dataset.instForm, t.checked);
+    const atual = (f.querySelector('[name="inst"]:checked') || {}).value || (t.checked ? t.dataset.instForm : ''); f.querySelector('#inst-minhas').innerHTML = instOps(atual); });
   const nova = f.querySelector('[data-cat-nova]'); f.elements.cat.addEventListener('change', () => { nova.hidden = f.elements.cat.value !== CAT_NOVA; if (!nova.hidden) f.elements.catNova.focus(); });
   return f;
 }

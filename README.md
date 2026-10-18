@@ -183,6 +183,14 @@ A foto ou o avatar aparecem no menu, no painel e, para você, na lista de Client
 
 ## 7. Gastos
 
+**Gastos que se repetem:** ao lançar um gasto, marque **Repetir todo mês** e ele vira um gasto fixo com o mesmo valor nos meses seguintes, até dezembro. Quando o gasto real de cada mês for lançado (à mão ou importado), ele é conferido com o fixo daquele mês e não conta duas vezes. No widget "Assinaturas e contas recorrentes", o botão **Tornar fixo** faz o mesmo com o que o app percebeu que se repete.
+
+**Limites por área:** em Gastos, o widget "Limites por área" deixa definir um limite por mês para as áreas que você quiser (ex.: Alimentação R$ 1.500). Cada área mostra quanto já foi gasto, em verde, amarelo a partir de 80% e vermelho quando passa, e a central de avisos avisa nos dois momentos. O widget "Por instituição" mostra quanto saiu por banco, cartão ou carteira no período, com o ícone de cada um; tocar numa instituição filtra os lançamentos.
+
+**Busca rápida:** a lupa no topo (ou Ctrl+K) encontra qualquer lançamento, gasto previsto, renda, ativo, objetivo ou tela e leva direto até ele; Enter abre o primeiro resultado.
+
+Cada gasto pode registrar **onde foi pago**. Em **Painel › Planejamento › Minhas instituições** o cliente marca antes os bancos, cartões e carteiras que usa (Nubank, Itaú, Bradesco, Santander, Banco do Brasil, Caixa, XP, BTG, Inter, C6, PicPay, Mercado Pago, Sicoob, dinheiro ou outra); ao lançar um gasto, aparecem só esses, como fichas com o ícone, já marcando o último usado, e dá para incluir ou tirar um ali mesmo em "Editar minhas instituições". Na lista, o ícone fica à esquerda de cada gasto. Os ícones seguem o jeito dos ícones da Apple: em **Ícones** escolhe-se Cor (fundo na cor da instituição), Escuro (fundo grafite com o símbolo na cor dela), Tingido (vidro na cor de destaque) ou Automático, que acompanha o tema.
+
 **Novo gasto**, no topo da aba, lança um gasto na hora (data, valor, categoria) sem abrir a lista; na categoria dá para escolher uma existente ou criar uma nova ali mesmo, e "Organizar categorias" (dentro do mesmo formulário) renomeia, reordena ou exclui. O widget **Mês a mês** pinta cada mês pela situação do orçamento (dentro, perto do limite, acima, sem orçamento), com o orçado marcado; tocar num mês abre o mês. Na visão do ano, a média por mês conta só os meses que já passaram.
 
 No topo, escolha o **mês** ou o **ano**: tudo na aba passa a mostrar esse período. Logo abaixo, quatro números: quanto foi gasto (com o orçamento do mês, editável ali mesmo), a projeção até o fim do mês no ritmo atual (e quanto ainda cabe por dia), a comparação com a média dos meses anteriores e o peso dos gastos fixos.
@@ -249,6 +257,10 @@ A escolha fica salva no perfil do cliente. O sistema respeita a preferência de 
 ### Sem internet
 
 O site guarda os próprios arquivos no aparelho (`sw.js`) e abre mesmo sem conexão. Os dados continuam vindo do banco: sem internet, quem usa a conta de verdade vê a tela "Sem conexão" com o botão para tentar de novo, em vez do erro do navegador.
+
+### Vidro no padrão Apple
+
+Cartões, menus e janelas são de vidro translúcido: as cores do fundo, que seguem a cor de destaque, aparecem através deles, com brilho na quina de cima, um reflexo suave e sombra em camadas levemente tingida. No aparelho com "reduzir transparência", tudo fica sólido; com "aumentar contraste", os cartões ganham borda definida.
 
 ### Olho oculto
 

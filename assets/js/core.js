@@ -64,6 +64,8 @@ function hydrateProfile(p) {
   let abas = Array.isArray(p.abas) ? p.abas.filter((k) => ABA_KEYS.includes(k)) : ABA_KEYS.slice();
   if (!abas.includes('geral')) abas.unshift('geral');
   p.abas = abas;
+  p.instituicoes = Array.isArray(p.instituicoes) ? p.instituicoes.filter((x) => typeof x === 'string').slice(0, 30) : [];
+  p.instEstilo = ['cor', 'escuro', 'tingido'].includes(p.instEstilo) ? p.instEstilo : 'auto';
   p.carteira = Array.isArray(p.carteira) ? p.carteira.map((e) => ({ k: String(e.k), alvo: +e.alvo || 0, valor: e.valor == null ? null : +e.valor, preco: e.preco == null ? null : +e.preco })) : [];
   p.nome = p.nome || ''; p.email = p.email || ''; p.whatsapp = p.whatsapp || '';
   ['apelido', 'profissao', 'cidade'].forEach((k) => { p[k] = typeof p[k] === 'string' ? p[k].slice(0, 80) : ''; });

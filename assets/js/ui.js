@@ -193,7 +193,7 @@ function yearControl(extra) {
   const ys = Object.keys(S.plans).map(Number).sort();
   const list = ys.map((y) => `<button class="yr-opt${y === S.year ? ' on' : ''}" data-act="year-pick" data-year="${y}">${y}${y === S.year ? I.check : ''}</button>`).join('');
   const sino = typeof sinoHtml === 'function' ? sinoHtml() : '';
-  const globo = S.view === 'geral' && typeof aberturaBtnHtml === 'function' ? aberturaBtnHtml() : ''; // o globo só abre pela Visão geral
+  const globo = (typeof buscaBtnHtml === 'function' ? buscaBtnHtml() : '') + (S.view === 'geral' && typeof aberturaBtnHtml === 'function' ? aberturaBtnHtml() : ''); // o globo só abre pela Visão geral
   if (extra == null && PER_TELAS.includes(S.view) && typeof periodoHtml === 'function') extra = periodoHtml(); // período nas abas que acompanham (como na Visão geral)
   return `<div class="htools">${olhoHtml()}${globo}${sino}${extra || ''}<div class="year"><button class="year-pill" data-act="year-toggle" aria-haspopup="true" aria-expanded="${S.yearOpen}"><span>${S.year}</span>${I.down}</button>
     ${S.yearOpen ? `<div class="popover" role="dialog" aria-label="Escolher ano"><div class="pop-t">Planejamento de</div><div class="yr-list">${list}</div>

@@ -256,7 +256,7 @@ const O3_OBJ = {
       x.strokeStyle = '#C9CED6'; x.lineWidth = H * 0.018; for (let i = 0; i < 3; i++) { x.beginPath(); x.arc(W * 0.86, H * 0.47, H * (0.05 + i * 0.045), -0.7, 0.7); x.stroke(); } }, 512, 322);
     const pl = new T.Mesh(new T.PlaneGeometry(w * 0.98, h * 0.98), new T.MeshBasicMaterial({ map: face, transparent: true })); pl.position.z = 0.0285; g.add(pl);
     const chip = new T.Mesh(new T.BoxGeometry(0.22, 0.17, 0.012), M.ouro); chip.position.set(-0.52, 0.02, 0.028); g.add(chip);
-    g.rotation.set(-0.3, 0.45, 0.08); return g;
+    g.rotation.set(-0.3, 0.45, 0.08); g.userData.zoom = 0.78; return g; // largo: um pouco menor para não cobrir o título do card
   },
   trofeu(M) {
     const T = THREE; const g = new T.Group();

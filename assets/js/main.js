@@ -47,7 +47,7 @@ function render(opts) {
   const key = scr + ':' + (scr === 'app' ? S.view : scr === 'onboarding' && S.ob ? S.ob.step + '.' + S.ob.q : scr === 'auth' ? S.authMode : '');
   const same = S.lastKey === key;
   if (soft && scr !== 'app' && same) return;
-  S.needsRender = false; document.body.dataset.screen = scr; S.renderSeq = (S.renderSeq || 0) + 1;
+  S.needsRender = false; document.body.dataset.screen = scr; document.documentElement.dataset.icones = (S.profile && S.profile.instEstilo) || 'auto'; S.renderSeq = (S.renderSeq || 0) + 1;
   const y = window.scrollY; const tw = $('.tablewrap'); const tws = tw ? [tw.scrollLeft, tw.scrollTop] : null;
   S.C = S.plan && S.profile ? E.compute(S.plan, planCtx()) : null;
   hideTip();
@@ -106,8 +106,10 @@ function onClick(e) {
       case 'modo': S.modo = ds.modo; render(); break;
       case 'add-item': openItem(ds.kind, null, { cat: ds.cat, area: ds.area, mes: ds.presetMes != null ? +ds.presetMes : undefined }); break;
       case 'add-lanc': openLanc(null, { mes: ds.mes != null ? +ds.mes : undefined }); break;
+      case 'busca': buscaAbrir(); break;
+      case 'inst-estilo': instEstiloDefinir(ds.v, el); break;
       case 'edit-lanc': openLanc(ds.id); break;
-      case 'g-per': case 'g-mes': case 'g-tipo': case 'g-agrup': case 'g-area': case 'g-busca': case 'g-limpa': case 'g-mais': case 'g-pers': gAcao(act, ds); break;
+      case 'g-per': case 'g-mes': case 'g-tipo': case 'g-agrup': case 'g-area': case 'g-busca': case 'g-limpa': case 'g-mais': case 'g-pers': case 'g-limite': case 'g-fixo': gAcao(act, ds); break;
       case 'ingest-open': abrirIngestao(el.dataset.modo); break;
       case 'ing-edit': S.ing.editando = S.ing.editando === +ds.i ? null : +ds.i; renderIng(); break;
       case 'ing-filtro': S.ing.filtro = ds.f; renderIng(); break;
@@ -242,7 +244,36 @@ function onInput(e) {
   if (t.matches('[data-clients-q]')) { S.clientsQ = t.value; clearTimeout(filterT); filterT = setTimeout(() => { const pos = t.selectionStart; render(); refocus('[data-clients-q]', pos); }, 160); }
 }
 
+/* ---------- busca rápida (Ctrl+K ou a lupa do topo): telas, lançamentos, gastos previstos, rendas, ativos e objetivos do ano aberto ---------- */
+const I_LUPA = ic('<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/>');
+const buscaBtnHtml = () => `<button class="ab-ir" data-act="busca" aria-label="Buscar (Ctrl+K)" title="Buscar (Ctrl+K)">${I_LUPA}</button>`;
+function navPara(v) { closeModal(); S.view = v; S.stale = false; S.maisOpen = false; S.notifOpen = false; closeAdmin(); render(); }
+function buscaItens() {
+  const p = S.plan; const L = []; const dt = (s) => { const d = E.parseDataISO(s); return d ? `${pad2(d.dia)}/${pad2(d.mes + 1)}` : ''; };
+  navItems().forEach(([v, nome]) => L.push({ t: 'Tela', n: nome, s: '', go: () => navPara(v) }));
+  if (p) {
+    p.lancamentos.forEach((l) => L.push({ t: l.valor < 0 ? 'Estorno' : 'Gasto', n: l.desc, s: [dt(l.data), l.area, brl(Math.abs(l.valor)), (instDe(l.inst) || [])[1]].filter(Boolean).join(' · '), go: () => { navPara('despesas'); openLanc(l.id); } }));
+    p.despesas.forEach((it) => L.push({ t: 'Gasto previsto', n: it.nome, s: it.area || '', go: () => navPara('despesas') }));
+    (p.rendas || []).forEach((r) => L.push({ t: 'Renda', n: r.nome, s: '', go: () => navPara('rendas') }));
+    (p.ativos || []).forEach((a) => L.push({ t: 'Ativo', n: a.nome, s: a.classe || '', go: () => navPara('inv') }));
+  }
+  ((S.profile && S.profile.objetivos) || []).forEach((g) => L.push({ t: 'Objetivo', n: objNomeDe(g), s: g.valor ? brl0(g.valor) : '', go: () => { closeModal(); objAcao('objetivos-abrir', {}); } }));
+  return L;
+}
+function buscaAbrir() {
+  if (S.screen !== 'app') return; const itens = buscaItens(); let achados = [];
+  const f = openModal({ title: 'Buscar', ok: 'Abrir', body: `<input class="search busca-in" name="q" type="search" placeholder="Gasto, ativo, objetivo ou tela" autocomplete="off" aria-label="Buscar" aria-controls="busca-res"><ul class="busca-res" id="busca-res" role="listbox"></ul>`,
+    onOk: () => { if (achados[0]) { achados[0].go(); return false; } return false; } });
+  const res = f.querySelector('#busca-res'); const inp = f.elements.q;
+  // todas as palavras precisam aparecer (sem acento nem maiúscula); sem texto, mostra as telas
+  const desenhar = () => { const q = E.norm(inp.value).split(/\s+/).filter(Boolean);
+    achados = (q.length ? itens.filter((x) => { const h = E.norm(`${x.n} ${x.s} ${x.t}`); return q.every((w) => h.includes(w)); }) : itens.filter((x) => x.t === 'Tela')).slice(0, 30);
+    res.innerHTML = achados.length ? achados.map((x, i) => `<li><button type="button" class="busca-it" data-i="${i}" role="option"><span><b>${esc(x.n)}</b>${x.s ? `<small>${esc(x.s)}</small>` : ''}</span><em>${esc(x.t)}</em></button></li>`).join('') : '<li class="busca-vazio">Nada encontrado.</li>'; };
+  inp.addEventListener('input', desenhar); res.addEventListener('click', (e) => { const b = e.target.closest('[data-i]'); if (b) achados[+b.dataset.i].go(); });
+  desenhar();
+}
 function onKey(e) {
+  if ((e.ctrlKey || e.metaKey) && !e.altKey && (e.key === 'k' || e.key === 'K') && S.screen === 'app') { e.preventDefault(); buscaAbrir(); return; }
   if (e.key === 'Escape' && S.notifOpen) { S.notifOpen = false; notifRefresh('.bell'); return; }
   if (e.key === 'Escape' && S.yearOpen) { S.yearOpen = false; render(); return; }
   if (e.key === 'Escape' && S.perOpen) { S.perOpen = false; S.perIni = null; render(); const b = document.querySelector('[data-act="per-toggle"]'); if (b) b.focus(); return; }

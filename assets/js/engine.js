@@ -648,6 +648,28 @@
      Cada aviso tem id estável no período (o mesmo aviso não volta como novo no mesmo mês; se a situação piora, o id muda),
      uma chave de texto com variáveis numéricas (a interface formata e aplica a voz) e uma ação direta (cta). */
   const NIVEL_PESO = { critico: 5, alerta: 4, oportunidade: 3, info: 2, positivo: 1 };
+  /* gastos fixos que se repetem (itens previstos em plan.despesas) */
+  // valor repetido do mês seguinte até dezembro
+  const repetirValores = (valor, mesDe) => z().map((_, m) => (m > mesDe ? r2(valor) : 0));
+  // gasto fixo que um lançamento real cumpre: mesmo estabelecimento, valor previsto no mês e mês ainda não realizado
+  function acharFixo(despesas, desc, ano, m) {
+    const k = nomeEstab(desc); if (!k) return null;
+    return (despesas || []).find((it) => !it.parcel && nomeEstab(it.nome) === k && +(it.valores || [])[m] > 0 && !(it.baixas && it.baixas[ano + '-' + m])) || null;
+  }
+  /* limites de gasto por área (plan.settings.limites = { 'Alimentação': 1500 }, valor por mês) */
+  // gasto de cada área num mês: previstos, parcelas e lançamentos reais
+  function gastosAreaMes(plan, carry, m) {
+    const out = {}; const somar = (nome, v) => { const k = nome || 'Outros'; if (v) out[k] = r2((out[k] || 0) + v); };
+    (plan.despesas || []).concat(carry || []).forEach((it) => somar(it.area, itemValores(it, plan.year)[m]));
+    (plan.lancamentos || []).forEach((l) => { const d = parseDataISO(l.data); if (d && d.ano === plan.year && d.mes === m) somar(l.area, +l.valor || 0); });
+    return out;
+  }
+  // cada limite com o gasto da área (nome comparado sem acento nem maiúscula); 80% ou mais = perto, acima de 100% = passou
+  function analiseLimites(limites, gastos) {
+    const g = {}; Object.keys(gastos || {}).forEach((k) => { g[norm(k)] = (g[norm(k)] || 0) + gastos[k]; });
+    return Object.keys(limites || {}).filter((a) => +limites[a] > 0).map((area) => { const limite = +limites[area]; const gasto = r2(g[norm(area)] || 0); const uso = gasto / limite;
+      return { area, limite, gasto, uso, falta: r2(limite - gasto), sit: uso > 1 ? 'passou' : uso >= 0.8 ? 'perto' : 'ok' }; }).sort((a, b) => b.uso - a.uso);
+  }
   function notificacoes(o) {
     const C = o && o.C; const plan = (o && o.plan) || {}; if (!C || !plan.year) return [];
     const h = o.hoje instanceof Date ? { ano: o.hoje.getFullYear(), mes: o.hoje.getMonth(), dia: o.hoje.getDate() } : o.hoje;
@@ -686,6 +708,11 @@
       });
       if (pior) push(`area:${per}:${norm(pior.nome).replace(/[^a-z0-9]+/g, '-')}`, 'orcamento', 'alerta', 'n_area_alta', { area: pior.nome, valor: pior.atual, media: pior.media, pct: pior.r - 1 }, nav('Ver gastos', 'despesas', m));
     }
+
+    // limites por área: perto (80%) e passou
+    analiseLimites((plan.settings || {}).limites, gastosAreaMes(plan, o.carry, m)).forEach((x) => { const id = `lim:${per}:${norm(x.area).replace(/[^a-z0-9]+/g, '-')}`;
+      if (x.sit === 'passou') push(id + ':100', 'orcamento', 'critico', 'n_lim_passou', { area: x.area, valor: x.gasto - x.limite, limite: x.limite }, nav('Ver gastos', 'despesas', m));
+      else if (x.sit === 'perto') push(id + ':80', 'orcamento', 'alerta', 'n_lim_perto', { area: x.area, pct: x.uso, restante: x.falta, limite: x.limite }, nav('Ver gastos', 'despesas', m)); });
 
     // 2) Lembretes do calendário
     const entradas = +C.receita[m] || 0;
@@ -878,6 +905,6 @@
   const api = { PLANOS, RECURSOS, ABA_RECURSO, planoPermite, planoMinimo, planoNorm, parseDataISO, MES, MES_LONGO, TAXONOMIA, ASSET_LEVELS, QUIZ, PERFIS, RETORNO_PADRAO, CATS_DESP, CATS_RENDA, FORMATO_BACKUP,
     z, add, sub, sum, r2, norm, monthIndex, parseValor, distribuir, parcelaMeses, parcelaFim, parcelaIndice, itemValores, carryItems,
     ativoKey, buildAssetTree, rebalance, analiseInvest, disponivelAporte, analiseRenda, analiseGastos, analiseCarteira, nomeEstab, historico, ctxAno, OBJ_TIPOS, normObjetivos, analiseObjetivos, sugerirDivisao, aporteNecessario, notificacoes, scorePerfil, projetar, mesesAteMeta, simularObjetivo, migratePlan, compute, makeBackup, parseBackup,
-    templateSheets, parseImport, applyImport, feriadoBR, diaUtilBR };
+    templateSheets, parseImport, applyImport, gastosAreaMes, analiseLimites, repetirValores, acharFixo, feriadoBR, diaUtilBR };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.FPEngine = api;
 })(typeof window !== 'undefined' ? window : globalThis);

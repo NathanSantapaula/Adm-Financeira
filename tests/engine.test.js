@@ -340,4 +340,21 @@ ok(E.planoPermite('gratis', 'orcamento') && !E.planoPermite('gratis', 'carteira'
   ok(A.itens[0].saldo === 800 && A.itens[0].status !== 'sem-divisao' && A.itens[1].saldo === 400 && A.pctAlocado === 50, 'objetivos: marco usa o patrimônio total; fatia usa a parte dela');
 }
 
+{ // limites de gasto por área
+  const plan = { year: 2026, despesas: [], lancamentos: [{ data: '2026-03-02', area: 'Alimentação', valor: 900 }, { data: '2026-03-10', area: 'alimentacao', valor: 400 }, { data: '2026-03-11', area: 'Lazer', valor: 100 }, { data: '2026-02-10', area: 'Lazer', valor: 999 }] };
+  const g = E.gastosAreaMes(plan, [], 2);
+  ok(g['Alimentação'] === 900 && g.alimentacao === 400 && g.Lazer === 100, 'limites: gasto da área no mês (só março)');
+  const L = E.analiseLimites({ 'Alimentação': 1200, Lazer: 500, Casa: 0 }, g);
+  ok(L.length === 2 && L[0].area === 'Alimentação' && L[0].gasto === 1300 && L[0].sit === 'passou' && L[1].sit === 'ok', 'limites: junta a área sem acento e marca a que passou');
+  ok(E.analiseLimites({ Lazer: 120 }, g)[0].sit === 'perto', 'limites: 80% ou mais fica perto');
+}
+
+{ // gastos que se repetem
+  const v = E.repetirValores(89.9, 9);
+  ok(v[9] === 0 && v[10] === 89.9 && v[11] === 89.9 && v[0] === 0, 'repetir: só os meses seguintes até dezembro');
+  const desp = [{ id: 'a', nome: 'NETFLIX.COM', valores: E.repetirValores(55, 2) }, { id: 'b', nome: 'Academia', valores: E.repetirValores(120, 0), baixas: { '2026-4': 'x' } }];
+  ok(E.acharFixo(desp, 'Netflix.com 03/12', 2026, 5).id === 'a' && !E.acharFixo(desp, 'Netflix', 2026, 2), 'repetir: lançamento cumpre o fixo do mês, não antes dele');
+  ok(!E.acharFixo(desp, 'academia', 2026, 4) && E.acharFixo(desp, 'academia', 2026, 5).id === 'b', 'repetir: mês já realizado não concilia de novo');
+}
+
 process.exit(bad ? 1 : 0);
