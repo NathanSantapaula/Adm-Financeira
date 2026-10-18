@@ -967,7 +967,7 @@ dialog.drawer[open] { animation: drin 380ms var(--ease-drawer); }
 .ccacts { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; align-items: center; }
 .ccacts .grow { flex: 1; }
 .macc { background: var(--surface); border: 1px solid var(--glass-edge); border-radius: var(--radius); margin-bottom: 10px; box-shadow: var(--shadow); overflow: hidden; transition: border-color var(--dur-2) var(--ease), box-shadow var(--dur-2) var(--ease); }
-.macc[data-open="true"] { border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); box-shadow: var(--shadow-lg); }
+.macc[data-open="true"] { box-shadow: var(--shadow-lg); }
 .macc[data-now="true"] .macc-mes::after { content: 'atual'; margin-left: 8px; padding: 2px 8px; border-radius: var(--r-pill); background: var(--accent-soft); color: var(--accent); font-size: 11px; font-weight: 600; vertical-align: middle; }
 .macc-h { margin: 0; }
 .macc-btn { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; grid-template-areas: "ch nome nums" ". barra barra"; gap: 6px 12px; align-items: center; width: 100%; padding: 16px 18px 14px 14px; border: 0; background: transparent; text-align: left; }
@@ -2217,7 +2217,7 @@ button.wg-ic:active { transform: scale(.92); }
 .sonho.v-limpo .sonho-foto, .sonho.v-3d:not(.sem-3d) .sonho-foto { display: none; }
 .card.goal-card.sonho:is(.v-limpo, .v-3d:not(.sem-3d)) {
   --ink: inherit; --ink-2: inherit; --ink-3: inherit; --line: inherit; --line-2: inherit; color: var(--ink);
-  border-color: color-mix(in srgb, var(--accent) 18%, var(--line));
+  border-color: transparent;
   background: radial-gradient(75% 65% at 88% 12%, color-mix(in srgb, var(--accent) 20%, transparent), transparent 70%),
     linear-gradient(160deg, color-mix(in srgb, var(--accent) 12%, var(--surface)) 0%, var(--surface) 48%, color-mix(in srgb, var(--accent-2) 9%, var(--surface)) 100%);
   box-shadow: var(--shadow); }
@@ -2671,3 +2671,5 @@ button.wg-ic:active { transform: scale(.92); }
 @media (prefers-contrast: more) {
   .card, .stat, .kpi, .macc, .lcat, .step, .obj-card, .pf-card, .popover, .sheet, dialog { background: var(--surface); border: 1px solid var(--ink-3); -webkit-backdrop-filter: none; backdrop-filter: none; }
 }
+/* sem contorno no vidro em nenhum tema (inclusive o personalizado, que define o próprio --rim): a separação fica com a sombra */
+:root { --rim: linear-gradient(transparent, transparent) !important; }
