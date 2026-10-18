@@ -187,7 +187,7 @@ A foto ou o avatar aparecem no menu, no painel e, para você, na lista de Client
 
 **Limites por área:** em Gastos, o widget "Limites por área" deixa definir um limite por mês para as áreas que você quiser (ex.: Alimentação R$ 1.500). Cada área mostra quanto já foi gasto, em verde, amarelo a partir de 80% e vermelho quando passa, e a central de avisos avisa nos dois momentos. O widget "Por instituição" mostra quanto saiu por banco, cartão ou carteira no período, com o ícone de cada um; tocar numa instituição filtra os lançamentos.
 
-**Busca rápida:** a lupa no topo (ou Ctrl+K) encontra qualquer lançamento, gasto previsto, renda, ativo, objetivo ou tela e leva direto até ele; Enter abre o primeiro resultado.
+**Busca rápida:** nas abas Gastos, Investimentos e Proventos, a lupa no topo (ou Ctrl+K) encontra lançamentos, gastos previstos, ativos e proventos e leva direto até eles; Enter abre o primeiro resultado.
 
 Cada gasto pode registrar **onde foi pago**. Em **Painel › Planejamento › Minhas instituições** o cliente marca antes os bancos, cartões e carteiras que usa (Nubank, Itaú, Bradesco, Santander, Banco do Brasil, Caixa, XP, BTG, Inter, C6, PicPay, Mercado Pago, Sicoob, dinheiro ou outra); ao lançar um gasto, aparecem só esses, como fichas com o ícone, já marcando o último usado, e dá para incluir ou tirar um ali mesmo em "Editar minhas instituições". Na lista, o ícone fica à esquerda de cada gasto. Os ícones seguem o jeito dos ícones da Apple: em **Ícones** escolhe-se Cor (fundo na cor da instituição), Escuro (fundo grafite com o símbolo na cor dela), Tingido (vidro na cor de destaque) ou Automático, que acompanha o tema.
 
@@ -260,7 +260,7 @@ O site guarda os próprios arquivos no aparelho (`sw.js`) e abre mesmo sem conex
 
 ### Vidro no padrão Apple
 
-Cartões, menus e janelas são de vidro translúcido: as cores do fundo, que seguem a cor de destaque, aparecem através deles, com brilho na quina de cima, um reflexo suave e sombra em camadas levemente tingida. No aparelho com "reduzir transparência", tudo fica sólido; com "aumentar contraste", os cartões ganham borda definida.
+Cartões, menus e janelas são de vidro translúcido: as cores do fundo, que seguem a cor de destaque, aparecem através deles, com um reflexo suave e sombra em camadas levemente tingida. No aparelho com "reduzir transparência", tudo fica sólido; com "aumentar contraste", os cartões ganham borda definida.
 
 ### Olho oculto
 

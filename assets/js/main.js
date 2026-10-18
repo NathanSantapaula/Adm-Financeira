@@ -244,31 +244,31 @@ function onInput(e) {
   if (t.matches('[data-clients-q]')) { S.clientsQ = t.value; clearTimeout(filterT); filterT = setTimeout(() => { const pos = t.selectionStart; render(); refocus('[data-clients-q]', pos); }, 160); }
 }
 
-/* ---------- busca rápida (Ctrl+K ou a lupa do topo): telas, lançamentos, gastos previstos, rendas, ativos e objetivos do ano aberto ---------- */
+/* ---------- busca rápida (Ctrl+K ou a lupa do topo, só em Gastos, Investimentos e Proventos): lançamentos, gastos previstos, ativos e proventos do ano aberto ---------- */
 const I_LUPA = ic('<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/>');
-const buscaBtnHtml = () => `<button class="ab-ir" data-act="busca" aria-label="Buscar (Ctrl+K)" title="Buscar (Ctrl+K)">${I_LUPA}</button>`;
+// a busca só existe em Gastos, Investimentos e Proventos
+const BUSCA_ABAS = ['despesas', 'inv', 'pro'];
+const buscaBtnHtml = () => (!BUSCA_ABAS.includes(S.view) ? '' : `<button class="ab-ir" data-act="busca" aria-label="Buscar (Ctrl+K)" title="Buscar (Ctrl+K)">${I_LUPA}</button>`);
 function navPara(v) { closeModal(); S.view = v; S.stale = false; S.maisOpen = false; S.notifOpen = false; closeAdmin(); render(); }
 function buscaItens() {
   const p = S.plan; const L = []; const dt = (s) => { const d = E.parseDataISO(s); return d ? `${pad2(d.dia)}/${pad2(d.mes + 1)}` : ''; };
-  navItems().forEach(([v, nome]) => L.push({ t: 'Tela', n: nome, s: '', go: () => navPara(v) }));
   if (p) {
     p.lancamentos.forEach((l) => L.push({ t: l.valor < 0 ? 'Estorno' : 'Gasto', n: l.desc, s: [dt(l.data), l.area, brl(Math.abs(l.valor)), (instDe(l.inst) || [])[1]].filter(Boolean).join(' · '), go: () => { navPara('despesas'); openLanc(l.id); } }));
     p.despesas.forEach((it) => L.push({ t: 'Gasto previsto', n: it.nome, s: it.area || '', go: () => navPara('despesas') }));
-    (p.rendas || []).forEach((r) => L.push({ t: 'Renda', n: r.nome, s: '', go: () => navPara('rendas') }));
-    (p.ativos || []).forEach((a) => L.push({ t: 'Ativo', n: a.nome, s: a.classe || '', go: () => navPara('inv') }));
+    (p.ativos || []).forEach((a) => { L.push({ t: 'Ativo', n: a.nome, s: a.classe || '', go: () => navPara('inv') });
+      const pr = (a.pr || []).reduce((t, v) => t + (+v || 0), 0); if (pr > 0) L.push({ t: 'Proventos', n: a.nome, s: brl(pr) + ' no ano', go: () => navPara('pro') }); });
   }
-  ((S.profile && S.profile.objetivos) || []).forEach((g) => L.push({ t: 'Objetivo', n: objNomeDe(g), s: g.valor ? brl0(g.valor) : '', go: () => { closeModal(); objAcao('objetivos-abrir', {}); } }));
   return L;
 }
 function buscaAbrir() {
-  if (S.screen !== 'app') return; const itens = buscaItens(); let achados = [];
-  const f = openModal({ title: 'Buscar', ok: 'Abrir', body: `<input class="search busca-in" name="q" type="search" placeholder="Gasto, ativo, objetivo ou tela" autocomplete="off" aria-label="Buscar" aria-controls="busca-res"><ul class="busca-res" id="busca-res" role="listbox"></ul>`,
+  if (S.screen !== 'app' || !BUSCA_ABAS.includes(S.view)) return; const itens = buscaItens(); let achados = [];
+  const f = openModal({ title: 'Buscar', ok: 'Abrir', body: `<input class="search busca-in" name="q" type="search" placeholder="Gasto, ativo ou provento" autocomplete="off" aria-label="Buscar" aria-controls="busca-res"><ul class="busca-res" id="busca-res" role="listbox"></ul>`,
     onOk: () => { if (achados[0]) { achados[0].go(); return false; } return false; } });
   const res = f.querySelector('#busca-res'); const inp = f.elements.q;
   // todas as palavras precisam aparecer (sem acento nem maiúscula); sem texto, mostra as telas
   const desenhar = () => { const q = E.norm(inp.value).split(/\s+/).filter(Boolean);
-    achados = (q.length ? itens.filter((x) => { const h = E.norm(`${x.n} ${x.s} ${x.t}`); return q.every((w) => h.includes(w)); }) : itens.filter((x) => x.t === 'Tela')).slice(0, 30);
-    res.innerHTML = achados.length ? achados.map((x, i) => `<li><button type="button" class="busca-it" data-i="${i}" role="option"><span><b>${esc(x.n)}</b>${x.s ? `<small>${esc(x.s)}</small>` : ''}</span><em>${esc(x.t)}</em></button></li>`).join('') : '<li class="busca-vazio">Nada encontrado.</li>'; };
+    achados = (q.length ? itens.filter((x) => { const h = E.norm(`${x.n} ${x.s} ${x.t}`); return q.every((w) => h.includes(w)); }) : []).slice(0, 30);
+    res.innerHTML = achados.length ? achados.map((x, i) => `<li><button type="button" class="busca-it" data-i="${i}" role="option"><span><b>${esc(x.n)}</b>${x.s ? `<small>${esc(x.s)}</small>` : ''}</span><em>${esc(x.t)}</em></button></li>`).join('') : `<li class="busca-vazio">${inp.value.trim() ? 'Nada encontrado.' : 'Digite para buscar gastos, ativos e proventos.'}</li>`; };
   inp.addEventListener('input', desenhar); res.addEventListener('click', (e) => { const b = e.target.closest('[data-i]'); if (b) achados[+b.dataset.i].go(); });
   desenhar();
 }
