@@ -2673,3 +2673,5 @@ button.wg-ic:active { transform: scale(.92); }
 }
 /* sem contorno no vidro em nenhum tema (inclusive o personalizado, que define o próprio --rim): a separação fica com a sombra */
 :root { --rim: linear-gradient(transparent, transparent) !important; }
+/* sem o espaço da borda: no Safari o desfoque do vidro aparecia nessa faixa de 1px como um contorno claro */
+.card, .stat, .kpi, .macc, .lcat, .step, .obj-card, .pf-card, .cc-empty, .locked, .hero-card, .goal-card, .budget, .macc-sum, .sim, .acct, .advisor, .popover, .sheet, dialog, .wg-barra, .toast { border-width: 0; }
