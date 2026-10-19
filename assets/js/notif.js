@@ -215,7 +215,7 @@ async function notifIr(id) {
   if (c.acao !== 'nav') { render(); return; }
   if (S.year !== n.ano && S.plans[n.ano]) await switchYear(n.ano);
   S.view = c.view; S.maisOpen = false; if (typeof closeAdmin === 'function') closeAdmin();
-  if (c.mes != null) { S.mes = c.mes; if (c.view === 'despesas') S.gPer = 'mes'; }
+  if (c.mes != null) { if (c.view === 'despesas') gIrMes(c.mes); else S.mes = c.mes; }
   render();
 }
 // Atualiza só o sino e a lista, sem redesenhar a página (a tela não "pisca" a cada clique na central)

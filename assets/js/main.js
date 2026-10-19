@@ -133,8 +133,8 @@ function onClick(e) {
       case 'orc-all': { const v = S.C.orcamento[ds.m != null ? +ds.m : S.mes]; p.settings.orcPadrao = v; p.orcamento = new Array(12).fill(null); commit(); toast('Orçamento aplicado a todos os meses.'); break; }
       case 'year-toggle': S.yearOpen = !S.yearOpen; S.perOpen = false; S.notifOpen = false; render(); break;
       case 'per-toggle': S.perOpen = !S.perOpen; S.perIni = null; S.yearOpen = false; S.notifOpen = false; render(); break;
-      case 'per-atalho': { if (S.view === 'despesas') S.gPer = 'ano'; /* em Gastos o período vale na visão do ano */ const n = +ds.n; const ref = perRef(); S.periodo = n >= 12 ? null : { de: Math.max(0, ref - n + 1), ate: ref }; S.perOpen = false; S.perIni = null; render(); const b = document.querySelector('[data-act="per-toggle"]'); if (b) b.focus(); break; }
-      case 'per-mes': { if (S.view === 'despesas') S.gPer = 'ano'; // primeiro toque marca o início, o segundo fecha o período
+      case 'per-atalho': { const n = +ds.n; const ref = perRef(); S.periodo = n >= 12 ? null : { de: Math.max(0, ref - n + 1), ate: ref }; S.perOpen = false; S.perIni = null; render(); const b = document.querySelector('[data-act="per-toggle"]'); if (b) b.focus(); break; }
+      case 'per-mes': { // primeiro toque marca o início, o segundo fecha o período
         const m = +ds.m;
         if (S.perIni == null) { S.perIni = m; render(); const b = document.querySelector(`.per-m[data-m="${m}"]`); if (b) b.focus(); break; }
         const de = Math.min(S.perIni, m); const ate = Math.max(S.perIni, m); S.periodo = de === 0 && ate === 11 ? null : { de, ate }; S.perIni = null; S.perOpen = false; render();

@@ -96,7 +96,7 @@ Depois, em `assets/js/config.js`, troque `ingestao.iaAtiva` para `true`. A funç
 
 ## 5. Rendas, Investimentos e Proventos como painel de estudo
 
-Rendas, Investimentos, Proventos e Gastos têm, ao lado do ano, o mesmo seletor de período da Visão geral (últimos 3 ou 6 meses, ano todo ou qualquer intervalo de meses). Os números, as médias e os gráficos mês a mês passam a mostrar só esse período; em Gastos, escolher um período leva à visão do ano, que vira "Período". O globo não usa período e o botão dele fica só na Visão geral.
+Rendas, Investimentos, Proventos e Gastos têm, ao lado do ano, o mesmo seletor de período da Visão geral (últimos 3 ou 6 meses, ano todo ou qualquer intervalo de meses). Os números, as médias e os gráficos mês a mês passam a mostrar só esse período; em Gastos, esse seletor é o único: escolher um mês só (dois toques no mesmo mês) mostra a visão do mês, com o ritmo e o que mudou. O globo não usa período e o botão dele fica só na Visão geral.
 
 Os indicadores e cada cartão dessas três abas (e da Carteira) são widgets, como na Visão geral e em Gastos: **Organizar a tela** (no fim dos widgets, ou segurando um deles) permite arrastar, mudar a largura, tirar e adicionar, e **Mais opções** abre a lista completa (também em Painel › Telas). A escolha fica no perfil e os widgets se encaixam sem deixar espaços vazios. A planilha mês a mês continua fixa no fim de cada aba.
 

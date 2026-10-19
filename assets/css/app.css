@@ -1733,19 +1733,6 @@ dialog.pop-dlg::backdrop { background: var(--scrim); }
 @media print { .card, .stat, .kpi, .macc, .lcat { background: #fff !important; border: 1px solid #ddd !important; } }
 
 /* ---------- Gastos (v4): período, números, análises e lista única de lançamentos ---------- */
-.g-per { position: relative; z-index: 7; display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; margin: 0 0 16px; padding: 8px; border-radius: 18px; border: 1px solid transparent;
-  background: var(--sheen) padding-box, linear-gradient(var(--glass-strong), var(--glass-strong)) padding-box, var(--rim) border-box; box-shadow: var(--shadow);
-  -webkit-backdrop-filter: blur(var(--blur)) saturate(var(--sat)); backdrop-filter: blur(var(--blur)) saturate(var(--sat)); }
-.g-meses { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; flex: 1 1 0; min-width: 0; padding: 2px; }
-.g-meses::-webkit-scrollbar { display: none; }
-.g-mes { flex: none; display: inline-flex; flex-direction: column; align-items: center; gap: 4px; min-width: 46px; padding: 7px 10px 6px; border: 0; border-radius: 12px; background: transparent; color: var(--ink-2); font-weight: 600; font-size: 13.5px; transition: background-color var(--dur-1) ease, color var(--dur-1) ease; }
-.g-mes.now { color: var(--accent); }
-.g-mes.on { color: #fff; background: linear-gradient(180deg, color-mix(in srgb, var(--accent-fill) 80%, var(--b1)), var(--accent-fill)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), 0 6px 16px -8px var(--glow); }
-@media (hover: hover) and (pointer: fine) { .g-mes:not(.on):hover { background: var(--surface-3); color: var(--ink); } }
-.g-mes:active { transform: scale(.96); }
-.g-dot { width: 6px; height: 6px; border-radius: 50%; background: transparent; }
-.g-dot.ok { background: var(--pos); } .g-dot.warn { background: var(--c4); } .g-dot.neg { background: var(--neg); }
-.g-mes.on .g-dot { box-shadow: 0 0 0 1.5px rgba(255, 255, 255, .85); }
 .g-kpis { margin-bottom: 16px; }
 .g-k1 .kpi-v.neg { color: var(--neg); }
 .g-orc .big { font-size: 15px; font-weight: 700; letter-spacing: 0; border-bottom-width: 1.5px; }
@@ -1802,15 +1789,12 @@ div.g-li { cursor: default; }
 .g-ent-v { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; } .g-ent-v.pos { color: var(--pos); }
 .g-mais { display: flex; justify-content: center; margin-top: 14px; }
 @media (max-width: 640px) {
-  .g-per { border-radius: 16px; }
-  .g-per > .seg { flex: 1 1 100%; } .g-per > .seg button { flex: 1; }
-  .g-meses { flex: 1 1 100%; }
   .g-area { grid-template-columns: minmax(0, 1fr) auto; } .g-area-t { display: none; }
   .g-lanc-a .btn { flex: 1; } .g-lanc-c { padding: 0 12px 14px; }
   .g-sel { max-width: none; flex: 1 1 100%; }
   .g-tools .seg { flex: 1 1 100%; } .g-tools .seg button { flex: 1; padding: 6px 8px; }
 }
-@media print { .g-per, .g-tools { display: none !important; } }
+@media print { .g-tools { display: none !important; } }
 
 /* central de notificações: botão de fechar (no celular a central cobre a tela, então ele é indispensável) */
 .np-h-a { display: flex; align-items: center; gap: 6px; flex: none; }

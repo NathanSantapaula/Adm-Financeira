@@ -57,7 +57,7 @@ function orcEl(m) {
   return `<span class="big ed${orc > 0 ? '' : ' z'}" data-k="orc" data-m="${m}" data-ri="${ri}" data-v="${orc}" data-fmt="brl" data-custom="${custom ? 1 : 0}" tabindex="${ti}" title="Clique para definir o orçamento de ${MES_LONGO[m]}">${orc > 0 ? brl0(orc) : 'Definir'}</span>`;
 }
 /* ---------------- Gastos: período, números do período, análises e todos os lançamentos num lugar só ----------------
-   O período é o mês (S.mes) ou o ano (S.gPer = 'ano'). As análises vêm de E.analiseGastos (testada); a lista
+   O período vem do seletor do topo (S.periodo): um mês só abre a visão do mês (S.mes), o resto a do ano (gAno). As análises vêm de E.analiseGastos (testada); a lista
    filtra e busca sem redesenhar a página (gListaAtualiza). Os widgets seguem o layout salvo em S.profile.painelGastos (mesmo editor da Visão geral). */
 const G_WIDGETS = [
   { id: 'onde', nome: () => 'Para onde foi o dinheiro', desc: 'Categorias e áreas do período, com a comparação com a média.', tam: 3, tams: [3, 4, 6], padrao: () => true },
@@ -72,8 +72,11 @@ const G_WIDGETS = [
   { id: 'limites', nome: () => 'Limites por área', desc: 'Um limite por mês para as áreas que você escolher, com aviso ao chegar perto.', tam: 3, tams: [2, 3, 4, 6], padrao: () => true },
   { id: 'semana', nome: () => 'Por dia da semana', desc: 'Em que dias você mais gasta.', tam: 3, tams: [3, 4, 6], padrao: () => false },
 ];
+// visão do mês quando o período do topo é um mês só; gIrMes leva a ele (o período vale para todas as abas)
+const gAno = () => !(S.periodo && S.periodo.de === S.periodo.ate);
+function gIrMes(m) { S.mes = m; S.periodo = { de: m, ate: m }; }
 const gEstado = () => (S.gf = S.gf || { q: '', cat: '', tipo: 'todos', area: '', agrupar: 'data', lim: 80 });
-const gMesNome = () => { if (S.gPer !== 'ano') return MES_LONGO[S.mes]; if (!S.periodo) return String(S.year); const [de, ate] = perIntervalo(); return de === ate ? MES_LONGO[de] : `${MES_LONGO[de]} a ${MES_LONGO[ate]}`; };
+const gMesNome = () => { if (!gAno()) return MES_LONGO[S.mes]; if (!S.periodo) return String(S.year); const [de, ate] = perIntervalo(); return de === ate ? MES_LONGO[de] : `${MES_LONGO[de]} a ${MES_LONGO[ate]}`; };
 const gSinal = (d) => (d == null ? '' : `${d >= 0 ? '+' : '−'}${pct(Math.abs(d))}`);
 const DIA_SEM = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
 
@@ -84,17 +87,8 @@ function gastosDados() {
   for (let m = 0; m < 12; m++) entradasMes(m).forEach((e) => { e.m = m; ents.push(e); });
   const parcelados = S.plan.despesas.concat(planCtx().carry).filter((it) => it.parcel);
   const hoje = S.year === NOW_Y ? { mes: NOW_M, dia: new Date().getDate() } : null;
-  const G = E.analiseGastos({ ano: S.year, mes: S.gPer === 'ano' ? -1 : S.mes, ...perJanela(), entradas: ents, catsDesp: S.plan.catsDesp, orcamento: S.C.orcamento, hoje, parcelados });
+  const G = E.analiseGastos({ ano: S.year, mes: gAno() ? -1 : S.mes, ...perJanela(), entradas: ents, catsDesp: S.plan.catsDesp, orcamento: S.C.orcamento, hoje, parcelados });
   S.gCache = { seq: S.renderSeq, plan: S.plan, ents, G }; return S.gCache;
-}
-
-/* ---- períodos ---- */
-function gPeriodo() {
-  const C = S.C; const ano = S.gPer === 'ano';
-  const chips = MES.map((m, i) => { const u = C.usoOrc[i]; const tom = u == null ? '' : u > 1 ? ' neg' : u > 0.85 ? ' warn' : C.despesas[i] > 0 ? ' ok' : '';
-    return `<button class="g-mes${!ano && S.mes === i ? ' on' : ''}${S.year === NOW_Y && i === NOW_M ? ' now' : ''}" data-act="g-mes" data-m="${i}" aria-pressed="${!ano && S.mes === i}"><span>${m}</span><i class="g-dot${tom}" aria-hidden="true"></i></button>`; }).join('');
-  return `<div class="g-per"><div class="seg" role="group" aria-label="Período"><button class="${ano ? '' : 'on'}" data-act="g-per" data-per="mes" aria-pressed="${!ano}">Mês</button><button class="${ano ? 'on' : ''}" data-act="g-per" data-per="ano" aria-pressed="${ano}">${S.periodo ? 'Período' : 'Ano'}</button></div>
-    ${ano ? '' : `<div class="g-meses" role="group" aria-label="Mês">${chips}</div>`}</div>`;
 }
 
 /* ---- os quatro números do período ---- */
@@ -175,7 +169,7 @@ const gAcaoEnt = (e) => (e.tipo === 'real' ? `data-act="edit-lanc" data-id="${es
 
 /* ---- lista de lançamentos: busca, filtros e agrupamento ---- */
 function gFiltrar(ents) {
-  const f = gEstado(); const q = E.norm(f.q); const ano = S.gPer === 'ano';
+  const f = gEstado(); const q = E.norm(f.q); const ano = gAno();
   return ents.filter((e) => (ano || e.m === S.mes) && (!f.cat || e.cat === f.cat) && (!f.area || e.area === f.area)
     && (f.tipo === 'todos' || (f.tipo === 'real' ? e.tipo === 'real' : f.tipo === 'prev' ? e.tipo !== 'real' : e.tipo === 'real' && e.origem && e.origem !== 'manual'))
     && (!q || E.norm(e.nome + ' ' + e.area + ' ' + (e.sub || '') + ' ' + ((instDe(e.inst) || [])[1] || '')).includes(q) || E.nomeEstab(e.nome).includes(q)));
@@ -189,7 +183,7 @@ function gLinha(e) {
     <span class="g-ent-v${e.valor < 0 ? ' pos' : ''}">${e.valor < 0 ? '−' : ''}${brl(Math.abs(e.valor))}</span></button></li>`;
 }
 function gListaHtml() {
-  const { ents } = gastosDados(); const f = gEstado(); const lista = gFiltrar(ents); const ano = S.gPer === 'ano';
+  const { ents } = gastosDados(); const f = gEstado(); const lista = gFiltrar(ents); const ano = gAno();
   const total = lista.reduce((s, e) => s + e.valor, 0);
   if (!lista.length) return `<p class="g-resumo">Nenhum lançamento${f.q || f.cat || f.area || f.tipo !== 'todos' ? ' com estes filtros' : ' neste período'}.</p>${f.q || f.cat || f.area || f.tipo !== 'todos' ? '<p><button class="btn sm" data-act="g-limpa">Limpar filtros</button></p>' : ''}`;
   const resumo = `<p class="g-resumo">${lista.length} ${lista.length === 1 ? 'lançamento' : 'lançamentos'} · <b>${brl(total)}</b></p>`;
@@ -210,9 +204,9 @@ function gListaHtml() {
 function gListaAtualiza() { const el = document.getElementById('g-lista-c'); if (el) el.innerHTML = gListaHtml(); const fx = document.getElementById('g-filtros-ativos'); if (fx) fx.innerHTML = gFiltrosAtivos(); }
 const gFiltrosAtivos = () => { const f = gEstado(); return f.area ? `<button class="g-chip" data-act="g-area" data-area="" aria-label="Tirar o filtro de área">Área: ${esc(f.area)} <span aria-hidden="true">×</span></button>` : ''; };
 function gLancamentos() {
-  const f = gEstado(); const mr = S.gPer === 'ano' ? (S.year === NOW_Y ? NOW_M : 11) : S.mes;
+  const f = gEstado(); const mr = gAno() ? (S.year === NOW_Y ? NOW_M : 11) : S.mes;
   const tipos = [['todos', 'Todos'], ['real', 'Reais'], ['prev', 'Previstos'], ['imp', 'Importados']];
-  const aberto = !!S.planilha.gastos; const { ents } = gastosDados(); const doPer = ents.filter((e) => S.gPer === 'ano' || e.m === S.mes); const tot = doPer.reduce((s2, e) => s2 + e.valor, 0);
+  const aberto = !!S.planilha.gastos; const { ents } = gastosDados(); const doPer = ents.filter((e) => gAno() || e.m === S.mes); const tot = doPer.reduce((s2, e) => s2 + e.valor, 0);
   return `<section class="sheet-sec g-lanc" id="g-lancamentos" data-open="${aberto}"><button class="sheet-tg" data-act="planilha-toggle" data-kind="gastos" aria-expanded="${aberto}"><span class="macc-ch">${I.chev}</span><span><b>Lançamentos de ${esc(gMesNome())}</b><small>${doPer.length} ${doPer.length === 1 ? 'lançamento' : 'lançamentos'} · ${brl(tot)}. Busque, filtre e edite cada um.</small></span></button>
     ${aberto ? `<div class="g-lanc-c"><div class="btn-row g-lanc-a"><button class="btn primary sm" data-act="add-lanc" data-mes="${mr}">${I.plus}Novo gasto</button></div>
     <div class="g-tools">
@@ -226,20 +220,19 @@ function gLancamentos() {
 }
 
 function viewDespesas() {
+  if (!gAno()) S.mes = S.periodo.de; // o mês escolhido no período do topo
   const p = S.plan; RI = 0; FIRST_ED = true; const mr = S.year === NOW_Y ? NOW_M : S.mes;
   const vazio = !p.lancamentos.length && !(S.C.T.despesas > 0) && !(S.C.T.orcamento > 0);
-  const acts = `<button class="btn primary" data-act="ingest-open">${I.plus}Importar extrato</button><button class="btn" data-act="add-lanc" data-mes="${S.gPer === 'ano' ? mr : S.mes}">Novo gasto</button>${yearControl()}`;
-  const head = `<div class="page-h"><div><h2 class="title">Gastos</h2><p class="sub">Escolha o mês ou o ano: os números, as análises e a lista mostram o mesmo período.</p></div><div class="acts">${acts}</div></div>`;
+  const acts = `<button class="btn primary" data-act="ingest-open">${I.plus}Importar extrato</button><button class="btn" data-act="add-lanc" data-mes="${gAno() ? mr : S.mes}">Novo gasto</button>${yearControl()}`;
+  const head = `<div class="page-h"><div><h2 class="title">Gastos</h2><p class="sub">Escolha o período no topo (um mês, alguns meses ou o ano todo): os números, as análises e a lista mostram o mesmo período.</p></div><div class="acts">${acts}</div></div>`;
   if (vazio) return `${head}<section class="cc-empty"><div class="cc-empty-ic" aria-hidden="true">${I.plus}</div><div class="cc-empty-tx"><h3>Seu ${S.year} começa pelo extrato</h3><p>Arraste o CSV ou OFX do seu banco: categorizamos tudo e você só confere. Leva menos de um minuto.</p></div><div class="cc-empty-acts"><button class="btn primary lg" data-act="ingest-open">Importar extrato</button><button class="btn ghost" data-act="add-lanc" data-mes="${mr}">Lançar manualmente</button></div></section>`;
   const { G } = gastosDados();
-  return `${head}${gPeriodo()}${gNumeros(G)}${gWidgets(G)}${gLancamentos()}`;
+  return `${head}${gNumeros(G)}${gWidgets(G)}${gLancamentos()}`;
 }
 
 function gAcao(act, ds) {
   const f = gEstado();
   switch (act) {
-    case 'g-per': S.gPer = ds.per === 'ano' ? 'ano' : 'mes'; f.lim = 80; render(); return true;
-    case 'g-mes': S.gPer = 'mes'; S.mes = +ds.m; f.lim = 80; render(); return true;
     case 'g-tipo': f.tipo = ds.v; gListaAtualiza(); document.querySelectorAll('[data-act="g-tipo"]').forEach((b) => { const on = b.dataset.v === ds.v; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); }); return true;
     case 'g-agrup': f.agrupar = ds.v; gListaAtualiza(); document.querySelectorAll('[data-act="g-agrup"]').forEach((b) => { const on = b.dataset.v === ds.v; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); }); return true;
     case 'g-limite': gLimite(ds.area || ''); return true;
@@ -257,13 +250,12 @@ let gBuscaT = null;
 function gInput(t) { const f = gEstado(); f[t.dataset.gf] = t.value; f.lim = 80; clearTimeout(gBuscaT); gBuscaT = setTimeout(gListaAtualiza, t.dataset.gf === 'q' ? 140 : 0); }
 
 function drawGastos() {
-  const bar = document.querySelector('.g-meses'); const on = bar && bar.querySelector('.g-mes.on'); if (on) bar.scrollLeft = Math.max(0, on.offsetLeft - (bar.clientWidth - on.offsetWidth) / 2);
   const el = (id) => document.getElementById(id); if (!el('g-mensal') && !el('g-ritmo') && !el('g-semana')) return;
   const { G } = gastosDados(); const C = S.C; const cur = S.year === NOW_Y ? NOW_M : -1;
   if (el('g-mensal')) { const sit = MES.map((_, i) => orcSit(i)); // mesma regra de cor do widget de orçamento da Visão geral
-    (S.gPer === 'ano' ? chartBarsPer : chartBars)(el('g-mensal'), { labels: MES, cur: S.gPer === 'ano' ? cur : S.mes, height: altura(el('g-mensal')), aria: 'Gastos de cada mês na cor da situação do orçamento, com o orçado marcado. Toque em um mês para abri-lo.',
+    (gAno() ? chartBarsPer : chartBars)(el('g-mensal'), { labels: MES, cur: gAno() ? cur : S.mes, height: altura(el('g-mensal')), aria: 'Gastos de cada mês na cor da situação do orçamento, com o orçado marcado. Toque em um mês para abri-lo.',
       bars: ['pos', 'warn', 'neg', 'sem'].map((k) => ({ color: ORC_SIT[k][0], values: C.despesas.map((v, i) => (sit[i] === k ? v : 0)) })), marks: [{ color: 'var(--ink-3)', values: C.orcamento }],
-      onPick: (i) => { S.gPer = 'mes'; S.mes = i; render(); },
+      onPick: (i) => { gIrMes(i); render(); },
       tip: (i) => `<b>${cap(MES_LONGO[i])}</b><br>Gasto: ${brl0(C.despesas[i])} (fixos ${brl0(G.fixosMes[i])}, variáveis ${brl0(G.variaveisMes[i])})<br>Orçado: ${C.orcamento[i] > 0 ? `${brl0(C.orcamento[i])} · ${C.despesas[i] <= C.orcamento[i] ? 'sobraram ' + brl0(C.orcamento[i] - C.despesas[i]) : brl0(C.despesas[i] - C.orcamento[i]) + ' acima'}` : 'sem orçamento'}` }); }
   if (el('g-ritmo') && G.ritmo) {
     const r = G.ritmo; const dias = Array.from({ length: r.dias }, (_, i) => String(i + 1)); const ate = r.diaAtual || r.dias;
