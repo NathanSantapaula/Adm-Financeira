@@ -183,6 +183,8 @@ A foto ou o avatar aparecem no menu, no painel e, para você, na lista de Client
 
 ## 7. Gastos
 
+**Um formulário só para lançar:** **Novo gasto** abre com três jeitos no topo, **Gasto do dia** (data e valor), **Todo mês** (o mesmo valor previsto a partir de um mês) e **Parcelado** (total, parcelas e primeiro mês, com a prévia). Descrição, "Pago com", categoria (ou uma nova) e área valem para os três. Tocar num gasto da lista ou achá-lo na busca abre a edição no mesmo formulário.
+
 **Gastos que se repetem:** ao lançar um gasto, marque **Repetir todo mês** e ele vira um gasto fixo com o mesmo valor nos meses seguintes, até dezembro. Quando o gasto real de cada mês for lançado (à mão ou importado), ele é conferido com o fixo daquele mês e não conta duas vezes. No widget "Assinaturas e contas recorrentes", o botão **Tornar fixo** faz o mesmo com o que o app percebeu que se repete.
 
 **Limites por área:** em Gastos, o widget "Limites por área" deixa definir um limite por mês para as áreas que você quiser (ex.: Alimentação R$ 1.500). Cada área mostra quanto já foi gasto, em verde, amarelo a partir de 80% e vermelho quando passa, e a central de avisos avisa nos dois momentos. O widget "Por instituição" mostra quanto saiu por banco, cartão ou carteira no período, com o ícone de cada um; tocar numa instituição filtra os lançamentos.

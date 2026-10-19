@@ -1,7 +1,6 @@
 /* Rendas e Conta corrente: categorias livres, hierarquia flexível, orçamento do mês e parcelamento consolidado. */
 'use strict';
 const bad = (err, msg) => { err(msg); return false; };
-const mesChips = () => `<div class="chips" role="tablist" aria-label="Mês">${MES.map((m, i) => `<button role="tab" aria-selected="${S.mes === i}" class="chip-m${S.mes === i ? ' on' : ''}${S.year === NOW_Y && i === NOW_M ? ' now' : ''}" data-act="mes" data-m="${i}">${m}</button>`).join('')}</div>`;
 const modoToggle = () => `<div class="seg" role="group" aria-label="Visualização"><button class="${S.modo === 'mes' ? 'on' : ''}" data-act="modo" data-modo="mes">Mês</button><button class="${S.modo === 'ano' ? 'on' : ''}" data-act="modo" data-modo="ano">Ano</button></div>`;
 
 /* valor de um item no mês (editável quando não é parcelado) */
@@ -154,7 +153,7 @@ function gWidgets(G) {
     <p class="g-foot">Somam cerca de <b>${brl0(G.recorrentesMes)}</b> por mês${G.recorrentes.length > 8 ? ` (${G.recorrentes.length} no total)` : ''}.</p>` : gVazio('Nada se repetiu com valor parecido em vários meses até aqui.')));
   // parcelamentos
   add('parc', gCard('parc', 'Parcelamentos em andamento', G.parcelas.length ? `<ul class="g-lista">${G.parcelas.map((x) => `<li><div class="g-li"><span><b>${esc(x.nome)}</b><small>Parcela ${x.i} de ${x.n} · termina em ${MES[x.fim.mes]}/${String(x.fim.ano).slice(2)}</small></span><span class="g-li-v"><b>${brl(x.valor)}</b><small>faltam ${brl0(x.restante)}</small></span></div></li>`).join('')}</ul>
-    <p class="g-foot"><b>${brl0(G.parcelasMes)}</b> por mês em parcelas; ainda faltam <b>${brl0(G.parcelasRestante)}</b>.</p>` : gVazio('Nenhum parcelamento correndo neste período.'), `<button class="lnk strong" data-act="add-item" data-kind="desp">Novo parcelamento</button>`));
+    <p class="g-foot"><b>${brl0(G.parcelasMes)}</b> por mês em parcelas; ainda faltam <b>${brl0(G.parcelasRestante)}</b>.</p>` : gVazio('Nenhum parcelamento correndo neste período.'), `<button class="lnk strong" data-act="add-item" data-kind="desp" data-parc="1">Novo parcelamento</button>`));
   // dia da semana
   add('semana', gCard('semana', 'Por dia da semana', G.semana.some((v) => v > 0) ? `<div class="chart" id="g-semana"></div>` : gVazio('Aparece quando houver lançamentos reais com data.')));
   // por instituição: só lançamentos reais (os previstos não têm onde foram pagos); tocar filtra a lista
@@ -215,7 +214,7 @@ function gLancamentos() {
   const tipos = [['todos', 'Todos'], ['real', 'Reais'], ['prev', 'Previstos'], ['imp', 'Importados']];
   const aberto = !!S.planilha.gastos; const { ents } = gastosDados(); const doPer = ents.filter((e) => S.gPer === 'ano' || e.m === S.mes); const tot = doPer.reduce((s2, e) => s2 + e.valor, 0);
   return `<section class="sheet-sec g-lanc" id="g-lancamentos" data-open="${aberto}"><button class="sheet-tg" data-act="planilha-toggle" data-kind="gastos" aria-expanded="${aberto}"><span class="macc-ch">${I.chev}</span><span><b>Lançamentos de ${esc(gMesNome())}</b><small>${doPer.length} ${doPer.length === 1 ? 'lançamento' : 'lançamentos'} · ${brl(tot)}. Busque, filtre e edite cada um.</small></span></button>
-    ${aberto ? `<div class="g-lanc-c"><div class="btn-row g-lanc-a"><button class="btn primary sm" data-act="add-lanc" data-mes="${mr}">${I.plus}Lançamento</button><button class="btn sm" data-act="add-item" data-kind="desp" data-preset-mes="${mr}">Previsto ou parcelado</button></div>
+    ${aberto ? `<div class="g-lanc-c"><div class="btn-row g-lanc-a"><button class="btn primary sm" data-act="add-lanc" data-mes="${mr}">${I.plus}Novo gasto</button></div>
     <div class="g-tools">
       <input class="search g-busca" type="search" data-gf="q" value="${esc(f.q)}" placeholder="Buscar por nome, área ou estabelecimento" aria-label="Buscar lançamentos">
       <select class="g-sel" data-gf="cat" aria-label="Categoria"><option value="">Todas as categorias</option>${S.plan.catsDesp.map((c) => `<option value="${esc(c.id)}" ${f.cat === c.id ? 'selected' : ''}>${esc(c.nome)}</option>`).join('')}</select>
@@ -289,7 +288,7 @@ const R_WIDGETS = [
 ];
 function analiseRendaAtual() { return E.analiseRenda({ C: S.C, ...perJanela(), rendas: S.plan.rendas, rendaCats: S.plan.rendaCats }); }
 function detalheRendas() {
-  const p = S.plan; const C = S.C; const m = S.mes;
+  const p = S.plan; const C = S.C; const m = S.periodo ? perIntervalo()[1] : S.mes; // o mês vem do calendário do topo (fim do período)
   let body = '';
   if (S.modo === 'mes') {
     body = p.rendaCats.map((cat) => {
@@ -309,7 +308,7 @@ function detalheRendas() {
   }
   const aberto = !!S.planilha.rendas;
   return `<section class="sheet-sec" data-open="${aberto}"><button class="sheet-tg" data-act="planilha-toggle" data-kind="rendas" aria-expanded="${aberto}"><span class="macc-ch">${I.chev}</span><span><b>Rendas mês a mês</b><small>Edite cada renda por mês ou veja o ano inteiro em tabela.</small></span></button>
-    ${aberto ? `<div class="sheet-tools ltools">${mesChips()}<div class="ltools-r">${modoToggle()}<button class="btn sm" data-act="cats" data-kind="renda">Categorias</button></div></div><div class="sheet-body">${body}</div>` : ''}</section>`;
+    ${aberto ? `<div class="sheet-tools ltools">${S.modo === 'mes' ? `<span class="ltools-mes"><b>${cap(MES_LONGO[m])}</b><small>mês escolhido no calendário do topo</small></span>` : '<span></span>'}<div class="ltools-r">${modoToggle()}<button class="btn sm" data-act="cats" data-kind="renda">Categorias</button></div></div><div class="sheet-body">${body}</div>` : ''}</section>`;
 }
 function viewRendas() {
   const p = S.plan; RI = 0; FIRST_ED = true;
@@ -360,7 +359,7 @@ function drawLedger() {
     const cats = S.plan.rendaCats.filter((c) => E.sum(C.rendaCat[c.id] || E.z()) > 0);
     chartBarsPer($('#r-chart'), { labels: MES, cur, height: typeof altura === 'function' ? altura($('#r-chart')) : 210, aria: 'Entradas por mês por categoria, com o total de gastos marcado. Clique em um mês para ver o detalhe.',
       bars: cats.map((c, i) => ({ color: PAL[i % 6], values: C.rendaCat[c.id] })).concat([{ color: 'var(--c3)', values: C.dividendos }]), marks: [{ color: 'var(--c6)', values: C.despesas }],
-      onPick: (i) => { S.mes = i; S.modo = 'mes'; S.planilha.rendas = true; render(); const sec = document.querySelector('.sheet-sec'); if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' }); },
+      onPick: (i) => { S.periodo = { de: i, ate: i }; S.mes = i; S.modo = 'mes'; S.planilha.rendas = true; render(); const sec = document.querySelector('.sheet-sec'); if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' }); },
       tip: (i) => `<b>${MES_LONGO[i]}</b>${cats.map((c) => `<br>${esc(c.nome)}: ${brl0(C.rendaCat[c.id][i])}`).join('')}<br>Proventos: ${brl0(C.dividendos[i])}<br>Gastos: ${brl0(C.despesas[i])}<br><b>${C.receita[i] - C.despesas[i] >= 0 ? 'Sobrou' : 'Faltou'}: ${brl0(Math.abs(C.receita[i] - C.despesas[i]))}</b>` });
   }
 }
@@ -526,40 +525,74 @@ function instAdmHtml() {
     <div class="inst-pills">${instTodasHtml('data-inst-minha')}</div>
     <div class="ap-linha inst-estilo"><span>Ícones</span><div class="seg" role="group" aria-label="Estilo dos ícones">${INST_ESTILOS.map(([v, l]) => `<button class="${e === v ? 'on' : ''}" data-act="inst-estilo" data-v="${v}" aria-pressed="${e === v}">${l}</button>`).join('')}</div></div></section>`;
 }
+// Novo gasto: um formulário só para o gasto do dia (lançamento com data), o previsto de todo mês e o parcelado.
+// Editar um lançamento abre aqui; editar um previsto ou parcelado também (preset.item), então todos têm instituição e categoria nova.
 function openLanc(id, preset) {
   const p = S.plan; preset = preset || {};
-  const l = id ? p.lancamentos.find((x) => x.id === id) : null; const mes = preset.mes != null ? preset.mes : S.year === NOW_Y ? NOW_M : S.mes; const h = new Date();
+  const l = id ? p.lancamentos.find((x) => x.id === id) : null; const it = preset.item ? p.despesas.find((x) => x.id === preset.item) : null; const parc = it && it.parcel;
+  const mes = preset.mes != null ? preset.mes : S.year === NOW_Y ? NOW_M : S.mes; const h = new Date();
+  const modo0 = it ? (parc ? 'parcelado' : 'mensal') : l ? 'real' : preset.modo || 'real';
   const dataPad = l ? l.data : (S.year === h.getFullYear() && mes === h.getMonth() ? `${h.getFullYear()}-${pad2(h.getMonth() + 1)}-${pad2(h.getDate())}` : `${S.year}-${pad2(mes + 1)}-01`);
   const aprender = !!(l && l.origem && l.origem !== 'manual');
   // novo gasto já vem com a instituição usada por último
-  const instPad = l ? l.inst || '' : ([...p.lancamentos].reverse().find((x) => x.inst && instMinhas().includes(x.inst)) || {}).inst || '';
+  const instPad = l ? l.inst || '' : it ? it.inst || '' : ([...p.lancamentos].reverse().find((x) => x.inst && instMinhas().includes(x.inst)) || {}).inst || '';
   // as minhas (e a deste gasto, se não for mais uma delas)
   const instOps = (sel) => [''].concat([...new Set(instMinhas().concat(sel ? [sel] : []))].filter(instDe)).map((v) => instFicha(v, 'radio', v === sel, `name="inst" value="${v}"`)).join('');
+  const MODOS = [['real', 'Gasto do dia'], ['mensal', 'Todo mês'], ['parcelado', 'Parcelado']];
+  const escolha = l ? '<input type="hidden" name="modo" value="real">' : `<div class="seg ap-modo" role="radiogroup" aria-label="Como esse gasto acontece">${MODOS.filter(([v]) => !it || v !== 'real').map(([v, n]) => `<label><input type="radio" name="modo" value="${v}" ${v === modo0 ? 'checked' : ''}><span>${n}</span></label>`).join('')}</div>`;
+  const catPad = l ? l.cat : it ? it.cat : preset.cat || (p.catsDesp.length ? p.catsDesp[0].id : CAT_NOVA);
   const f = openModal({
-    title: l ? 'Editar lançamento' : 'Novo lançamento', danger: l ? 'Excluir' : null,
-    body: `<div class="fld-2"><label class="fld"><span>Data</span><input type="date" name="data" value="${esc(dataPad)}"></label><label class="fld"><span>Valor (R$)</span><input name="valor" inputmode="decimal" value="${l ? esc(String(Math.abs(l.valor)).replace('.', ',')) : ''}" placeholder="0,00" autocomplete="off"></label></div>
-      <label class="fld"><span>Descrição</span><input name="desc" value="${esc(l ? l.desc : '')}" autocomplete="off"></label>
+    title: l ? 'Editar lançamento' : it ? (parc ? 'Editar parcelamento' : 'Editar gasto previsto') : 'Novo gasto', danger: l || it ? 'Excluir' : null,
+    body: `${escolha}
+      <div data-blk="real"><div class="fld-2"><label class="fld"><span>Data</span><input type="date" name="data" value="${esc(dataPad)}"></label><label class="fld"><span>Valor (R$)</span><input name="valor" inputmode="decimal" value="${l ? esc(String(Math.abs(l.valor)).replace('.', ',')) : ''}" placeholder="0,00" autocomplete="off"></label></div></div>
+      <div data-blk="mensal"><div class="fld-2"><label class="fld"><span>Valor por mês (R$)${it ? ' <small>(opcional: refaz os meses a partir do escolhido)</small>' : ''}</span><input name="fixo" inputmode="decimal" placeholder="0,00" autocomplete="off"></label><label class="fld"><span>A partir de</span>${sel('de', mesOpts(), mes)}</label></div></div>
+      <div data-blk="parcelado"><div class="fld-2"><label class="fld"><span>Valor total (R$)</span><input name="total" inputmode="decimal" value="${parc ? esc(String(parc.total).replace('.', ',')) : ''}" autocomplete="off"></label><label class="fld"><span>Parcelas</span><input name="n" inputmode="numeric" value="${parc ? parc.n : 10}"></label></div>
+        <div class="fld-2"><label class="fld"><span>Primeiro mês</span>${sel('pmes', mesOpts(), parc ? parc.mes : mes)}</label><label class="fld"><span>Ano</span><input name="pano" inputmode="numeric" maxlength="4" value="${parc ? parc.ano : S.year}"></label></div><p class="mmsg" data-prev></p></div>
+      <label class="fld"><span>Descrição</span><input name="desc" value="${esc(l ? l.desc : it ? it.nome : '')}" autocomplete="off" placeholder="Ex.: Mercado, Aluguel, Notebook"></label>
       <fieldset class="fld inst-esc"><legend>Pago com</legend><div class="inst-pills" id="inst-minhas" role="radiogroup" aria-label="Instituição de pagamento">${instOps(instPad)}</div>
         <button type="button" class="lnk" id="inst-editar" aria-expanded="${instMinhas().length ? 'false' : 'true'}" aria-controls="inst-todas">${instMinhas().length ? 'Editar minhas instituições' : 'Escolher as instituições que você usa'}</button>
         <div class="inst-pills inst-todas" id="inst-todas" ${instMinhas().length ? 'hidden' : ''}>${instTodasHtml('data-inst-form')}</div></fieldset>
-      ${l && l.itemId ? '' : '<label class="chk"><input type="checkbox" name="repetir"><span><b>Repetir todo mês</b><small>Vira um gasto fixo com este valor nos meses seguintes, até dezembro. Ao lançar o de cada mês, ele já é conferido com o fixo e não conta duas vezes.</small></span></label>'}
-      <label class="chk"><input type="checkbox" name="estorno" ${l && l.valor < 0 ? 'checked' : ''}><span><b>É estorno ou reembolso</b><small>Reduz o gasto do mês em vez de somar.</small></span></label>
-      <label class="fld"><span>Categoria</span>${sel('cat', p.catsDesp.map((c) => [c.id, c.nome]).concat([[CAT_NOVA, '+ Nova categoria']]), l ? l.cat : p.catsDesp.length ? p.catsDesp[0].id : CAT_NOVA)}</label>
-      <label class="fld" data-cat-nova${p.catsDesp.length && !(l && !l.cat) ? ' hidden' : ''}><span>Nome da nova categoria</span><input name="catNova" autocomplete="off" placeholder="Ex.: Pets"></label>${p.catsDesp.length ? '<button type="button" class="lnk lanc-cats" data-act="cats" data-kind="desp">Organizar categorias</button>' : ''}
-      <div class="fld-2"><label class="fld"><span>Área <small>(ex.: Moradia)</small></span><input name="area" list="dl-area" value="${esc(l ? l.area : '')}" autocomplete="off"></label><label class="fld"><span>Subárea <small>(opcional)</small></span><input name="sub" list="dl-sub" value="${esc(l ? l.sub || '' : '')}" autocomplete="off"></label></div>
+      <div data-blk="real">${l && l.itemId ? '' : '<label class="chk"><input type="checkbox" name="repetir"><span><b>Repetir todo mês</b><small>Vira um gasto fixo com este valor nos meses seguintes, até dezembro. Ao lançar o de cada mês, ele já é conferido com o fixo e não conta duas vezes.</small></span></label>'}
+        <label class="chk"><input type="checkbox" name="estorno" ${l && l.valor < 0 ? 'checked' : ''}><span><b>É estorno ou reembolso</b><small>Reduz o gasto do mês em vez de somar.</small></span></label></div>
+      <label class="fld"><span>Categoria</span>${sel('cat', p.catsDesp.map((c) => [c.id, c.nome]).concat([[CAT_NOVA, '+ Nova categoria']]), catPad)}</label>
+      <label class="fld" data-cat-nova${catPad === CAT_NOVA ? '' : ' hidden'}><span>Nome da nova categoria</span><input name="catNova" autocomplete="off" placeholder="Ex.: Pets"></label>${p.catsDesp.length ? '<button type="button" class="lnk lanc-cats" data-act="cats" data-kind="desp">Organizar categorias</button>' : ''}
+      <div class="fld-2"><label class="fld"><span>Área <small>(ex.: Moradia)</small></span><input name="area" list="dl-area" value="${esc(l ? l.area : it ? it.area : preset.area || '')}" autocomplete="off"></label><label class="fld"><span>Subárea <small>(opcional)</small></span><input name="sub" list="dl-sub" value="${esc(l ? l.sub || '' : it ? it.sub || '' : '')}" autocomplete="off"></label></div>
       ${aprender ? '<label class="chk"><input type="checkbox" name="lembrar" checked><span><b>Lembrar para lançamentos parecidos</b><small>Nas próximas importações, este estabelecimento já entra com esta categoria.</small></span></label>' : ''}
       ${dlist('dl-area', p.despesas.map((x) => x.area).concat(p.lancamentos.map((x) => x.area)))}${dlist('dl-sub', p.despesas.map((x) => x.sub).concat(p.lancamentos.map((x) => x.sub)))}`,
-    onDanger: () => { confirmBox('Excluir este lançamento?', `“${l.desc}” será removido.`, 'Excluir', () => { desfazerBaixa(l); p.lancamentos = p.lancamentos.filter((x) => x.id !== l.id); commit(); }); return false; },
+    onDanger: () => {
+      if (it) confirmBox('Excluir este gasto?', `“${it.nome}” e seus valores serão removidos.`, 'Excluir', () => { p.despesas = p.despesas.filter((x) => x.id !== it.id); commit(); });
+      else confirmBox('Excluir este lançamento?', `“${l.desc}” será removido.`, 'Excluir', () => { desfazerBaixa(l); p.lancamentos = p.lancamentos.filter((x) => x.id !== l.id); commit(); });
+      return false;
+    },
     onOk: (d, err) => {
-      const data = String(d.data || ''); const dt = E.parseDataISO(data);
-      if (!dt || !/^\d{4}-\d{2}-\d{2}$/.test(data) || !anoValido(dt.ano)) return bad(err, 'Informe uma data válida.');
-      const v = E.parseValor(d.valor); if (Number.isNaN(v) || v === 0) return bad(err, 'Informe o valor do lançamento.');
-      const desc = (d.desc || '').trim(); if (!desc) return bad(err, 'Informe a descrição.');
+      const modo = d.modo || 'real'; const desc = (d.desc || '').trim();
+      // valida tudo antes de criar a categoria nova
+      let data = ''; let dt = null; let v = 0; let parcel = null; let fixo = 0; const hasFixo = String(d.fixo || '').trim() !== '';
+      if (modo === 'real') {
+        data = String(d.data || ''); dt = E.parseDataISO(data);
+        if (!dt || !/^\d{4}-\d{2}-\d{2}$/.test(data) || !anoValido(dt.ano)) return bad(err, 'Informe uma data válida.');
+        v = parseReais(d.valor); if (Number.isNaN(v) || v === 0) return bad(err, 'Informe o valor do gasto.');
+      } else if (modo === 'parcelado') {
+        const total = parseReais(d.total); const n = parseInt(d.n, 10); const ano = parseInt(d.pano, 10);
+        if (Number.isNaN(total) || !(total > 0)) return bad(err, 'Informe o valor total do parcelamento.');
+        if (!(n >= 1 && n <= 120)) return bad(err, 'Informe de 1 a 120 parcelas.');
+        if (!anoValido(ano)) return bad(err, 'Informe um ano válido para a primeira parcela.');
+        parcel = { total, n, ano, mes: +d.pmes };
+      } else if (hasFixo) { fixo = parseReais(d.fixo); if (Number.isNaN(fixo)) return bad(err, 'Valor por mês inválido. Use números como 1.234,56'); } else if (!it) return bad(err, 'Informe o valor por mês.');
+      if (!desc) return bad(err, 'Informe a descrição.');
       if (d.cat === CAT_NOVA) { // categoria nova criada aqui mesmo; com o mesmo nome de uma que já existe, usa a existente
         const nome = (d.catNova || '').trim(); if (!nome) return bad(err, 'Informe o nome da nova categoria.');
         const ja = p.catsDesp.find((c) => E.norm(c.nome) === E.norm(nome)); d.cat = ja ? ja.id : uid(); if (!ja) p.catsDesp.push({ id: d.cat, nome });
       }
-      const dados = { data, desc, valor: E.r2(d.estorno ? -Math.abs(v) : Math.abs(v)), cat: d.cat, area: (d.area || '').trim() || 'Outros', sub: (d.sub || '').trim(), inst: instDe(d.inst) ? d.inst : '' };
+      const area = (d.area || '').trim() || 'Outros'; const sub = (d.sub || '').trim(); const inst = instDe(d.inst) ? d.inst : '';
+      if (modo !== 'real') { // previsto de todo mês ou parcelado: um item do planejamento
+        const base = { cat: d.cat, nome: desc, area, sub, inst }; let alvoIt = it;
+        if (!alvoIt) { alvoIt = Object.assign({ id: uid(), valores: z12() }, base); p.despesas.push(alvoIt); } else Object.assign(alvoIt, base);
+        if (parcel) { alvoIt.parcel = parcel; alvoIt.valores = z12(); } else { delete alvoIt.parcel; if (hasFixo) fillFrom(alvoIt.valores, fixo, +d.de); }
+        if (parcel && parcel.ano === S.year) S.mes = parcel.mes; S.fechadas['desp:' + alvoIt.cat] = false;
+        commit(); return;
+      }
+      const dados = { data, desc, valor: E.r2(d.estorno ? -Math.abs(v) : Math.abs(v)), cat: d.cat, area, sub, inst };
       const alvo = dt.ano === S.year ? p : ensurePlan(dt.ano);
       if (l) { if (alvo !== p) { desfazerBaixa(l); p.lancamentos = p.lancamentos.filter((x) => x.id !== l.id); Object.assign(l, dados); alvo.lancamentos.push(l); savePlanNow(dt.ano); } else Object.assign(l, dados); }
       else { alvo.lancamentos.push(Object.assign({ id: uid(), origem: 'manual' }, dados)); if (alvo !== p) savePlanNow(dt.ano); }
@@ -579,5 +612,9 @@ function openLanc(id, preset) {
   todas.addEventListener('change', (ev) => { const t = ev.target; if (!t.dataset.instForm) return; instMinhaAlternar(t.dataset.instForm, t.checked);
     const atual = (f.querySelector('[name="inst"]:checked') || {}).value || (t.checked ? t.dataset.instForm : ''); f.querySelector('#inst-minhas').innerHTML = instOps(atual); });
   const nova = f.querySelector('[data-cat-nova]'); f.elements.cat.addEventListener('change', () => { nova.hidden = f.elements.cat.value !== CAT_NOVA; if (!nova.hidden) f.elements.catNova.focus(); });
+  // mostra só os campos do jeito escolhido (gasto do dia, todo mês ou parcelado) e a prévia das parcelas
+  const sync = () => { const modo = f.elements.modo.value; f.querySelectorAll('[data-blk]').forEach((b) => { b.hidden = b.dataset.blk !== modo; });
+    if (modo === 'parcelado') f.querySelector('[data-prev]').textContent = parcPreview(parseReais(f.elements.total.value) || 0, parseInt(f.elements.n.value, 10) || 0, +f.elements.pmes.value, parseInt(f.elements.pano.value, 10) || S.year); };
+  f.addEventListener('input', sync); f.addEventListener('change', sync); sync();
   return f;
 }

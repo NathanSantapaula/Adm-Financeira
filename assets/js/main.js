@@ -104,7 +104,7 @@ function onClick(e) {
       case 'toggle-cat': S.fechadas[ds.key] = !S.fechadas[ds.key]; render(); break;
       case 'mes': S.mes = +ds.m; render(); break;
       case 'modo': S.modo = ds.modo; render(); break;
-      case 'add-item': openItem(ds.kind, null, { cat: ds.cat, area: ds.area, mes: ds.presetMes != null ? +ds.presetMes : undefined }); break;
+      case 'add-item': if (ds.kind === 'desp') openLanc(null, { modo: ds.parc ? 'parcelado' : 'mensal', cat: ds.cat, area: ds.area, mes: ds.presetMes != null ? +ds.presetMes : undefined }); else openItem(ds.kind, null, { cat: ds.cat, area: ds.area, mes: ds.presetMes != null ? +ds.presetMes : undefined }); break; // gastos: o mesmo formulário do Novo gasto
       case 'add-lanc': openLanc(null, { mes: ds.mes != null ? +ds.mes : undefined }); break;
       case 'busca': buscaAbrir(); break;
       case 'inst-estilo': instEstiloDefinir(ds.v, el); break;
@@ -125,7 +125,7 @@ function onClick(e) {
       case 'cliente-abrir': abrirCliente(ds.id); break;
       case 'imprimir': window.print(); break;
       case 'regras-limpar': S.profile.regras = []; touch('profile'); renderAdmin(); toast('O painel esqueceu as regras aprendidas.'); break;
-      case 'edit-item': openItem(ds.kind, ds.id); break;
+      case 'edit-item': if (ds.kind === 'desp') openLanc(null, { item: ds.id }); else openItem(ds.kind, ds.id); break;
       case 'rename-grp': openRename(ds.cat, ds.area, ds.sub); break;
       case 'cats': openCats(ds.kind); break;
       case 'cat-up': case 'cat-down': case 'cat-del': catAction(act, ds.id); break;
@@ -254,7 +254,7 @@ function buscaItens() {
   const p = S.plan; const L = []; const dt = (s) => { const d = E.parseDataISO(s); return d ? `${pad2(d.dia)}/${pad2(d.mes + 1)}` : ''; };
   if (p) {
     p.lancamentos.forEach((l) => L.push({ t: l.valor < 0 ? 'Estorno' : 'Gasto', n: l.desc, s: [dt(l.data), l.area, brl(Math.abs(l.valor)), (instDe(l.inst) || [])[1]].filter(Boolean).join(' · '), go: () => { navPara('despesas'); openLanc(l.id); } }));
-    p.despesas.forEach((it) => L.push({ t: 'Gasto previsto', n: it.nome, s: it.area || '', go: () => navPara('despesas') }));
+    p.despesas.forEach((it) => L.push({ t: it.parcel ? 'Parcelamento' : 'Gasto previsto', n: it.nome, s: [it.area, (instDe(it.inst) || [])[1]].filter(Boolean).join(' · '), go: () => { navPara('despesas'); openLanc(null, { item: it.id }); } }));
     (p.ativos || []).forEach((a) => { L.push({ t: 'Ativo', n: a.nome, s: a.classe || '', go: () => navPara('inv') });
       const pr = (a.pr || []).reduce((t, v) => t + (+v || 0), 0); if (pr > 0) L.push({ t: 'Proventos', n: a.nome, s: brl(pr) + ' no ano', go: () => navPara('pro') }); });
   }
