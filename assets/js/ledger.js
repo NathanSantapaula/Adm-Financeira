@@ -48,7 +48,7 @@ function entradasMes(m) {
   ix.reais[m].forEach(([l, d]) => { out.push({ tipo: 'real', id: l.id, cat: l.cat, area: l.area || 'Outros', sub: l.sub || '', nome: l.desc, valor: +l.valor, dia: d.dia, origem: l.origem || 'manual', itemId: l.itemId, inst: l.inst || '' }); });
   ix.itens.forEach(([it, vals]) => {
     const v = vals[m]; if (Math.abs(v) < 0.005) return;
-    out.push({ tipo: 'prev', id: it.id, cat: it.cat, area: it.area || 'Outros', sub: it.sub || '', nome: it.nome, valor: v, dia: 0, parcela: it.parcel ? `${E.parcelaIndice(it.parcel, ano, m)}/${it.parcel.n}` : '', herdado: it.herdado || null });
+    out.push({ tipo: 'prev', id: it.id, cat: it.cat, area: it.area || 'Outros', sub: it.sub || '', nome: it.nome, valor: v, dia: 0, parcela: it.parcel ? `${E.parcelaIndice(it.parcel, ano, m)}/${it.parcel.n}` : '', herdado: it.herdado || null, inst: it.inst || '' });
   });
   return out;
 }
