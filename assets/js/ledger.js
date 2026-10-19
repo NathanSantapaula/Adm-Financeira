@@ -150,14 +150,14 @@ function gWidgets(G) {
     <p class="g-foot"><b>${brl0(G.parcelasMes)}</b> por mês em parcelas; ainda faltam <b>${brl0(G.parcelasRestante)}</b>.</p>` : gVazio('Nenhum parcelamento correndo neste período.'), `<button class="lnk strong" data-act="add-item" data-kind="desp" data-parc="1">Novo parcelamento</button>`));
   // dia da semana
   add('semana', gCard('semana', 'Por dia da semana', G.semana.some((v) => v > 0) ? `<div class="chart" id="g-semana"></div>` : gVazio('Aparece quando houver lançamentos reais com data.')));
-  // por instituição: só lançamentos reais (os previstos não têm onde foram pagos); tocar filtra a lista
+  // por instituição: todos os gastos do período (com data, previstos e parcelas); tocar filtra a lista
   { const meses = new Set(G.mes >= 0 ? [G.mes] : perIds()); const soma = {}; let tot = 0;
-    gastosDados().ents.forEach((e) => { if (e.tipo !== 'real' || !meses.has(e.m) || !(e.valor > 0)) return; const k = instDe(e.inst) ? e.inst : ''; soma[k] = (soma[k] || 0) + e.valor; tot += e.valor; });
+    gastosDados().ents.forEach((e) => { if (!meses.has(e.m) || !(e.valor > 0)) return; const k = instDe(e.inst) ? e.inst : ''; soma[k] = (soma[k] || 0) + e.valor; tot += e.valor; });
     const L = Object.keys(soma).map((k) => ({ k, v: soma[k] })).sort((a, b) => b.v - a.v); const mx = L.length ? L[0].v : 1;
     add('inst', gCard('inst', 'Por instituição', L.length ? `<ul class="g-areas">${L.map((x) => { const nome = x.k ? instDe(x.k)[1] : 'Sem instituição';
       return `<li><button class="g-area g-inst" ${x.k ? `data-act="g-busca" data-q="${esc(nome)}"` : 'disabled'}>${instIcone(x.k)}<span class="g-area-n"><b>${esc(nome)}</b></span>
         <span class="g-area-t"><i style="width:${((x.v / mx) * 100).toFixed(1)}%;background:${x.k ? instDe(x.k)[2] : 'var(--ink-3)'}"></i></span><span class="g-area-v"><b>${brl0(x.v)}</b><small>${pct(x.v / tot)}</small></span></button></li>`; }).join('')}</ul>
-      ${soma[''] ? '<p class="cap">Marque "Pago com" nos lançamentos para separar o que está sem instituição.</p>' : ''}` : gVazio('Sem lançamentos reais neste período.'))); }
+      ${soma[''] ? '<p class="cap">Marque "Pago com" nos lançamentos para separar o que está sem instituição.</p>' : ''}` : gVazio('Sem gastos neste período.'))); }
   // limites por área: sempre de um mês (o escolhido; na visão do ano, o mês atual)
   { const m = G.mes >= 0 ? G.mes : S.year === NOW_Y ? NOW_M : 11; const L = E.analiseLimites((S.plan.settings || {}).limites, E.gastosAreaMes(S.plan, planCtx().carry, m)); const cor = { ok: 'var(--pos)', perto: 'var(--warn)', passou: 'var(--neg)' };
     add('limites', gCard('limites', 'Limites por área', L.length ? `<ul class="g-areas">${L.map((x) => `<li><button class="g-area g-lim ${x.sit}" data-act="g-limite" data-area="${esc(x.area)}" title="Alterar o limite de ${esc(x.area)}"><span class="g-area-n"><b>${esc(x.area)}</b><small>${x.sit === 'passou' ? `${brl0(-x.falta)} acima` : `restam ${brl0(x.falta)}`}</small></span>
