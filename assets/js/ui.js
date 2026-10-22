@@ -37,6 +37,8 @@ const I = {
   up: ic('<path d="m6 15 6-6 6 6"/>'),
   edit: ic('<path d="M4 20h4L19 9l-4-4L4 16z"/>'),
   check: ic('<path d="m5 12.5 4.5 4.5L19 7.5"/>'),
+  mail: ic('<rect x="3.5" y="5.5" width="17" height="13" rx="3"/><path d="m4.5 7.5 7.5 5.5 7.5-5.5"/>'),
+  tel: ic('<rect x="7" y="3" width="10" height="18" rx="2.5"/><path d="M11 17.5h2"/>'),
 };
 /* Marca AVEN: letras desenhadas em grade de altura 100 (não dependem de fonte).
    O "A" sem travessa é uma seta para cima, com a seta azul dentro; "A" e "V" juntos formam duas setas.

@@ -140,7 +140,7 @@ Em **Painel › Visão geral › Personalizar** (ou no botão "Personalizar a Vi
 - **Ordem:** arrastando pela alça (mouse) ou pelas setas (toque e teclado). Uma miniatura mostra como a tela vai ficar.
 - **Restaurar o padrão:** volta ao layout original, com Desfazer.
 
-Widgets disponíveis: Patrimônio estimado (ou Sobra para investir), Objetivos, Orçamento do mês, Indicadores do ano, Para onde foi cada mês, Constância dos aportes, Composição da carteira, Onde você mais gasta, O que o painel está vendo e Assessor e próximos passos, que formam a tela padrão. Para adicionar: Orçamento e gastos, Proventos mês a mês, Todos os objetivos, Avisos (os três mais importantes da central), Atalhos e Patrimônio ano a ano. Widgets que o plano não libera não aparecem, mas a escolha fica guardada para quando o plano mudar. O layout fica no perfil (`perfil.painel`), então acompanha o cliente em qualquer aparelho.
+Widgets disponíveis: Patrimônio estimado (ou Sobra para investir), Objetivos, Orçamento do mês, Indicadores do ano, Para onde foi cada mês, Constância dos aportes, Composição da carteira, Onde você mais gasta, Assistente e Assessor e próximos passos, que formam a tela padrão. Para adicionar: Orçamento e gastos, Proventos mês a mês, Todos os objetivos, Avisos (os três mais importantes da central), Atalhos e Patrimônio ano a ano. Widgets que o plano não libera não aparecem, mas a escolha fica guardada para quando o plano mudar. O layout fica no perfil (`perfil.painel`), então acompanha o cliente em qualquer aparelho.
 
 ### Constância dos aportes
 
@@ -203,9 +203,17 @@ Depois vêm as análises, que funcionam como na Visão geral: **Organizar a tela
 
 No fim, a seção recolhível **Lançamentos** reúne todos os lançamentos do período numa lista só, com busca, filtro por categoria, por tipo (reais, previstos, importados) e agrupamento por data ou por categoria. Os cálculos estão em `E.analiseGastos` (`engine.js`, com testes). Parcelamentos continuam sendo um único item consolidado que segue pelos anos seguintes.
 
-## 8. Central de notificações
+## 8. Assistente e central de avisos
 
-O sino ao lado do seletor de ano, no topo de todas as telas, reúne avisos gerados automaticamente a partir do planejamento do ano corrente. O cliente não configura nada: as regras leem os mesmos números do painel e recalculam a cada alteração, importação ou mudança de dia. O número no sino mostra os avisos não lidos e fica vermelho quando algum é crítico. O título da aba do navegador também mostra a contagem.
+O botão do assistente (o símbolo de estrela em órbita, no topo de todas as telas, no lugar do antigo sino) abre um painel de conversa: o cliente digita perguntas ou toca nas sugestões em fichas e recebe respostas com os números do próprio planejamento. O mesmo assistente fica na Visão geral, no lugar do antigo "O que o painel está vendo" (os destaques do mês continuam na mensagem de boas-vindas), com borda neon na cor de destaque e um orb animado (tudo para com `prefers-reduced-motion`).
+
+- É **local**: não usa modelo de linguagem nem manda dados para fora. `E.iaIntencao` (`engine.js`) reconhece a pergunta por palavras-chave (sem acento, maiúscula ou pontuação) e `E.iaResponder` monta a resposta com as análises que já existem (`compute`, `E.disponivelAporte`, `E.analiseCarteira`, `E.analiseObjetivos`, `E.gastosAreaMes`). Ambos testados em `tests/engine.test.js`.
+- Repertório: resumo do mês, orçamento (quanto ainda cabe por dia), gastos e maior área, entradas, sobra, quanto dá para aportar, meta de aporte, carteira contra o alvo, proventos, patrimônio, reserva de emergência, objetivos, sugestões, avisos, contato com o assessor, saudações e ajuda.
+- Não indica ativos nem promete rentabilidade: perguntas assim são encaminhadas ao assessor.
+- Os textos ficam em `assets/js/ia.js` nas três vozes (`IA_VOZ`). Cada resposta guarda a chave e os números, e o texto é montado a cada desenho, então o olho oculto mascara também as respostas antigas. A conversa vale só na sessão.
+- Pergunta nova: palavras em `IA_INTENCOES`, resposta em `iaResponder`, ficha em `IA_FICHAS` (o teste confere que cada ficha é reconhecida) e textos em `IA_VOZ`.
+
+A aba **Avisos** do painel reúne avisos gerados automaticamente a partir do planejamento do ano corrente. O cliente não configura nada: as regras leem os mesmos números do painel e recalculam a cada alteração, importação ou mudança de dia. O número no botão do assistente mostra os avisos não lidos e fica vermelho quando algum é crítico. O título da aba do navegador também mostra a contagem.
 
 | Grupo | Quando dispara | Ação do botão |
 |---|---|---|
@@ -214,11 +222,11 @@ O sino ao lado do seletor de ano, no topo de todas as telas, reúne avisos gerad
 | Carteira | Ativo 3 p.p. ou mais abaixo do alvo (com o valor sugerido do próximo aporte); ativo 5 p.p. ou mais acima do alvo; alvos que não somam 100%; carteira sem alvo | Ver onde investir, Ajustar alvos |
 | Conquista | Meta de aporte do mês batida; proventos recebidos no mês | Ver aportes, Ver proventos |
 
-- Cada aviso vale para o mês em que surgiu. Se a situação piora, por exemplo de 90% para orçamento estourado, chega um aviso novo e o sino balança uma vez.
+- Cada aviso vale para o mês em que surgiu. Se a situação piora, por exemplo de 90% para orçamento estourado, chega um aviso novo e o botão balança uma vez.
 - O cliente pode marcar como lido ou dispensar um aviso (com Desfazer). Isso fica salvo no perfil e vale em qualquer aparelho.
 - Os textos seguem a voz escolhida pelo cliente (Consultivo, Direto ou Acolhedor).
 - Avisos de aporte e carteira só aparecem nos planos que têm esses recursos. Botões que levariam a uma aba oculta não aparecem.
-- As regras estão em `E.notificacoes` (`engine.js`) e têm testes em `tests/engine.test.js`. A interface, os textos e o estado de leitura estão em `assets/js/notif.js`. Para criar um aviso novo, acrescente a regra em `notificacoes` com um id que inclua o mês, o título em `NOTIF_TIT` e o texto nas quatro vozes em `NOTIF_VOZ`.
+- As regras estão em `E.notificacoes` (`engine.js`) e têm testes em `tests/engine.test.js`. A interface, os textos e o estado de leitura estão em `assets/js/notif.js`. Para criar um aviso novo, acrescente a regra em `notificacoes` com um id que inclua o mês, o título em `NOTIF_TIT` e o texto nas três vozes em `NOTIF_VOZ`.
 - A central funciona com o site aberto. Avisos por e-mail ou push no celular exigiriam um serviço rodando no servidor (Edge Function agendada no Supabase), que ainda não existe.
 
 ### Tela limpa com o botão "i"
@@ -242,6 +250,7 @@ O logo é desenhado em código (SVG), sem arquivo de imagem nem fonte externa, e
 
 - **Nome e subtítulo:** `marca` e `submarca` em `assets/js/config.js` ("AVEN" e "Financial Planning"). Os textos do sistema usam esse nome.
 - **Desenho das letras e ícone:** `AVEN_LETRAS`, `AVEN_AZUL`, `LOGO` (ícone quadrado com "AV") e `logoMarca()` (assinatura completa) em `assets/js/ui.js`.
+- **Tela de cadastro:** cartão de vidro dividido em dois (`authHtml` em `assets/js/auth.js`, estilos `.as-*` no fim do `app.css`): formulário com o logo à esquerda e, a arte da marca (`--g-aurora` com linhas de relevo e luz na cor de destaque) cobre o cartão inteiro; à direita, um selo e os depoimentos de `depoimentos` em `config.js`, trocando sozinhos. No celular vira uma coluna só, com o selo no topo.
 - **Ícone da aba do navegador:** linha `rel="icon"` no `index.html`.
 - **Ícone do celular e do app instalado:** `assets/img/apple-touch-icon.png` (180 px), `icon-192.png` e `icon-512.png`, usados pelo `index.html` e pelo `manifest.json`.
 
@@ -268,7 +277,7 @@ Cartões, menus e janelas são de vidro translúcido: as cores do fundo, que seg
 
 ### Olho oculto
 
-O botão do olho, ao lado do sino, esconde todos os valores em reais do painel ("R$ ••••"), como nos aplicativos de banco. Percentuais, pontos percentuais, datas e o formato dos gráficos continuam visíveis. Os eixos dos gráficos, os avisos da central e o relatório também ficam ocultos. A escolha fica salva no aparelho: quem fecha o olho no celular reabre o app com os valores escondidos. A página inicial não muda. Para imprimir o relatório com valores, abra o olho antes.
+O botão do olho, ao lado do assistente, esconde todos os valores em reais do painel ("R$ ••••"), como nos aplicativos de banco. Percentuais, pontos percentuais, datas e o formato dos gráficos continuam visíveis. Os eixos dos gráficos, os avisos da central e o relatório também ficam ocultos. A escolha fica salva no aparelho: quem fecha o olho no celular reabre o app com os valores escondidos. A página inicial não muda. Para imprimir o relatório com valores, abra o olho antes.
 
 ## 11. Fluxo de cobrança e ativação
 

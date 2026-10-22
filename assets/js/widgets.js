@@ -70,7 +70,7 @@ function wCarteira() {
   return `<section class="card"><div class="c-h"><h3>Composição da carteira</h3></div>${tot > 0 ? `<div class="comp"><div class="donut" id="d-donut"></div><ul class="comp-l">${comp.map((c, i) => `<li><i style="background:${PALETA[i % 6]}"></i><span>${esc(c.label)}</span><b>${pct(c.value / tot)}</b></li>`).join('')}</ul></div>` : '<p class="empty-s">Registre aportes em Investimentos para ver a composição da carteira.</p>'}</section>`;
 }
 function wAreas() { const a = areasDoAno(); return `<section class="card"><div class="c-h"><h3>Onde você mais gasta</h3></div>${a.length ? hbars(a, brl0) : '<p class="empty-s">Importe um extrato ou lance gastos para ver o ranking das suas áreas de gasto.</p>'}</section>`; }
-function wDestaques() { const ins = insights(); return `<section class="card"><div class="c-h"><h3>O que o painel está vendo</h3></div>${ins.length ? `<ul class="ins">${ins.map((i) => `<li class="${i.t}"><i></i><span>${esc(i.x)}${i.a ? ' ' + btnAcao(i.a) : ''}</span></li>`).join('')}</ul>` : '<p class="empty-s">Quando houver movimento no mês, os destaques aparecem aqui.</p>'}</section>`; }
+function wDestaques() { return iaWidgetHtml(); } // o antigo "O que o painel está vendo" virou o assistente (ia.js)
 function wAssessor() {
   const passos = proximosPassos(); const rec = S.recomendacao && temRecurso('carteira_recomendada') && ((S.recomendacao.carteira || []).length || (S.recomendacao.notas || '').trim());
   return `<section class="card advisor-card"><div class="c-h"><h3>${rec ? 'Recomendação do ' + esc(primeiroNome()) : passos.length ? 'Próximos passos' : 'Revisão com o ' + esc(primeiroNome())}</h3></div>
@@ -168,7 +168,7 @@ const WIDGETS = [
   { id: 'carteira', nome: () => (inv() ? 'Composição da carteira' : 'Plano Investidor'), desc: 'Peso de cada classe de ativo na carteira.', tam: 3, tams: [2, 3, 4], padrao: () => true, html: wCarteira, aba: () => (inv() ? 'cart' : '') },
   { id: 'contas', nome: () => 'Contas do mês', desc: 'Gastos fixos e parcelas do mês, pagos ou previstos (o mês escolhido no período, ou o atual).', tam: 3, tams: [2, 3, 4, 6], padrao: () => false, html: () => contasHtml(S.periodo && S.periodo.de === S.periodo.ate ? S.periodo.de : S.year === NOW_Y ? NOW_M : 11), aba: () => 'despesas' },
   { id: 'areas', nome: () => 'Onde você mais gasta', desc: 'Ranking das áreas de gasto do ano.', tam: 3, tams: [2, 3, 4, 6], padrao: () => true, html: wAreas, aba: () => 'despesas' },
-  { id: 'destaques', nome: () => 'O que o painel está vendo', desc: 'Leituras automáticas do mês: orçamento, poupança, aportes e carteira.', tam: 3, tams: [3, 4, 6], padrao: () => true, html: wDestaques },
+  { id: 'destaques', nome: () => 'Assistente', desc: 'Converse sobre o mês, a carteira e os objetivos, com as leituras automáticas do painel.', tam: 3, tams: [3, 4, 6], padrao: () => true, html: wDestaques },
   { id: 'assessor', nome: () => 'Assessor e próximos passos', desc: 'Recomendação do assessor ou os próximos passos sugeridos.', tam: 3, tams: [2, 3, 4], padrao: () => true, html: wAssessor },
   { id: 'orcamento', nome: () => 'Orçamento e gastos', desc: 'Gasto de cada mês contra o orçamento.', tam: 3, tams: [3, 4, 6], padrao: () => false, html: wOrcamento, aba: () => 'despesas' },
   { id: 'proventos', nome: () => 'Proventos mês a mês', desc: 'Dividendos e rendimentos recebidos em cada mês.', tam: 3, tams: [3, 4, 6], padrao: () => false, html: wProventos, aba: () => 'pro', disponivel: () => temRecurso('investimentos') },
@@ -254,7 +254,7 @@ const WG_IC = {
   constancia: '<rect x="3" y="4.5" width="18" height="16.5" rx="2.5"/><path d="M8 2.5v4M16 2.5v4M3 10h18M9 15.5l2 2 4-4"/>',
   carteira: '<path d="M21 12a9 9 0 1 1-9-9v9z"/><path d="M15 3.6A9 9 0 0 1 20.4 9H15z"/>',
   areas: '<path d="M4 6h16M4 12h11M4 18h6"/>',
-  destaques: '<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z"/>',
+  destaques: '<ellipse cx="12" cy="12" rx="10.5" ry="4" transform="rotate(-28 12 12)"/><circle cx="20.6" cy="7.4" r="1.2"/><path d="M11 2.5c.7 4.6 2.6 7 6.6 8.2-4 1.2-5.9 3.6-6.6 8.2-.7-4.6-2.6-7-6.6-8.2 4-1.2 5.9-3.6 6.6-8.2z"/>',
   assessor: '<path d="M21 14.5a2 2 0 0 1-2 2H8l-4.5 4V5a2 2 0 0 1 2-2H19a2 2 0 0 1 2 2z"/><path d="M8 8.5h9M8 12h6"/>',
   orcamento: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/>',
   proventos: '<circle cx="9" cy="9" r="6"/><path d="M15.6 9.3A6 6 0 1 1 9.3 15.6"/>',
@@ -281,7 +281,7 @@ function wgIcones() {
   });
 }
 function drawWidgetsExtras() {
-  wgIcones(); objSwLigar(); if (visualAtual() === '3d') obj3dLigar(); if (S.view === 'geral' && typeof cmpLigar === 'function') cmpLigar();
+  wgIcones(); objSwLigar(); iaRolar(); if (visualAtual() === '3d') obj3dLigar(); if (S.view === 'geral' && typeof cmpLigar === 'function') cmpLigar();
   const C = S.C; const cur = S.year === NOW_Y ? NOW_M : -1;
   drawOrc(); drawProv();
   const hm = $('#d-histmini');

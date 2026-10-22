@@ -23,16 +23,21 @@ function authHtml() {
     body = `<h2>Nova senha</h2><p class="sub">Escolha uma nova senha para a sua conta.</p>
       <form id="f-auth" novalidate><label class="fld"><span>Nova senha <small>(mínimo de 8 caracteres)</small></span><input name="password" type="password" autocomplete="new-password"></label>${err}<button class="btn primary lg" type="submit">Salvar nova senha</button></form>`;
   } else if (m === 'signup') {
-    body = `<h2>Criar sua conta</h2><p class="sub">${S.authPagar ? 'Em seguida você vai direto para o pagamento. O diagnóstico fica para depois.' : 'Em seguida você faz o diagnóstico: patrimônio, perfil de investidor e objetivo.'}</p>${note}
+    const v = (k) => esc(S.authDraft && S.authDraft[k] || '');
+    const campo = (rot, inp, ico) => `<label class="fld"><span>${rot}</span><span class="as-in">${inp}${ico}</span></label>`;
+    // cadastro em cartão dividido: formulário à esquerda, arte da marca à direita (some no celular)
+    return `<div class="auth as">${back}<div class="as-card"><div class="as-form">${logoMarca()}
+      <h2>Crie a sua <em>conta</em></h2><p class="sub">${S.authPagar ? 'Em seguida você vai direto para o pagamento. O diagnóstico fica para depois.' : 'Em seguida você faz o diagnóstico: patrimônio, perfil de investidor e objetivo.'}</p>${note}
       <form id="f-auth" novalidate>
-        <label class="fld"><span>Nome completo</span><input name="nome" autocomplete="name" value="${esc(S.authDraft && S.authDraft.nome || '')}"></label>
-        <label class="fld"><span>E-mail</span><input name="email" type="email" autocomplete="email" value="${esc(S.authDraft && S.authDraft.email || '')}"></label>
-        <label class="fld"><span>WhatsApp <small>(opcional)</small></span><input name="whatsapp" inputmode="tel" autocomplete="tel" value="${esc(S.authDraft && S.authDraft.whatsapp || '')}"></label>
-        ${demo ? '' : '<label class="fld"><span>Senha <small>(mínimo de 8 caracteres)</small></span><input name="password" type="password" autocomplete="new-password"></label>'}
+        ${campo('Nome completo', `<input name="nome" autocomplete="name" placeholder="Seu nome" value="${v('nome')}">`, I.user)}
+        ${campo('E-mail', `<input name="email" type="email" autocomplete="email" placeholder="voce@email.com" value="${v('email')}">`, I.mail)}
+        ${campo('WhatsApp', `<input name="whatsapp" inputmode="tel" autocomplete="tel" placeholder="(11) 99999-9999" value="${v('whatsapp')}">`, I.tel)}
+        ${demo ? '' : campo('Senha <small>(mínimo de 8 caracteres)</small>', '<input name="password" type="password" autocomplete="new-password" placeholder="Crie uma senha">', I.lock)}
         <fieldset class="plan-pick"><legend>Plano</legend>${['gratis', 'investidor', 'completo'].map((id) => `<label class="pick"><input type="radio" name="plano" value="${id}" ${S.authPlano === id || (!S.authPlano && id === 'gratis') ? 'checked' : ''}><span><b>${esc(nomePlano(id))}</b><small>${esc(infoPlano(id).resumo)}</small></span><em>${esc(precoTxt(id))}</em></label>`).join('')}</fieldset>
-        <label class="chk"><input type="checkbox" name="termos"><span>Li e aceito os <button type="button" class="lnk strong" data-act="terms">termos e a política de privacidade</button>, inclusive o compartilhamento do resultado do diagnóstico com ${esc(CFG.consultor)}.</span></label>
-        ${err}<button class="btn primary lg" type="submit">Criar conta e começar</button></form>
-      <p class="cap">Já tem conta? <button class="lnk strong" data-act="auth-mode" data-mode="login">Entrar</button></p>`;
+        ${err}<button class="btn primary lg as-cta" type="submit">Criar conta e começar ${I.chev}</button>
+        <label class="chk"><input type="checkbox" name="termos"><span>Li e aceito os <button type="button" class="lnk strong" data-act="terms">termos e a política de privacidade</button>, inclusive o compartilhamento do resultado do diagnóstico com ${esc(CFG.consultor)}.</span></label></form>
+      <p class="cap">Já tem conta? <button class="lnk strong" data-act="auth-mode" data-mode="login">Entrar</button></p></div>
+      <aside class="as-arte">${asArteHtml()}</aside></div></div>`;
   } else {
     body = `<h2>Entrar</h2><p class="sub">Acesse o seu planejamento.</p>${note}
       <form id="f-auth" novalidate><label class="fld"><span>E-mail</span><input name="email" type="email" autocomplete="email" value="${esc(S.authDraft && S.authDraft.email || '')}"></label>
@@ -42,6 +47,21 @@ function authHtml() {
       <p class="cap">Ainda não tem conta? <button class="lnk strong" data-act="auth-mode" data-mode="signup">Criar conta</button></p>`;
   }
   return `<div class="auth">${back}<div class="auth-card">${body}</div></div>`;
+}
+
+/* lado da arte no cadastro: selo e depoimentos reais (CFG.depoimentos, os mesmos da página inicial) */
+function asArteHtml() {
+  const deps = (CFG.depoimentos || []).filter((d) => d && d.texto && d.nome);
+  const av = (d) => `<span class="hp-av as-av">${d.foto ? `<img src="${esc(d.foto)}" alt="">` : esc(lpIniciais(d.nome))}</span>`;
+  const selo = `<div class="as-selo">${deps.length ? `<span class="as-avs" aria-hidden="true">${deps.slice(0, 4).map(av).join('')}</span>` : I.check}<span><b>Diagnóstico em poucos minutos</b><small>Com o acompanhamento de ${esc(CFG.consultor)}</small></span></div>`;
+  if (!deps.length) return `${selo}<div class="as-frase"><b>Planejamento, objetivos e carteira num lugar só.</b></div>`;
+  if (!S.asDepT) S.asDepT = setInterval(() => { const L = $$('.as-dep'); if (L.length < 2 || document.hidden || matchMedia('(prefers-reduced-motion: reduce)').matches) return; asDep((L.findIndex((x) => x.classList.contains('on')) + 1) % L.length); }, 7000);
+  return `${selo}<div class="as-deps" aria-roledescription="carrossel" aria-label="Depoimentos de clientes">${deps.map((d, i) => `<figure class="as-dep${i ? '' : ' on'}"${i ? ' aria-hidden="true"' : ''}><blockquote>${esc(d.destaque || d.texto)}</blockquote><figcaption>${av(d)}<span><b>${esc(d.nome)}</b>${d.descricao ? `<small>${esc(d.descricao)}</small>` : ''}</span></figcaption></figure>`).join('')}</div>
+    ${deps.length > 1 ? `<div class="as-dots" role="group" aria-label="Escolher depoimento">${deps.map((_, i) => `<button type="button" data-act="as-dep" data-i="${i}" aria-label="Depoimento ${i + 1}"${i ? '' : ' aria-current="true"'}></button>`).join('')}</div>` : ''}`;
+}
+function asDep(i) {
+  $$('.as-dep').forEach((x, k) => { x.classList.toggle('on', k === i); x.toggleAttribute('aria-hidden', k !== i); });
+  $$('.as-dots button').forEach((b, k) => { if (k === i) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current'); });
 }
 
 async function submitAuth(f) {
@@ -67,6 +87,7 @@ async function submitAuth(f) {
     // signup
     const nome = String(d.nome || '').trim();
     if (nome.length < 2) return fail('Informe seu nome completo.');
+    if (!/^\d{10,13}$/.test(String(d.whatsapp || '').replace(/\D/g, ''))) return fail('Informe seu WhatsApp com DDD.');
     if (!demo && String(d.password || '').length < 8) return fail('Use uma senha com pelo menos 8 caracteres.');
     if (!d.termos) return fail('Aceite os termos e a política de privacidade para continuar.');
     const plano = d.plano === 'completo' || d.plano === 'investidor' ? d.plano : null;

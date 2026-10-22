@@ -57,7 +57,7 @@ function render(opts) {
   S.C = S.plan && S.profile ? E.compute(S.plan, planCtx()) : null;
   hideTip();
   $('#view').classList.toggle('tela-nova', !same); // a entrada anima só na troca de tela
-  if (scr === 'app') { renderSide(); $('#view').innerHTML = viewHtml(); }
+  if (scr === 'app') { renderSide(); $('#view').innerHTML = viewHtml(); const ht = $('#view .htools'); if (ht && matchMedia('(min-width: 901px)').matches) $('#topo .topo-r').prepend(ht); } // no computador, olho, globo e período sobem para a linha do sino
   else {
     $('#side').innerHTML = ''; $('#tabbar').innerHTML = '';
     const h = { landing: landingHtml, auth: authHtml, onboarding: onboardingHtml, checkout: checkoutHtml }[scr];
@@ -169,6 +169,7 @@ function onClick(e) {
       case 'checkout-back': S.screen = S.profile.onboarded ? 'app' : 'onboarding'; if (S.screen === 'onboarding' && !S.ob) initOb(); render(); break;
       case 'contact': S.maisOpen = false; openContact(); break;
       case 'terms': openTerms(); break;
+      case 'as-dep': asDep(+ds.i); break;
       case 'adm-sec': { S.admSec = S.admSec || {}; const sec = el.closest('.dr-acc'); const ab = sec.dataset.open !== 'true'; S.admSec[ds.id] = ab; sec.dataset.open = ab; el.setAttribute('aria-expanded', ab); break; }
       case 'lp-confirma': case 'lp-set': case 'lp-tela': lpAcao(act, el); break;
       // "Quero a assessoria" (data-pagar) vai direto ao pagamento: logado, na hora; sem conta, logo depois do cadastro
@@ -207,7 +208,7 @@ function onClick(e) {
       case 'del-year': confirmBox(`Excluir o planejamento de ${ds.year}?`, 'Todos os valores deste ano serão apagados. Esta ação não pode ser desfeita. Faça um backup antes, se precisar.', 'Excluir', () => deletePlan(+ds.year)); break;
       case 'sair': closeAdmin(); sair(); break;
       case 'privado': alternarPrivado(); break;
-      default: if (!notifAcao(act, ds) && !simAcao(act, ds) && !histAcao(act, ds) && !objAcao(act, ds) && !painelAcao(act, ds)) wgAcao(act, ds); break;
+      default: if (!notifAcao(act, ds) && !iaAcao(act, ds) && !simAcao(act, ds) && !histAcao(act, ds) && !objAcao(act, ds) && !painelAcao(act, ds)) wgAcao(act, ds); break;
     }
   }
   if (S.stale) { S.stale = false; clearTimeout(S.staleT); render(); }
@@ -217,6 +218,7 @@ function onSubmit(e) {
   const f = e.target;
   if (f.id === 'f-auth') { e.preventDefault(); submitAuth(f); }
   else if (f.id === 'lp-comeco') { e.preventDefault(); lpComecar(); }
+  else if (f.dataset.form === 'ia') { e.preventDefault(); iaSubmit(f); }
   else if (f.id === 'f-ob') { e.preventDefault(); if (readOb(f)) { if (S.ob.step === OB_STEPS.length - 1) finishOb(); else obNext(); } }
   else if (f.dataset.form === 'year') { e.preventDefault(); const v = parseInt(new FormData(f).get('ano'), 10); if (!anoValido(v)) { const m = $('.merr', f); if (m) { m.textContent = 'Informe um ano entre 1990 e 2100.'; m.classList.add('show'); } toast('Informe um ano entre 1990 e 2100.'); return; } S.yearOpen = false; abrirAno(v); }
 }

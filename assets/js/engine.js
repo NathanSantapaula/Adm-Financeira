@@ -911,6 +911,137 @@
     };
   }
 
+  /* ---------- Assistente (local, sem modelo de linguagem) ----------
+     iaIntencao(texto): reconhece a pergunta por palavras-chave (sem acento nem maiúscula; a frase mais longa que casar vence).
+     iaResponder(id, d): monta a resposta com as análises que já existem. d = { C, mes, dia, disp (disponivelAporte), areas ({ área: gasto do mês }),
+     cart (analiseCarteira), obj (analiseObjetivos), avisos (quantos não lidos), recursos }. Devolve { id, chave, vars, cta, sug };
+     valores em reais vão como número e a interface formata (olho oculto) e aplica a voz. Nunca recomenda ativo nem promete rentabilidade. */
+  const IA_INTENCOES = {
+    recomendar: ['vale a pena', 'devo comprar', 'devo vender', 'qual acao', 'quais acoes', 'que acao', 'qual fundo', 'qual fii', 'melhor investimento', 'melhor acao', 'vai subir', 'vai cair', 'bitcoin', 'cripto', 'rentabilidade', 'quanto rende', 'me recomenda', 'indica um', 'dica de acao', 'onde investir meu dinheiro'],
+    reserva: ['reserva', 'emergencia', 'colchao', 'imprevisto'],
+    carteira: ['carteira', 'rebalance', 'alvo', 'onde aportar', 'onde investir', 'qual ativo', 'desequilibr', 'diversific', 'composicao'],
+    meta: ['meta de aporte', 'meta do mes', 'bati a meta', 'minha meta', 'meta mensal'],
+    aporte: ['aportar', 'aporte', 'quanto posso investir', 'quanto investir', 'disponivel', 'investir', 'aplicar', 'guardar'],
+    proventos: ['provento', 'dividendo', 'rendimento', 'jcp', 'juros sobre', 'renda passiva'],
+    patrimonio: ['patrimonio', 'quanto tenho', 'quanto acumulei', 'meu total', 'investido'],
+    objetivos: ['objetivo', 'sonho', 'aposentadoria', 'aposentar', 'quando vou', 'quando consigo', 'viagem', 'casa propria', 'carro novo'],
+    orcamento: ['orcamento', 'quanto posso gastar', 'quanto ainda posso', 'limite', 'estourei', 'estourar', 'cabe no mes'],
+    gastos: ['gasto', 'gastei', 'despesa', 'onde mais gasto', 'para onde vai', 'conta', 'compras', 'cartao'],
+    renda: ['renda', 'salario', 'entrada', 'ganhei', 'recebi', 'entrou', 'receita'],
+    sobra: ['sobra', 'sobrou', 'poupanca', 'poupei', 'economizei', 'no azul', 'no vermelho', 'saldo'],
+    dicas: ['dica', 'sugest', 'economizar', 'o que fazer', 'o que voce sugere', 'conselho', 'melhorar', 'como posso'],
+    avisos: ['aviso', 'notifica', 'alerta', 'novidade', 'pendencia', 'o que tem de novo'],
+    resumo: ['resumo', 'como estou', 'como vai', 'situacao', 'visao geral', 'panorama', 'balanco', 'meu mes'],
+    assessor: ['assessor', 'consultor', 'falar com', 'atendimento', 'humano', 'whatsapp'],
+    ajuda: ['ajuda', 'o que voce faz', 'o que voce sabe', 'como funciona', 'quem e voce', 'pode fazer'],
+    obrigado: ['obrigad', 'valeu', 'agradeco', 'show', 'perfeito'],
+    oi: ['oi', 'ola', 'bom dia', 'boa tarde', 'boa noite', 'e ai', 'hey', 'opa'],
+  };
+  // perguntas prontas das fichas (cada uma é reconhecida como a sua intenção, testado)
+  const IA_FICHAS = { resumo: 'Como estou neste mês?', orcamento: 'Quanto ainda posso gastar?', gastos: 'Onde mais gastei?', renda: 'Quanto entrou?', sobra: 'Quanto sobrou?',
+    aporte: 'Quanto posso investir?', meta: 'Bati a meta de aporte?', carteira: 'Onde aportar na carteira?', proventos: 'Quanto recebi de proventos?', patrimonio: 'Qual o meu patrimônio?',
+    objetivos: 'E os meus objetivos?', reserva: 'Qual a reserva de emergência ideal?', dicas: 'Alguma sugestão para mim?', avisos: 'Tenho avisos?', assessor: 'Falar com o assessor', ajuda: 'O que você sabe fazer?' };
+  const IA_PRECISA = { aporte: 'investimentos', meta: 'investimentos', proventos: 'investimentos', patrimonio: 'investimentos', carteira: 'carteira' };
+  function iaIntencao(texto) {
+    const t = ' ' + norm(texto).replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ') + ' ';
+    let melhor = null; let tam = 0;
+    Object.keys(IA_INTENCOES).forEach((id) => IA_INTENCOES[id].forEach((k) => {
+      // palavras curtas (oi, ola) só valem inteiras; as outras valem como começo de palavra (gasto casa gastos)
+      const ok = k.length <= 4 ? t.includes(' ' + k + ' ') : t.includes(' ' + k);
+      if (ok && k.length > tam) { melhor = id; tam = k.length; }
+    }));
+    return melhor || 'nao_entendi';
+  }
+  function iaResponder(id, d) {
+    const C = d.C; const m = d.mes; const rec = d.recursos || {}; const T = (C && C.T) || {};
+    const r = (chave, vars, cta, sug) => ({ id, chave, vars: Object.assign({ mes: MES_LONGO[m] }, vars), cta: cta || null, sug: (sug || []).filter((s) => !IA_PRECISA[s] || rec[IA_PRECISA[s]]) });
+    const nav = (rotulo, view) => ({ rotulo, acao: 'nav', view });
+    if (IA_PRECISA[id] && !rec[IA_PRECISA[id]]) return r('ia_plano', {}, { rotulo: 'Conhecer os planos', acao: 'planos' }, ['resumo', 'gastos', 'dicas']);
+    const vazio = !(T.receita > 0) && !(T.despesas > 0) && !(T.aplicado > 0);
+    const receita = C ? +C.receita[m] || 0 : 0; const gasto = C ? +C.despesas[m] || 0 : 0; const sobra = receita - gasto;
+    const diasMes = new Date(2001, m + 1, 0).getDate(); const faltam = Math.max(1, diasMes - (+d.dia || diasMes) + 1);
+    const areas = Object.keys(d.areas || {}).map((a) => ({ area: a, valor: d.areas[a] })).filter((a) => a.valor > 0).sort((a, b) => b.valor - a.valor);
+    switch (id) {
+      case 'oi': return r('ia_oi', {}, null, ['resumo', 'aporte', 'avisos']);
+      case 'obrigado': return r('ia_obrigado', {}, null, ['dicas', 'objetivos']);
+      case 'ajuda': return r('ia_ajuda', {}, null, ['resumo', 'orcamento', 'carteira', 'objetivos']);
+      case 'assessor': return r('ia_assessor', {}, { rotulo: 'Falar com o assessor', acao: 'contact' }, ['resumo', 'dicas']);
+      case 'recomendar': return r('ia_nao_recomendo', {}, { rotulo: 'Falar com o assessor', acao: 'contact' }, ['carteira', 'reserva', 'assessor']);
+      case 'avisos': return r(d.avisos > 0 ? 'ia_avisos' : 'ia_avisos_zero', { n: d.avisos }, d.avisos > 0 ? { rotulo: 'Ver todos os avisos', acao: 'avisos' } : null, ['resumo', 'orcamento']);
+      case 'nao_entendi': return r('ia_nao_entendi', {}, null, ['resumo', 'aporte', 'gastos', 'objetivos']);
+    }
+    if (vazio && id !== 'objetivos' && id !== 'reserva') return r('ia_sem_dados', {}, { rotulo: 'Importar extrato', acao: 'ingest' }, ['ajuda', 'objetivos']);
+    switch (id) {
+      case 'resumo': return r(sobra >= 0 ? 'ia_resumo' : 'ia_resumo_neg', { receita, gasto, sobra: Math.abs(sobra), n: d.avisos || 0 }, null, ['gastos', 'aporte', 'dicas']);
+      case 'orcamento': {
+        const o = +C.orcamento[m] || 0; if (!(o > 0)) return r('ia_orc_sem', { gasto }, nav('Definir orçamento', 'despesas'), ['gastos', 'dicas']);
+        const resto = o - gasto; if (resto < 0) return r('ia_orc_passou', { valor: -resto, pct: gasto / o }, nav('Ver gastos', 'despesas'), ['gastos', 'dicas']);
+        return r('ia_orc_ok', { pct: gasto / o, restante: resto, porDia: resto / faltam }, nav('Ver gastos', 'despesas'), ['gastos', 'sobra']);
+      }
+      case 'gastos': {
+        if (!(gasto > 0)) return r('ia_gastos_vazio', {}, { rotulo: 'Importar extrato', acao: 'ingest' }, ['renda', 'orcamento']);
+        const a = areas[0]; return r(a ? 'ia_gastos' : 'ia_gastos_sem_area', { gasto, area: a ? a.area : '', areaValor: a ? a.valor : 0, pctArea: a ? a.valor / gasto : 0 }, nav('Ver gastos', 'despesas'), ['orcamento', 'dicas']);
+      }
+      case 'renda': return receita > 0 ? r('ia_renda', { receita, noAno: T.receita }, nav('Ver rendas', 'rendas'), ['sobra', 'gastos']) : r('ia_renda_vazio', {}, nav('Registrar rendas', 'rendas'), ['gastos']);
+      case 'sobra': {
+        if (!(receita > 0)) return r('ia_renda_vazio', {}, nav('Registrar rendas', 'rendas'), ['gastos']);
+        return sobra >= 0 ? r('ia_sobra', { sobra, pct: sobra / receita }, null, ['aporte', 'dicas']) : r('ia_deficit', { valor: -sobra }, nav('Ver gastos', 'despesas'), ['gastos', 'dicas']);
+      }
+      case 'aporte': {
+        const D = d.disp || {}; const cta = nav('Ver investimentos', 'inv');
+        if (D.disponivel > 0) return r('ia_disp', { valor: D.disponivel, aportado: D.aportado || 0 }, cta, rec.carteira ? ['carteira', 'meta'] : ['meta', 'objetivos']);
+        if (D.excedente > 0) return r('ia_disp_acima', { valor: D.excedente, aportado: D.aportado }, cta, ['gastos', 'meta']);
+        return r(D.aportado > 0 ? 'ia_disp_tudo' : 'ia_disp_zero', { aportado: D.aportado || 0 }, cta, ['sobra', 'dicas']);
+      }
+      case 'meta': {
+        const meta = +C.metaAporteMes[m] || 0; const ap = +C.aplicado[m] || 0;
+        if (!(meta > 0)) return r('ia_meta_sem', { aportado: ap }, nav('Definir a meta', 'inv'), ['aporte']);
+        return ap >= meta ? r('ia_meta_batida', { aportado: ap, meta }, null, ['objetivos', 'carteira']) : r('ia_meta_falta', { aportado: ap, meta, falta: meta - ap, pct: ap / meta }, nav('Registrar aporte', 'inv'), ['aporte', 'sobra']);
+      }
+      case 'carteira': {
+        const K = d.cart; const cta = nav('Abrir a carteira', 'cart');
+        if (!K || !(K.itens || []).length) return r('ia_cart_vazia', {}, nav('Cadastrar ativos', 'inv'), ['aporte']);
+        if (!(K.somaAlvo > 0)) return r('ia_cart_sem_alvo', {}, cta, ['aporte']);
+        const sug = K.itens.filter((i) => i.sug > 0.5).sort((a, b) => b.sug - a.sug)[0];
+        const longe = K.itens.slice().sort((a, b) => a.desvio - b.desvio)[0];
+        if (sug) return r('ia_cart_sug', { ativo: sug.nome, valor: sug.sug, aporte: K.aporte, pp: Math.abs(sug.desvio) }, cta, ['aporte', 'reserva']);
+        if (longe && longe.desvio < -1) return r('ia_cart_desvio', { ativo: longe.nome, pp: Math.abs(longe.desvio) }, cta, ['aporte']);
+        return r('ia_cart_ok', { pct: K.aderencia == null ? 1 : K.aderencia }, cta, ['proventos', 'objetivos']);
+      }
+      case 'proventos': {
+        if (!(T.faturamento > 0)) return r('ia_prov_vazio', {}, nav('Ver proventos', 'pro'), ['carteira']);
+        return r('ia_prov', { valor: +C.faturamento[m] || 0, noAno: T.faturamento }, nav('Ver proventos', 'pro'), ['patrimonio', 'carteira']);
+      }
+      case 'patrimonio': {
+        const p = +C.patrimonio[m] || 0; if (!(p > 0)) return r('ia_patr_vazio', {}, nav('Registrar aportes', 'inv'), ['aporte']);
+        return r('ia_patr', { valor: p, aportado: T.aplicado || 0 }, null, ['objetivos', 'proventos']);
+      }
+      case 'reserva': {
+        const n = Math.max(1, Math.min(12, d.meses || m + 1)); const media = C ? sum(C.despesas.slice(0, n)) / n : 0;
+        if (!(media > 0)) return r('ia_reserva_geral', {}, null, ['gastos', 'objetivos']);
+        return r('ia_reserva', { media, alvo: media * 6, ate: media * 12 }, null, ['aporte', 'objetivos']);
+      }
+      case 'objetivos': {
+        const it = (d.obj && d.obj.itens) || []; const cta = { rotulo: 'Meus objetivos', acao: 'objetivos' };
+        if (!it.length) return r('ia_obj_vazio', {}, cta, ['aporte', 'reserva']);
+        const g = it.find((x) => x.status === 'atrasado' || x.status === 'fora') || it.find((x) => x.status !== 'concluido') || it[0];
+        const v = { nome: g.nome || 'Seu objetivo', pct: g.progresso || 0, falta: g.falta || 0, extra: g.extra || 0, n: it.length, quando: g.previsto ? MES_LONGO[g.previsto.mes] + ' de ' + g.previsto.ano : '' };
+        const ch = g.status === 'concluido' ? 'ia_obj_ok' : g.status === 'no-prazo' ? 'ia_obj_prazo' : g.status === 'atrasado' && g.extra > 0 ? 'ia_obj_atraso' : v.quando ? 'ia_obj_quando' : 'ia_obj_geral';
+        return r(ch, v, cta, ['aporte', 'reserva']);
+      }
+      case 'dicas': {
+        const o = +C.orcamento[m] || 0;
+        if (o > 0 && gasto > o) return r('ia_dica_orc', { valor: gasto - o }, nav('Ver gastos', 'despesas'), ['gastos', 'orcamento']);
+        if (receita > 0 && sobra < 0) return r('ia_dica_deficit', { valor: -sobra }, nav('Ver gastos', 'despesas'), ['gastos']);
+        if (rec.investimentos && d.disp && d.disp.disponivel > 0) return r('ia_dica_aporte', { valor: d.disp.disponivel }, nav('Ver investimentos', 'inv'), ['carteira', 'objetivos']);
+        if (areas[0] && gasto > 0 && areas[0].valor / gasto >= 0.3) return r('ia_dica_area', { area: areas[0].area, pct: areas[0].valor / gasto }, nav('Ver gastos', 'despesas'), ['gastos', 'orcamento']);
+        if (!(o > 0)) return r('ia_dica_orc_sem', {}, nav('Definir orçamento', 'despesas'), ['orcamento']);
+        return r('ia_dica_geral', {}, null, ['reserva', 'objetivos']);
+      }
+    }
+    return r('ia_nao_entendi', {}, null, ['resumo', 'aporte', 'gastos', 'objetivos']);
+  }
+
   /* dias úteis no Brasil: fim de semana e feriados nacionais (fixos e os que dependem da Páscoa) não contam */
   function pascoa(y) { const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451);
     const mes = Math.floor((h + l - 7 * m + 114) / 31); return Date.UTC(y, mes - 1, ((h + l - 7 * m + 114) % 31) + 1); }
@@ -922,6 +1053,6 @@
   const api = { PLANOS, RECURSOS, ABA_RECURSO, planoPermite, planoMinimo, planoNorm, parseDataISO, MES, MES_LONGO, TAXONOMIA, ASSET_LEVELS, QUIZ, PERFIS, RETORNO_PADRAO, CATS_DESP, CATS_RENDA, FORMATO_BACKUP,
     z, add, sub, sum, r2, norm, monthIndex, parseValor, distribuir, parcelaMeses, parcelaFim, parcelaIndice, itemValores, carryItems,
     ativoKey, buildAssetTree, rebalance, contasMes, variacao, janelaAnterior, analiseInvest, disponivelAporte, analiseRenda, analiseGastos, analiseCarteira, nomeEstab, historico, ctxAno, OBJ_TIPOS, normObjetivos, analiseObjetivos, sugerirDivisao, aporteNecessario, notificacoes, scorePerfil, projetar, mesesAteMeta, simularObjetivo, migratePlan, compute, makeBackup, parseBackup,
-    templateSheets, parseImport, applyImport, gastosAreaMes, analiseLimites, repetirValores, acharFixo, feriadoBR, diaUtilBR };
+    templateSheets, parseImport, applyImport, gastosAreaMes, analiseLimites, repetirValores, acharFixo, feriadoBR, diaUtilBR, IA_INTENCOES, IA_FICHAS, iaIntencao, iaResponder };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.FPEngine = api;
 })(typeof window !== 'undefined' ? window : globalThis);

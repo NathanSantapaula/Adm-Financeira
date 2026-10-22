@@ -371,4 +371,36 @@ ok(E.planoPermite('gratis', 'orcamento') && !E.planoPermite('gratis', 'carteira'
   const j = E.janelaAnterior(7, 9); ok(j.de === 4 && j.ate === 6 && E.janelaAnterior(0, 2) === null && E.janelaAnterior(5, 5).de === 4, 'janela anterior: mesmo tamanho, logo antes, no mesmo ano');
 }
 
+// --- assistente local: reconhece a pergunta e responde com as análises
+{
+  ok(Object.keys(E.IA_FICHAS).every((id) => E.iaIntencao(E.IA_FICHAS[id]) === id), 'assistente: cada ficha é reconhecida como a sua pergunta');
+  const casos = [['Oi!', 'oi'], ['quanto ainda posso gastar hoje?', 'orcamento'], ['Onde vai o meu dinheiro? Gastei muito com o quê', 'gastos'], ['qual ação devo comprar?', 'recomendar'],
+    ['Quanto rende a poupança?', 'recomendar'], ['Bati a meta de aporte?', 'meta'], ['quanto posso aportar este mês', 'aporte'], ['Recebi dividendos?', 'proventos'],
+    ['Quando vou conseguir me aposentar?', 'objetivos'], ['reserva de emergência', 'reserva'], ['blá blá', 'nao_entendi'], ['OBRIGADO', 'obrigado'], ['tenho alguma notificação?', 'avisos']];
+  ok(casos.every(([t, id]) => E.iaIntencao(t) === id), 'assistente: frases livres viram a intenção certa (sem acento, maiúscula ou pontuação)');
+  const pl = { year: 2026, settings: { metaAporte: 1000, orcPadrao: 3000 }, rendaCats: E.CATS_RENDA(), rendas: [{ id: 'r', cat: 'fixa', nome: 'Salário', valores: new Array(12).fill(6000) }],
+    catsDesp: E.CATS_DESP(), despesas: [{ id: 'd', cat: 'fixa', area: 'Moradia', nome: 'Aluguel', valores: new Array(12).fill(2000) }], orcamento: new Array(12).fill(null),
+    ativos: [{ id: 'a', tipo: 'BOLSA DE VALORES', classe: 'Ações BR', ap: [800, ...new Array(11).fill(0)], pr: [40, ...new Array(11).fill(0)] }] };
+  const C2 = E.compute(pl, {}); const rec = { investimentos: true, carteira: true };
+  const base = { C: C2, mes: 0, dia: 21, areas: { Moradia: 2000 }, disp: E.disponivelAporte({ C: C2, mes: 0 }), avisos: 2, recursos: rec, meses: 1 };
+  const o = E.iaResponder('orcamento', base);
+  ok(o.chave === 'ia_orc_ok' && o.vars.restante === 1000 && Math.abs(o.vars.porDia - 1000 / 11) < 0.01 && o.vars.mes === 'janeiro', 'assistente: orçamento com o que resta e quanto por dia até o fim do mês');
+  ok(E.iaResponder('orcamento', Object.assign({}, base, { C: E.compute(Object.assign({}, pl, { settings: { orcPadrao: 1500 } }), {}) })).chave === 'ia_orc_passou', 'assistente: orçamento estourado');
+  const a = E.iaResponder('aporte', base);
+  ok(a.chave === 'ia_disp' && a.vars.valor === 4040 - 800 && a.cta.view === 'inv', 'assistente: disponível para aportar vem de E.disponivelAporte');
+  ok(E.iaResponder('meta', base).chave === 'ia_meta_falta' && E.iaResponder('meta', base).vars.falta === 200, 'assistente: falta para a meta de aporte do mês');
+  ok(E.iaResponder('gastos', base).vars.area === 'Moradia' && E.iaResponder('gastos', base).vars.pctArea === 1, 'assistente: maior área de gasto do mês');
+  const semPlano = E.iaResponder('carteira', Object.assign({}, base, { recursos: { investimentos: false, carteira: false } }));
+  ok(semPlano.chave === 'ia_plano' && E.iaResponder('oi', Object.assign({}, base, { recursos: {} })).sug.indexOf('aporte') < 0, 'assistente: recurso fora do plano não responde nem aparece nas fichas');
+  const K = E.analiseCarteira({ aporte: 1000, itens: [{ nome: 'BOVA11', alvo: 50, valor: 1000 }, { nome: 'IVVB11', alvo: 50, valor: 3000 }] });
+  const c = E.iaResponder('carteira', Object.assign({}, base, { cart: K }));
+  ok(c.chave === 'ia_cart_sug' && c.vars.ativo === 'BOVA11' && c.vars.valor === 1000, 'assistente: sugestão de aporte segue o alvo da própria carteira (analiseCarteira)');
+  ok(E.iaResponder('resumo', Object.assign({}, base, { C: E.compute({ year: 2026 }, {}) })).chave === 'ia_sem_dados', 'assistente: sem dados, convida a importar o extrato');
+  const ob = E.iaResponder('objetivos', Object.assign({}, base, { obj: E.analiseObjetivos({ objetivos: [{ nome: 'Casa', valor: 100000, pct: 100, ano: 2030 }], patrimonio: 20000, aporte: 2000, retorno: 0, hoje: { ano: 2026, mes: 0 } }) }));
+  ok(ob.chave === 'ia_obj_prazo' && ob.vars.nome === 'Casa' && ob.vars.pct === 0.2, 'assistente: objetivo no prazo, com progresso');
+  ok(E.iaResponder('recomendar', base).chave === 'ia_nao_recomendo', 'assistente: não recomenda ativo nem promete rentabilidade');
+  ok(E.iaResponder('reserva', base).vars.alvo === 12000, 'assistente: reserva de 6 meses pela média de gastos');
+  ok(['resumo', 'gastos', 'aporte', 'dicas', 'avisos', 'patrimonio', 'proventos'].every((id) => { const x = E.iaResponder(id, base); return x.chave && Object.keys(x.vars).every((k) => typeof x.vars[k] !== 'string' || !/R\$/.test(x.vars[k])); }), 'assistente: valores vão como número (a interface formata e mascara)');
+}
+
 process.exit(bad ? 1 : 0);

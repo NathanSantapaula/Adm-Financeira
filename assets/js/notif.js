@@ -115,7 +115,6 @@ const NOTIF_GRUPOS = {
   conquista: { nome: 'Conquista', ic: ic('<path d="m12 4 2.4 4.9 5.4.8-3.9 3.8.9 5.4L12 16.3l-4.8 2.6.9-5.4-3.9-3.8 5.4-.8z"/>') },
 };
 const NOTIF_FILTROS = [['todas', 'Todas'], ['orcamento', 'Orçamento'], ['lembrete', 'Lembretes'], ['oportunidade', 'Carteira']];
-const I_SINO = ic('<path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 1.5h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>');
 const NOTIF_MOEDA = ['limite', 'valor', 'restante', 'projecao', 'excesso', 'media', 'meta', 'falta', 'sobra', 'porDia', 'aporte'];
 
 /* ---------- estado (lido, dispensado) ---------- */
@@ -183,13 +182,14 @@ function sinoHtml() {
   const vistos = S.notifVistos; let pulso = false;
   if (vistos) novas.forEach((n) => { if (!vistos.has(n.id)) pulso = true; });
   S.notifVistos = new Set(lista.map((n) => n.id).concat(vistos ? [...vistos] : []));
-  const rotulo = qtd ? `Notificações: ${qtd} ${qtd === 1 ? 'não lida' : 'não lidas'}` : 'Notificações';
+  const rotulo = qtd ? `Assistente: ${qtd} ${qtd === 1 ? 'aviso não lido' : 'avisos não lidos'}` : 'Assistente';
   const grave = novas.some((n) => n.nivel === 'critico') ? ' crit' : '';
-  return `<div class="notif"><button class="bell${pulso ? ' pulso' : ''}" data-act="notif-toggle" aria-haspopup="dialog" aria-expanded="${!!S.notifOpen}" aria-label="${rotulo}" title="${rotulo}">${I_SINO}${qtd ? `<span class="bell-n${grave}" aria-hidden="true">${qtd > 9 ? '9+' : qtd}</span>` : ''}</button>${S.notifOpen ? notifPopover(lista) : ''}</div>`;
+  // o sino deu lugar ao assistente (ia.js): o mesmo botão abre a conversa, com os avisos numa aba
+  return `<div class="notif"><button class="bell ia-btn${pulso ? ' pulso' : ''}" data-act="notif-toggle" aria-haspopup="dialog" aria-expanded="${!!S.notifOpen}" aria-label="${rotulo}" title="${rotulo}">${IA_SIMBOLO}${qtd ? `<span class="bell-n${grave}" aria-hidden="true">${qtd > 9 ? '9+' : qtd}</span>` : ''}</button>${S.notifOpen ? iaPainelHtml(lista) : ''}</div>`;
 }
-function notifPopover(lista) {
+// lista de avisos (aba Avisos do assistente)
+function notifCorpo(lista) {
   const f = S.notifFiltro || 'todas'; const vis = f === 'todas' ? lista : lista.filter((n) => n.grupo === f || (f === 'lembrete' && n.grupo === 'conquista'));
-  const novas = lista.filter((n) => !n.lida).length;
   const chips = NOTIF_FILTROS.map(([k, l]) => { const c = k === 'todas' ? lista.length : lista.filter((n) => n.grupo === k || (k === 'lembrete' && n.grupo === 'conquista')).length; return `<button class="np-chip" data-act="notif-filtro" data-f="${k}" aria-pressed="${f === k}">${l}${c ? `<em>${c}</em>` : ''}</button>`; }).join('');
   const item = (n) => { const g = NOTIF_GRUPOS[n.grupo] || NOTIF_GRUPOS.lembrete;
     return `<li class="ni ${n.nivel}${n.lida ? '' : ' nova'}"><span class="ni-ic" aria-hidden="true">${g.ic}</span>
@@ -198,11 +198,9 @@ function notifPopover(lista) {
       <button class="icon-btn sm ni-x" data-act="notif-ocultar" data-id="${esc(n.id)}" aria-label="Dispensar: ${esc(n.titulo)}" title="Dispensar">${I.x}</button></li>`; };
   const vazio = lista.length ? '<p class="np-vazio">Nada nesta categoria agora.</p>'
     : `<div class="np-vazio"><span class="np-ok" aria-hidden="true">${I.check}</span><b>Tudo em dia</b><p>Eu acompanho o seu planejamento e aviso por aqui sobre orçamento, entradas, aportes e oportunidades na carteira.</p></div>`;
-  return `<div class="popover npop${S.notifAnim ? ' entra' : ''}" role="dialog" aria-label="Central de notificações" tabindex="-1">
-    <div class="np-h"><div><b>Central de notificações</b><small>Seu assistente financeiro · ${esc(CFG.consultor)}</small></div><div class="np-h-a">${novas ? '<button class="lnk" data-act="notif-todas">Marcar como lidas</button>' : ''}<button class="icon-btn np-x" data-act="notif-fechar" aria-label="Fechar notificações">${I.x}</button></div></div>
-    ${lista.length > 1 ? `<div class="np-chips" role="group" aria-label="Filtrar avisos">${chips}</div>` : ''}
+  return `${lista.length > 1 ? `<div class="np-chips" role="group" aria-label="Filtrar avisos">${chips}</div>` : ''}
     ${vis.length ? `<ul class="np-l">${vis.map(item).join('')}</ul>` : vazio}
-    <p class="np-foot">Avisos automáticos, calculados a partir do seu planejamento de ${new Date().getFullYear()}.</p></div>`;
+    <p class="np-foot">Avisos automáticos, calculados a partir do seu planejamento de ${new Date().getFullYear()}.</p>`;
 }
 
 /* ---------- ações ---------- */
@@ -221,7 +219,7 @@ async function notifIr(id) {
 // Atualiza só o sino e a lista, sem redesenhar a página (a tela não "pisca" a cada clique na central)
 function notifRefresh(foco) {
   document.querySelectorAll('.notif').forEach((el) => { el.outerHTML = sinoHtml(); });
-  notifTitulo(); S.notifAnim = false;
+  notifTitulo(); S.notifAnim = false; iaRolar();
   if (foco) { const el = document.querySelector(foco); if (el) el.focus(); }
 }
 function notifAcao(act, ds) {

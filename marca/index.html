@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lastro · Marca</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&display=swap">
+<style>
+  :root { --bg: #0A0B10; --painel: #12141C; --linha: rgba(255,255,255,.07); --ink: #F3F5FA; --ink2: #9AA3B8; --azul: #0A84FF; --indigo: #5E5CE6; --noite: #0B1020; --nevoa: #F5F6F9; --ouro: #E2A028; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 400 15px/1.5 Inter, -apple-system, system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  main { max-width: 1280px; margin: 0 auto; padding: 48px 24px 80px; }
+  h1 { font-size: clamp(28px, 4vw, 44px); letter-spacing: -.03em; margin: 0 0 6px; font-weight: 700; }
+  h2 { font-size: 13px; letter-spacing: .14em; text-transform: uppercase; color: var(--ink2); font-weight: 600; margin: 56px 0 16px; }
+  .lead { color: var(--ink2); max-width: 680px; margin: 0; }
+  .grid { display: grid; gap: 12px; }
+  .g3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  @media (max-width: 860px) { .g3 { grid-template-columns: 1fr; } }
+  .p { position: relative; background: var(--painel); border-radius: 18px; padding: 28px; min-height: 260px; overflow: hidden; }
+  .n { position: absolute; top: 16px; left: 20px; font-size: 11px; letter-spacing: .12em; color: var(--ink2); text-transform: uppercase; }
+  .pg { position: absolute; bottom: 14px; right: 18px; font-size: 11px; color: rgba(255,255,255,.28); }
+  .centro { display: grid; place-items: center; min-height: 220px; }
+  .icone { width: 120px; height: 120px; border-radius: 27px; display: grid; place-items: center; color: #fff;
+    background: radial-gradient(120% 90% at 0% 0%, rgba(255,255,255,.28), rgba(255,255,255,0) 50%), linear-gradient(150deg, #2E9BFF 0%, var(--azul) 45%, var(--indigo) 100%);
+    box-shadow: 0 30px 60px -24px rgba(10,132,255,.55), 0 2px 6px rgba(0,0,0,.4); }
+  .icone svg { width: 64%; height: 64%; }
+  .opcao h3 { margin: 18px 0 4px; font-size: 20px; letter-spacing: -.02em; }
+  .opcao p { margin: 0; color: var(--ink2); font-size: 14px; }
+  .linha-ic { display: flex; gap: 14px; align-items: center; margin-top: 18px; }
+  .linha-ic .mini { width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; }
+  .linha-ic .mini svg { width: 66%; height: 66%; }
+  .mini.claro { background: var(--nevoa); color: var(--noite); }
+  .mini.escuro { background: #000; color: #fff; box-shadow: inset 0 0 0 1px var(--linha); }
+  .mini.azul { background: var(--azul); color: #fff; }
+  .mini.solto { color: var(--azul); width: 34px; }
+  .rec { position: absolute; top: 14px; right: 16px; font-size: 11px; font-weight: 700; color: #fff; background: var(--azul); padding: 4px 10px; border-radius: 999px; }
+  /* pacote */
+  .capa { display: grid; place-items: center; gap: 22px; min-height: 320px; background: radial-gradient(70% 70% at 70% 30%, rgba(10,132,255,.22), transparent 70%), radial-gradient(60% 60% at 10% 100%, rgba(94,92,230,.18), transparent 70%), var(--painel); }
+  .wm { display: flex; align-items: center; gap: 14px; }
+  .wm svg { width: 54px; height: 54px; color: var(--azul); }
+  .wm b { font-size: 46px; font-weight: 650; letter-spacing: .14em; }
+  .wm small { display: block; font-size: 11px; letter-spacing: .32em; color: var(--ink2); text-transform: uppercase; margin-top: 2px; }
+  .constr svg { width: 100%; max-width: 260px; display: block; margin: 18px auto 0; }
+  .browser { margin-top: 26px; border-radius: 12px; background: #0B0D14; box-shadow: inset 0 0 0 1px var(--linha); overflow: hidden; }
+  .browser .bar { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--linha); }
+  .browser .bar i { width: 9px; height: 9px; border-radius: 50%; background: #2A2E3A; }
+  .browser .url { margin-left: 10px; flex: 1; font-size: 12px; color: var(--ink2); background: #151824; border-radius: 7px; padding: 5px 10px; }
+  .browser .corpo { padding: 18px; display: grid; gap: 10px; }
+  .browser .corpo .h { display: flex; align-items: center; gap: 8px; font-weight: 650; letter-spacing: .12em; font-size: 14px; }
+  .browser .corpo .h svg { width: 22px; height: 22px; color: var(--azul); }
+  .browser .valor { font-size: 30px; font-weight: 750; letter-spacing: -.03em; background: linear-gradient(100deg, #fff, #8FC6FF 60%, #A9A7FF); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .browser .chip { font-size: 12px; color: #34C759; }
+  .tag { display: grid; align-content: center; min-height: 260px; }
+  .tag q { quotes: none; font-size: clamp(30px, 3.4vw, 44px); line-height: 1.04; letter-spacing: -.035em; font-weight: 700; }
+  .tag q em { font-style: normal; background: linear-gradient(100deg, #5AB0FF, #A9A7FF); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .cores { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; margin-top: 34px; }
+  .cores div { height: 120px; border-radius: 12px; padding: 8px; overflow-wrap: anywhere; display: flex; flex-direction: column; justify-content: flex-end; font-size: 11px; }
+  .cores b { font-size: 11px; } .cores div { font-size: 9.5px; letter-spacing: -.01em; }
+  .tipo .Aa { font-size: 96px; font-weight: 700; letter-spacing: -.05em; line-height: 1; margin-top: 30px; }
+  .tipo .alf { color: var(--ink2); font-size: 15px; letter-spacing: .04em; margin-top: 10px; }
+  .tipo .pesos { display: flex; gap: 16px; margin-top: 16px; font-size: 14px; }
+  .cartao { margin: 34px auto 0; width: 260px; aspect-ratio: 1.586; border-radius: 16px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between;
+    background: radial-gradient(120% 80% at 0% 0%, rgba(255,255,255,.12), transparent 50%), linear-gradient(150deg, #1A2340, #0B1020 70%); box-shadow: 0 30px 60px -28px rgba(10,132,255,.5), inset 0 0 0 1px rgba(255,255,255,.06); }
+  .cartao .top { display: flex; justify-content: space-between; align-items: center; }
+  .cartao .top svg { width: 30px; height: 30px; color: #fff; }
+  .cartao .top span { font-size: 10px; letter-spacing: .28em; color: var(--ink2); }
+  .cartao .nome { font-size: 13px; font-weight: 600; letter-spacing: .02em; }
+  .cartao .nome small { display: block; color: var(--ink2); font-weight: 400; font-size: 11px; }
+  .imagem { padding: 0; min-height: 260px; background: radial-gradient(60% 70% at 62% 55%, rgba(10,132,255,.35), transparent 70%), #05060A; }
+  .imagem svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .imagem .leg { position: absolute; left: 22px; bottom: 18px; font-size: 22px; font-weight: 700; letter-spacing: -.02em; }
+  .det { display: grid; align-content: center; gap: 12px; min-height: 260px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chips span { font-size: 12.5px; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,.06); color: var(--ink); }
+  .chips span.on { background: rgba(10,132,255,.18); color: #8FC6FF; }
+  .busca { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 14px; background: rgba(255,255,255,.05); color: var(--ink2); font-size: 14px; }
+  .busca svg { width: 18px; height: 18px; color: var(--azul); }
+  .nota { color: var(--ink2); font-size: 14px; margin-top: 40px; max-width: 760px; }
+</style>
+</head>
+<body>
+<!-- símbolos: currentColor, para mudar de cor com o fundo e o tema -->
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <!-- 1. Lastro: um L de base firme com lingotes empilhados em degraus: o que sustenta o patrimônio -->
+    <symbol id="s-lastro" viewBox="0 0 64 64" fill="currentColor">
+      <rect x="10" y="8" width="9" height="48" rx="2"/>
+      <rect x="10" y="47" width="44" height="9" rx="2"/>
+      <rect x="23" y="35" width="23" height="8" rx="2" opacity=".78"/>
+      <rect x="23" y="23" width="14" height="8" rx="2" opacity=".55"/>
+    </symbol>
+    <!-- 2. Ápice: o A como um pico de alta, com o ponto do topo (a máxima) -->
+    <symbol id="s-apice" viewBox="0 0 64 64" fill="none">
+      <path d="M10 52 32 20l22 32" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+      <circle cx="32" cy="9" r="4.5" fill="currentColor"/>
+    </symbol>
+    <!-- 3. Cota: uma moeda dividida, com uma fatia destacada (a cota de cada um) -->
+    <symbol id="s-cota" viewBox="0 0 64 64" fill="currentColor">
+      <path d="M32 32 32 8A24 24 0 1 0 56 32z" opacity=".9"/>
+      <path d="M36 28 36 5A23 23 0 0 1 59 28z"/>
+    </symbol>
+  </defs>
+</svg>
+
+<main>
+  <h1>Nova marca, com cara de mercado</h1>
+  <p class="lead">Posicionamento: <b>a casa de investimentos e planejamento do cliente</b>. A solidez e o vocabulário de uma corretora, com a clareza de um produto Apple: patrimônio, carteira, aportes e objetivos num só lugar, com assessoria de verdade. Três nomes tirados do próprio mercado financeiro; o pacote abaixo usa o recomendado.</p>
+
+  <h2>Direções</h2>
+  <div class="grid g3">
+    <section class="p opcao"><span class="n">Direção 1</span><span class="rec">Recomendada</span>
+      <div class="centro"><div class="icone"><svg><use href="#s-lastro"/></svg></div></div>
+      <h3>Lastro Investimentos <small style="font-size:13px;color:var(--ink2);font-weight:500">o que dá valor</small></h3><p>Lastro é o que garante um ativo: ouro, imóvel, caixa. Diz que o patrimônio do cliente tem base firme. O L com lingotes em degraus junta solidez e crescimento.</p><p style="margin-top:10px;color:var(--ink);font-weight:600">“Patrimônio com lastro.”</p>
+      <div class="linha-ic"><span class="mini claro"><svg><use href="#s-lastro"/></svg></span><span class="mini escuro"><svg><use href="#s-lastro"/></svg></span><span class="mini azul"><svg><use href="#s-lastro"/></svg></span><span class="mini solto"><svg><use href="#s-lastro"/></svg></span></div>
+      <span class="pg">01</span></section>
+    <section class="p opcao"><span class="n">Direção 2</span>
+      <div class="centro"><div class="icone"><svg><use href="#s-apice"/></svg></div></div>
+      <h3>Ápice Investimentos <small style="font-size:13px;color:var(--ink2);font-weight:500">a máxima</small></h3><p>O ponto mais alto de um gráfico, a máxima do papel. O A vira um pico de alta com o topo marcado. Mais ambicioso, fala de ganho e de meta.</p><p style="margin-top:10px;color:var(--ink);font-weight:600">“Seu patrimônio no ápice.”</p>
+      <div class="linha-ic"><span class="mini claro"><svg><use href="#s-apice"/></svg></span><span class="mini escuro"><svg><use href="#s-apice"/></svg></span><span class="mini azul"><svg><use href="#s-apice"/></svg></span><span class="mini solto"><svg><use href="#s-apice"/></svg></span></div>
+      <span class="pg">02</span></section>
+    <section class="p opcao"><span class="n">Direção 3</span>
+      <div class="centro"><div class="icone"><svg><use href="#s-cota"/></svg></div></div>
+      <h3>Cota Investimentos <small style="font-size:13px;color:var(--ink2);font-weight:500">a parte de cada um</small></h3><p>Cota é a parte do investidor num fundo. Curto como XP, Rico ou Clear. A moeda com uma fatia destacada mostra a parte que é de cada objetivo.</p><p style="margin-top:10px;color:var(--ink);font-weight:600">“Cada cota conta.”</p>
+      <div class="linha-ic"><span class="mini claro"><svg><use href="#s-cota"/></svg></span><span class="mini escuro"><svg><use href="#s-cota"/></svg></span><span class="mini azul"><svg><use href="#s-cota"/></svg></span><span class="mini solto"><svg><use href="#s-cota"/></svg></span></div>
+      <span class="pg">03</span></section>
+  </div>
+
+  <h2>Pacote de marca · Lastro Investimentos</h2>
+  <div class="grid g3">
+    <section class="p capa"><span class="n">Logo</span>
+      <div class="wm"><svg><use href="#s-lastro"/></svg><div><b style="letter-spacing:.06em">LASTRO</b><small>Investimentos</small></div></div>
+      <span class="pg">01</span></section>
+    <section class="p constr"><span class="n">Construção</span>
+      <svg viewBox="0 0 64 64" fill="none" stroke-width=".35">
+        <path d="M10 0v64M54 0v64M0 8h64M0 56h64M0 23h64M0 35h64M0 47h64" stroke="rgba(10,132,255,.35)" stroke-dasharray="1 1"/>
+        <g style="color:#F3F5FA"><use href="#s-lastro" width="64" height="64"/></g>
+      </svg>
+      <span class="pg">02</span></section>
+    <section class="p"><span class="n">No produto</span>
+      <div class="browser"><div class="bar"><i></i><i></i><i></i><span class="url">lastro.com.br/painel</span></div>
+        <div class="corpo"><span class="h"><svg><use href="#s-lastro"/></svg>LASTRO</span><span class="valor">R$ 324.000</span><span class="chip">+ R$ 24.000 investidos em 2026</span></div></div>
+      <span class="pg">03</span></section>
+    <section class="p tag"><span class="n">Essência</span>
+      <q>Patrimônio<br><em>com lastro.</em></q>
+      <span class="pg">04</span></section>
+    <section class="p"><span class="n">Cores</span>
+      <div class="cores">
+        <div style="background:var(--noite);box-shadow:inset 0 0 0 1px var(--linha)"><b>Noite</b>#0B1020</div>
+        <div style="background:var(--azul)"><b>Azul Lastro</b>#0A84FF</div>
+        <div style="background:var(--indigo)"><b>Índigo</b>#5E5CE6</div>
+        <div style="background:var(--nevoa);color:#0B1020"><b>Névoa</b>#F5F6F9</div>
+        <div style="background:var(--ouro);color:#0B1020"><b>Provento</b>#E2A028</div>
+      </div>
+      <span class="pg">05</span></section>
+    <section class="p tipo"><span class="n">Tipografia</span>
+      <div class="Aa">Aa</div><div class="alf">SF Pro / Inter · ABCDEFGHIJ 0123456789</div>
+      <div class="pesos"><span style="font-weight:400">Regular</span><span style="font-weight:600">Semibold</span><span style="font-weight:750">Bold</span></div>
+      <span class="pg">06</span></section>
+    <section class="p"><span class="n">Aplicação física</span>
+      <div class="cartao"><div class="top"><svg><use href="#s-lastro"/></svg><span>ASSESSORIA</span></div><div class="nome">Nathan Santapaula<small>Planejamento financeiro · XP</small></div></div>
+      <span class="pg">07</span></section>
+    <section class="p imagem"><span class="n" style="z-index:1">Imagem</span>
+      <svg viewBox="0 0 400 260" preserveAspectRatio="xMidYMid slice" fill="none">
+        <g stroke="rgba(143,198,255,.18)"><circle cx="250" cy="140" r="80"/><ellipse cx="250" cy="140" rx="80" ry="26"/><ellipse cx="250" cy="140" rx="26" ry="80"/><ellipse cx="250" cy="140" rx="55" ry="80"/></g>
+        <ellipse cx="250" cy="150" rx="140" ry="34" transform="rotate(-16 250 150)" stroke="rgba(10,132,255,.7)" stroke-width="1.5"/>
+        <circle cx="372" cy="112" r="5" fill="#E2A028"/><circle cx="128" cy="196" r="3.5" fill="#5E5CE6"/>
+      </svg>
+      <span class="leg">Base firme, carteira à vista</span>
+      <span class="pg">08</span></section>
+    <section class="p det"><span class="n">Detalhes do sistema</span>
+      <div class="busca"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>Buscar gastos, ativos e proventos</div>
+      <div class="chips"><span class="on">Ano todo</span><span>3 meses</span><span>6 meses</span><span>2026</span></div>
+      <div class="linha-ic" style="margin:0"><span class="mini azul"><svg><use href="#s-lastro"/></svg></span><span class="mini escuro"><svg><use href="#s-lastro"/></svg></span><span class="mini claro"><svg><use href="#s-lastro"/></svg></span></div>
+      <span class="pg">09</span></section>
+  </div>
+  <p class="nota">Os símbolos usam a cor do texto (currentColor), então trocam com o tema e a cor de destaque do site. Antes de adotar o nome, é preciso pesquisar o registro no INPI e o domínio; isso eu não fiz.</p>
+</main>
+</body>
+</html>
