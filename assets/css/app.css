@@ -22,7 +22,7 @@
 :root, :root[data-theme="light"] {
   color-scheme: light;
   --bg: #F5F6F9; --bg-alt: #EEF0F4; --surface: #FFFFFF; --surface-2: #F4F5F8; --surface-3: #E8EAF0;
-  --line: #E4E6EC; --line-2: #D0D4DC; --ink: #111318; --ink-2: #4A4F59; --ink-3: #6B717C;
+  --line: #E4E6EC; --line-2: #D0D4DC; --ink: #111318; --ink-2: #4A4F59; --ink-3: #5E646F;
   --accent: #0068DA; --accent-2: #5E5CE6; --accent-soft: #E6F0FD; --on-accent: #FFFFFF;
   --pos: #1F7F3A; --neg: #C8102E; --warn: #A34A00; --pos-soft: #E4F4E8; --warn-soft: #FFF2DF; --neg-soft: #FFE8EB;
   --c1: #0A84FF; --c2: #5E5CE6; --c3: #30B0C7; --c4: #FF9F0A; --c5: #30B94F; --c6: #FF375F;
