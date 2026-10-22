@@ -5,8 +5,8 @@
    com voltar pelo botão, pelo Esc e pelo voltar do celular (history). */
 'use strict';
 const BASICO_PAGANTES = true; // pagantes podem trocar para o Básico; false = Básico só no plano gratuito
-const modoBasico = () => S.screen === 'app' && !!S.profile && !S.isAdmin && E.interfaceDe(planoAtual(), S.profile.interface, BASICO_PAGANTES) === 'basico';
-const basEscolhe = () => BASICO_PAGANTES && !S.isAdmin && planoAtual() !== 'gratis'; // só pagantes escolhem a versão
+const modoBasico = () => S.screen === 'app' && !!S.profile && E.interfaceDe(planoAtual(), S.profile.interface, BASICO_PAGANTES) === 'basico';
+const basEscolhe = () => BASICO_PAGANTES && planoAtual() !== 'gratis'; // pagantes e o consultor escolhem a versão
 const BAS_NOMES = { basico: 'App', completo: 'SaaS' }; // nomes das duas versões na tela: App (celular; no gratuito, a única) e SaaS (o painel completo)
 // seletor dos dois modos: Perfil do Simples, página inicial do painel e o Mais do celular no Completo (só para quem pode escolher)
 const basTrocaHtml = () => { const v = E.interfaceDe(planoAtual(), S.profile.interface, BASICO_PAGANTES);
@@ -31,7 +31,9 @@ const BAS_VOZ = {
 Object.keys(BAS_VOZ).forEach((t) => { if (VOZ[t]) Object.assign(VOZ[t], BAS_VOZ[t]); });
 
 /* ---------- peças de tela ---------- */
-const basAba = () => (BAS_ABAS.some((a) => a[0] === S.basAba) ? S.basAba : 'inicio');
+// o consultor tem também a aba Clientes, a mesma do SaaS
+const basAbas = () => BAS_ABAS.concat(S.isAdmin && Store.mode === 'cloud' ? [['clientes', 'Clientes', I.clientes]] : []);
+const basAba = () => (basAbas().some((a) => a[0] === S.basAba) ? S.basAba : 'inicio');
 const basPilha = () => (S.basPilha = S.basPilha || []);
 const basTopoPilha = () => basPilha()[basPilha().length - 1] || null;
 const basBarra = (f) => `<span class="bas-bar" aria-hidden="true"><i style="width:${(Math.max(0, Math.min(1, f)) * 100).toFixed(1)}%"></i></span>`;
@@ -55,7 +57,7 @@ function basCat(fixa) {
 function basicoBarra() {
   $('#topo').innerHTML = ''; $('#side').innerHTML = ''; const a = basAba(); const t = basTopoPilha();
   document.body.dataset.basFolha = t && BAS_FORMS.has(t.t) ? '1' : '';
-  $('#tabbar').innerHTML = `<div class="bas-tabs">${BAS_ABAS.map(([k, l, i]) => `<button data-act="bas-aba" data-v="${k}" ${a === k ? 'aria-current="page"' : ''}>${i}<span>${l}</span></button>`).join('')}</div>`;
+  $('#tabbar').innerHTML = `<div class="bas-tabs">${basAbas().map(([k, l, i]) => `<button data-act="bas-aba" data-v="${k}" ${a === k ? 'aria-current="page"' : ''}>${i}<span>${l}</span></button>`).join('')}</div>`;
 }
 // cabeçalho das telas empilhadas: voltar (ou cancelar, nos formulários) e o título grande
 const basNav = (titulo, form) => `<header class="bas-nav"><button type="button" class="bas-voltar" data-act="bas-voltar">${form ? 'Cancelar' : I_VOLTA + '<span>Voltar</span>'}</button>${form ? '' : olhoHtml()}</header><h1 class="bas-tit">${titulo}</h1>`;
@@ -93,7 +95,7 @@ function basicoHtml() {
   const t = basTopoPilha();
   if (t) { const f = BAS_TELAS[t.t]; return `<div class="bas bas-tela" data-t="${t.t}">${f ? f(t) : basSumiu()}</div>`; }
   const a = basAba(); const m = S.mes;
-  return `<div class="bas" data-aba="${a}">${a === 'gastos' ? basGastos(m) : a === 'investir' ? basInvestir(m) : a === 'perfil' ? basPerfil() : basInicio(m)}</div>`;
+  return `<div class="bas" data-aba="${a}">${a === 'gastos' ? basGastos(m) : a === 'investir' ? basInvestir(m) : a === 'perfil' ? basPerfil() : a === 'clientes' ? `<div class="bas-pg bas-clientes">${viewClientes()}</div>` : basInicio(m)}</div>`;
 }
 
 /* ================= abas ================= */
@@ -519,7 +521,6 @@ function basPagar() {
 
 // escolha da versão no painel administrativo (Personalizar o painel) e no fim do diagnóstico
 function basAdmHtml() {
-  if (S.isAdmin) return '';
   const op = (v, n, d) => `<button class="ap-voz" data-act="bas-ui" data-v="${v}" aria-pressed="${E.interfaceDe(planoAtual(), S.profile.interface, BASICO_PAGANTES) === v}"><b>${n}</b><small>${d}</small></button>`;
   const corpo = basEscolhe() ? `<div class="ap-vozes">${op('basico', BAS_NOMES.basico, 'No jeito de celular, como um app de banco: o mês, os gastos, o sonho e quanto dá para investir.')}${op('completo', BAS_NOMES.completo, 'O painel completo: todas as telas, gráficos, planilhas e análises.')}</div>`
     : `<p class="mmsg">Você está no ${BAS_NOMES.basico}. O ${BAS_NOMES.completo} e o ${BAS_NOMES.basico} completo vêm com o plano ${esc(nomePlano('investidor'))}.</p><div class="btn-row"><button class="btn" data-act="upgrade" data-plano="investidor">Conhecer o plano ${esc(nomePlano('investidor'))}</button></div>`;

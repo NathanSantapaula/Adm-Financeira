@@ -417,3 +417,4 @@ button.bas-roda-lim { pointer-events: auto; border: 0; font: inherit; font-size:
 .bas-alvo input { width: 72px; min-height: 44px; padding: 0 10px; border: 0; border-radius: var(--r-md); background: color-mix(in srgb, var(--ink) 6%, transparent); color: var(--ink); font: inherit; font-size: 17px; font-weight: 650; text-align: right; }
 .bas-alvo input:focus { outline: 2px solid var(--accent); }
 .bas-alvo i { font-style: normal; color: var(--ink-2); font-weight: 600; }
+.bas-clientes { padding-top: 8px; } .bas-clientes .tablewrap, .bas-clientes table { max-width: 100%; } .bas-clientes .tablewrap { overflow-x: auto; } /* a aba Clientes do SaaS, como é, dentro do App do consultor */
