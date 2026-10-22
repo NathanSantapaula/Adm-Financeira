@@ -395,7 +395,8 @@ function iaFichasHtml() {
   const ficha = (id) => `<button class="np-chip ia-ficha" data-act="ia-perg" data-q="${esc(E.IA_FICHAS[id])}">${esc(E.IA_FICHAS[id])}</button>`;
   if (S.iaMais) return Object.keys(E.IA_FICHAS).filter(pode).map(ficha).join('') + '<button class="np-chip ia-ficha ia-mais" data-act="ia-mais" aria-expanded="true">Menos</button>';
   const ids = ult && ult.r.sug.length ? ult.r.sug : ['resumo', 'compra', 'investir', 'orcamento'].filter(pode);
-  return ids.slice(0, 4).map(ficha).join('') + '<button class="np-chip ia-ficha ia-mais" data-act="ia-mais" aria-expanded="false">Mais perguntas</button>';
+  const av = !ult && (S.notifs || []).some((n) => !n.lida) ? '<button class="np-chip ia-ficha" data-act="ia-perg" data-q="Tenho avisos?">Tenho avisos?</button>' : ''; // com avisos novos, a primeira sugestão é vê-los
+  return av + ids.slice(0, av ? 3 : 4).map(ficha).join('') + '<button class="np-chip ia-ficha ia-mais" data-act="ia-mais" aria-expanded="false">Mais perguntas</button>';
 }
 const iaFormHtml = (onde) => `<form class="ia-f" data-form="ia" autocomplete="off"><input name="q" maxlength="300" placeholder="Pergunte sobre o seu dinheiro" aria-label="Pergunta para o assistente" enterkeyhint="send"><button class="ia-env" aria-label="Enviar pergunta">${IA_ENVIAR}</button></form>`;
 const iaConversaHtml = (onde) => `<div class="ia-log" data-ia-log="${onde}" role="log" aria-live="polite">${iaLogHtml(onde)}</div><div class="ia-fichas" data-ia-fichas role="group" aria-label="Sugestões de perguntas">${iaFichasHtml()}</div>${iaFormHtml(onde)}`;
