@@ -2929,6 +2929,15 @@ html.side-mini .nav-g { height: 1px; margin: 10px 14px; font-size: 0; background
 .topo-eu-t { display: grid; } .topo-eu-t b { font-size: 13.5px; font-weight: 650; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .topo-eu-t small { font-size: 12px; color: var(--ink-3); }
 .topo-eu-v { width: 16px; height: 16px; fill: none; stroke: var(--ink-3); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 @media (max-width: 900px) { .topo-eu-t, .topo-eu-v { display: none; } .topo-eu { padding: 3px; } }
+.per-curto { display: none; }
+/* celular: numa linha só, da esquerda para a direita: foto, assistente (e busca), olho, globo e a pílula de período e ano */
+@media (max-width: 900px) {
+  #topo .topo-r { flex: 1; min-width: 0; margin-left: 0; flex-wrap: nowrap; justify-content: flex-start; }
+  .topo-eu { order: -2; } .topo-r > .topo-ic { order: -1; }
+  .topo-r > .htools, .topo-r > .topo-ic, .topo-eu { flex: none; }
+  .per-pill .per-rot, .per-pill .per-sep { display: none; }
+  .per-pill .per-curto { display: inline; font-weight: 600; }
+}
 .ia-fichas { max-height: 168px; overflow-y: auto; overscroll-behavior: contain; }
 .ia-mais { border-color: color-mix(in srgb, var(--accent) 50%, var(--line-2)); color: var(--accent); }
 /* os balões do topo (assistente, período) ficam acima dos cartões: o vidro de .topo-ic cria um contexto de empilhamento */
@@ -2965,7 +2974,7 @@ html.side-mini .nav-g { height: 1px; margin: 10px 14px; font-size: 0; background
 @media (max-width: 480px) {
   .topo-r, .htools { gap: 6px; }
   .htools .olho, .htools .ab-ir { width: 36px; height: 36px; }
-  .per-pill { padding: 7px 6px 7px 10px; gap: 4px; }
+  .per-pill { padding: 7px 6px 7px 12px; gap: 4px; }
   .per-pill > svg:first-child { display: none; }
   .topo-ic { padding: 2px; }
   .topo-eu .av { width: 34px; height: 34px; }
