@@ -43,7 +43,7 @@ function chartBars(el, cfg) {
       bars += `<rect x="${x0.toFixed(1)}" y="${Math.min(y1, y2).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(1, Math.abs(y2 - y1)).toFixed(1)}" rx="4" fill="${s.color}" stroke="var(--surface)" stroke-width="1.5"/>`;
     });
     marks.forEach((k) => { if (k.values[i] > 0) mk += `<line x1="${(x0 - 4).toFixed(1)}" x2="${(x0 + bw + 4).toFixed(1)}" y1="${y(k.values[i]).toFixed(1)}" y2="${y(k.values[i]).toFixed(1)}" stroke="${k.color}" stroke-width="3" stroke-linecap="round"/>`; });
-    if (band >= 28 || i % 2 === 0 || cfg.cur === i) lab += `<text x="${(m.l + band * i + band / 2).toFixed(1)}" y="${H - 6}" text-anchor="middle" class="${cfg.cur === i ? 'cur-l' : ''}">${escSvg(cfg.labels[i])}</text>`;
+    if (band >= 28 || (i % 2 === 0 && Math.abs(i - cfg.cur) !== 1) || cfg.cur === i) lab += `<text x="${(m.l + band * i + band / 2).toFixed(1)}" y="${H - 6}" text-anchor="middle" class="${cfg.cur === i ? 'cur-l' : ''}">${escSvg(cfg.labels[i])}</text>`;
   }
   el.innerHTML = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${escSvg(cfg.aria)}">${g}${bars}${mk}${lab}<rect class="hv" x="0" y="${m.t}" width="${band}" height="${ih}" opacity="0" pointer-events="none"/></svg>`;
   const svg = el.firstChild; const hv = svg.querySelector('.hv');

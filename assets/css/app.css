@@ -2714,7 +2714,7 @@ i[style*="--bc"] { background: var(--bc); }
 .ct-st { font-style: normal; font-size: 11px; font-weight: 650; padding: 1px 8px; border-radius: 999px; color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
 .ct-it.pago .ct-st { color: var(--pos); background: color-mix(in srgb, var(--pos) 14%, transparent); } .ct-it.pago .ct-n b { color: var(--ink-2); }
 /* abas do fluxo */
-.fx-seg { margin: -2px 0 6px; }
+.fx-seg { margin: -2px 0 6px; display: inline-flex; max-width: 100%; } .fx-seg button { flex: 1 1 auto; white-space: nowrap; padding: 6px 12px; } /* no celular as quatro abas cabem sem quebrar a palavra */
 /* Meus cartões: um cartão por instituição, na cor dela (cores das marcas, fixas como os ícones), com brilho metálico */
 .cc-cards { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(230px, 78%); gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; padding: 4px 2px 10px; scrollbar-width: thin; }
 /* cartão premium: grafite fosco tingido pela cor do banco (--cb), quadrados translúcidos de textura, logo no alto e números embaixo; o cartão é um objeto, então fica escuro nos três temas */
