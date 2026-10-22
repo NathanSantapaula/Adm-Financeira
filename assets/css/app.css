@@ -22,7 +22,7 @@
 :root, :root[data-theme="light"] {
   color-scheme: light;
   --bg: #F5F6F9; --bg-alt: #EEF0F4; --surface: #FFFFFF; --surface-2: #F4F5F8; --surface-3: #E8EAF0;
-  --line: #E4E6EC; --line-2: #D0D4DC; --ink: #111318; --ink-2: #4A4F59; --ink-3: #6B717C;
+  --line: #E4E6EC; --line-2: #D0D4DC; --ink: #111318; --ink-2: #4A4F59; --ink-3: #5E646F;
   --accent: #0068DA; --accent-2: #5E5CE6; --accent-soft: #E6F0FD; --on-accent: #FFFFFF;
   --pos: #1F7F3A; --neg: #C8102E; --warn: #A34A00; --pos-soft: #E4F4E8; --warn-soft: #FFF2DF; --neg-soft: #FFE8EB;
   --c1: #0A84FF; --c2: #5E5CE6; --c3: #30B0C7; --c4: #FF9F0A; --c5: #30B94F; --c6: #FF375F;
@@ -409,7 +409,7 @@ dialog.drawer[open] { display: flex; animation: drin .22s ease-out; }
 .imp-prev h4 { font-size: 15px; font-weight: 700; word-break: break-all; }
 .sum { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
 .warns { margin: 0; padding-left: 18px; font-size: 13px; color: var(--ink-2); display: grid; gap: 4px; }
-.plan-badge { display: inline-block; align-self: start; padding: 6px 14px; border-radius: 980px; background: var(--surface-3); font-weight: 600; font-size: 13.5px; }
+.plan-badge { display: inline-block; align-self: start; justify-self: start; padding: 6px 14px; border-radius: 980px; background: var(--surface-3); font-weight: 600; font-size: 13.5px; }
 .plan-badge.on { background: var(--accent); color: var(--on-accent); } .plan-badge.wait { background: var(--warn-soft); color: var(--warn); }
 .toast { position: fixed; left: 50%; bottom: calc(26px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%) translateY(20px); background: var(--ink); color: var(--bg); padding: 11px 18px; border-radius: 980px; font-size: 14px; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 120; max-width: calc(100vw - 32px); }
 .toast.on { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -2066,7 +2066,7 @@ html.sem-rolagem { overflow: hidden; }
 .sonho .obj-chip[aria-selected="true"] { color: #0b1220; background: rgba(255, 255, 255, .92); border-color: transparent; }
 .sonho .info-i { color: rgba(255, 255, 255, .75); }
 .sonho-txt { margin: 0; max-width: 34em; color: var(--ink-2); font-size: 14px; line-height: 1.5; }
-.btn.sonho-btn { align-self: flex-start; margin-top: 6px; border: 0; background: #fff; color: #0b1220; font-weight: 600; }
+.sonho .btn.sonho-btn:not(.primary) { align-self: flex-start; margin-top: 6px; border: 0; background: #fff; color: #0b1220; font-weight: 600; }
 @media (max-width: 560px) { .sonho-c { padding: 16px 16px 14px; } }
 @media (prefers-reduced-motion: reduce) { .sonho-foto { transition: none; } .sonho.troca .sonho-foto { animation: none; } }
 
@@ -2714,7 +2714,7 @@ i[style*="--bc"] { background: var(--bc); }
 .ct-st { font-style: normal; font-size: 11px; font-weight: 650; padding: 1px 8px; border-radius: 999px; color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
 .ct-it.pago .ct-st { color: var(--pos); background: color-mix(in srgb, var(--pos) 14%, transparent); } .ct-it.pago .ct-n b { color: var(--ink-2); }
 /* abas do fluxo */
-.fx-seg { margin: -2px 0 6px; }
+.fx-seg { margin: -2px 0 6px; display: inline-flex; max-width: 100%; } .fx-seg button { flex: 1 1 auto; white-space: nowrap; padding: 6px 12px; } /* no celular as quatro abas cabem sem quebrar a palavra */
 /* Meus cartões: um cartão por instituição, na cor dela (cores das marcas, fixas como os ícones), com brilho metálico */
 .cc-cards { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(230px, 78%); gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; padding: 4px 2px 10px; scrollbar-width: thin; }
 /* cartão premium: grafite fosco tingido pela cor do banco (--cb), quadrados translúcidos de textura, logo no alto e números embaixo; o cartão é um objeto, então fica escuro nos três temas */
@@ -2949,12 +2949,22 @@ html.side-mini .nav-g { height: 1px; margin: 10px 14px; font-size: 0; background
 @media (prefers-reduced-motion: reduce) { .ia-onda i, .ia-int-t { animation: none; } .ia-comecar { transition: none; } }
 /* topo na mesma linha da marca e do título: no computador ele sai do fluxo e o título reserva a largura dele (--topo-w) */
 .topo-r { flex-wrap: wrap; justify-content: flex-end; }
+/* celular: olho, globo, período, assistente e perfil cabem numa linha só (antes o perfil caía sozinho na segunda) */
+@media (max-width: 480px) {
+  .topo-r, .htools { gap: 6px; }
+  .htools .olho, .htools .ab-ir { width: 36px; height: 36px; }
+  .per-pill { padding: 7px 6px 7px 10px; gap: 4px; }
+  .per-pill > svg:first-child { display: none; }
+  .topo-ic { padding: 2px; }
+  .topo-eu .av { width: 34px; height: 34px; }
+}
 @media (min-width: 901px) {
   .app { position: relative; }
   .topo { position: absolute; top: 0; right: 0; z-index: 7; padding-top: 22px; }
   .side, html .side { height: 100vh; height: 100dvh; padding-top: 22px; }
   .main { padding-top: 22px; }
   #view .page-h:first-child { padding-right: calc(var(--topo-w, 0px) + 16px); }
+  #view .welcome:first-child .wh { margin-top: 26px; } /* a saudação divide a linha com o topo; o título desce para não passar por baixo dos botões */
 }
 /* logos oficiais do Itaú e da XP: vêm com as letras vazadas num quadrado; a máscara é invertida (fica só a letra),
    então seguem os estilos de ícone como os outros bancos */
