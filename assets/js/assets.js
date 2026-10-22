@@ -77,7 +77,7 @@ function painelInvest(A) {
   const ap = A.aporte; const ca = A.carteira; const pr = S.profile; const ret = +pr.retornoAnual || 0;
   const reinv = ap.deDividendos > 0 ? ` Inclui ${brl(ap.deDividendos)} de dividendos reinvestidos.` : ''; // aportado = do bolso + dividendos reinvestidos (mesma janela do período)
   const fB = ap.ateAgora > 0 ? (ap.doBolso / ap.ateAgora) * 100 : 0;
-  const k1 = kpi('De onde veio o aporte', `<span class="num">${brl(ap.ateAgora)}</span>`, ap.ateAgora > 0 ? `${brl(ap.doBolso)} do seu bolso e ${brl(ap.deDividendos)} de dividendos reinvestidos ${perFrase()}${ateMes()}.` : 'Nenhum aporte registrado ainda.', ap.ateAgora > 0 ? `<span class="kbar dup" aria-hidden="true"><i style="width:${fB.toFixed(1)}%"></i><i class="dv" style="width:${(100 - fB).toFixed(1)}%"></i></span>` : '');
+  const k1 = kpi('De onde veio o aporte', `<span class="num">${brl(ap.ateAgora)}</span>${varChip('aplicado', 1)}`, ap.ateAgora > 0 ? `${brl(ap.doBolso)} do seu bolso e ${brl(ap.deDividendos)} de dividendos reinvestidos ${perFrase()}${ateMes()}.` : 'Nenhum aporte registrado ainda.', ap.ateAgora > 0 ? `<span class="kbar dup" aria-hidden="true"><i style="width:${fB.toFixed(1)}%"></i><i class="dv" style="width:${(100 - fB).toFixed(1)}%"></i></span>` : '');
   const k2 = kpi('Da renda para investimentos', ap.taxaRenda == null ? '–' : pct(ap.taxaRenda), ap.taxaRenda == null ? 'Aparece quando houver entradas registradas em Rendas.' : `das entradas ${perFrase()} viraram aporte.`, ap.taxaRenda == null ? '' : barra(ap.taxaRenda, ap.taxaRenda >= 0.2 ? 'ok' : ''));
   const JN = perJanela(); const dots = `<span class="dots" aria-hidden="true">${MES.map((m, i) => `<i class="${ap.porMes[i] ? 'on' : i < JN.de || i >= JN.meses ? 'fut' : ''}" title="${m}"></i>`).join('')}</span>`;
   const k3 = kpi('Constância', `${ap.mesesComAporte} <small>de ${ap.meses} meses</small>`, 'com aporte. Aportar todo mês pesa mais que acertar o momento.', dots);
@@ -114,8 +114,8 @@ function painelInvest(A) {
     aportes: `<section class="card"><div class="c-h"><h3>Aportes mês a mês</h3>${ap.metaAte > 0 ? `<small class="c-note">${naMeta} de ${ap.meses} ${ap.meses === 1 ? 'mês' : 'meses'} na meta</small>` : ''}</div>
       ${leg}<div class="chart ia-chart" id="inv-aportes"></div></section>`,
     onde: `<section class="card cart-exp-card" data-exp="composicao"><div class="c-h"><h3>Onde está o dinheiro</h3>${cartExpBtn('composicao')}</div>${cartComposicaoHtml(K)}${rfBar}</section>`,
-    destino: `<section class="card"><div class="c-h"><h3>Para onde foram os aportes</h3><small class="c-note">${perFrase()}</small></div>${dst.length ? `<ul class="rank">${dst.map((c, n) => `<li><span class="rk-n">${n + 1}</span><span class="rk-l"><b title="${esc(c.label)}">${esc(c.label)}</b></span><span class="rk-t"><i style="width:${((c.value / dstMx) * 100).toFixed(1)}%;background:${PAL[n % 6]}"></i></span><span class="rk-v">${brl0(c.value)}<small>${pct(ap.ano > 0 ? c.value / ap.ano : 0)}</small></span></li>`).join('')}</ul>` : `<p class="empty-s">Nenhum aporte registrado em ${S.year}.</p>`}</section>`,
-    posicoes: `<section class="card"><div class="c-h"><h3>Maiores posições</h3><small class="c-note">a custo</small></div>${top.length ? `<ul class="rank">${top.map((i, n) => `<li><span class="rk-n">${n + 1}</span><span class="rk-l"><b title="${esc(i.nome)}">${esc(i.nome)}</b><small>${esc(i.classe)}</small></span><span class="rk-t"><i style="width:${((i.valor / top[0].valor) * 100).toFixed(1)}%;background:${PAL[ca.porClasse.findIndex((c) => c.label === i.classe) % 6]}"></i></span><span class="rk-v">${brl0(i.valor)}<small>${pct(i.peso, 1)}</small></span></li>`).join('')}</ul>` : '<p class="empty-s">Sem posições.</p>'}</section>`,
+    destino: `<section class="card"><div class="c-h"><h3>Para onde foram os aportes</h3><small class="c-note">${perFrase()}</small></div>${dst.length ? `<ul class="rank">${dst.map((c, n) => `<li><span class="rk-n">${n + 1}</span><span class="rk-l"><b title="${esc(c.label)}">${esc(c.label)}</b></span><span class="rk-t"><i style="width:${((c.value / dstMx) * 100).toFixed(1)}%;--bc:${PAL[n % 6]}"></i></span><span class="rk-v">${brl0(c.value)}<small>${pct(ap.ano > 0 ? c.value / ap.ano : 0)}</small></span></li>`).join('')}</ul>` : `<p class="empty-s">Nenhum aporte registrado em ${S.year}.</p>`}</section>`,
+    posicoes: `<section class="card"><div class="c-h"><h3>Maiores posições</h3><small class="c-note">a custo</small></div>${top.length ? `<ul class="rank">${top.map((i, n) => `<li><span class="rk-n">${n + 1}</span><span class="rk-l"><b title="${esc(i.nome)}">${esc(i.nome)}</b><small>${esc(i.classe)}</small></span><span class="rk-t"><i style="width:${((i.valor / top[0].valor) * 100).toFixed(1)}%;--bc:${PAL[ca.porClasse.findIndex((c) => c.label === i.classe) % 6]}"></i></span><span class="rk-v">${brl0(i.valor)}<small>${pct(i.peso, 1)}</small></span></li>`).join('')}</ul>` : '<p class="empty-s">Sem posições.</p>'}</section>`,
     estudar: `<section class="card study"><div class="c-h"><h3>Para estudar</h3></div><ul class="insights">${ins.map(([t, x]) => `<li class="${t}">${x}</li>`).join('')}</ul></section>`,
   });
 }
@@ -141,12 +141,12 @@ function provCalSel(el) {
 
 function painelProventos(A) {
   const pv = A.proventos; const ca = A.carteira; const ap = A.aporte; const ret = +S.profile.retornoAnual || 0;
-  const k1 = kpi(`Recebido ${perFrase()}`, `<span class="num">${brl0(pv.ano)}</span>`, `Dividendos ${brl0(pv.dividendos)} · Renda fixa ${brl0(pv.rentab)}.`);
+  const k1 = kpi(`Recebido ${perFrase()}`, `<span class="num">${brl0(pv.ano)}</span>${varChip('faturamento', 1)}`, `Dividendos ${brl0(pv.dividendos)} · Renda fixa ${brl0(pv.rentab)}.`);
   const k2 = kpi('Média por mês', `<span class="num">${brl0(pv.mediaMes)}</span>`, `Cerca de ${brl(pv.porDia)} por dia. ${pv.mesesComProvento} de ${ap.meses} meses com proventos.`);
   const k3 = kpi('Yield on cost', pv.yoc == null ? '–' : pct(pv.yoc, 1), pv.yoc == null ? 'Aparece quando houver aportes e proventos.' : 'Proventos anualizados sobre o valor investido (a custo). Mostra quanto o seu dinheiro rende em caixa.');
   const k4 = kpi('Cobertura dos gastos', pv.cobertura == null ? '–' : pct(pv.cobertura, 1), pv.cobertura == null ? 'Registre gastos na aba Gastos para comparar.' : `dos seus gastos médios (${brl0(pv.gastoMedio)} por mês) já são pagos pelos proventos.`, pv.cobertura == null ? '' : barra(pv.cobertura, pv.cobertura >= 1 ? 'ok' : ''));
   const top = pv.pagadores.slice(0, 8);
-  const rank = top.length ? `<ul class="rank">${top.map((p, n) => `<li><span class="rk-n">${n + 1}</span><span class="rk-l"><b title="${esc(p.nome)}">${esc(p.nome)}</b><small>Pagou em ${p.mesesPagos} ${p.mesesPagos === 1 ? 'mês' : 'meses'}${p.yoc != null ? ` · yield ${pct(p.yoc, 1)}` : ''}</small></span><span class="rk-t"><i style="width:${((p.recebido / top[0].recebido) * 100).toFixed(1)}%;background:${p.tipo === 'RENDA FIXA' ? 'var(--c1)' : 'var(--c3)'}"></i></span><span class="rk-v">${brl0(p.recebido)}<small>${pct(pv.ano > 0 ? p.recebido / pv.ano : 0)}</small></span></li>`).join('')}</ul>` : '<p class="empty-s">Nenhum provento registrado neste ano.</p>';
+  const rank = top.length ? `<ul class="rank">${top.map((p, n) => `<li><span class="rk-n">${n + 1}</span><span class="rk-l"><b title="${esc(p.nome)}">${esc(p.nome)}</b><small>Pagou em ${p.mesesPagos} ${p.mesesPagos === 1 ? 'mês' : 'meses'}${p.yoc != null ? ` · yield ${pct(p.yoc, 1)}` : ''}</small></span><span class="rk-t"><i style="width:${((p.recebido / top[0].recebido) * 100).toFixed(1)}%;--bc:${p.tipo === 'RENDA FIXA' ? 'var(--c1)' : 'var(--c3)'}"></i></span><span class="rk-v">${brl0(p.recebido)}<small>${pct(pv.ano > 0 ? p.recebido / pv.ano : 0)}</small></span></li>`).join('')}</ul>` : '<p class="empty-s">Nenhum provento registrado neste ano.</p>';
   let lib = '';
   if (pv.capitalLiberdade) {
     const f = ca.total / pv.capitalLiberdade; const n = ap.mediaMes > 0 ? E.mesesAteMeta(ca.total, ap.mediaMes, ret, pv.capitalLiberdade, 1200) : null;
@@ -181,12 +181,12 @@ function invAportesChart(el) {
   const m = { t: deitado ? 24 : 44, r: 6, b: 24, l: 6 }; const H = Math.max(240, Math.min(360, altura(el))); const ih = H - m.t - m.b; const band = (W - m.l - m.r) / nb;
   const sob = C.investAlocado.map((v) => Math.max(0, v)); const hi = Math.max(100, ...ids.map((i) => Math.max(ap[i], sob[i], mm[i] * 1.08))); const lo = Math.min(0, ...ids.map((i) => ap[i]));
   const y = (v) => m.t + (ih * (hi - v)) / (hi - lo); const bw = Math.min(34, band * 0.6); const bate = (i) => mm[i] > 0 && ap[i] >= mm[i] - 0.005; const y0 = y(0);
-  let g = ''; let mk = '';
+  const uid = 'ia' + (++METAL_N); let g = metalDefs(uid, ['var(--accent)', 'var(--pos)', 'var(--neg)']); let mk = '';
   for (let j = 0; j < nb; j++) {
     const i = ids[j]; const cx = m.l + band * (j + 0.5); const x = (cx - bw / 2).toFixed(1); const v = ap[i]; const fut = i > lim ? ' fut' : '';
     if (sob[i] > Math.max(0, v) + 0.5) g += `<rect class="ia-sob" x="${x}" y="${y(sob[i]).toFixed(1)}" width="${bw.toFixed(1)}" height="${(y0 - y(sob[i])).toFixed(1)}" rx="4"/>`;
     if (Math.abs(v) > 0.005) { const y1 = v > 0 ? y(v) : y0; const hh = Math.abs(y(v) - y0);
-      g += `<rect class="ia-bar${v < 0 ? ' neg' : bate(i) ? ' ok' : ''}${fut}" x="${x}" y="${y1.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(1, hh).toFixed(1)}" rx="4"/>`;
+      const k = v < 0 ? 2 : bate(i) ? 1 : 0; g += metalBar(uid, k, ['var(--accent)', 'var(--pos)', 'var(--neg)'][k], +x, y1, bw, hh, { fut: !!fut, cur: i === cur, topo: v > 0 });
       const ly = (v > 0 ? y(v) : y0) - 6; const t = escSvg(tickFmt(Math.round(v))); const cls = `ia-v${bate(i) ? ' ok' : ''}${fut}`;
       g += deitado ? `<text class="${cls}" x="${cx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="middle">${t}</text>` : `<text class="${cls}" transform="translate(${(cx + 4).toFixed(1)} ${ly.toFixed(1)}) rotate(-90)">${t}</text>`; }
     if (mm[i] > 0) mk += `<line class="ia-meta" x1="${(cx - bw / 2 - 4).toFixed(1)}" x2="${(cx + bw / 2 + 4).toFixed(1)}" y1="${y(mm[i]).toFixed(1)}" y2="${y(mm[i]).toFixed(1)}"/>`;
@@ -285,7 +285,7 @@ function cartEditorHtml(M, K) {
     ${aviso}<div class="ced-gs">${grupos.map((g, n) => { const ab = cedAberto(g.classe); const alvo = g.itens.reduce((s, i) => s + i.w, 0); const hoje = g.itens.reduce((s, i) => s + i.pctAtual, 0); const mx = Math.max(alvo, hoje, 1);
       return `<div class="ced-g${ab ? ' on' : ''}" data-ced-g="${esc(g.classe)}"><button class="ced-gh" data-act="ced-g" aria-expanded="${ab}" aria-controls="ced-g-${n}">
         <i class="ced-dot" style="background:${PAL[n % 6]}" aria-hidden="true"></i><span class="ced-gn"><b>${esc(g.classe)}</b><small>${g.itens.length} ${g.itens.length === 1 ? 'ativo' : 'ativos'} · hoje ${fmtPct(hoje)}</small></span>
-        <span class="ced-gb" aria-hidden="true"><i class="h" style="width:${((hoje / mx) * 100).toFixed(1)}%"></i><i class="a" style="width:${((alvo / mx) * 100).toFixed(1)}%;background:${PAL[n % 6]}"></i></span>
+        <span class="ced-gb" aria-hidden="true"><i class="h" style="width:${((hoje / mx) * 100).toFixed(1)}%"></i><i class="a" style="width:${((alvo / mx) * 100).toFixed(1)}%;--bc:${PAL[n % 6]}"></i></span>
         <span class="ced-ga" data-ced-ga>${fmtPct(alvo)}<small>alvo</small></span><span class="ced-chev" aria-hidden="true">${I.chev}</span></button>
         <ul class="ced-lista" id="ced-g-${n}"${ab ? '' : ' hidden'}>${g.itens.map(linha).join('')}</ul></div>`; }).join('')}</div>
     <p class="cap">Toque numa classe para abrir os ativos dela. Arraste o controle ou digite o alvo. "Tenho hoje" começa pela soma dos aportes de todos os anos; digite o valor atual se ele mudou. O preço da cota é opcional e serve para estimar quantas cotas comprar.</p></section>`;
@@ -312,7 +312,7 @@ function cartComposicaoHtml(K, mini) { // mini: versão compacta da Visão geral
   }
   CMP_SEGS = fatias;
   const C = 2 * Math.PI * 76; let ac = 0; const gap = fatias.filter((f) => f.pct > 0.3).length > 1 ? 2.5 : 0;
-  const segs = fatias.map((f, n) => { const l = (f.pct / 100) * C; const out = l > 0.5 ? `<circle class="cmp-seg" data-cseg="${n}" r="76" cx="100" cy="100" stroke="${f.cor}" stroke-dasharray="${Math.max(0.01, l - gap).toFixed(2)} ${C.toFixed(2)}" stroke-dashoffset="${(-ac).toFixed(2)}" style="--i:${n}"><title>${esc(f.nome)}</title></circle>` : ''; ac += l; return out; }).join('');
+  const segs = fatias.map((f, n) => { const l = (f.pct / 100) * C; const out = l > 0.5 ? `<circle class="cmp-seg" data-cseg="${n}" r="76" cx="100" cy="100" stroke="${f.cor}" stroke-dasharray="${Math.max(0.01, l - gap).toFixed(2)} ${C.toFixed(2)}" stroke-dashoffset="${(-ac).toFixed(2)}" style="--i:${n};--bc:${f.cor}"><title>${esc(f.nome)}</title></circle>` : ''; ac += l; return out; }).join('');
   const total = cls ? cls.valor : K.total; const rotulo = cls ? cls.classe : 'Total hoje';
   const subTotal = cls ? `${fmtPct(cls.atual)} da carteira${temAlvo ? ` · alvo ${fmtPct(cls.alvo)}` : ''}` : `${K.classes.length} ${K.classes.length === 1 ? 'classe' : 'classes'} · toque para abrir`;
   const lista = fatias.map((f, n) => `<li><button class="cmp-li" data-act="cart-seg" data-cseg="${n}"${f.k ? ` data-k="${esc(f.k)}"` : ''}><i style="background:${f.cor}"></i><span>${esc(f.nome)}</span><b>${f.li}</b>${f.liSub ? `<small>${f.liSub}</small>` : ''}<span class="cmp-ir" aria-hidden="true">${I.chev}</span></button></li>`).join('');

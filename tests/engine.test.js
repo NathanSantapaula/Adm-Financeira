@@ -357,4 +357,18 @@ ok(E.planoPermite('gratis', 'orcamento') && !E.planoPermite('gratis', 'carteira'
   ok(!E.acharFixo(desp, 'academia', 2026, 4) && E.acharFixo(desp, 'academia', 2026, 5).id === 'b', 'repetir: mês já realizado não concilia de novo');
 }
 
+// --- contas do mês (fixos e parcelas), variação e janela anterior
+{
+  const desp = [
+    { id: 'a', nome: 'Aluguel', area: 'Moradia', valores: new Array(12).fill(2000), baixas: { '2026-3': 'l1' } },
+    { id: 'b', nome: 'TV', area: 'Casa', inst: 'nubank', parcel: { total: 1200, n: 12, ano: 2026, mes: 0 } },
+    { id: 'c', nome: 'Curso', area: 'Educação', valores: [0, 0, 0, 0, 300, 0, 0, 0, 0, 0, 0, 0] },
+  ];
+  const K = E.contasMes({ despesas: desp, ano: 2026, mes: 3 });
+  ok(K.itens.length === 2 && K.total === 2100 && K.pago === 2000 && K.falta === 100 && K.itens[0].nome === 'TV' && K.itens[0].parcela.i === 4 && K.itens[0].parcela.n === 12 && K.itens[1].pago, 'contas do mês: fixos e parcelas, pagos por último');
+  ok(E.contasMes({ despesas: desp, ano: 2026, mes: 4 }).itens.length === 3 && E.contasMes({ despesas: [], ano: 2026, mes: 0 }).total === 0, 'contas do mês: item só no mês dele e lista vazia');
+  ok(Math.abs(E.variacao(110, 100) - 0.1) < 1e-9 && E.variacao(50, 0) === null && Math.abs(E.variacao(-20, -10) + 1) < 1e-9, 'variação: percentual e sem base');
+  const j = E.janelaAnterior(7, 9); ok(j.de === 4 && j.ate === 6 && E.janelaAnterior(0, 2) === null && E.janelaAnterior(5, 5).de === 4, 'janela anterior: mesmo tamanho, logo antes, no mesmo ano');
+}
+
 process.exit(bad ? 1 : 0);

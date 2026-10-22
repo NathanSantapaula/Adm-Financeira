@@ -54,9 +54,14 @@ function wIndicadores() {
     k = [['Taxa de poupança ' + fr, poup == null ? '–' : pct(poup), '', poupTxt, null, IP, 'rendas'], orc,
       ['Entradas ' + fr, brl0(TP.receita), '', `média de ${brl0(TP.receita / n)} por mês`, null, '<path d="M12 3v12M7 10l5 5 5-5M4 20h16"/>', 'rendas'], ['Gastos ' + fr, brl0(TP.despesas), '', `média de ${brl0(TP.despesas / n)} por mês`, null, '<rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6.5 15h4"/>', 'despesas']];
   }
-  return `<div class="stats4">${k.map((x) => `<div class="stat"><div class="c-k wg-tit">${wgIco(x[5], x[6])}<span>${esc(x[0])}</span></div><div class="c-num ${x[2] || ''}">${esc(x[1])}</div>${x[4] != null ? `<div class="bar ${x[2] || ''}"><i style="width:${Math.min(100, x[4] * 100).toFixed(1)}%"></i></div>` : ''}<div class="c-n">${esc(x[3])}</div></div>`).join('')}</div>`;
+  const chips = inv() ? ['', '', varChip('aplicado', 1), varChip('dividendos', 1)] : ['', '', varChip('receita', 1), varChip('despesas', -1)]; // variação contra o período anterior
+  return `<div class="stats4">${k.map((x, i) => `<div class="stat"><div class="c-k wg-tit">${wgIco(x[5], x[6])}<span>${esc(x[0])}</span></div><div class="c-num ${x[2] || ''}">${esc(x[1])}${chips[i] || ''}</div>${x[4] != null ? `<div class="bar ${x[2] || ''}"><i style="width:${Math.min(100, x[4] * 100).toFixed(1)}%"></i></div>` : ''}<div class="c-n">${esc(x[3])}</div></div>`).join('')}</div>`;
 }
-const wFluxo = () => `<section class="card"><div class="c-h"><h3>Para onde foi cada mês</h3><div class="legend"><span><i style="background:var(--c2)"></i>Gastos</span><span><i style="background:var(--c1)"></i>Sobra para investir</span></div></div><div class="chart" id="d-flow"></div></section>`;
+// fluxo mês a mês com abas (como Income / Expense / Saving): tudo, entradas, gastos ou sobra no mesmo gráfico; trocar redesenha só ele
+const FLUXO_MODOS = [['tudo', 'Tudo', [['var(--c2)', 'Gastos'], ['var(--c1)', 'Sobra para investir']]], ['entradas', 'Entradas', [['var(--pos)', 'Entradas']]], ['gastos', 'Gastos', [['var(--c2)', 'Gastos'], ['var(--ink-3)', 'Orçado']]], ['sobra', 'Sobra', [['var(--c1)', 'Sobra do mês']]]];
+const wFluxo = () => { const md = FLUXO_MODOS.find((x) => x[0] === S.fluxoModo) || FLUXO_MODOS[0];
+  return `<section class="card fx"><div class="c-h"><h3>Para onde foi cada mês</h3><div class="legend">${md[2].map(([c, l]) => `<span><i style="background:${c}"></i>${l}</span>`).join('')}</div></div>
+    <div class="seg fx-seg" role="group" aria-label="Mostrar no gráfico">${FLUXO_MODOS.map(([v, l]) => `<button class="${md[0] === v ? 'on' : ''}" data-act="fluxo-modo" data-v="${v}" aria-pressed="${md[0] === v}">${l}</button>`).join('')}</div><div class="chart" id="d-flow"></div></section>`; };
 function wCarteira() {
   if (!inv()) return `<section class="card"><div class="c-h"><h3>Evolua para o plano Investidor</h3></div><p class="mmsg">Acompanhe patrimônio, aportes e proventos e saiba onde investir a cada aporte para manter a carteira equilibrada.</p><div class="btn-row"><button class="btn primary" data-act="upgrade" data-plano="investidor">Conhecer o plano Investidor</button></div></section>`;
   // com a Carteira liberada, a mesma composição interativa da aba Carteira (passar o mouse, entrar na classe, ir ao ativo)
@@ -76,7 +81,7 @@ function wAssessor() {
 function wObjLista() {
   const A = objAnalise(); if (!A.itens.length) return `<section class="card"><div class="c-h"><h3>Todos os objetivos</h3></div><p class="empty-s">Cadastre seus objetivos para acompanhar o progresso de cada um.</p><div class="btn-row"><button class="btn" data-act="objetivo-definir">Definir objetivos</button></div></section>`;
   return `<section class="card"><div class="c-h"><h3>Todos os objetivos</h3><button class="lnk strong" data-act="objetivos-abrir">Gerenciar</button></div>
-    <ul class="wg-objs">${A.itens.map((g, i) => { const st = OBJ_STATUS[g.status] || OBJ_STATUS['sem-valor']; return `<li><button class="wg-obj" data-act="objetivo-foco" data-id="${esc(g.id)}">${objIcone(g, i)}<span class="wg-obj-t"><b>${esc(objNomeDe(g))}</b><small>${brl0(g.saldo)} de ${brl0(g.valor)}${g.ano ? ' · ' + g.ano : ''}</small><span class="kbar" style="--cor:${objCor(i)}"><i style="width:${(g.progresso * 100).toFixed(1)}%;background:${objCor(i)}"></i></span></span><span class="wg-obj-r"><b>${pct(g.progresso)}</b><span class="obj-st ${st[1]}">${st[0]}</span></span></button></li>`; }).join('')}</ul></section>`;
+    <ul class="wg-objs">${A.itens.map((g, i) => { const st = OBJ_STATUS[g.status] || OBJ_STATUS['sem-valor']; return `<li><button class="wg-obj" data-act="objetivo-foco" data-id="${esc(g.id)}">${objIcone(g, i)}<span class="wg-obj-t"><b>${esc(objNomeDe(g))}</b><small>${brl0(g.saldo)} de ${brl0(g.valor)}${g.ano ? ' · ' + g.ano : ''}</small><span class="kbar" style="--cor:${objCor(i)}"><i style="width:${(g.progresso * 100).toFixed(1)}%;--bc:${objCor(i)}"></i></span></span><span class="wg-obj-r"><b>${pct(g.progresso)}</b><span class="obj-st ${st[1]}">${st[0]}</span></span></button></li>`; }).join('')}</ul></section>`;
 }
 function wAvisos() {
   const L = (S.notifs || []).slice(0, 3);
@@ -161,6 +166,7 @@ const WIDGETS = [
   { id: 'fluxo', nome: () => 'Para onde foi cada mês', desc: 'Gastos e sobra para investir, mês a mês.', tam: 3, tams: [3, 4, 6], padrao: () => true, html: wFluxo, aba: () => 'despesas' },
   { id: 'constancia', nome: () => (temRecurso('investimentos') ? 'Constância dos aportes' : 'Gastos fixos e variáveis'), desc: 'Aportes de cada mês contra a meta (ou o peso dos gastos fixos).', tam: 3, tams: [3, 4, 6], padrao: () => true, html: () => painel2Html(), aba: () => (temRecurso('investimentos') ? 'inv' : 'despesas') },
   { id: 'carteira', nome: () => (inv() ? 'Composição da carteira' : 'Plano Investidor'), desc: 'Peso de cada classe de ativo na carteira.', tam: 3, tams: [2, 3, 4], padrao: () => true, html: wCarteira, aba: () => (inv() ? 'cart' : '') },
+  { id: 'contas', nome: () => 'Contas do mês', desc: 'Gastos fixos e parcelas do mês, pagos ou previstos (o mês escolhido no período, ou o atual).', tam: 3, tams: [2, 3, 4, 6], padrao: () => false, html: () => contasHtml(S.periodo && S.periodo.de === S.periodo.ate ? S.periodo.de : S.year === NOW_Y ? NOW_M : 11), aba: () => 'despesas' },
   { id: 'areas', nome: () => 'Onde você mais gasta', desc: 'Ranking das áreas de gasto do ano.', tam: 3, tams: [2, 3, 4, 6], padrao: () => true, html: wAreas, aba: () => 'despesas' },
   { id: 'destaques', nome: () => 'O que o painel está vendo', desc: 'Leituras automáticas do mês: orçamento, poupança, aportes e carteira.', tam: 3, tams: [3, 4, 6], padrao: () => true, html: wDestaques },
   { id: 'assessor', nome: () => 'Assessor e próximos passos', desc: 'Recomendação do assessor ou os próximos passos sugeridos.', tam: 3, tams: [2, 3, 4], padrao: () => true, html: wAssessor },
@@ -244,6 +250,7 @@ const WG_IC = {
   patrimonio: '<path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/>',
   orcmes: '<path d="M3.5 16a9 9 0 1 1 17 0"/><path d="m12 13 4-4"/>',
   fluxo: '<path d="M6 20V11M12 20V5M18 20v-6M3 20h18"/>',
+  contas: '<rect x="4" y="3" width="16" height="18" rx="2.5"/><path d="M8 8h8M8 12h8M8 16h5"/>',
   constancia: '<rect x="3" y="4.5" width="18" height="16.5" rx="2.5"/><path d="M8 2.5v4M16 2.5v4M3 10h18M9 15.5l2 2 4-4"/>',
   carteira: '<path d="M21 12a9 9 0 1 1-9-9v9z"/><path d="M15 3.6A9 9 0 0 1 20.4 9H15z"/>',
   areas: '<path d="M4 6h16M4 12h11M4 18h6"/>',

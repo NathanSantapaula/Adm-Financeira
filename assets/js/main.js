@@ -5,16 +5,21 @@ const navItems = () => {
   if (S.isAdmin && Store.mode === 'cloud') base.push(['clientes', 'Clientes']);
   return base;
 };
+// menu em grupos com título (como MAIN / FEATURES / TOOLS); aba que não estiver num grupo vai para o fim
+const GRUPOS_NAV = [['', ['geral']], ['Dinheiro', ['rendas', 'despesas']], ['Investir', ['inv', 'pro', 'cart']], ['Acompanhar', ['relatorio', 'clientes']]];
+const navAgrupado = (items, btn) => GRUPOS_NAV.map(([t, ks]) => { const its = items.filter((i) => ks.includes(i[0])); return its.length ? (t ? `<div class="nav-g" aria-hidden="true">${t}</div>` : '') + its.map(btn).join('') : ''; }).join('') + items.filter((i) => !GRUPOS_NAV.some((g) => g[1].includes(i[0]))).map(btn).join('');
+// no plano gratuito o rodapé do menu convida a conhecer o Investidor (como o Upgrade Pro); nos pagos fica o cartão do assessor
+const cartaoPlanoHtml = () => `<div class="advisor plano"><span class="adv-ic" aria-hidden="true">${I.inv || '★'}</span><div class="adv-t"><b>Conheça o plano ${esc(nomePlano('investidor'))}</b><small>Investimentos, proventos e a carteira no mesmo painel, com o disponível para aportar todo mês.</small></div><button class="hp-btn sm" data-act="upgrade" data-plano="investidor">Conhecer</button><button class="lnk adv-lnk" data-act="contact">Falar com o ${esc(primeiroNome())}</button></div>`;
 function renderSide() {
   const items = navItems(); const nome = (S.profile && S.profile.nome) || 'Minha conta';
   const btn = ([k, l]) => `<button data-act="nav" data-view="${k}" title="${esc(l)}" ${S.view === k ? 'aria-current="page"' : ''}>${I[k] || I.geral}<span>${l}</span>${k !== 'clientes' && !abaLiberada(k) ? `<em class="lk" title="Plano ${esc(nomePlano(planoMinimoDe(E.ABA_RECURSO[k] || 'fluxo')))}">${I.lock}</em>` : ''}</button>`;
   // no computador o menu recolhe para só o ícone "AV" e os ícones das abas (estado guardado no aparelho: html.side-mini)
   const mini = document.documentElement.classList.contains('side-mini');
-  $('#side').innerHTML = `<div class="brand"><span class="brand-full">${logoMarca()}</span><span class="brand-mini" aria-hidden="true">${LOGO}</span>
-      <button class="side-tog" data-act="side-toggle" aria-expanded="${!mini}" aria-label="${mini ? 'Expandir o menu' : 'Recolher o menu'}" title="${mini ? 'Expandir o menu' : 'Recolher o menu'}">${I.chev}</button></div>
-    <nav class="nav" aria-label="Seções">${items.map(btn).join('')}</nav>
-    <div class="side-foot"><button class="acct" data-act="admin-open" aria-label="Abrir painel administrativo" title="Painel administrativo">${avatarHtml(S.profile)}<span class="acct-t"><b>${esc(nome)}</b><small>${esc(planLabel())}</small></span>${I.mais}</button>
-      <div class="advisor"><div class="adv-t">Seu assessor<b>${esc(CFG.consultor)}</b></div><button class="btn" data-act="contact">Falar com o ${esc(primeiroNome())}</button></div><div class="save" data-s="${S.save}">${statusText()}</div></div>`;
+  // topo da página inteira: a marca não encolhe com o menu; à direita, a busca (nas abas que têm), o sino e o perfil
+  $('#topo').innerHTML = `<div class="topo-marca">${logoMarca()}</div><div class="topo-r">${buscaBtnHtml()}${typeof sinoHtml === 'function' ? sinoHtml() : ''}<button class="topo-eu" data-act="admin-open" aria-label="Abrir o seu perfil e o painel" title="${esc(nome)} · ${esc(planLabel())}">${avatarHtml(S.profile)}</button></div>`;
+  $('#side').innerHTML = `<button class="side-tog" data-act="side-toggle" aria-expanded="${!mini}" aria-label="${mini ? 'Expandir o menu' : 'Recolher o menu'}" title="${mini ? 'Expandir o menu' : 'Recolher o menu'}">${I.chev}</button>
+    <nav class="nav" aria-label="Seções">${navAgrupado(items, btn)}</nav>
+    <div class="side-foot">${planoAtual() === 'gratis' ? cartaoPlanoHtml() : `<div class="advisor"><span class="adv-ic" aria-hidden="true">${esc(CFG.consultor.split(/\s+/).filter(Boolean).map((p, i, l) => (i === 0 || i === l.length - 1 ? p[0] : '')).join('').toUpperCase())}</span><div class="adv-t"><b>Seu assessor</b><span>${esc(CFG.consultor)}</span><small>Dúvidas sobre o seu planejamento? Fale direto, pelo canal que preferir.</small></div><button class="hp-btn sm" data-act="contact">Falar com o ${esc(primeiroNome())}</button></div>`}<div class="save" data-s="${S.save}">${statusText()}</div></div>`;
   const prim = ['geral', 'despesas', 'inv', 'cart'].filter((k) => items.some((i) => i[0] === k));
   const rest = items.filter((i) => !prim.includes(i[0]));
   const sheet = S.maisOpen ? `<div class="sheet" role="dialog" aria-label="Mais opções">${rest.map(btn).join('')}<div class="sheet-conta" role="group" aria-label="Sua conta"><small aria-hidden="true">Sua conta</small><button data-act="perfil-abrir">${avatarHtml(S.profile, 'sm')}<span>Meu perfil</span></button><button data-act="admin-open">${I.user}<span>Painel administrativo</span></button><button data-act="contact">${I.chat}<span>Falar com o ${esc(primeiroNome())}</span></button></div></div>` : ''; // abas em cima; conta e contato embaixo, numa faixa mais escura
@@ -132,7 +137,9 @@ function onClick(e) {
       case 'cat-add': { const inp = $('#modal [name=novacat]'); catAction('cat-add', null, inp ? inp.value : ''); break; }
       case 'orc-all': { const v = S.C.orcamento[ds.m != null ? +ds.m : S.mes]; p.settings.orcPadrao = v; p.orcamento = new Array(12).fill(null); commit(); toast('Orçamento aplicado a todos os meses.'); break; }
       case 'year-toggle': S.yearOpen = !S.yearOpen; S.perOpen = false; S.notifOpen = false; render(); break;
-      case 'per-toggle': S.perOpen = !S.perOpen; S.perIni = null; S.yearOpen = false; S.notifOpen = false; render(); break;
+      case 'fluxo-modo': { S.fluxoModo = ds.v; const sec = el.closest('section'); if (sec) { sec.outerHTML = wFluxo(); drawFluxo(); if (typeof wgIcones === 'function') wgIcones(); } break; }
+      case 'per-novo-ano': S.perNovoAno = !S.perNovoAno; render(); setTimeout(() => { const i = document.getElementById('yr-in'); if (i) i.focus(); }, 0); break;
+      case 'per-toggle': S.perOpen = !S.perOpen; S.perIni = null; S.perNovoAno = false; S.yearOpen = false; S.notifOpen = false; render(); break;
       case 'per-atalho': { const n = +ds.n; const ref = perRef(); S.periodo = n >= 12 ? null : { de: Math.max(0, ref - n + 1), ate: ref }; S.perOpen = false; S.perIni = null; render(); const b = document.querySelector('[data-act="per-toggle"]'); if (b) b.focus(); break; }
       case 'per-mes': { // primeiro toque marca o início, o segundo fecha o período
         const m = +ds.m;

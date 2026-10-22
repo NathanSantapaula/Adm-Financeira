@@ -165,7 +165,7 @@ function objTiposHtml(acao) {
 function objetivosHtml() {
   const L = objLista(); const A = objAnalise(); const B = objBase();
   if (!L.length) return `<section class="dr-sec"><h3>Qual é o seu primeiro objetivo?</h3><p class="mmsg">Escolha um tipo. Depois você define valor, prazo e quanto do patrimônio vai para ele, e pode cadastrar quantos objetivos quiser.</p>${objTiposHtml('objetivo-novo')}</section>`;
-  const barra = `<div class="obj-div" role="img" aria-label="Divisão do patrimônio entre os objetivos">${A.itens.map((g, i) => (g.pct > 0 ? `<i style="width:${g.pct}%;background:${objCor(i)}" title="${esc(objNomeDe(g))}: ${g.pct}%"></i>` : '')).join('')}${A.livre > 0 ? `<i class="livre" style="width:${A.livre}%" title="Sem destino: ${A.livre}%"></i>` : ''}</div>`;
+  const barra = `<div class="obj-div" role="img" aria-label="Divisão do patrimônio entre os objetivos">${A.itens.map((g, i) => (g.pct > 0 ? `<i style="width:${g.pct}%;--bc:${objCor(i)}" title="${esc(objNomeDe(g))}: ${g.pct}%"></i>` : '')).join('')}${A.livre > 0 ? `<i class="livre" style="width:${A.livre}%" title="Sem destino: ${A.livre}%"></i>` : ''}</div>`;
   const leg = `<ul class="leg obj-leg">${A.itens.map((g, i) => (g.modo === 'marco' ? '' : `<li><i style="background:${objCor(i)}"></i>${esc(objNomeDe(g))} ${g.pct}%</li>`)).join('')}${A.livre > 0 ? `<li><i class="livre"></i>Sem destino ${A.livre}%</li>` : ''}</ul>`;
   const card = (g, i) => { const st = OBJ_STATUS[g.status] || OBJ_STATUS['sem-valor'];
     return `<li class="obj-card" data-id="${esc(g.id)}">

@@ -68,6 +68,23 @@
     return out;
   }
 
+  /* ---------- contas do mês: gastos fixos e parcelas que caem no mês, pagos (baixa de um lançamento real) ou previstos ---------- */
+  function contasMes(o) {
+    const ano = +o.ano; const m = +o.mes; const itens = [];
+    (o.despesas || []).concat(o.carry || []).forEach((it) => {
+      const v = it.parcel ? parcelaMeses(it.parcel, ano)[m] : +((it.valores || [])[m]) || 0; if (!(v > 0.005)) return;
+      itens.push({ id: it.id, nome: it.nome, area: it.area || '', inst: it.inst || '', valor: r2(v), pago: !!(it.baixas && it.baixas[ano + '-' + m]),
+        parcela: it.parcel ? { i: parcelaIndice(it.parcel, ano, m), n: it.parcel.n } : null, herdado: it.herdado || null });
+    });
+    itens.sort((a, b) => a.pago - b.pago || b.valor - a.valor); // o que falta pagar primeiro
+    const total = r2(itens.reduce((t, x) => t + x.valor, 0)); const pago = r2(itens.filter((x) => x.pago).reduce((t, x) => t + x.valor, 0));
+    return { itens, total, pago, falta: r2(total - pago) };
+  }
+  // variação de um período para o anterior (null sem base para comparar)
+  const variacao = (atual, anterior) => (Math.abs(+anterior || 0) > 0.005 ? ((+atual || 0) - anterior) / Math.abs(anterior) : null);
+  // os meses logo antes de um período, do mesmo tamanho, dentro do mesmo ano (null se não couber)
+  function janelaAnterior(de, ate) { const n = ate - de + 1; return de - n >= 0 ? { de: de - n, ate: de - 1 } : null; }
+
   /* ---------- carteira ---------- */
   const TAXONOMIA = {
     'RENDA FIXA': { "CDB's": {}, 'Tesouro Direto': {} },
@@ -904,7 +921,7 @@
   const diaUtilBR = (y, m, d) => { const s = new Date(Date.UTC(y, m, d)).getUTCDay(); return s !== 0 && s !== 6 && !feriadoBR(y, m, d); };
   const api = { PLANOS, RECURSOS, ABA_RECURSO, planoPermite, planoMinimo, planoNorm, parseDataISO, MES, MES_LONGO, TAXONOMIA, ASSET_LEVELS, QUIZ, PERFIS, RETORNO_PADRAO, CATS_DESP, CATS_RENDA, FORMATO_BACKUP,
     z, add, sub, sum, r2, norm, monthIndex, parseValor, distribuir, parcelaMeses, parcelaFim, parcelaIndice, itemValores, carryItems,
-    ativoKey, buildAssetTree, rebalance, analiseInvest, disponivelAporte, analiseRenda, analiseGastos, analiseCarteira, nomeEstab, historico, ctxAno, OBJ_TIPOS, normObjetivos, analiseObjetivos, sugerirDivisao, aporteNecessario, notificacoes, scorePerfil, projetar, mesesAteMeta, simularObjetivo, migratePlan, compute, makeBackup, parseBackup,
+    ativoKey, buildAssetTree, rebalance, contasMes, variacao, janelaAnterior, analiseInvest, disponivelAporte, analiseRenda, analiseGastos, analiseCarteira, nomeEstab, historico, ctxAno, OBJ_TIPOS, normObjetivos, analiseObjetivos, sugerirDivisao, aporteNecessario, notificacoes, scorePerfil, projetar, mesesAteMeta, simularObjetivo, migratePlan, compute, makeBackup, parseBackup,
     templateSheets, parseImport, applyImport, gastosAreaMes, analiseLimites, repetirValores, acharFixo, feriadoBR, diaUtilBR };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.FPEngine = api;
 })(typeof window !== 'undefined' ? window : globalThis);

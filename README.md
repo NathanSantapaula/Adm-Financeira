@@ -183,6 +183,8 @@ A foto ou o avatar aparecem no menu, no painel e, para você, na lista de Client
 
 ## 7. Gastos
 
+**Contas do mês** lista os gastos fixos e as parcelas que caem no mês, com o que já foi pago e o que falta. **Meus cartões** mostra um cartão por banco, cartão ou carteira usado no período, na cor dele, com quanto saiu por ali. Os limites por área ganham uma barra em segmentos com o uso de cada um, e cada linha da lista de lançamentos tem o seu status (Pago, Conciliado, Previsto ou Estorno). Os números principais de Gastos, Rendas, Investimentos, Proventos e da Visão geral trazem uma ficha de variação contra o período anterior, e o gráfico "Para onde foi cada mês" tem abas (Tudo, Entradas, Gastos, Sobra), com o mês em foco aceso e os outros recuados.
+
 **Um formulário só para lançar:** **Novo gasto** abre com três jeitos no topo, **Gasto do dia** (data e valor), **Todo mês** (o mesmo valor previsto a partir de um mês) e **Parcelado** (total, parcelas e primeiro mês, com a prévia). Descrição, "Pago com", categoria (ou uma nova) e área valem para os três. Tocar num gasto da lista ou achá-lo na busca abre a edição no mesmo formulário.
 
 **Gastos que se repetem:** ao lançar um gasto, marque **Repetir todo mês** e ele vira um gasto fixo com o mesmo valor nos meses seguintes, até dezembro. Quando o gasto real de cada mês for lançado (à mão ou importado), ele é conferido com o fixo daquele mês e não conta duas vezes. No widget "Assinaturas e contas recorrentes", o botão **Tornar fixo** faz o mesmo com o que o app percebeu que se repete.

@@ -2660,3 +2660,123 @@ button.wg-ic:active { transform: scale(.92); }
 :root { --rim: linear-gradient(transparent, transparent) !important; }
 /* sem o espaço da borda: no Safari o desfoque do vidro aparecia nessa faixa de 1px como um contorno claro */
 .card, .stat, .kpi, .macc, .lcat, .step, .obj-card, .pf-card, .cc-empty, .locked, .hero-card, .goal-card, .budget, .macc-sum, .sim, .acct, .advisor, .popover, .sheet, dialog, .wg-barra, .toast { border-width: 0; }
+
+/* Menu lateral: aba atual e cartão do assessor com as cores da página inicial (--b1/--b2/--b3 seguem a cor de destaque) */
+.nav button { position: relative; }
+.advisor { position: relative; overflow: hidden; padding: 18px 14px 14px; border-radius: 18px; text-align: center; justify-items: center; gap: 10px;
+  background: radial-gradient(90% 70% at 50% 0%, color-mix(in srgb, var(--b2) 30%, transparent), transparent 70%), radial-gradient(70% 60% at 0% 100%, color-mix(in srgb, var(--b1) 20%, transparent), transparent 70%), radial-gradient(70% 60% at 100% 100%, color-mix(in srgb, var(--b3) 22%, transparent), transparent 70%), var(--glass-strong); }
+.adv-ic { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; color: #fff; font: 700 15px/1 var(--font); letter-spacing: .02em; background: var(--g-marca); box-shadow: 0 8px 20px -8px var(--glow); }
+.adv-t { display: grid; gap: 2px; color: var(--ink-2); }
+.adv-t b { font-size: 14.5px; font-weight: 650; color: var(--ink); } .adv-t span { font-size: 13px; } .adv-t small { margin-top: 4px; font-size: 12px; line-height: 1.4; color: var(--ink-3); }
+.advisor .hp-btn { width: 100%; }
+@media (prefers-reduced-motion: reduce) { .nav button:active { transform: none; } }
+/* Vidro neon (fosco): estados escolhidos (aba do menu e do celular, opção ligada nos seletores) e botões principais.
+   Redondo; degradê da cor de destaque clara no alto até quase preto embaixo; fio fino de luz; reflexo suave no alto; halo neon. */
+.nav button[aria-current="page"], .nav button:active, .tabs button[aria-current="page"], .tabs button:active, .seg button.on, .ap-modo input:checked + span, .chip-m.on, .yr-opt.on { position: relative; isolation: isolate; color: var(--on-accent); font-weight: 600; border-color: transparent; border-radius: 999px; background: radial-gradient(110% 130% at 50% -10%, color-mix(in srgb, var(--accent) 62%, #fff) 0%, var(--accent) 34%, color-mix(in srgb, var(--accent) 48%, #000) 74%, color-mix(in srgb, var(--accent) 26%, #000) 100%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), inset 0 0 0 1px color-mix(in srgb, color-mix(in srgb, var(--accent) 65%, #fff) 70%, transparent), 0 0 14px color-mix(in srgb, var(--accent) 70%, transparent), 0 0 34px color-mix(in srgb, var(--accent) 35%, transparent); }
+.nav button[aria-current="page"]::after, .nav button:active::after, .tabs button[aria-current="page"]::after, .tabs button:active::after, .seg button.on::after, .ap-modo input:checked + span::after, .chip-m.on::after, .yr-opt.on::after { content: ""; position: absolute; left: 18%; right: 18%; top: 2px; height: 46%; border-radius: 999px; background: radial-gradient(60% 100% at 50% 0%, rgba(255, 255, 255, .34), rgba(255, 255, 255, 0) 75%); pointer-events: none; z-index: -1; }
+.nav button[aria-current="page"] svg, .tabs button[aria-current="page"] svg, .nav button:active svg, .tabs button:active svg { color: var(--on-accent); filter: drop-shadow(0 0 3px rgba(255, 255, 255, .45)); }
+html.side-mini .nav button { width: 46px; height: 46px; margin-inline: auto; padding: 0; border-radius: 50%; }
+.btn.primary, .hp-btn:not(.vidro):not(.ghost), .per-m.ponta { background: radial-gradient(110% 130% at 50% -10%, color-mix(in srgb, var(--accent) 62%, #fff) 0%, var(--accent) 34%, color-mix(in srgb, var(--accent) 48%, #000) 74%, color-mix(in srgb, var(--accent) 26%, #000) 100%); color: var(--on-accent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), inset 0 0 0 1px color-mix(in srgb, color-mix(in srgb, var(--accent) 65%, #fff) 70%, transparent), 0 0 14px color-mix(in srgb, var(--accent) 70%, transparent), 0 0 34px color-mix(in srgb, var(--accent) 35%, transparent); }
+.nav button:active, .tabs button:active { transform: scale(.98); transition: transform 120ms var(--ease-out); }
+@media (prefers-reduced-motion: reduce) { .tabs button:active { transform: none; } }
+
+/* Estrutura: topo da página inteira (marca que não encolhe, busca, sino e perfil) e menu sem caixa, só os botões sobre o fundo */
+.app { grid-template-rows: auto minmax(0, 1fr); }
+.topo { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; min-width: 0; padding: 20px clamp(18px, 3.4vw, 48px) 2px 26px; }
+body:not([data-screen="app"]) .topo { display: none; }
+.topo-marca { display: flex; color: var(--ink); } .topo-marca .marca-w { height: 25px; }
+.topo-r { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.topo-eu { padding: 0; border: 0; background: none; border-radius: 50%; cursor: pointer; line-height: 0; }
+.topo-eu .av { width: 40px; height: 40px; box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px color-mix(in srgb, var(--accent) 55%, transparent); }
+.topo-eu:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.side, html .side { background: none; border: 0; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; height: calc(100vh - 68px); height: calc(100dvh - 68px); padding-top: 8px; }
+.side > .side-tog { margin: 0 0 8px 6px; }
+html.side-mini .side > .side-tog { margin: 0 auto 8px; }
+.main { padding-top: 14px; }
+/* ano e período no mesmo botão: período, um fio e o ano em destaque */
+.per-pill .per-sep { width: 1px; height: 16px; background: var(--line-2); margin: 0 2px; }
+.per-pill .per-ano { font-weight: 700; color: var(--ink); }
+.per-anos { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
+.per-anos .yr-opt { flex: 0 0 auto; padding: 6px 14px; border-radius: 999px; }
+.per-anos .per-novo { padding: 6px 12px; font-weight: 700; }
+.per-pop .yr-new { margin: 6px 0 2px; }
+@media (max-width: 900px) {
+  .topo { padding: calc(12px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px)); }
+  .topo-marca .marca-w { height: 21px; } .topo-eu .av { width: 36px; height: 36px; }
+  .main { padding-top: 12px; }
+}
+
+/* Gráficos e barras de progresso brilhantes (metal + neon): o desenho vem de metalBar/metalDefs (charts.js); --bc é a cor da série */
+.chart .mb { filter: drop-shadow(0 0 5px color-mix(in srgb, var(--bc) 50%, transparent)); }
+.chart .mb.cur { filter: drop-shadow(0 0 9px color-mix(in srgb, var(--bc) 85%, transparent)) drop-shadow(0 0 22px color-mix(in srgb, var(--bc) 40%, transparent)); }
+.chart .mb.fut { opacity: .55; filter: none; }
+.chart .mb-topo { stroke: color-mix(in srgb, var(--bc) 50%, #fff); stroke-width: 2; stroke-linecap: round; }
+.chart .mb-pill rect { fill: color-mix(in srgb, var(--accent) 88%, transparent); filter: drop-shadow(0 0 8px color-mix(in srgb, var(--accent) 60%, transparent)); }
+.chart .mb-pill text { fill: var(--on-accent); font-size: 11px; font-weight: 700; } .chart .mb-pill circle { fill: var(--on-accent); stroke: var(--accent); stroke-width: 1.5; }
+.kbar i, .idp-b .a, .ced-soma-b i, .oc-uso-b i { --bc: var(--accent); }
+.kbar.ok i { --bc: var(--pos); } .kbar.warn i { --bc: var(--warn); } .idp-b .x { --bc: var(--neg); }
+.kbar i, .idp-b .a, .idp-b .x, .ced-soma-b i, .oc-uso-b i { background: linear-gradient(180deg, color-mix(in srgb, var(--bc) 45%, #fff), var(--bc) 55%, color-mix(in srgb, var(--bc) 80%, #000)); box-shadow: 0 0 8px color-mix(in srgb, var(--bc) 60%, transparent), 0 0 18px color-mix(in srgb, var(--bc) 25%, transparent); }
+@media (prefers-reduced-transparency: reduce) { .chart .mb, .chart .mb.cur { filter: none; } }
+:root[data-theme="light"] .chart .mb { filter: drop-shadow(0 0 3px color-mix(in srgb, var(--bc) 35%, transparent)); }
+:root[data-theme="light"] .chart .mb.cur { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--bc) 55%, transparent)); }
+/* O mesmo design em todo gráfico e linha de progresso: halo neon na cor (--bc) de linhas, roscas, anéis e barras em HTML */
+.chart path.ln { filter: drop-shadow(0 0 4px color-mix(in srgb, var(--bc) 70%, transparent)) drop-shadow(0 0 12px color-mix(in srgb, var(--bc) 35%, transparent)); }
+.dn-seg, .ring-pg, .cmp-seg { filter: drop-shadow(0 0 5px color-mix(in srgb, var(--bc) 60%, transparent)); }
+i[style*="--bc"] { background: linear-gradient(180deg, color-mix(in srgb, var(--bc) 50%, #fff), var(--bc) 55%, color-mix(in srgb, var(--bc) 85%, #000)); box-shadow: 0 0 8px color-mix(in srgb, var(--bc) 55%, transparent), 0 0 16px color-mix(in srgb, var(--bc) 22%, transparent); }
+:root[data-theme="light"] .chart path.ln { filter: drop-shadow(0 0 3px color-mix(in srgb, var(--bc) 45%, transparent)); }
+:root[data-theme="light"] i[style*="--bc"] { box-shadow: 0 0 6px color-mix(in srgb, var(--bc) 35%, transparent); }
+@media (prefers-reduced-transparency: reduce) { .chart path.ln, .dn-seg, .ring-pg, .cmp-seg { filter: none; } }
+.bar i, .macc-bar i, .hb-t i, .meter i { --bc: var(--accent); } .bar.warn i, .macc-bar.warn i { --bc: var(--c4); } .bar.neg i, .macc-bar.neg i { --bc: var(--neg); }
+.rfbv-t i { --bc: var(--c1); } .kbar.dup i.dv { --bc: var(--c3); }
+.bar i, .macc-bar i, .hb-t i, .meter i, .rfbv-t i, .kbar.dup i.dv { background: linear-gradient(180deg, color-mix(in srgb, var(--bc) 50%, #fff), var(--bc) 55%, color-mix(in srgb, var(--bc) 85%, #000)); box-shadow: 0 0 8px color-mix(in srgb, var(--bc) 55%, transparent), 0 0 16px color-mix(in srgb, var(--bc) 22%, transparent); }
+/* destaque com luz: só a barra em foco acende (luz descendo e um brilho de lanterna no topo); as outras recuam */
+.chart svg:has(.mb.cur) .mb:not(.cur):not(.fut) { opacity: .55; filter: none; }
+.chart .mb-flare { fill: #fff; filter: blur(1.5px) drop-shadow(0 0 6px #fff) drop-shadow(0 0 12px color-mix(in srgb, var(--bc) 80%, #fff)); }
+:root[data-theme="light"] .chart .mb-flare { filter: blur(1.2px) drop-shadow(0 0 4px color-mix(in srgb, var(--bc) 60%, #fff)); }
+/* ficha de variação (+8%) ao lado dos números */
+.var-chip { display: inline-flex; align-items: center; margin-left: 8px; padding: 2px 9px; border-radius: 999px; vertical-align: middle; font-size: 12px; font-weight: 650; letter-spacing: 0; line-height: 1.4; color: var(--ink-2); background: color-mix(in srgb, var(--ink) 8%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 14%, transparent); }
+.var-chip.pos { color: var(--pos); background: color-mix(in srgb, var(--pos) 14%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pos) 40%, transparent), 0 0 10px color-mix(in srgb, var(--pos) 25%, transparent); }
+.var-chip.neg { color: var(--neg); background: color-mix(in srgb, var(--neg) 14%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--neg) 40%, transparent), 0 0 10px color-mix(in srgb, var(--neg) 25%, transparent); }
+/* Contas do mês */
+.ct-top { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px; }
+.ct-top small { display: block; font-size: 12px; color: var(--ink-3); } .ct-top b { font-size: 18px; font-variant-numeric: tabular-nums; }
+.ct-l { list-style: none; margin: 12px 0 0; padding: 0; display: grid; gap: 6px; max-height: 320px; overflow-y: auto; overscroll-behavior: contain; }
+.ct-it { width: 100%; display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 0; border-radius: 14px; background: color-mix(in srgb, var(--ink) 4%, transparent); color: var(--ink); text-align: left; cursor: pointer; font: inherit; }
+.ct-it:hover { background: color-mix(in srgb, var(--ink) 8%, transparent); }
+.ct-n { flex: 1; min-width: 0; display: grid; } .ct-n b { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .ct-n small { font-size: 12px; color: var(--ink-3); }
+.ct-v { display: grid; justify-items: end; gap: 3px; } .ct-v b { font-size: 14px; font-variant-numeric: tabular-nums; }
+.ct-st { font-style: normal; font-size: 11px; font-weight: 650; padding: 1px 8px; border-radius: 999px; color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.ct-it.pago .ct-st { color: var(--pos); background: color-mix(in srgb, var(--pos) 14%, transparent); } .ct-it.pago .ct-n b { color: var(--ink-2); }
+/* abas do fluxo */
+.fx-seg { margin: -2px 0 6px; }
+/* Meus cartões: um cartão por instituição, na cor dela (cores das marcas, fixas como os ícones), com brilho metálico */
+.cc-cards { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(200px, 78%); gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; overscroll-behavior-x: contain; padding: 4px 2px 10px; scrollbar-width: thin; }
+.cc-card { scroll-snap-align: start; position: relative; overflow: hidden; display: grid; gap: 2px; align-content: start; min-height: 150px; padding: 14px 16px; border: 0; border-radius: 18px; text-align: left; cursor: pointer; font: inherit; color: var(--cf);
+  background: radial-gradient(120% 90% at 0% 0%, rgba(255, 255, 255, .28), rgba(255, 255, 255, 0) 55%), linear-gradient(135deg, color-mix(in srgb, var(--cb) 80%, #fff), var(--cb) 45%, color-mix(in srgb, var(--cb) 55%, #000));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35), inset 0 0 0 1px rgba(255, 255, 255, .14), 0 10px 26px -12px color-mix(in srgb, var(--cb) 70%, transparent); }
+.cc-card::after { content: ""; position: absolute; inset: -40% -20% auto auto; width: 70%; height: 120%; background: linear-gradient(115deg, rgba(255, 255, 255, 0) 40%, rgba(255, 255, 255, .16) 50%, rgba(255, 255, 255, 0) 60%); pointer-events: none; }
+.cc-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.cc-chip { width: 30px; height: 22px; border-radius: 5px; background: linear-gradient(135deg, #f4e3a1, #c9a74a 50%, #f0d98a); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .18); }
+.cc-nome { font-size: 13px; font-weight: 650; opacity: .9; } .cc-k { font-size: 11.5px; opacity: .75; margin-top: 8px; }
+.cc-v { font-size: 22px; font-weight: 750; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; } .cc-pct { font-size: 12px; opacity: .8; }
+.cc-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+/* limites em segmentos (como Smart Spending Limits) */
+.lim-seg-h { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; } .lim-seg-h b { font-size: 20px; font-variant-numeric: tabular-nums; } .lim-seg-h small { font-size: 12.5px; color: var(--ink-3); }
+.lim-seg { display: flex; gap: 4px; height: 12px; }
+.lim-seg > span { min-width: 12px; border-radius: 999px; overflow: hidden; background: color-mix(in srgb, var(--ink) 10%, transparent); }
+.lim-seg > span > i { display: block; height: 100%; border-radius: inherit; }
+.lim-leg { list-style: none; margin: 10px 0 14px; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12.5px; color: var(--ink-2); }
+.lim-leg li { display: inline-flex; align-items: center; gap: 6px; } .lim-leg i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+/* status de cada lançamento na lista (pílula à direita) */
+.g-ent-r { display: grid; justify-items: end; gap: 3px; flex: none; }
+.ent-st { font-style: normal; font-size: 11px; font-weight: 650; padding: 1px 8px; border-radius: 999px; }
+.ent-st.pago { color: var(--pos); background: color-mix(in srgb, var(--pos) 14%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pos) 35%, transparent); }
+.ent-st.conc { color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent); }
+.ent-st.prev { color: var(--warn); background: color-mix(in srgb, var(--warn) 14%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--warn) 35%, transparent); }
+.ent-st.estorno { color: var(--ink-2); background: color-mix(in srgb, var(--ink) 8%, transparent); }
+/* menu em grupos: títulos pequenos; no menu recolhido viram um fio */
+.nav-g { margin: 14px 12px 4px; font-size: 11px; font-weight: 650; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+html.side-mini .nav-g { height: 1px; margin: 10px 14px; font-size: 0; background: var(--line); }
+.advisor.plano .adv-ic svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; }
+.advisor .adv-lnk { font-size: 12.5px; color: var(--ink-2); }

@@ -51,13 +51,34 @@ const PER_ATALHOS = [[3, 'Últimos 3 meses'], [6, 'Últimos 6 meses'], [12, 'Ano
 const perRef = () => (S.year === NOW_Y ? NOW_M : 11);
 function perIntervalo() { const p = S.periodo; return p ? [Math.min(p.de, p.ate), Math.max(p.de, p.ate)] : [0, 11]; }
 // janela das análises das abas: meses do período até o mês atual (ou o período inteiro, se ele ainda não começou)
+// ficha de variação ("+8%") contra o período anterior: com período, os meses logo antes (mesmo tamanho, mesmo ano); sem período,
+// os mesmos meses do ano anterior. bom = 1 quando subir é bom (sobra, aporte) e -1 quando cair é bom (gasto)
+// desenha o fluxo no modo escolhido nas abas do widget (S.fluxoModo, só da sessão)
+function drawFluxo() {
+  const el = $('#d-flow'); if (!el) return; const C = S.C; const cur = S.year === NOW_Y ? NOW_M : -1; const md = S.fluxoModo || 'tudo';
+  const cfg = { tudo: ['Gastos e sobra para investir por mês', [{ color: 'var(--c2)', values: C.despesas }, { color: 'var(--c1)', values: C.investAlocado.map((v) => Math.max(0, v)) }], []],
+    entradas: ['Entradas por mês', [{ color: 'var(--pos)', values: C.receita }], []], gastos: ['Gastos por mês, com o orçado', [{ color: 'var(--c2)', values: C.despesas }], [{ color: 'var(--ink-3)', values: C.orcamento }]],
+    sobra: ['Sobra de cada mês (entradas menos gastos)', [{ color: 'var(--c1)', values: C.investAlocado }], []] }[md] || null; if (!cfg) return;
+  chartBarsPer(el, { labels: MES, cur, aria: cfg[0], bars: cfg[1], marks: cfg[2], tip: (i) => `<b>${MES[i]}</b><br>Entradas: ${brl0(C.receita[i])}<br>Gastos: ${brl0(C.despesas[i])}<br>Sobra: ${brl0(C.investAlocado[i])}` });
+}
+function cAnoAnterior() { const y = S.year - 1; if (!S.plans[y]) return null; if (!S.cPrev || S.cPrev.seq !== S.renderSeq || S.cPrev.y !== y) S.cPrev = { seq: S.renderSeq, y, C: E.compute(S.plans[y], planCtx(y)) }; return S.cPrev.C; }
+function varBase(chave) {
+  const soma = (A, a, b) => { let t = 0; for (let i = a; i <= b; i++) t += +(A || [])[i] || 0; return t; };
+  if (S.periodo) { const [de, ate] = perIntervalo(); const j = E.janelaAnterior(de, ate); return j ? { a: soma(S.C[chave], de, ate), b: soma(S.C[chave], j.de, j.ate), rot: j.de === j.ate ? 'contra ' + MES_LONGO[j.de] : 'contra os ' + (ate - de + 1) + ' meses anteriores' } : null; }
+  const P = cAnoAnterior(); if (!P) return null; const k = mesesDecorridos() - 1; return { a: soma(S.C[chave], 0, k), b: soma(P[chave], 0, k), rot: 'contra o mesmo período de ' + (S.year - 1) };
+}
+function varChip(chave, bom) {
+  const v = varBase(chave); const p = v && E.variacao(v.a, v.b); if (p == null) return ''; const tom = Math.abs(p) < 0.005 ? '' : (p > 0) === (bom > 0) ? ' pos' : ' neg';
+  return `<span class="var-chip${tom}" title="${esc(v.rot)}" aria-label="${p >= 0 ? 'Subiu' : 'Caiu'} ${pct(Math.abs(p))} ${esc(v.rot)}">${Math.abs(p) < 0.005 ? '0%' : (p > 0 ? '+' : '−') + pct(Math.abs(p))}</span>`;
+}
 function perJanela() { const [de, ate] = perIntervalo(); const dec = mesesDecorridos(); return { de, ate, meses: de >= dec ? ate + 1 : Math.min(ate + 1, dec) }; }
 const perIds = () => { const [de, ate] = perIntervalo(); const r = []; for (let i = de; i <= ate; i++) r.push(i); return r; };
 const perSoma = (arr) => perIds().reduce((a, i) => a + (+arr[i] || 0), 0);
 // barras mês a mês só nos meses do período: cfg traz arrays de 12 meses, e cur/tip/onPick usam o mês do ano
 function chartBarsPer(el, cfg) {
   const ids = perIds(); const so = (a) => ids.map((i) => a[i]);
-  chartBars(el, Object.assign({}, cfg, { labels: so(cfg.labels), cur: ids.indexOf(cfg.cur), bars: cfg.bars.map((b) => Object.assign({}, b, { values: so(b.values) })),
+  const fut = S.year > NOW_Y ? 0 : S.year === NOW_Y ? ids.findIndex((i) => i > NOW_M) : -1; // meses que ainda não chegaram ficam listrados
+  chartBars(el, Object.assign({}, cfg, { labels: so(cfg.labels), cur: ids.indexOf(cfg.cur), futDe: fut >= 0 ? fut : undefined, bars: cfg.bars.map((b) => Object.assign({}, b, { values: so(b.values) })),
     marks: (cfg.marks || []).map((k) => Object.assign({}, k, { values: so(k.values) })), tip: (j) => cfg.tip(ids[j]), onPick: cfg.onPick ? (j) => cfg.onPick(ids[j]) : undefined }));
 }
 function perAtalho() { if (!S.periodo) return 12; const [de, ate] = perIntervalo(); const n = ate - de + 1; return ate === perRef() && n !== 12 && PER_ATALHOS.some((a) => a[0] === n) ? n : 0; }
@@ -68,15 +89,15 @@ function perRotulo(curto) {
 // "nos últimos 3 meses", "de março a maio", "em abril" ou "em 2026"
 function perFrase() { const n = perAtalho(); if (n === 12) return 'em ' + S.year; if (n) return 'nos ' + PER_ATALHOS.find((a) => a[0] === n)[1].toLowerCase(); const [de, ate] = perIntervalo(); return de === ate ? 'em ' + MES_LONGO[de] : 'de ' + MES_LONGO[de] + ' a ' + MES_LONGO[ate]; }
 const I_CAL = ic('<rect x="3" y="4.5" width="18" height="16.5" rx="2.5"/><path d="M8 2.5v4M16 2.5v4M3 10h18"/>');
-function periodoHtml() {
+function periodoHtml(anos) { // anos: lista de anos do plano; com ela, o mesmo botão escolhe o ano e o período
   const [de, ate] = perIntervalo(); const ini = S.perIni; const at = perAtalho(); const ref = perRef();
   const meses = MES.map((m, i) => {
     const c = ini != null ? (i === ini ? ' ponta' : '') : (S.periodo && i >= de && i <= ate ? (i === de || i === ate ? ' ponta' : ' in') : '');
     return `<button class="per-m${c}${S.year === NOW_Y && i > NOW_M ? ' fut' : ''}" data-act="per-mes" data-m="${i}" aria-pressed="${c ? 'true' : 'false'}" aria-label="${mesNome(i)}">${m}</button>`;
   }).join('');
   const dica = ini != null ? `Início em ${MES_LONGO[ini]}.` : 'Toque no mês inicial e depois no final.' + (S.year === NOW_Y && ref < 11 ? ` Os meses depois de ${MES_LONGO[ref]} ainda não aconteceram.` : '');
-  return `<div class="year per"><button class="year-pill per-pill" data-act="per-toggle" aria-haspopup="true" aria-expanded="${!!S.perOpen}" aria-label="Período da Visão geral: ${esc(perRotulo())}">${I_CAL}<span>${esc(perRotulo(true))}</span>${I.down}</button>
-    ${S.perOpen ? `<div class="popover per-pop" role="dialog" aria-label="Escolher o período"><div class="pop-t">Mostrar a Visão geral de</div>
+  return `<div class="year per"><button class="year-pill per-pill" data-act="per-toggle" aria-haspopup="true" aria-expanded="${!!S.perOpen}" aria-label="Período: ${esc(perRotulo())}${anos ? ', ano ' + S.year : ''}">${I_CAL}<span>${esc(perRotulo(true))}</span>${anos ? `<i class="per-sep" aria-hidden="true"></i><b class="per-ano">${S.year}</b>` : ''}${I.down}</button>
+    ${S.perOpen ? `<div class="popover per-pop" role="dialog" aria-label="Escolher o ano e o período">${anos ? `<div class="pop-t">Ano</div><div class="per-anos">${anos.map((y) => `<button class="yr-opt${y === S.year ? ' on' : ''}" data-act="year-pick" data-year="${y}" aria-pressed="${y === S.year}">${y}</button>`).join('')}<button class="yr-opt per-novo" data-act="per-novo-ano" aria-expanded="${!!S.perNovoAno}" aria-label="Abrir outro ano" title="Abrir outro ano">+</button></div>${S.perNovoAno ? `<form class="yr-new" data-form="year"><div class="act-row"><input id="yr-in" name="ano" class="in-s left" inputmode="numeric" maxlength="4" placeholder="Ex.: ${NOW_Y + 1}" autocomplete="off" aria-label="Outro ano"><button class="btn primary" type="submit">Abrir</button></div><div class="merr" role="alert"></div></form>` : ''}` : ''}<div class="pop-t">Período</div>
       <div class="yr-list">${PER_ATALHOS.map((a) => `<button class="yr-opt${at === a[0] && ini == null ? ' on' : ''}" data-act="per-atalho" data-n="${a[0]}">${a[1]}</button>`).join('')}</div>
       <div class="pop-t">${ini != null ? 'Agora toque no mês final' : 'Ou escolha no calendário de ' + S.year}</div><div class="per-cal">${meses}</div>
       <p class="per-dica keep">${dica}</p></div>` : ''}</div>`;
@@ -160,7 +181,7 @@ document.addEventListener('visibilitychange', () => {
 });
 function viewGeral() {
   const p = S.plan; const pr = S.profile; const nome = (pr.apelido || (pr.nome || '').split(' ')[0]) || 'por aqui';
-  const cab = `<div class="welcome"><div><p class="greet">${esc(voz('saudacao', { saud: saudacaoHora(), nome }))}</p>${(() => { const f = tituloAtual(); return `<h1 class="wh${visualAtual() === '3d' ? ' wh-conversa' : ''}" aria-label="${esc(f)}"><span class="wh-t" aria-hidden="true">${esc(f)}</span>${visualAtual() === '3d' ? '<span class="wh-cur" aria-hidden="true"></span>' : ''}</h1>`; })()}</div>${yearControl(periodoHtml())}</div>`;
+  const cab = `<div class="welcome"><div><p class="greet">${esc(voz('saudacao', { saud: saudacaoHora(), nome }))}</p>${(() => { const f = tituloAtual(); return `<h1 class="wh${visualAtual() === '3d' ? ' wh-conversa' : ''}" aria-label="${esc(f)}"><span class="wh-t" aria-hidden="true">${esc(f)}</span>${visualAtual() === '3d' ? '<span class="wh-cur" aria-hidden="true"></span>' : ''}</h1>`; })()}</div>${yearControl()}</div>`;
   return cab + widgetsHtml(); // widgets na ordem e no tamanho escolhidos pelo cliente (widgets.js)
 }
 
@@ -188,7 +209,7 @@ function drawDashboard() {
   const C = S.C; const cur = S.year === NOW_Y ? NOW_M : -1; const sobra = C.investAlocado.map((v) => Math.max(0, v));
   if (temRecurso('patrimonio')) { drawPatr(); patrAnimaValor(); }
   else { const [de, ate] = perIntervalo(); const ids = []; for (let i = de; i <= ate; i++) ids.push(i); chartBars($('#d-patr'), { labels: ids.map((i) => MES[i]), cur: cur >= de && cur <= ate ? cur - de : -1, height: 200, aria: 'Sobra para investir por mês', bars: [{ color: 'var(--c1)', values: ids.map((i) => C.investAlocado[i]) }], tip: (j) => { const i = ids[j]; return `<b>${MES[i]}</b><br>Entradas: ${brl0(C.receita[i])}<br>Gastos: ${brl0(C.despesas[i])}<br>Sobra: ${brl0(C.investAlocado[i])}`; } }); }
-  chartBarsPer($('#d-flow'), { labels: MES, cur, aria: 'Gastos e sobra para investir por mês', bars: [{ color: 'var(--c2)', values: C.despesas }, { color: 'var(--c1)', values: sobra }], tip: (i) => `<b>${MES[i]}</b><br>Entradas: ${brl0(C.receita[i])}<br>Gastos: ${brl0(C.despesas[i])}<br>Sobra: ${brl0(C.investAlocado[i])}` });
+  drawFluxo();
   drawPainel2(); drawWidgetsExtras(); tituloLigar();
   popSync(); // simulador ou histórico aberto na janela: acompanha os dados redesenhados
   if (temRecurso('investimentos')) { const comp = composicao(); const tot = comp.reduce((a, b) => a + b.value, 0); const palette = ['var(--c1)', 'var(--c2)', 'var(--c3)', 'var(--c4)', 'var(--c5)', 'var(--c6)']; if (tot > 0) chartDonut($('#d-donut'), { aria: 'Composição da carteira por classe de ativo', title: brl0(tot), sub: 'em ativos', items: comp.map((c, i) => ({ label: c.label, value: c.value, color: palette[i % 6] })) }); }
