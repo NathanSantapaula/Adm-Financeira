@@ -151,13 +151,15 @@ async function entrar(user) {
   S.plans = {}; Object.keys(d.planos || {}).forEach((y) => { S.plans[y] = hydratePlan(d.planos[y]); });
   if (d.perfil) S.profile = hydrateProfile(d.perfil);
   else {
-    S.profile = hydrateProfile({ nome: user.nome, email: user.email, whatsapp: user.whatsapp, consentimento: true, criadoEm: new Date().toISOString() });
+    S.profile = hydrateProfile({ nome: user.nome, email: user.email, whatsapp: user.whatsapp, consentimento: { versao: POLITICA_VERSAO, em: new Date().toISOString() }, politicaVista: POLITICA_VERSAO, criadoEm: new Date().toISOString() });
     try { const pl = localStorage.getItem('fp:plano'); if (pl === 'completo' || pl === 'investidor') { S.profile.planoSolicitado = pl; localStorage.removeItem('fp:plano'); } } catch (e) { /* ignora */ }
     touch('profile');
   }
   // ano em que o patrimônio do diagnóstico foi informado; contas antigas usam o primeiro ano que já tinham (o cálculo não muda)
   if (S.profile.patrimonioAno == null && Object.keys(S.plans).length) { S.profile.patrimonioAno = Math.min(...Object.keys(S.plans).map(Number)); touch('profile'); }
   aplicarTema(S.profile.prefs.tema, false);
+  // política de privacidade nova: avisa uma vez, com um atalho para ler (a versão vista fica no perfil)
+  if (S.profile.politicaVista !== POLITICA_VERSAO) { S.profile.politicaVista = POLITICA_VERSAO; touch('profile'); setTimeout(() => toastAcao('A política de privacidade foi atualizada.', 'Ler', openTerms), 1500); }
   S.year = pickYear(); S.plan = S.plans[S.year] || null; S.mes = defaultMes(S.year);
   S.view = 'geral'; S.clients = null; S.mesesAbertos = new Set([defaultMes(S.year)]);
   S.screen = S.profile.onboarded ? 'app' : 'onboarding'; if (S.screen === 'onboarding') initOb();
@@ -177,6 +179,11 @@ function resetSession() {
   clearTimeout(SV.plan.timer); clearTimeout(SV.profile.timer);
   SV.plan.dirty = SV.profile.dirty = false;
   Object.assign(S, { user: null, profile: null, plans: {}, plan: null, year: null, C: null, screen: 'landing', view: 'geral', adminOpen: false, authMode: 'login', authErr: '', authMsg: '', ob: null, clients: null, isAdmin: false, recomendacao: null, visao: null, ing: null, notifOpen: false, notifs: [], notifVistos: null, assinatura: { plano: 'gratis', status: 'ativo' } });
+}
+async function excluirConta() {
+  await flush(); await Store.deleteAccount(S.user);
+  try { Object.keys(localStorage).filter((k) => k.startsWith('fp:')).forEach((k) => localStorage.removeItem(k)); sessionStorage.clear(); } catch (e) { /* ignora */ }
+  resetSession(); render(); toast('Sua conta e seus dados foram excluídos.');
 }
 async function sair() { await flush(); try { await Store.signOut(); } catch (e) { /* ignora */ } resetSession(); render(); }
 

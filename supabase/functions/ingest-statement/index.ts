@@ -20,9 +20,10 @@ Nunca invente transações. Se não tiver certeza, use confianca baixa. Use as �
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
+  let sb: ReturnType<typeof createClient> | null = null; let caminho = '';
   try {
     const auth = req.headers.get('Authorization') ?? '';
-    const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, { global: { headers: { Authorization: auth } } });
+    sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, { global: { headers: { Authorization: auth } } });
     const { data: { user } } = await sb.auth.getUser();
     if (!user) return json({ erro: 'Não autenticado.' }, 401);
     const { data: ass } = await sb.from('assinaturas').select('plano,status').eq('user_id', user.id).maybeSingle();
@@ -31,7 +32,6 @@ Deno.serve(async (req) => {
     const p = await req.json();
     if (p?.versao !== 1) return json({ erro: 'Versão de payload não suportada.' }, 400);
     const content: unknown[] = [];
-    let caminho = '';
     if (p.modo === 'extrair') {
       caminho = String(p.arquivo?.caminho ?? '');
       if (!caminho.startsWith(user.id + '/')) return json({ erro: 'Arquivo inválido.' }, 403);
@@ -50,7 +50,6 @@ Deno.serve(async (req) => {
       headers: { 'content-type': 'application/json', 'x-api-key': Deno.env.get('ANTHROPIC_API_KEY')!, 'anthropic-version': '2023-06-01' },
       body: JSON.stringify({ model: MODELO, max_tokens: 8000, system: SISTEMA, messages: [{ role: 'user', content }] }),
     });
-    if (caminho) await sb.storage.from('ingestao').remove([caminho]); // não guarda o documento
     if (!r.ok) return json({ erro: 'A IA não respondeu.' }, 502);
     const texto: string = (await r.json())?.content?.find((c: { type: string }) => c.type === 'text')?.text ?? '';
     const ini = texto.indexOf('{'); const fim = texto.lastIndexOf('}');
@@ -58,5 +57,8 @@ Deno.serve(async (req) => {
     return json(JSON.parse(texto.slice(ini, fim + 1)));
   } catch (_e) {
     return json({ erro: 'Falha na leitura.' }, 500);
+  } finally {
+    // não guarda o documento: apaga o PDF mesmo quando a leitura falha no meio
+    if (sb && caminho) await sb.storage.from('ingestao').remove([caminho]).catch(() => {});
   }
 });

@@ -18,11 +18,12 @@ Os scripts de `assets/js/` são carregados por `<script>` em **ordem fixa** (vej
 - Nomes de função e `const` de topo não podem se repetir entre arquivos. Antes de criar um nome, procure com `grep -n "nomeNovo" assets/js/*.js`.
 - Arquivo novo: acrescente a tag em `index.html` na posição certa.
 
-Ordem: `config, engine, ingest, store, charts, prefs, core, avatars, plans, ui, landing, auth, dashboard, frases, objetivos, obj3d, widgets, ledger, assets, ingest-ui, report, notif, ia, info, admin, abertura, tour, basico, main`.
+Ordem: `config, politica, engine, ingest, store, charts, prefs, core, avatars, plans, ui, landing, auth, dashboard, frases, objetivos, obj3d, widgets, ledger, assets, ingest-ui, report, notif, ia, info, admin, abertura, tour, basico, main`.
 
 | Arquivo | Responsabilidade |
 |---|---|
 | `config.js` | Único arquivo de configuração do dono: contatos, preços, Supabase, `ingestao`, `recursos`. Valores reais de produção; **não sobrescrever**. |
+| `politica.js` | Política de privacidade e termos de uso (LGPD), puro: `politicaHtml(cfg)` e `POLITICA_VERSAO`. O app abre em `openTerms` (SaaS) e na tela `privacidade` (App); a página pública `privacidade.html` (endereço para as lojas, desenhada por `politica-pagina.js`, com CSP própria e sem script embutido) usa o mesmo texto. Controlador e encarregado vêm de `CFG.controlador`/`CFG.encarregadoEmail`, se existirem, ou de `CFG.consultor`/`CFG.email`. Mudou o texto? Troque `POLITICA_VERSAO`: quem já tem conta vê o aviso "A política de privacidade foi atualizada" uma vez (`politicaVista` no perfil); o aceite do cadastro grava `consentimento = { versao, em }`. |
 | `engine.js` | Motor puro, sem DOM (roda no Node): cálculos, parcelas, orçamento, `PLANOS`/`RECURSOS`/`planoPermite`, rebalanceamento, backup, importação de planilha. |
 | `ingest.js` | Puro, sem DOM: leitura de CSV/OFX, categorização, duplicidade, conciliação, payload e validação da IA. |
 | `store.js` | Camada de dados: `Local` (navegador) ou `Cloud` (Supabase). Telas nunca chamam o Supabase direto. |
@@ -77,7 +78,7 @@ Telas desenham HTML por template string e o `main.js` trata os cliques por `data
 
 **Planos** (`engine.js`): `gratis` (Organização), `investidor`, `completo` (Assessoria). O identificador `completo` fica no banco e só o nome mostrado é "Assessoria": clientes pagantes existentes dependem disso. Novo recurso = entrada em `RECURSOS` com o plano mínimo, uso de `temRecurso`/`gated` na tela e, se mexe em dado sensível, regra no banco.
 
-**Segurança**: a interface nunca é a proteção. A proteção é a RLS em `supabase/schema.sql` e nas migrations. Cada cliente só lê os próprios dados. O consultor lê planejamentos **apenas** de clientes com plano `completo` ativo. Só o consultor altera plano e recomendações. Nunca colocar `service_role`, `ANTHROPIC_API_KEY` ou qualquer segredo no repositório (é público). A chave `anon` do Supabase é pública por natureza.
+**Segurança**: a interface nunca é a proteção. `index.html` tem CSP por `<meta>` (scripts só do site, jsDelivr e cdnjs; conexões só com o Supabase; imagens só do site, `data:` e `blob:`): serviço externo novo precisa entrar ali. Biblioteca de CDN sempre com SRI (`integrity`): Supabase em `store.js` (`SUPABASE_SRI`), SheetJS em `admin.js`, Three.js em `obj3d.js`; trocou a versão, troque o hash. Direitos do titular (LGPD, art. 18): Baixar meus dados (`backup`) e Excluir minha conta (`conta-excluir` no SaaS, tela `excluir` no App → `excluirConta` em `core.js` → `Store.deleteAccount` → função `excluir_minha_conta()` da migration 003, que apaga o usuário e, em cascata, todos os dados). A migration 003 também trava o e-mail do perfil no da conta de login, limita o tamanho dos dados e deixa o espaço da IA só com PDF até 10 MB; a Edge Function apaga o PDF mesmo se a leitura falhar. A proteção é a RLS em `supabase/schema.sql` e nas migrations. Cada cliente só lê os próprios dados. O consultor lê planejamentos **apenas** de clientes com plano `completo` ativo. Só o consultor altera plano e recomendações. Nunca colocar `service_role`, `ANTHROPIC_API_KEY` ou qualquer segredo no repositório (é público). A chave `anon` do Supabase é pública por natureza.
 
 **Banco**: mudança de schema vira **migration nova** em `supabase/migrations/` (numerada, que possa rodar de novo sem erro) **e** entra também em `schema.sql` para instalações novas.
 
@@ -102,5 +103,6 @@ Telas desenham HTML por template string e o `main.js` trata os cliques por `data
 - Cobrança é manual: o consultor troca o plano do cliente na aba Clientes. Falta o webhook do meio de pagamento (exige Edge Function com `service_role`).
 - Notificações só aparecem com o site aberto; não há e-mail nem push (precisaria de Edge Function agendada).
 - Sem 2FA, sem cotações de mercado (patrimônio a custo), sem edição simultânea segura do mesmo ano em dois dispositivos (vale o último salvamento).
-- Texto de Termos e privacidade (`openTerms` em `ui.js`) é genérico: precisa de revisão jurídica, incluindo o tratamento de dados por IA.
+- A política (`politica.js`) segue a LGPD, mas precisa de revisão jurídica (controlador pessoa física ou CNPJ, encarregado, transferência internacional pelo Supabase, provedor de IA). A migration 003 precisa ser rodada no Supabase de produção e testada num projeto de teste (excluir conta, e-mail do perfil, limites).
+- Configurações de segurança que ficam no painel do Supabase, fora do código: senha mínima de 8+ caracteres, proteção contra senhas vazadas, confirmação de e-mail ligada, limite de tentativas, URL do site e redirecionamentos só do domínio do AVEN.
 - Ícones PNG (`assets/img/`) são gerados a partir do mesmo desenho do logo; se o logo mudar, gere-os de novo (180, 192 e 512 px).

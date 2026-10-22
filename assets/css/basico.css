@@ -975,3 +975,6 @@ button.bas-cc-c { border: 0; font: inherit; text-align: left; cursor: pointer; t
   .bas-w-hl-a, .bas-w-hl-d { animation: none; opacity: 1; } .bas-w-hl-v { animation: none; stroke-dashoffset: 0; } .bas-w-hl-pp, .bas-w-ano-luz, .bas-w-ano-g i, .bas-w-res-s, .bas-w-res-s::after { animation: none; }
   .bas-rx, .bas-sn-bt { transition: none; }
 }
+
+/* privacidade e termos no App */
+.card.bas-pol { padding: 4px 18px 18px; border-radius: 22px; } .bas-pol .politica { font-size: 15px; } .bas-pol a { color: var(--accent); }

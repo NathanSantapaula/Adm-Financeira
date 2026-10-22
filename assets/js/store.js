@@ -5,6 +5,7 @@ const Store = (() => {
   const CFG = window.FP_CONFIG;
   const cloud = !!(CFG.supabase && CFG.supabase.url && CFG.supabase.anonKey);
   const SUPABASE_JS = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js';
+  const SUPABASE_SRI = 'sha384-0w2KAL2YHP6wKOkUDzkCDGgVvfmHnj02DHeQ6XcHOgTfFsGyonKOpShMH1x6nk9o'; // conferido com o hash publicado pelo jsDelivr; trocou a versão, troque o hash
 
   const lsGet = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
   const lsSet = (k, v) => { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } };
@@ -47,11 +48,12 @@ const Store = (() => {
     async saveRecomendacao() { throw erro('Disponível com o Supabase configurado.'); },
     async uploadIngest() { throw erro('A leitura de PDF por IA precisa do Supabase configurado.'); },
     async ingestIA() { throw erro('A leitura de PDF por IA precisa do Supabase configurado.'); },
+    async deleteAccount() { lsKeys().filter((k) => k && k.startsWith('fp:')).forEach(lsDel); },
   };
 
   /* ===================== Supabase ===================== */
   let sb = null;
-  const loadScript = (src) => new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('script')); document.head.appendChild(s); });
+  const loadScript = (src, sri) => new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; if (sri) { s.integrity = sri; s.crossOrigin = 'anonymous'; } s.onload = res; s.onerror = () => rej(new Error('script')); document.head.appendChild(s); });
   const mapErr = (e) => {
     const m = String((e && e.message) || e || ''); const code = String((e && e.code) || '');
     if (e) console.warn('[auth]', code || (e && e.status) || '', m); // o texto original ajuda a diagnosticar no console
@@ -76,7 +78,7 @@ const Store = (() => {
   const Cloud = {
     mode: 'cloud',
     async init() {
-      if (!(window.supabase && window.supabase.createClient)) await loadScript(SUPABASE_JS);
+      if (!(window.supabase && window.supabase.createClient)) await loadScript(SUPABASE_JS, SUPABASE_SRI);
       sb = window.supabase.createClient(CFG.supabase.url, CFG.supabase.anonKey, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
       const { data } = await sb.auth.getSession();
       return U(data && data.session && data.session.user);
@@ -144,6 +146,14 @@ const Store = (() => {
     async ingestIA(payload) {
       const r = await sb.functions.invoke((CFG.ingestao && CFG.ingestao.funcao) || 'ingest-statement', { body: payload });
       if (r.error) throw erro('A leitura por IA não respondeu agora. Tente de novo em instantes.'); return r.data;
+    },
+    // exclui a conta: apaga os arquivos que tenham sobrado na pasta privada e chama a função do banco, que remove o usuário e,
+    // em cascata, perfil, planejamentos, assinatura e recomendação (migration 003)
+    async deleteAccount(user) {
+      const bucket = (CFG.ingestao && CFG.ingestao.bucket) || 'ingestao';
+      try { const l = await sb.storage.from(bucket).list(user.id); if (l.data && l.data.length) await sb.storage.from(bucket).remove(l.data.map((f) => `${user.id}/${f.name}`)); } catch (e) { /* segue: os arquivos já são apagados após a leitura */ }
+      try { need(await sb.rpc('excluir_minha_conta')); } catch (e) { throw erro('Não foi possível excluir a conta agora. Tente de novo ou fale com o assessor.'); }
+      try { await sb.auth.signOut({ scope: 'local' }); } catch (e) { /* a conta já não existe */ }
     },
     async setPlano(userId, plano, status) { need(await sb.from('assinaturas').upsert({ user_id: userId, plano, status: status || 'ativo', atualizado_em: new Date().toISOString() }, { onConflict: 'user_id' })); },
   };

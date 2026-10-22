@@ -20,7 +20,7 @@ function montarRelatorio(o) {
   if (!plan) return { html: '<p class="empty-s">Nenhum planejamento para este ano.</p>', draw() {} };
   const ctx = ctxDe(perfil, plans, ano); const C = E.compute(plan, ctx); const T = C.T; const cart = carteiraDe(perfil, plans, plan); const areas = areasDe2(plan, ctx.carry, ano);
   const hoje = new Date().toLocaleDateString('pt-BR'); const comRec = rec && ((rec.carteira || []).length || (rec.notas || '').trim());
-  const pr = perfil.perfilInvestidor && perfil.perfilInvestidor.resultado ? E.PERFIS[perfil.perfilInvestidor.resultado].nome : 'não definido';
+  const pr = (perfil.perfilInvestidor && Object.prototype.hasOwnProperty.call(E.PERFIS, perfil.perfilInvestidor.resultado) && E.PERFIS[perfil.perfilInvestidor.resultado].nome) || 'não definido'; // perfil desconhecido não derruba a visão do consultor
   const kp = (l, v) => `<div><small>${l}</small><b>${v}</b></div>`;
   const meses = MES.map((m, i) => { const v = C.receita[i] || C.despesas[i] || C.aplicado[i] ? brl0 : () => '–'; // mês sem nada lançado mostra traço, não R$ 0
     return `<tr><td>${m}</td><td class="num">${v(C.receita[i])}</td><td class="num">${v(C.despesas[i])}</td><td class="num">${C.orcamento[i] > 0 ? brl0(C.orcamento[i]) : '–'}</td><td class="num">${v(C.investAlocado[i])}</td><td class="num">${v(C.aplicado[i])}</td><td class="num">${brl0(C.patrimonio[i])}</td></tr>`; }).join('');

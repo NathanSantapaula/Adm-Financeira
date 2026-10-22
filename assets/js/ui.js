@@ -70,14 +70,7 @@ function contactButtons(msg, subj, o) {
   return `<div class="btn-row">${b.join('')}</div>`;
 }
 function openContact() { infoBox(`Falar com o ${primeiroNome()}`, `<p class="mmsg">${esc(CFG.consultor)} atende diretamente os clientes do ${esc(CFG.marca)}. Escolha o canal de sua preferência.</p>${contactButtons()}`); }
-function openTerms() {
-  infoBox('Termos e privacidade', `<div class="terms">
-    <p>O ${esc(CFG.marca)} é uma ferramenta de organização financeira oferecida por ${esc(CFG.consultor)}. Ela não constitui oferta nem recomendação individual de investimento.</p>
-    <p>${Store.mode === 'cloud' ? 'Seus lançamentos ficam salvos na sua conta, em servidor protegido por login, e só você tem acesso a eles.' : 'Neste modo de demonstração, seus lançamentos ficam salvos apenas neste navegador.'}</p>
-    <p>Seu nome, contato, foto ou avatar de perfil (se você escolher um) e o resultado do diagnóstico (patrimônio informado, perfil de investidor e objetivo) são visíveis para ${esc(CFG.consultor)}, para que ele possa atendê-lo. Os lançamentos detalhados do planejamento só ficam visíveis para ${esc(CFG.consultor)} se você contratar o plano Assessoria, para que ele possa acompanhar e orientar você.</p>
-    <p>Quando você usa a leitura de PDF por IA (plano Assessoria), o conteúdo do arquivo é enviado a um provedor de inteligência artificial apenas para extrair os lançamentos e é apagado em seguida.</p>
-    <p>O questionário de perfil é uma versão simplificada e não substitui a análise de adequação (suitability) feita na assessoria.</p></div>`);
-}
+function openTerms() { infoBox('Privacidade e termos de uso', politicaHtml(CFG, Store.mode === 'cloud')); } // texto em politica.js (também em privacidade.html)
 
 /* ---------- edição de células (qualquer elemento com a classe "ed") ---------- */
 const findCell = (ri, m) => document.querySelector(`.ed[data-ri="${ri}"][data-m="${m}"]`);

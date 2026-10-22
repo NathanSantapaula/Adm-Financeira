@@ -95,7 +95,7 @@ async function submitAuth(f) {
     const pagar = !!(S.authPagar && plano); S.authPagar = false;
     if (r.needsVerify) { try { if (plano) localStorage.setItem('fp:plano', plano); if (pagar) localStorage.setItem('fp:pagar', '1'); } catch (e) { /* ignora */ } S.authMode = 'verify'; S.authMsg = email; render(); return; }
     await entrar(r.user);
-    S.profile.nome = nome; S.profile.whatsapp = String(d.whatsapp || '').trim(); S.profile.consentimento = true; S.profile.planoSolicitado = plano; touch('profile');
+    S.profile.nome = nome; S.profile.whatsapp = String(d.whatsapp || '').trim(); S.profile.consentimento = { versao: POLITICA_VERSAO, em: new Date().toISOString() }; S.profile.politicaVista = POLITICA_VERSAO; S.profile.planoSolicitado = plano; touch('profile');
     S.ob.nome = nome; if (pagar) { iniciarCheckout(plano); return; } render();
   } catch (e) { fail(e && e.amigavel ? e.message : 'Não foi possível concluir agora. Tente novamente.', !!(e && e.email)); }
 }

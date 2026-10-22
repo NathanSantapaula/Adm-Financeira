@@ -175,6 +175,9 @@ function onClick(e) {
       case 'checkout-back': S.screen = S.profile.onboarded ? 'app' : 'onboarding'; if (S.screen === 'onboarding' && !S.ob) initOb(); render(); break;
       case 'contact': S.maisOpen = false; openContact(); break;
       case 'terms': openTerms(); break;
+      case 'conta-excluir': openModal({ title: 'Excluir minha conta', ok: 'Excluir para sempre',
+        body: `<p class="mmsg keep">Isso apaga o cadastro, o perfil, o diagnóstico, todos os anos de planejamento e a assinatura. Não dá para desfazer. Se quiser guardar uma cópia, use antes “Baixar meus dados”.</p><label class="fld"><span>Para confirmar, escreva EXCLUIR</span><input name="conf" autocomplete="off" autocapitalize="characters"></label>`,
+        onOk: (d, err) => { if (String(d.conf || '').trim().toUpperCase() !== 'EXCLUIR') { err('Escreva EXCLUIR para confirmar.'); return false; } closeAdmin(); excluirConta().catch((e) => toast(e && e.amigavel ? e.message : 'Não foi possível excluir a conta agora.')); } }); break;
       case 'as-dep': asDep(+ds.i); break;
       case 'adm-sec': { S.admSec = S.admSec || {}; const sec = el.closest('.dr-acc'); const ab = sec.dataset.open !== 'true'; S.admSec[ds.id] = ab; sec.dataset.open = ab; el.setAttribute('aria-expanded', ab); break; }
       case 'lp-confirma': case 'lp-set': case 'lp-tela': lpAcao(act, el); break;

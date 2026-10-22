@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'none'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>Privacidade e termos de uso</title>
+<meta name="description" content="Política de privacidade (LGPD) e termos de uso.">
+<!-- página pública da política (endereço pedido pela App Store e pela Google Play); o texto vem de assets/js/politica.js, o mesmo do app -->
+<style>
+  :root { --bg: #f5f6f9; --surface: #fff; --ink: #1d1d1f; --ink-2: #55565c; --line: #e3e4e8; --accent: #0a6cdf; color-scheme: light dark; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #000; --surface: #121214; --ink: #f5f5f7; --ink-2: #a1a1a6; --line: #2a2a2e; --accent: #4ea3ff; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.6 -apple-system, BlinkMacSystemFont, "SF Pro Text", Inter, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { margin: 0 0 4px; font-size: clamp(28px, 6vw, 40px); line-height: 1.1; letter-spacing: -.02em; }
+  .marca { margin: 0 0 24px; color: var(--ink-2); font-weight: 600; }
+  .terms { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 8px 20px 20px; }
+  h4 { margin: 24px 0 6px; font-size: 18px; } ul { padding-left: 20px; } li { margin: 6px 0; } p, li { color: var(--ink); }
+  .pol-v { color: var(--ink-2); font-size: 14px; } a { color: var(--accent); } .voltar { display: inline-block; margin-top: 24px; font-weight: 600; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Privacidade e termos de uso</h1>
+  <p class="marca" id="marca"></p>
+  <div id="politica"><p>Carregando…</p></div>
+  <a class="voltar" href="./">Voltar ao site</a>
+</main>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/politica.js"></script>
+<script src="assets/js/politica-pagina.js"></script>
+</body>
+</html>

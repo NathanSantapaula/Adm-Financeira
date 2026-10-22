@@ -96,7 +96,8 @@ function adminHtml() {
     ${typeof basEscolhe === 'function' && basEscolhe() ? `<div class="bas-adm-troca"><span><b>Versão do AVEN</b><small>${BAS_NOMES.basico}: no jeito de celular. ${BAS_NOMES.completo}: o painel completo.</small></span>${basTrocaHtml()}</div>` : ''}
     <div class="adm-grupos">${grupos}</div>
     <section class="dr-sec"><h3>Plano</h3>${plano}<div class="btn-row"><button class="btn" data-act="contact">Falar com o ${esc(primeiroNome())}</button></div></section>
-    <section class="dr-sec"><h3>Sessão</h3><div class="btn-row"><button class="btn" data-act="goto-landing">Ver página inicial</button><button class="btn" data-act="terms">Termos e privacidade</button><button class="btn danger" data-act="sair">Sair</button></div></section>`;
+    <section class="dr-sec"><h3>Sessão</h3><div class="btn-row"><button class="btn" data-act="goto-landing">Ver página inicial</button><button class="btn" data-act="terms">Termos e privacidade</button><button class="btn danger" data-act="sair">Sair</button></div></section>
+    <section class="dr-sec"><h3>Seus dados</h3><p class="mmsg keep">Baixe uma cópia de tudo o que está na sua conta ou exclua a conta e todos os dados dela.</p><div class="btn-row"><button class="btn" data-act="backup">Baixar meus dados</button><button class="btn" data-act="terms">Privacidade</button><button class="btn danger" data-act="conta-excluir">Excluir minha conta</button></div></section>`;
 }
 function renderAdmin(topo) {
   const d = $('#admin'); if (!d || !S.profile) return;
@@ -204,7 +205,7 @@ function importHtml() {
 }
 function loadXlsx() {
   if (window.XLSX) return Promise.resolve(window.XLSX); if (loadXlsx.p) return loadXlsx.p;
-  loadXlsx.p = new Promise((res, rej) => { const s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'; s.onload = () => res(window.XLSX); s.onerror = () => { loadXlsx.p = null; rej(new Error('xlsx')); }; document.head.appendChild(s); });
+  loadXlsx.p = new Promise((res, rej) => { const s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'; s.integrity = 'sha512-r22gChDnGvBylk90+2e/ycr3RVrDi8DIOkIGNhJlKfuyQM4tIRAI062MaV8sfjQKYVGjOBaZBOA87z+IhZE9DA=='; s.crossOrigin = 'anonymous'; s.referrerPolicy = 'no-referrer'; s.onload = () => res(window.XLSX); s.onerror = () => { loadXlsx.p = null; rej(new Error('xlsx')); }; document.head.appendChild(s); });
   return loadXlsx.p;
 }
 async function baixarModelo() {
@@ -290,7 +291,7 @@ function viewClientes() {
   const ped = (c) => ((c.dados.planoSolicitado === 'completo' || c.dados.planoSolicitado === 'investidor') && c.plano !== c.dados.planoSolicitado && c.plano !== 'completo' ? c.dados.planoSolicitado : null);
   const f = { cad: all.length, diag: all.filter((c) => c.dados.onboarded).length, sol: all.filter((c) => ped(c)).length, inv: all.filter((c) => c.plano === 'investidor').length, comp: all.filter((c) => c.plano === 'completo').length };
   const rows = lista.map((c) => {
-    const d = c.dados; const pf = d.perfilInvestidor && d.perfilInvestidor.resultado ? E.PERFIS[d.perfilInvestidor.resultado].nome : '–'; const zap = String(c.whatsapp || '').replace(/\D/g, ''); const pd = ped(c);
+    const d = c.dados; const pf = esc((d.perfilInvestidor && Object.prototype.hasOwnProperty.call(E.PERFIS, d.perfilInvestidor.resultado) && E.PERFIS[d.perfilInvestidor.resultado].nome) || '–'); const zap = String(c.whatsapp || '').replace(/\D/g, ''); const pd = ped(c);
     return `<tr><td><div class="cli-n">${avatarHtml(Object.assign({ nome: c.nome, email: c.email }, c.dados || {}), 'sm')}<div><b>${esc(c.nome || '(sem nome)')}</b><small>${esc(c.email)}</small></div></div></td><td>${zap ? `<a class="lnk strong" href="https://wa.me/${zap}" ${ext}>${esc(c.whatsapp)}</a>` : '–'}</td><td>${pf}</td><td class="num">${d.patrimonioInicial ? brl0(d.patrimonioInicial) : '–'}</td>
       <td>${esc(objResumoCliente(d))}</td><td>${sel('plano', [['gratis', 'Organização'], ['investidor', 'Investidor'], ['completo', 'Assessoria']], c.plano).replace('<select', `<select data-plano-cli="${c.id}"`)}${pd ? `<small class="warn-t">Pediu ${esc(nomePlano(pd))}</small>` : ''}</td>
       <td>${c.criadoEm ? new Date(c.criadoEm).toLocaleDateString('pt-BR') : '–'}</td><td><button class="btn sm" data-act="cliente-abrir" data-id="${esc(c.id)}">Abrir</button></td></tr>`;
