@@ -213,7 +213,7 @@ function onClick(e) {
       case 'del-year': confirmBox(`Excluir o planejamento de ${ds.year}?`, 'Todos os valores deste ano serão apagados. Esta ação não pode ser desfeita. Faça um backup antes, se precisar.', 'Excluir', () => deletePlan(+ds.year)); break;
       case 'sair': closeAdmin(); sair(); break;
       case 'privado': alternarPrivado(); break;
-      default: if (!basAcao(act, ds) && !notifAcao(act, ds) && !iaAcao(act, ds) && !simAcao(act, ds) && !histAcao(act, ds) && !objAcao(act, ds) && !painelAcao(act, ds)) wgAcao(act, ds); break;
+      default: if (!basAcao(act, ds, el) && !notifAcao(act, ds) && !iaAcao(act, ds) && !simAcao(act, ds) && !histAcao(act, ds) && !objAcao(act, ds) && !painelAcao(act, ds)) wgAcao(act, ds); break;
     }
   }
   if (S.stale) { S.stale = false; clearTimeout(S.staleT); render(); }
