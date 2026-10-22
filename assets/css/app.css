@@ -2959,4 +2959,4 @@ html.side-mini .nav-g { height: 1px; margin: 10px 14px; font-size: 0; background
 /* logos oficiais coloridas (Itaú e XP): a imagem inteira, sem máscara, sobre fundo branco em qualquer estilo (as letras do Itaú são vazadas) */
 .inst-ic img { display: block; width: 100%; height: 100%; object-fit: contain; }
 .inst-ic img[src*="/itau.svg"] { transform: scale(1.08); }
-.inst-ic img[src*="/xp.svg"] { width: 78%; }
+.inst-ic img[src*="/xp.png"] { object-fit: cover; object-position: right bottom; transform: scale(1.06); transform-origin: right bottom; }

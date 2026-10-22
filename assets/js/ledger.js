@@ -510,7 +510,7 @@ const CC_NFC = '<svg viewBox="0 0 24 24"><path d="M8.5 8.5a5 5 0 0 1 0 7M12 6a8.
 const INSTITUICOES = [
   ['nubank', 'Nubank', '#820AD1', '#fff', 'nu', 0.6], ['itau', 'Itaú', '#FF6200', '#fff', 'itaú', 'img'], ['bradesco', 'Bradesco', '#CC092F', '#fff', 'B', 0.62],
   ['santander', 'Santander', '#EC0000', '#fff', 'S', 0.58], ['bb', 'Banco do Brasil', '#FCFC30', '#465EFF', 'BB', 0.62], ['caixa', 'Caixa', '#005CA9', '#fff', 'CX', 0.8],
-  ['xp', 'XP', '#0084D5', '#000', 'xp', 'img'], ['btg', 'BTG Pactual', '#0D2B5E', '#fff', 'btg', 0.7], ['inter', 'Inter', '#FF7A00', '#fff', 'in', 0.8],
+  ['xp', 'XP', '#121212', '#fff', 'xp', 'xp.png'], ['btg', 'BTG Pactual', '#0D2B5E', '#fff', 'btg', 0.7], ['inter', 'Inter', '#FF7A00', '#fff', 'in', 0.8],
   ['c6', 'C6 Bank', '#1A1A1A', '#fff', 'C6', 0.6], ['picpay', 'PicPay', '#21C25E', '#fff', 'pp', 0.54], ['mercadopago', 'Mercado Pago', '#00B1EA', '#fff', 'mp', 0.68],
   ['sicoob', 'Sicoob', '#003641', '#C9D200', 'sc', 0.58], ['dinheiro', 'Dinheiro', '#2E7D32', '#fff', 'R$', 0], ['outra', 'Outra', '#6B7280', '#fff', '•', 0],
 ];
@@ -520,8 +520,8 @@ const INST_ESTILOS = [['auto', 'Automático'], ['cor', 'Cor'], ['escuro', 'Escur
 // ícone da instituição; sem instituição, um ícone vazio (mantém a lista alinhada)
 function instIcone(id, cls) {
   const i = instDe(id); const c = 'inst-ic' + (cls ? ' ' + cls : ''); if (!i) return `<span class="${c} vazio" aria-hidden="true"></span>`;
-  const u = new URL(`assets/img/inst/${i[0]}.svg`, document.baseURI).href; // endereço completo: url() relativa numa variável CSS seria lida a partir do app.css
-  return `<span class="${c}" style="--ib:${i[2]};--if:${i[3]}${i[5] === 'img' ? ';--t:#fff' : ''}" role="img" aria-label="${esc(i[1])}" title="${esc(i[1])}">${i[5] === 'img' ? `<img src="${u}" alt="">` : i[5] ? `<i style="--m:url(${u});--k:${i[5]}"></i>` : `<b>${esc(i[4])}</b>`}</span>`;
+  const img = typeof i[5] === 'string'; const u = new URL(`assets/img/inst/${i[5] === 'img' ? i[0] + '.svg' : img ? i[5] : i[0] + '.svg'}`, document.baseURI).href; // endereço completo: url() relativa numa variável CSS seria lida a partir do app.css
+  return `<span class="${c}" style="--ib:${i[2]};--if:${i[3]}${img ? ';--t:#fff' : ''}" role="img" aria-label="${esc(i[1])}" title="${esc(i[1])}">${img ? `<img src="${u}" alt="">` : i[5] ? `<i style="--m:url(${u});--k:${i[5]}"></i>` : `<b>${esc(i[4])}</b>`}</span>`;
 }
 // fichas: as minhas como escolha única (formulário) ou todas para marcar (painel e "Editar" no formulário)
 const instFicha = (id, tipo, on, extra) => `<label class="inst-pill"><input type="${tipo}" ${extra} ${on ? 'checked' : ''}><span>${id ? instIcone(id) + esc(instDe(id)[1]) : 'Não informar'}</span></label>`;
