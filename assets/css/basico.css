@@ -418,3 +418,91 @@ button.bas-roda-lim { pointer-events: auto; border: 0; font: inherit; font-size:
 .bas-alvo input:focus { outline: 2px solid var(--accent); }
 .bas-alvo i { font-style: normal; color: var(--ink-2); font-weight: 600; }
 .bas-clientes { padding-top: 8px; } .bas-clientes .tablewrap, .bas-clientes table { max-width: 100%; } .bas-clientes .tablewrap { overflow-x: auto; } /* a aba Clientes do SaaS, como é, dentro do App do consultor */
+
+/* =====================================================================
+   App premium: transições, aurora, selo do plano, vitrine "Para você" e as telas novas
+   ===================================================================== */
+/* transições entre telas: a barra de abas fica parada; empilhar desliza da direita, voltar desliza de volta, aba esmaece */
+body[data-ui="basico"] .tabbar { view-transition-name: bas-abas; }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: 320ms; animation-timing-function: cubic-bezier(.22, .9, .25, 1); }
+html[data-vt="vai"]::view-transition-old(root) { animation-name: bas-vt-sai; }
+html[data-vt="vai"]::view-transition-new(root) { animation-name: bas-vt-entra; }
+html[data-vt="volta"]::view-transition-old(root) { animation-name: bas-vt-sai-volta; }
+html[data-vt="volta"]::view-transition-new(root) { animation-name: bas-vt-entra-volta; }
+html[data-vt="aba"]::view-transition-old(root) { animation: 160ms ease-out both bas-vt-some; }
+html[data-vt="aba"]::view-transition-new(root) { animation: 260ms cubic-bezier(.22, .9, .25, 1) both bas-vt-surge; }
+@keyframes bas-vt-entra { from { transform: translateX(100%); } }
+@keyframes bas-vt-sai { to { transform: translateX(-28%); opacity: .6; } }
+@keyframes bas-vt-entra-volta { from { transform: translateX(-28%); opacity: .6; } }
+@keyframes bas-vt-sai-volta { to { transform: translateX(100%); } }
+@keyframes bas-vt-some { to { opacity: 0; } }
+@keyframes bas-vt-surge { from { opacity: 0; transform: translateY(8px) scale(.99); } }
+/* a aurora do painel do Início anda devagar */
+.bas-noite { background-size: 160% 160%, 160% 160%, auto; animation: bas-aurora 22s ease-in-out infinite alternate; }
+@keyframes bas-aurora { from { background-position: 100% 0%, 0% 100%, 0 0; } to { background-position: 40% 30%, 60% 60%, 0 0; } }
+/* selo do plano ao lado do cumprimento e o foil no cartão de membro */
+.bas-plano-chip { margin-left: 8px; padding: 1px 8px; border-radius: var(--r-pill); font-style: normal; font-size: 11.5px; font-weight: 700; letter-spacing: .02em; color: #1a1406;
+  background: linear-gradient(110deg, #f3d98b, #fff4cf 30%, #d9b45a 55%, #f7e6a6 80%); background-size: 200% 100%; animation: bas-foil 6s linear infinite; }
+.bas-membro-pl.foil { color: #1a1406; background: linear-gradient(110deg, #f3d98b, #fff4cf 30%, #d9b45a 55%, #f7e6a6 80%); background-size: 200% 100%; animation: bas-foil 6s linear infinite; box-shadow: 0 2px 10px -2px rgba(243, 217, 139, .6); }
+@keyframes bas-foil { to { background-position: -200% 0; } }
+/* vitrine "Para você": cartões que rolam de lado */
+.bas-pv-selo { padding: 2px 10px; border-radius: var(--r-pill); font-size: 12px; font-weight: 700; color: #1a1406; background: linear-gradient(110deg, #f3d98b, #fff4cf 40%, #d9b45a); }
+.bas-pv { display: flex; gap: 10px; margin: 0 -16px; padding: 4px 16px 10px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.bas-pv::-webkit-scrollbar { display: none; }
+.bas-pv-c { flex: none; width: 150px; min-height: 150px; scroll-snap-align: start; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end; gap: 2px; padding: 14px; border: 0; border-radius: 24px; text-align: left; color: inherit; font: inherit; position: relative; overflow: hidden;
+  background: radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--accent) 26%, transparent), transparent 62%), var(--surface); box-shadow: var(--spec), var(--shadow); animation: bas-pv-entra 500ms var(--ease-out) both; animation-delay: calc(var(--i) * 60ms); transition: transform 140ms var(--ease-out); }
+.bas-pv-c:active { transform: scale(.96); }
+.bas-pv-c b { font-size: 16px; font-weight: 700; } .bas-pv-c small { font-size: 13px; color: var(--ink-2); }
+.bas-pv-ic { position: absolute; top: 14px; left: 14px; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 14px; background: var(--accent); color: var(--on-accent); box-shadow: 0 8px 18px -8px var(--accent); }
+.bas-pv-ic svg { width: 22px; height: 22px; stroke-width: 2; }
+@keyframes bas-pv-entra { from { opacity: 0; transform: translateY(10px); } }
+.card.bas-pv-lock { width: 100%; display: flex; align-items: center; gap: 12px; padding: 16px; border-radius: 22px; text-align: left; color: inherit; font: inherit; }
+.bas-pv-lock .bas-pv-ic { position: static; flex: none; background: linear-gradient(135deg, #f3d98b, #d9b45a); color: #1a1406; }
+.bas-pv-lock .bas-n b { white-space: normal; } .bas-pv-lock > svg:last-child { width: 18px; height: 18px; flex: none; color: var(--ink-3); }
+/* barras mês a mês */
+.bas .bas-barras { display: block; width: 100%; height: 120px; margin-top: 14px; overflow: visible; stroke: none; }
+.bas-barras rect { fill: color-mix(in srgb, var(--accent) 55%, transparent); transform-origin: center bottom; transform-box: fill-box; animation: bas-barra 600ms var(--ease-out) both; animation-delay: calc(var(--i) * 30ms); }
+.bas-barras rect.sel { fill: var(--accent); } .bas-barras rect.neg { fill: color-mix(in srgb, var(--neg) 70%, transparent); }
+.bas-barras.pos rect { fill: color-mix(in srgb, var(--pos) 50%, transparent); } .bas-barras.pos rect.sel { fill: var(--pos); }
+.bas-tela .bas-hero .bas-barras rect { fill: rgba(255, 255, 255, .28); } .bas-tela .bas-hero .bas-barras rect.sel { fill: var(--accent); } .bas-tela .bas-hero .bas-barras rect.neg { fill: var(--bas-noite-neg); }
+.bas-barras-z { stroke: color-mix(in srgb, var(--ink) 20%, transparent); stroke-width: 1; }
+@keyframes bas-barra { from { transform: scaleY(0); } }
+.bas-barras-m { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); margin-top: 4px; text-align: center; font-size: 11px; color: var(--ink-3); }
+.bas-barras-m .on { color: var(--accent); font-weight: 700; }
+.bas-tela .bas-hero .bas-barras-m { color: var(--bas-noite-2); }
+.card.bas-tile > b { font-size: 18px; } .card.bas-tile > span { font-weight: 650; font-variant-numeric: tabular-nums; }
+/* histórico */
+.bas-hist { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 8px; }
+.bas-hist li { display: grid; grid-template-columns: 58px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 20px; background: var(--surface); box-shadow: var(--shadow); }
+.bas-hist-a { display: flex; flex-direction: column; font-weight: 700; font-size: 17px; } .bas-hist-a small { font-size: 11px; font-weight: 500; color: var(--ink-3); }
+.bas-hist-b { height: 10px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--ink) 8%, transparent); overflow: hidden; }
+.bas-hist-b i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--accent-2), var(--accent)); }
+.bas-hist-v { display: flex; flex-direction: column; align-items: flex-end; } .bas-hist-v b { font-variant-numeric: tabular-nums; } .bas-hist-v small { font-size: 12px; font-weight: 650; }
+/* raio-X */
+.bas-raio-k { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 14px; }
+.bas-raio-k span { display: flex; flex-direction: column; padding: 10px 12px; border-radius: var(--r-md); background: rgba(255, 255, 255, .07); min-width: 0; }
+.bas-raio-k small { font-size: 12px; color: var(--bas-noite-2); } .bas-raio-k b { font-size: 16px; color: var(--bas-noite-ink); font-variant-numeric: tabular-nums; }
+.card.bas-raio-a { padding: 8px 16px; border-radius: 22px; }
+.bas-raio-a button { width: 100%; display: grid; grid-template-columns: minmax(0, 7fr) minmax(0, 5fr) auto; align-items: center; gap: 12px; min-height: 48px; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; }
+.bas-raio-a button + button { border-top: 1px solid var(--line); }
+.bas-raio-a span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.bas-raio-b { height: 8px; border-radius: var(--r-pill); background: color-mix(in srgb, var(--ink) 8%, transparent); overflow: hidden; } .bas-raio-b i { display: block; height: 100%; border-radius: inherit; background: var(--bc); }
+.bas-raio-a b { font-variant-numeric: tabular-nums; }
+.bas-raio-t { font-size: 13px; color: var(--ink-2); }
+/* resumo do mês: o cartão para compartilhar */
+.bas-story { position: relative; overflow: hidden; isolation: isolate; margin-top: 10px; padding: 26px 22px; border-radius: 30px; color: var(--bas-noite-ink); text-align: center;
+  background: radial-gradient(90% 60% at 50% 0%, color-mix(in srgb, var(--accent) 55%, transparent), transparent 70%), radial-gradient(80% 60% at 50% 110%, color-mix(in srgb, var(--accent-2) 40%, transparent), transparent 70%), var(--bas-noite); box-shadow: var(--shadow-lg); }
+.bas-story::before { content: ""; position: absolute; inset: 0; z-index: -1; background: radial-gradient(rgba(255, 255, 255, .12) 1px, transparent 1.4px) 0 0 / 16px 16px; -webkit-mask: linear-gradient(#000, transparent 70%); mask: linear-gradient(#000, transparent 70%); }
+.bas-story-m .logo-ic { width: 40px; height: 40px; } .bas-story > small { display: block; margin-top: 12px; font-size: 14px; color: var(--bas-noite-2); }
+.bas-story-v { display: block; font-size: clamp(38px, 11vw, 48px); font-weight: 700; letter-spacing: -.03em; font-variant-numeric: tabular-nums; } .bas-story-k { font-size: 14px; color: var(--bas-noite-2); }
+.bas-story ul { list-style: none; margin: 18px 0 0; padding: 0; display: grid; gap: 8px; text-align: left; }
+.bas-story li { display: flex; justify-content: space-between; padding: 10px 14px; border-radius: var(--r-md); background: rgba(255, 255, 255, .07); }
+.bas-story li span { color: var(--bas-noite-2); } .bas-story li b { font-variant-numeric: tabular-nums; } .bas-story li b.pos { color: var(--bas-noite-pos); }
+.bas-story-g { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; margin-top: 14px; text-align: left; font-size: 14px; }
+.bas-story-g .bas-bar { margin: 0; background: rgba(255, 255, 255, .14); }
+/* recomendação do assessor */
+.card.bas-rec { padding: 16px; border-radius: 24px; }
+.bas-rec-n { margin: 0 0 12px; font-size: 15px; font-style: italic; color: var(--ink-2); }
+@media (prefers-reduced-motion: reduce) {
+  .bas-noite, .bas-plano-chip, .bas-membro-pl.foil, .bas-pv-c, .bas-barras rect { animation: none; } .bas-pv-c { transition: none; }
+}

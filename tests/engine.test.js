@@ -422,4 +422,11 @@ ok(E.interfaceDe('gratis', 'completo') === 'basico' && E.interfaceDe('qualquer')
   ok(['resumo', 'gastos', 'aporte', 'dicas', 'avisos', 'patrimonio', 'proventos'].every((id) => { const x = E.iaResponder(id, base); return x.chave && Object.keys(x.vars).every((k) => typeof x.vars[k] !== 'string' || !/R\$/.test(x.vars[k])); }), 'assistente: valores vão como número (a interface formata e mascara)');
 }
 
+// os scripts da interface dividem o escopo global: um nome de topo repetido entre arquivos derruba o arquivo inteiro no navegador
+{ const fs = require('fs'); const path = require('path'); const dir = path.join(__dirname, '..', 'assets', 'js'); const dono = {}; const rep = [];
+  fs.readdirSync(dir).filter((f) => f.endsWith('.js') && f !== 'engine.js' && f !== 'ingest.js').forEach((f) => {
+    const re = /^(?:const|let|var|function|async function|class)\s+([A-Za-z_$][\w$]*)/gm; const txt = fs.readFileSync(path.join(dir, f), 'utf8'); let m;
+    while ((m = re.exec(txt))) { const n = m[1]; if (dono[n] && dono[n] !== f) rep.push(`${n} (${dono[n]} e ${f})`); else dono[n] = f; } });
+  ok(!rep.length, 'nomes de topo únicos entre os scripts da interface' + (rep.length ? ': ' + rep.join(', ') : '')); }
+
 process.exit(bad ? 1 : 0);
