@@ -80,6 +80,11 @@
     const total = r2(itens.reduce((t, x) => t + x.valor, 0)); const pago = r2(itens.filter((x) => x.pago).reduce((t, x) => t + x.valor, 0));
     return { itens, total, pago, falta: r2(total - pago) };
   }
+  // gasto por instituição de pagamento ("Meus cartões"): soma os valores positivos de cada entrada pela instituição (vazia = sem instituição)
+  function gastosPorInst(entradas) {
+    const soma = {}; (entradas || []).forEach((e) => { const v = +e.valor || 0; if (!(v > 0)) return; const k = e.inst || ''; soma[k] = r2((soma[k] || 0) + v); });
+    return Object.keys(soma).map((k) => ({ k, v: soma[k] })).sort((a, b) => b.v - a.v);
+  }
   // variação de um período para o anterior (null sem base para comparar)
   const variacao = (atual, anterior) => (Math.abs(+anterior || 0) > 0.005 ? ((+atual || 0) - anterior) / Math.abs(anterior) : null);
   // os meses logo antes de um período, do mesmo tamanho, dentro do mesmo ano (null se não couber)
@@ -1144,7 +1149,7 @@
   const diaUtilBR = (y, m, d) => { const s = new Date(Date.UTC(y, m, d)).getUTCDay(); return s !== 0 && s !== 6 && !feriadoBR(y, m, d); };
   const api = { PLANOS, RECURSOS, ABA_RECURSO, planoPermite, planoMinimo, planoNorm, interfaceDe, parseDataISO, MES, MES_LONGO, TAXONOMIA, ASSET_LEVELS, QUIZ, PERFIS, RETORNO_PADRAO, CATS_DESP, CATS_RENDA, FORMATO_BACKUP,
     z, add, sub, sum, r2, norm, monthIndex, parseValor, distribuir, parcelaMeses, parcelaFim, parcelaIndice, itemValores, carryItems,
-    ativoKey, buildAssetTree, rebalance, contasMes, variacao, janelaAnterior, analiseInvest, disponivelAporte, analiseRenda, analiseGastos, analiseCarteira, nomeEstab, historico, ctxAno, OBJ_TIPOS, normObjetivos, analiseObjetivos, sugerirDivisao, aporteNecessario, notificacoes, scorePerfil, projetar, mesesAteMeta, simularObjetivo, migratePlan, compute, makeBackup, parseBackup,
+    ativoKey, buildAssetTree, rebalance, contasMes, gastosPorInst, variacao, janelaAnterior, analiseInvest, disponivelAporte, analiseRenda, analiseGastos, analiseCarteira, nomeEstab, historico, ctxAno, OBJ_TIPOS, normObjetivos, analiseObjetivos, sugerirDivisao, aporteNecessario, notificacoes, scorePerfil, projetar, mesesAteMeta, simularObjetivo, migratePlan, compute, makeBackup, parseBackup,
     templateSheets, parseImport, applyImport, gastosAreaMes, analiseLimites, repetirValores, acharFixo, feriadoBR, diaUtilBR, IA_INTENCOES, IA_FICHAS, IA_PRODUTOS, iaIntencao, iaProduto, iaValor, iaParcelas, iaResponder };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.FPEngine = api;
 })(typeof window !== 'undefined' ? window : globalThis);
