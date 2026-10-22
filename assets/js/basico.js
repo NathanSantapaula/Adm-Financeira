@@ -823,11 +823,37 @@ function basLimitesHtml() {
     ${top.length ? `<div class="bas-lim-add"><small>Pôr limite em</small>${top.map((a) => `<button ${basIr('limite', { area: a })}>${I.plus}${esc(a)}</button>`).join('')}</div>` : ''}</div>`);
 }
 // saúde financeira: o rostinho minimalista que muda com a nota (olhos piscam, a boca sorri ou se preocupa)
+// o rosto da saúde: esfera de vidro na cor da nota (vermelho, âmbar, verde: os tons vivos `--bas-noite-*`, iguais nos dois temas, misturados), boca e olhos que mudam aos poucos com a nota,
+// pisca, olha em volta, segue o dedo ou o mouse e dá um pulinho ao toque
 function basRosto(nota, tam) {
-  const n = nota == null ? 60 : nota; const cls = nota == null ? 'sem' : n >= 80 ? 'ok' : n >= 60 ? 'atencao' : 'baixo';
-  const curva = n >= 80 ? 'M34 62 Q50 76 66 62' : n >= 60 ? 'M36 64 Q50 69 64 64' : 'M36 68 Q50 58 64 68';
-  return `<span class="bas-rosto ${cls}" style="--t:${tam || 96}px" aria-hidden="true"><svg viewBox="0 0 100 100"><circle class="bas-rosto-f" cx="50" cy="50" r="44"/><g class="bas-rosto-o"><ellipse cx="37" cy="44" rx="4.2" ry="5.6"/><ellipse cx="63" cy="44" rx="4.2" ry="5.6"/></g>${n < 60 ? '<path class="bas-rosto-s" d="M29 33 L42 36 M71 33 L58 36"/>' : ''}<path class="bas-rosto-b" d="${curva}"/>${n >= 80 ? '<circle class="bas-rosto-c" cx="27" cy="58" r="5"/><circle class="bas-rosto-c" cx="73" cy="58" r="5"/>' : ''}</svg></span>`;
+  const sem = nota == null; const n = sem ? 60 : Math.max(0, Math.min(100, nota)); const cls = sem ? 'sem' : n >= 80 ? 'ok' : n >= 60 ? 'atencao' : 'baixo';
+  const cor = sem ? 'var(--ink-3)' : n >= 60 ? `color-mix(in oklab, var(--bas-noite-pos) ${Math.round(((n - 60) / 40) * 100)}%, var(--bas-noite-warn))` : `color-mix(in oklab, var(--bas-noite-warn) ${Math.round((n / 60) * 100)}%, var(--bas-noite-neg))`;
+  const k = sem ? 0 : n >= 55 ? (n - 55) * 0.3 : (n - 55) * 0.2; // curva da boca: de -11 (triste) a +13,5 (feliz)
+  const y = k < 0 ? 66 : 64;
+  const boca = k >= 8 ? `<path class="bas-rosto-b cheia" d="M35 61 Q50 ${(61 + k * 1.45).toFixed(1)} 65 61 Q50 ${(61 + k * 0.5).toFixed(1)} 35 61Z"/>` : `<path class="bas-rosto-b" d="M37 ${y} Q50 ${(y + k).toFixed(1)} 63 ${y}"/>`;
+  const ry = n < 40 ? 4.4 : 5.4;
+  const olhos = n >= 90 && !sem ? '<path class="bas-rosto-arc" d="M31 46 Q37 39.5 43 46M57 46 Q63 39.5 69 46"/>' : `<ellipse cx="37" cy="44" rx="3.6" ry="${ry}"/><ellipse cx="63" cy="44" rx="3.6" ry="${ry}"/>`;
+  const sob = !sem && n < 45 ? '<path class="bas-rosto-s" d="M30 37.5 Q35.5 36.5 41 33.5M70 37.5 Q64.5 36.5 59 33.5"/>' : '';
+  return `<span class="bas-rosto ${cls}" style="--t:${tam || 96}px;--c:${cor}" aria-hidden="true"><i class="bas-rosto-esf"></i><svg viewBox="0 0 100 100"><ellipse class="bas-rosto-luz" cx="38" cy="25" rx="17" ry="8.5"/><circle class="bas-rosto-aro" cx="50" cy="50" r="41.2"/>
+    <g class="bas-rosto-m"><g class="bas-rosto-o">${olhos}</g>${sob}<g class="bas-rosto-bw">${boca}</g></g></svg></span>`;
 }
+// o rosto acompanha o dedo ou o mouse (olhos até 3 unidades, cabeça até 6°); um quadro por vez, parado com "reduzir movimento"
+let basRostoQ = 0;
+document.addEventListener('pointermove', (e) => {
+  if (basRostoQ || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  basRostoQ = requestAnimationFrame(() => {
+    basRostoQ = 0;
+    document.querySelectorAll('.bas-rosto').forEach((r) => {
+      const b = r.getBoundingClientRect(); if (!b.width) return;
+      const dx = Math.max(-1, Math.min(1, (e.clientX - b.left - b.width / 2) / 220)); const dy = Math.max(-1, Math.min(1, (e.clientY - b.top - b.height / 2) / 220));
+      r.style.setProperty('--ox', (dx * 3).toFixed(2) + 'px'); r.style.setProperty('--oy', (dy * 2.5).toFixed(2) + 'px'); r.style.setProperty('--rz', (dx * 6).toFixed(1) + 'deg');
+    });
+  });
+}, { passive: true });
+document.addEventListener('pointerdown', (e) => {
+  const r = e.target.closest && e.target.closest('.bas-sd-r, .bas-sdx-scan'); const f = r && r.querySelector('.bas-rosto'); if (!f) return;
+  f.classList.remove('pulo'); void f.offsetWidth; f.classList.add('pulo');
+}, { passive: true });
 function basSaudeResumo(H) {
   const frase = H.nota == null ? voz('bas_vazio') : voz(H.nota >= 80 ? 'bas_saude_bom' : H.nota >= 60 ? 'bas_saude_med' : 'bas_saude_baixo');
   return basSecao('Sua saúde financeira', '', `<button class="card bas-sd-r" ${basIr('saude')}>${basRosto(H.nota, 76)}<span class="bas-n"><b>${H.nota == null ? 'Sem nota ainda' : `${H.nota} de 100`}</b><small>${frase}</small><span class="bas-sd-ver">Ver a análise completa ${I.chev}</span></span></button>`);

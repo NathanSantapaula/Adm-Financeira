@@ -820,12 +820,6 @@ button.bas-cc-c { border: 0; font: inherit; text-align: left; cursor: pointer; t
 .bas-lim-add { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; } .bas-lim-add small { width: 100%; font-size: 12.5px; color: var(--ink-3); }
 .bas-lim-add button { display: inline-flex; align-items: center; gap: 4px; min-height: 36px; padding: 0 12px; border: 0; border-radius: var(--r-pill); background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); font: inherit; font-size: 13px; font-weight: 650; } .bas-lim-add svg { width: 14px; height: 14px; stroke-width: 2.4; }
 /* o rostinho: olhos que piscam, boca pela nota, bochechas quando está bem */
-.bas-rosto { display: inline-grid; width: var(--t); height: var(--t); flex: none; animation: bas-flutua 4s ease-in-out infinite; }
-.bas-rosto svg { width: 100%; height: 100%; overflow: visible; }
-.bas-rosto-f { fill: color-mix(in srgb, var(--c) 18%, var(--surface)); stroke: var(--c); stroke-width: 3; filter: drop-shadow(0 0 12px color-mix(in srgb, var(--c) 45%, transparent)); }
-.bas-rosto-o ellipse { fill: var(--ink); transform-box: fill-box; transform-origin: center; animation: bas-pisca 5s infinite; }
-.bas-rosto-b, .bas-rosto-s { fill: none; stroke: var(--ink); stroke-width: 3.6; stroke-linecap: round; } .bas-rosto-c { fill: color-mix(in srgb, #ff6b8a 45%, transparent); }
-.bas-rosto.ok { --c: var(--pos); } .bas-rosto.atencao { --c: var(--warn); } .bas-rosto.baixo { --c: var(--neg); } .bas-rosto.sem { --c: var(--ink-3); }
 @keyframes bas-pisca { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
 @keyframes bas-flutua { 0%, 100% { translate: 0 0; } 50% { translate: 0 -4px; } }
 .card.bas-sd-r { width: 100%; display: flex; align-items: center; gap: 16px; padding: 16px; border-radius: 24px; color: inherit; font: inherit; text-align: left; }
@@ -882,3 +876,32 @@ button.bas-cc-c { border: 0; font: inherit; text-align: left; cursor: pointer; t
 @media (prefers-reduced-motion: reduce) { .card.bas-pj-bt, .bas-pj-t, .bas-pj-i, .bas-pj-ok { transition: none; } }
 .bas-pj-t b.vz { font-size: 15px; font-weight: 650; color: var(--ink-2); }
 .bas-pj-est { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: -6px; } .bas-pj-est button { min-width: 0; padding: 0 4px; font-size: 13px; }
+
+/* ---------- o rosto da saúde (rodada 8): esfera de vidro na cor da nota, aro de luz girando, olhos que seguem o dedo ---------- */
+.bas-rosto { position: relative; display: inline-grid; width: var(--t); height: var(--t); flex: none; animation: bas-flutua 4.2s ease-in-out infinite; }
+.bas-rosto::before { content: ''; position: absolute; inset: 8%; border-radius: 50%; background: var(--c); filter: blur(calc(var(--t) * .16)); opacity: .45; animation: bas-aura 3.6s ease-in-out infinite; }
+.bas-rosto::after { content: ''; position: absolute; inset: 1%; border-radius: 50%; background: conic-gradient(from 0deg, transparent 0 55%, color-mix(in srgb, var(--c) 70%, #fff) 80%, transparent 100%);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px)); mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px)); animation: bas-giro 5s linear infinite; opacity: .9; }
+.bas-rosto svg { position: relative; z-index: 1; width: 100%; height: 100%; overflow: visible; rotate: var(--rz, 0deg); transition: rotate 500ms var(--ease-out); animation: bas-respira 3.6s ease-in-out infinite; }
+.bas-rosto-esf { position: absolute; inset: 8%; border-radius: 50%; background: radial-gradient(circle at 38% 30%, color-mix(in oklab, var(--c) 45%, #fff), var(--c) 55%, color-mix(in oklab, var(--c) 70%, #000)); box-shadow: inset 0 -6px 12px color-mix(in oklab, var(--c) 60%, #000), 0 8px 18px -6px color-mix(in srgb, var(--c) 60%, transparent); transition: background 600ms ease; }
+.bas-rosto-luz { fill: #fff; opacity: .32; } .bas-rosto-aro { fill: none; stroke: rgba(255, 255, 255, .35); stroke-width: .8; }
+.bas-rosto-m { --tr: color-mix(in oklab, var(--c) 22%, var(--bas-noite)); transform: translate(var(--ox, 0), var(--oy, 0)); transition: transform 400ms var(--ease-out); }
+.bas-rosto-o { transform-box: fill-box; transform-origin: center; animation: bas-pisca 5.5s infinite, bas-olha 11s ease-in-out infinite; }
+.bas-rosto-o ellipse { fill: var(--tr); } .bas-rosto-arc, .bas-rosto-s { fill: none; stroke: var(--tr); stroke-width: 3.4; stroke-linecap: round; } .bas-rosto-s { stroke-width: 2.6; opacity: .8; }
+.bas-rosto-b { fill: none; stroke: var(--tr); stroke-width: 3.6; stroke-linecap: round; stroke-linejoin: round; } .bas-rosto-b.cheia { fill: var(--tr); stroke-width: 2.4; }
+.bas-rosto-bw { transform-box: fill-box; transform-origin: center; animation: bas-boca 900ms var(--ease-out) both; }
+.bas-rosto.ok .bas-rosto-bw { animation: bas-boca 900ms var(--ease-out) both, bas-sorri 4.4s 1s ease-in-out infinite; }
+.bas-rosto.ok svg { animation: bas-respira 3.6s ease-in-out infinite, bas-balanca 6s ease-in-out infinite; }
+.bas-rosto.baixo { animation-duration: 6s; } .bas-rosto.baixo svg { animation: bas-respira 5s ease-in-out infinite, bas-cai 7s ease-in-out infinite; } .bas-rosto.baixo::after { animation-duration: 9s; opacity: .5; }
+.bas-rosto.sem::after { opacity: .3; }
+.bas-rosto.pulo { animation: bas-pulo 620ms var(--ease-out); }
+@keyframes bas-aura { 0%, 100% { opacity: .35; transform: scale(.96); } 50% { opacity: .6; transform: scale(1.06); } }
+@keyframes bas-giro { to { transform: rotate(1turn); } }
+@keyframes bas-respira { 0%, 100% { scale: 1; } 50% { scale: 1.025; } }
+@keyframes bas-olha { 0%, 30%, 100% { translate: 0 0; } 36%, 44% { translate: -2.5px 0; } 52%, 60% { translate: 2.5px -.5px; } 66% { translate: 0 0; } }
+@keyframes bas-boca { from { transform: scale(.5, .2); opacity: 0; } }
+@keyframes bas-sorri { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08, 1.12); } }
+@keyframes bas-balanca { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-3deg); } 75% { transform: rotate(3deg); } }
+@keyframes bas-cai { 0%, 100% { transform: rotate(0) translateY(0); } 50% { transform: rotate(-4deg) translateY(1.5px); } }
+@keyframes bas-pulo { 0% { transform: none; } 30% { transform: translateY(-14%) scale(.94, 1.06); } 55% { transform: translateY(0) scale(1.08, .92); } 75% { transform: scale(.97, 1.03); } 100% { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .bas-rosto, .bas-rosto::before, .bas-rosto::after, .bas-rosto svg, .bas-rosto-o, .bas-rosto-bw, .bas-rosto.ok svg, .bas-rosto.baixo svg, .bas-rosto.ok .bas-rosto-bw, .bas-rosto.pulo { animation: none; } .bas-rosto-m, .bas-rosto svg { transition: none; } }
