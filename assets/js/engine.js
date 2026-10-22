@@ -448,11 +448,14 @@
     fluxo: 'gratis', orcamento: 'gratis', ingestao: 'gratis', backup: 'gratis',
     investimentos: 'investidor', proventos: 'investidor', patrimonio: 'investidor', carteira: 'investidor', ingestao_invest: 'investidor', importar: 'investidor',
     carteira_recomendada: 'completo', relatorios: 'completo', ia_pdf: 'completo', visao_consultor: 'completo',
+    aporte_simples: 'gratis', // registrar aporte no modo Básico (o Básico é a tela do plano gratuito)
   };
   const ABA_RECURSO = { geral: 'fluxo', rendas: 'fluxo', despesas: 'fluxo', inv: 'investimentos', pro: 'proventos', cart: 'carteira', relatorio: 'relatorios' };
   const planoNorm = (p) => (PLANOS[p] ? p : 'gratis');
   const planoPermite = (plano, recurso) => !RECURSOS[recurso] || PLANOS[planoNorm(plano)].rank >= PLANOS[RECURSOS[recurso]].rank;
   const planoMinimo = (recurso) => RECURSOS[recurso] || 'gratis';
+  // interface do painel: o plano gratuito vê só o Básico; pagantes escolhem (perfil.interface), se o Básico estiver liberado para eles
+  const interfaceDe = (plano, escolha, pagantesBasico) => (planoNorm(plano) === 'gratis' || (pagantesBasico !== false && escolha === 'basico') ? 'basico' : 'completo');
 
   /* ---------- Análise de investimentos e proventos (métricas de estudo) ----------
      itens: [{ nome, tipo, classe, valor (posição atual), ap[12], pr[12] }]
@@ -1138,7 +1141,7 @@
     const dias = (Date.UTC(y, m, d) - pascoa(y)) / 864e5; return [-48, -47, -2, 60].includes(dias); // carnaval (seg e ter), sexta-feira santa, Corpus Christi
   }
   const diaUtilBR = (y, m, d) => { const s = new Date(Date.UTC(y, m, d)).getUTCDay(); return s !== 0 && s !== 6 && !feriadoBR(y, m, d); };
-  const api = { PLANOS, RECURSOS, ABA_RECURSO, planoPermite, planoMinimo, planoNorm, parseDataISO, MES, MES_LONGO, TAXONOMIA, ASSET_LEVELS, QUIZ, PERFIS, RETORNO_PADRAO, CATS_DESP, CATS_RENDA, FORMATO_BACKUP,
+  const api = { PLANOS, RECURSOS, ABA_RECURSO, planoPermite, planoMinimo, planoNorm, interfaceDe, parseDataISO, MES, MES_LONGO, TAXONOMIA, ASSET_LEVELS, QUIZ, PERFIS, RETORNO_PADRAO, CATS_DESP, CATS_RENDA, FORMATO_BACKUP,
     z, add, sub, sum, r2, norm, monthIndex, parseValor, distribuir, parcelaMeses, parcelaFim, parcelaIndice, itemValores, carryItems,
     ativoKey, buildAssetTree, rebalance, contasMes, variacao, janelaAnterior, analiseInvest, disponivelAporte, analiseRenda, analiseGastos, analiseCarteira, nomeEstab, historico, ctxAno, OBJ_TIPOS, normObjetivos, analiseObjetivos, sugerirDivisao, aporteNecessario, notificacoes, scorePerfil, projetar, mesesAteMeta, simularObjetivo, migratePlan, compute, makeBackup, parseBackup,
     templateSheets, parseImport, applyImport, gastosAreaMes, analiseLimites, repetirValores, acharFixo, feriadoBR, diaUtilBR, IA_INTENCOES, IA_FICHAS, IA_PRODUTOS, iaIntencao, iaProduto, iaValor, iaParcelas, iaResponder };

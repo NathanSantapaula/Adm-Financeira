@@ -82,6 +82,7 @@ planoL.despesas[0].baixas = { '2027-2': true }; CL = E.compute(planoL, {});
 ok(Math.abs(CL.despesas[2] - 130.5) < 1e-9 && CL.despesas[3] === 400, 'baixa tira o previsto só do mês realizado');
 ok(Math.abs(CL.despCat.variavel[2] - 130.5) < 1e-9, 'gasto por categoria soma os lançamentos');
 ok(E.planoPermite('gratis', 'orcamento') && !E.planoPermite('gratis', 'carteira') && E.planoPermite('investidor', 'carteira') && !E.planoPermite('investidor', 'relatorios') && E.planoPermite('completo', 'ia_pdf') && E.planoPermite('qualquer', 'fluxo') && !E.planoPermite('qualquer', 'investimentos'), 'matriz de planos: gratuito, investidor e assessoria');
+ok(E.interfaceDe('gratis', 'completo') === 'basico' && E.interfaceDe('qualquer') === 'basico' && E.interfaceDe('investidor') === 'completo' && E.interfaceDe('completo', 'basico') === 'basico' && E.interfaceDe('investidor', 'basico', false) === 'completo' && E.planoPermite('gratis', 'aporte_simples'), 'interface: gratuito só no Básico, pagantes escolhem');
 
 // --- análise de investimentos e proventos
 {

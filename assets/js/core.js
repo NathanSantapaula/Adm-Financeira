@@ -72,6 +72,7 @@ function hydrateProfile(p) {
   const av = p.avatar; p.avatar = av && av.tipo === 'foto' && /^data:image\/(webp|jpeg|png);base64,/.test(av.data || '') && av.data.length < 400000 ? { tipo: 'foto', data: av.data } : av && av.tipo === 'preset' && typeof av.id === 'string' ? { tipo: 'preset', id: av.id.slice(0, 60) } : null;
   p.patrimonioInicial = +p.patrimonioInicial || 0; p.patrimonioAno = Number.isInteger(+p.patrimonioAno) && +p.patrimonioAno >= 1990 && p.patrimonioAno !== null && p.patrimonioAno !== '' ? +p.patrimonioAno : null; p.rendaMensal = +p.rendaMensal || 0;
   p.anoRef = (p.anoRef | 0) || NOW_Y; p.onboarded = !!p.onboarded; p.retornoAnual = p.retornoAnual != null ? +p.retornoAnual : 10;
+  p.interface = p.interface === 'basico' ? 'basico' : 'completo'; // versão do painel (o plano gratuito vê só o Básico: E.interfaceDe)
   p.planoSolicitado = p.planoSolicitado === 'completo' || p.planoSolicitado === 'investidor' ? p.planoSolicitado : null;
   p.prefs = Object.assign({ tema: 'auto', voz: 'consultivo' }, p.prefs || {});
   const ab = p.abertura && typeof p.abertura === 'object' ? p.abertura : {}; p.abertura = {};
