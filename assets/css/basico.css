@@ -606,14 +606,22 @@ html[data-vt="aba"]::view-transition-new(root) { animation: 260ms cubic-bezier(.
 .bas-membro-st span { display: flex; flex-direction: column; } .bas-membro-st small { font-size: 10.5px; opacity: .7; letter-spacing: .06em; text-transform: uppercase; } .bas-membro-st b { font-size: 16px; font-variant-numeric: tabular-nums; }
 .bas-membro-dica { padding: 0 22px; font-size: 11px; opacity: .6; text-align: right; }
 .bas-membro.mexe .bas-membro-in { transition: transform 800ms cubic-bezier(.2, .9, .25, 1.15); }
-/* conquistas */
-.bas-conq { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.bas-conq-c { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 14px 8px 12px; border-radius: 20px; background: var(--surface); box-shadow: var(--shadow); text-align: center; }
-.bas-conq-c b { font-size: 13px; line-height: 1.2; } .bas-conq-c small { font-size: 11px; line-height: 1.3; color: var(--ink-3); }
-.bas-conq-i { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 50%; background: color-mix(in srgb, var(--ink) 7%, transparent); color: var(--ink-3); font-size: 20px; }
-.bas-conq-i svg { width: 18px; height: 18px; }
-.bas-conq-c.ok .bas-conq-i { color: #1a1406; background: linear-gradient(135deg, #f3d98b, #fff4cf 40%, #d9b45a); box-shadow: 0 8px 18px -8px rgba(217, 180, 90, .9); }
-.bas-conq-c:not(.ok) b { color: var(--ink-2); }
+/* saúde financeira: a nota num anel e quatro indicadores com a situação de cada um */
+.card.bas-sd { display: flex; align-items: center; gap: 16px; padding: 16px 18px; border-radius: 24px; }
+.bas-sd p { margin: 0; font-size: 15px; font-weight: 550; line-height: 1.4; }
+.bas-sd .bas-anel-c { display: flex; flex-direction: column; align-items: center; justify-content: center; } .bas-sd .bas-anel-c b { font-size: 28px; font-weight: 750; line-height: 1; } .bas-sd .bas-anel-c small { font-size: 11px; color: var(--ink-3); }
+.bas-anel.atencao .bas-anel-v { stroke: var(--warn); } .bas-anel.baixo .bas-anel-v { stroke: var(--neg); }
+.bas-sd-g { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; margin-top: 10px; }
+.bas-sd-t { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 14px; border: 0; border-radius: 20px; background: var(--surface); box-shadow: var(--shadow); color: inherit; font: inherit; text-align: left; position: relative; overflow: hidden; transition: transform 120ms var(--ease-out); }
+.bas-sd-t:active { transform: scale(.97); }
+.bas-sd-t::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 4px; background: var(--ink-3); }
+.bas-sd-t.ok::before { background: var(--pos); } .bas-sd-t.atencao::before { background: var(--warn); } .bas-sd-t.baixo::before { background: var(--neg); }
+.bas-sd-h { display: flex; align-items: center; justify-content: space-between; gap: 6px; width: 100%; } .bas-sd-h b { font-size: 14px; }
+.bas-sd-h em { font-style: normal; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: var(--r-pill); color: var(--ink-2); background: color-mix(in srgb, var(--ink) 7%, transparent); white-space: nowrap; }
+.bas-sd-t.ok em { color: var(--pos); background: var(--pos-soft); } .bas-sd-t.atencao em { color: var(--warn); background: var(--warn-soft); } .bas-sd-t.baixo em { color: var(--neg); background: var(--neg-soft); }
+.bas-sd-v { font-size: 22px; font-weight: 750; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.bas-sd-t small { font-size: 12.5px; line-height: 1.35; color: var(--ink-2); }
+@media (prefers-reduced-motion: reduce) { .bas-sd-t { transition: none; } }
 /* abas do assistente */
 .seg.bas-ia-abas { display: grid; grid-template-columns: 1fr 1fr; margin: 6px 0 12px; }
 .bas-ia-abas button { min-height: 40px; } .bas-ia-abas em { font-style: normal; margin-left: 4px; padding: 0 7px; border-radius: var(--r-pill); background: var(--accent); color: var(--on-accent); font-size: 12px; }

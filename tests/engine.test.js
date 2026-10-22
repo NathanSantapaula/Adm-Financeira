@@ -424,12 +424,11 @@ ok(E.interfaceDe('gratis', 'completo') === 'basico' && E.interfaceDe('qualquer')
 
 { const pl = { year: 2026, despesas: [{ id: 'f', area: 'Moradia', valores: new Array(12).fill(1000) }], lancamentos: [{ data: '2026-02-10', area: 'Lazer', valor: 50 }, { data: '2026-05-01', area: 'Lazer', valor: 30 }] };
   const g = E.gastosAreaPeriodo(pl, [], 0, 2); ok(g.Moradia === 3000 && g.Lazer === 50, 'gastos por área num período somam os meses'); }
-{ const z = () => new Array(12).fill(0); const Cq = { aplicado: [500, 1000, 1000, 0].concat(new Array(8).fill(0)), metaAporteMes: new Array(12).fill(1000), investAlocado: [100, 200, 300, -50].concat(new Array(8).fill(0)),
-    receita: [5000, 5000, 5000, 5000].concat(new Array(8).fill(0)), despesas: [3000, 3000, 3000, 3000].concat(new Array(8).fill(0)), patrimonio: [10000, 11000, 12000, 20000].concat(new Array(8).fill(20000)) };
-  const q = E.conquistas({ C: Cq, ult: 3, objetivos: [{ progresso: 0.6 }] }); const ok1 = (id) => q.find((x) => x.id === id).ok;
-  ok(ok1('primeiro-aporte') && ok1('meta-mes') && ok1('tres-azul') && ok1('poupador') && ok1('reserva') && ok1('meio-sonho'), 'conquistas: todas cumpridas no exemplo');
-  const q2 = E.conquistas({ C: { aplicado: z(), metaAporteMes: z(), investAlocado: z(), receita: z(), despesas: z(), patrimonio: z() }, ult: 3, objetivos: [] });
-  ok(q2.every((x) => !x.ok), 'conquistas: nenhuma sem dados'); }
+{ const z = () => new Array(12).fill(0); const Cq = { receita: [5000, 5000, 5000, 5000].concat(new Array(8).fill(0)), despesas: [3000, 3000, 3000, 3000].concat(new Array(8).fill(0)), patrimonio: [10000, 11000, 12000, 20000].concat(new Array(8).fill(20000)) };
+  const h = E.saudeFinanceira({ C: Cq, ult: 3, fixosMes: 2000, objetivo: { progresso: 0.4, status: 'atrasado' } }); const it = (id) => h.itens.find((x) => x.id === id);
+  ok(Math.abs(it('reserva').valor - 6.67) < 0.01 && it('reserva').sit === 'ok' && Math.abs(it('poupanca').valor - 0.4) < 1e-9 && it('poupanca').sit === 'ok' && Math.abs(it('fixos').valor - 0.4) < 1e-9 && it('fixos').sit === 'ok' && it('sonho').sit === 'atencao' && h.nota === 90, 'saúde financeira: reserva, poupança, contas fixas, sonho e a nota');
+  const h2 = E.saudeFinanceira({ C: { receita: z(), despesas: z(), patrimonio: z() }, ult: 3, fixosMes: 0 });
+  ok(h2.nota === null && h2.itens.every((x) => x.sit === 'sem'), 'saúde financeira: sem dados, sem nota'); }
 
 // os scripts da interface dividem o escopo global: um nome de topo repetido entre arquivos derruba o arquivo inteiro no navegador
 { const fs = require('fs'); const path = require('path'); const dir = path.join(__dirname, '..', 'assets', 'js'); const dono = {}; const rep = [];

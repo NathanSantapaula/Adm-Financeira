@@ -694,21 +694,27 @@
     const out = {}; for (let m = Math.max(0, de); m <= Math.min(11, ate); m++) { const g = gastosAreaMes(plan, carry, m); Object.keys(g).forEach((k) => { out[k] = r2((out[k] || 0) + g[k]); }); }
     return out;
   }
-  /* conquistas do App: marcos do ano até o mês ult (inclusive). o: { C (compute), ult, objetivos (itens de analiseObjetivos) } */
-  function conquistas(o) {
+  /* saúde financeira do App: quatro indicadores com situação (ok, atencao, baixo) e uma nota de 0 a 100, até o mês ult.
+     o: { C (compute), ult, fixosMes (contas fixas e parcelas do mês ult), objetivo (o principal, de analiseObjetivos) } */
+  function saudeFinanceira(o) {
     const C = o.C || {}; const ult = Math.max(0, Math.min(11, o.ult == null ? 11 : o.ult)); const ate = (a) => (a || []).slice(0, ult + 1);
-    const ap = ate(C.aplicado); const meta = ate(C.metaAporteMes); const sob = ate(C.investAlocado); const rec = sum(ate(C.receita)); const gas = ate(C.despesas);
-    let seq = 0; let melhorSeq = 0; sob.forEach((v) => { seq = v > 0.005 ? seq + 1 : 0; melhorSeq = Math.max(melhorSeq, seq); });
+    const rec = ate(C.receita); const gas = ate(C.despesas); const recT = sum(rec); const gasT = sum(gas);
     const mesesGasto = gas.filter((v) => v > 0.005); const mediaGasto = mesesGasto.length ? sum(mesesGasto) / mesesGasto.length : 0;
-    const patr = (C.patrimonio || [])[ult] || 0;
-    return [
-      { id: 'primeiro-aporte', nome: 'Primeiro investimento', desc: 'Investiu pela primeira vez no ano.', ok: ap.some((v) => v > 0.005) },
-      { id: 'meta-mes', nome: 'Meta batida', desc: 'Investiu a meta do mês ao menos uma vez.', ok: ap.some((v, i) => (+meta[i] || 0) > 0 && v >= meta[i] - 0.005) },
-      { id: 'tres-azul', nome: 'Três meses no azul', desc: 'Sobrou dinheiro três meses seguidos.', ok: melhorSeq >= 3 },
-      { id: 'poupador', nome: 'Poupador', desc: 'Guardou 20% ou mais do que entrou no ano.', ok: rec > 0 && (rec - sum(gas)) / rec >= 0.2 },
-      { id: 'reserva', nome: 'Reserva de 6 meses', desc: 'O patrimônio cobre seis meses de gastos.', ok: mediaGasto > 0 && patr >= mediaGasto * 6 },
-      { id: 'meio-sonho', nome: 'Meio caminho', desc: 'Um dos seus sonhos passou da metade.', ok: (o.objetivos || []).some((g) => (g.progresso || 0) >= 0.5) },
+    const mesesRenda = rec.filter((v) => v > 0.005); const mediaRenda = mesesRenda.length ? sum(mesesRenda) / mesesRenda.length : 0;
+    const patr = (C.patrimonio || [])[ult] || 0; const nota = (v, bom, med) => (v == null ? null : v >= bom ? 1 : v >= med ? 0.6 : 0.25);
+    const sit = (n) => (n == null ? 'sem' : n >= 1 ? 'ok' : n >= 0.6 ? 'atencao' : 'baixo');
+    const reserva = mediaGasto > 0 ? patr / mediaGasto : null; const poupanca = recT > 0 ? (recT - gasT) / recT : null;
+    const fixos = mediaRenda > 0 && o.fixosMes != null ? o.fixosMes / mediaRenda : null; const g = o.objetivo || null;
+    const nR = nota(reserva, 6, 3); const nP = nota(poupanca, 0.2, 0.1); const nF = fixos == null ? null : fixos <= 0.5 ? 1 : fixos <= 0.7 ? 0.6 : 0.25;
+    const nS = !g ? null : g.status === 'concluido' || g.status === 'no-prazo' ? 1 : g.status === 'sem-prazo' ? 0.8 : g.status === 'atrasado' ? 0.6 : 0.25;
+    const itens = [
+      { id: 'reserva', valor: reserva == null ? null : r2(reserva), meta: 6, nota: nR, sit: sit(nR) },
+      { id: 'poupanca', valor: poupanca, meta: 0.2, nota: nP, sit: sit(nP) },
+      { id: 'fixos', valor: fixos, meta: 0.5, nota: nF, sit: sit(nF) },
+      { id: 'sonho', valor: g ? g.progresso : null, status: g ? g.status : null, nota: nS, sit: sit(nS) },
     ];
+    const com = itens.filter((x) => x.nota != null);
+    return { itens, nota: com.length ? Math.round((sum(com.map((x) => x.nota)) / com.length) * 100) : null, mediaGasto: r2(mediaGasto), mediaRenda: r2(mediaRenda) };
   }
   // cada limite com o gasto da área (nome comparado sem acento nem maiúscula); 80% ou mais = perto, acima de 100% = passou
   function analiseLimites(limites, gastos) {
@@ -1171,6 +1177,6 @@
   const api = { PLANOS, RECURSOS, ABA_RECURSO, planoPermite, planoMinimo, planoNorm, interfaceDe, parseDataISO, MES, MES_LONGO, TAXONOMIA, ASSET_LEVELS, QUIZ, PERFIS, RETORNO_PADRAO, CATS_DESP, CATS_RENDA, FORMATO_BACKUP,
     z, add, sub, sum, r2, norm, monthIndex, parseValor, distribuir, parcelaMeses, parcelaFim, parcelaIndice, itemValores, carryItems,
     ativoKey, buildAssetTree, rebalance, contasMes, gastosPorInst, variacao, janelaAnterior, analiseInvest, disponivelAporte, analiseRenda, analiseGastos, analiseCarteira, nomeEstab, historico, ctxAno, OBJ_TIPOS, normObjetivos, analiseObjetivos, sugerirDivisao, aporteNecessario, notificacoes, scorePerfil, projetar, mesesAteMeta, simularObjetivo, migratePlan, compute, makeBackup, parseBackup,
-    templateSheets, parseImport, applyImport, gastosAreaMes, gastosAreaPeriodo, conquistas, analiseLimites, repetirValores, acharFixo, feriadoBR, diaUtilBR, IA_INTENCOES, IA_FICHAS, IA_PRODUTOS, iaIntencao, iaProduto, iaValor, iaParcelas, iaResponder };
+    templateSheets, parseImport, applyImport, gastosAreaMes, gastosAreaPeriodo, saudeFinanceira, analiseLimites, repetirValores, acharFixo, feriadoBR, diaUtilBR, IA_INTENCOES, IA_FICHAS, IA_PRODUTOS, iaIntencao, iaProduto, iaValor, iaParcelas, iaResponder };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.FPEngine = api;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -22,11 +22,14 @@ const I_VOLTA = ic('<path d="m15 6-6 6 6 6"/>');
 // textos de orientação nas três vozes (os números nunca mudam com a voz)
 const BAS_VOZ = {
   consultivo: { bas_disp_sim: 'É o que sobrou e ainda não foi investido.', bas_disp_tudo: 'Tudo o que sobrou já foi investido.', bas_disp_nao: 'Este mês ainda não sobrou dinheiro para investir.',
-    bas_vazio: 'Anote o que entrou e o que saiu, e o painel mostra quanto sobra.', bas_meta_ok: 'Meta do mês cumprida.', bas_meta_sem: 'Defina quanto quer investir por mês.' },
+    bas_vazio: 'Anote o que entrou e o que saiu, e o painel mostra quanto sobra.', bas_meta_ok: 'Meta do mês cumprida.', bas_meta_sem: 'Defina quanto quer investir por mês.',
+    bas_saude_bom: 'Base sólida: reserva, sobra e contas em equilíbrio.', bas_saude_med: 'Bom caminho. Um ou dois pontos merecem atenção.', bas_saude_baixo: 'Vale fortalecer a base antes de acelerar.' },
   direto: { bas_disp_sim: 'Sobrou e não foi investido.', bas_disp_tudo: 'Sobra toda investida.', bas_disp_nao: 'Sem sobra este mês.',
-    bas_vazio: 'Anote entradas e gastos para ver a sobra.', bas_meta_ok: 'Meta cumprida.', bas_meta_sem: 'Defina a meta mensal.' },
+    bas_vazio: 'Anote entradas e gastos para ver a sobra.', bas_meta_ok: 'Meta cumprida.', bas_meta_sem: 'Defina a meta mensal.',
+    bas_saude_bom: 'Tudo em ordem.', bas_saude_med: 'Ajuste os pontos em amarelo.', bas_saude_baixo: 'Fortaleça a base primeiro.' },
   acolhedor: { bas_disp_sim: 'Esse dinheiro sobrou e está esperando por você.', bas_disp_tudo: 'Tudo o que sobrou já está investido. Que orgulho!', bas_disp_nao: 'Este mês ainda não sobrou. Tudo bem, um passo de cada vez.',
-    bas_vazio: 'Vamos começar? Anote o que entrou e o que saiu e eu mostro quanto sobra.', bas_meta_ok: 'Você cumpriu a meta do mês!', bas_meta_sem: 'Que tal definir quanto quer investir por mês?' },
+    bas_vazio: 'Vamos começar? Anote o que entrou e o que saiu e eu mostro quanto sobra.', bas_meta_ok: 'Você cumpriu a meta do mês!', bas_meta_sem: 'Que tal definir quanto quer investir por mês?',
+    bas_saude_bom: 'Que orgulho! Sua base está firme.', bas_saude_med: 'Você está indo bem. Dá para cuidar de um ou dois pontos.', bas_saude_baixo: 'Sem pressa: vamos fortalecer a base juntos.' },
 };
 Object.keys(BAS_VOZ).forEach((t) => { if (VOZ[t]) Object.assign(VOZ[t], BAS_VOZ[t]); });
 
@@ -313,19 +316,35 @@ function basTelaSonhos() {
   return basDet('Meus sonhos', `${palco}${sim}${lista}<button class="btn lg bas-cta bas-add" ${basIr('objetivo')}>${I.plus}Novo sonho</button><p class="bas-disc keep">Projeção ilustrativa, sem promessa de rentabilidade.</p>`);
 }
 
-/* ---- Perfil: o cartão de membro (inclina com o dedo e vira com um toque, com os seus números atrás), conquistas, cor, voz e ajustes ---- */
+/* ---- saúde financeira (E.saudeFinanceira): nota de 0 a 100 e quatro indicadores, cada um com o que significa e onde agir ---- */
+function basSaude(ult) { const g = objFoco(objAnalise()); return E.saudeFinanceira({ C: S.C, ult, fixosMes: basContas(ult).total, objetivo: g }); }
+const BAS_SIT = { ok: 'Em dia', atencao: 'Atenção', baixo: 'Cuidar', sem: 'Sem dados' };
+const BAS_OBJ_ST = { concluido: 'concluído', 'no-prazo': 'no prazo', atrasado: 'atrasado', fora: 'fora do alcance', 'sem-prazo': 'sem prazo', 'sem-divisao': 'sem parte do patrimônio', 'sem-valor': 'sem valor' };
+function basSaudeHtml(H) {
+  const v = (x) => x.valor == null; const L = {
+    reserva: ['Reserva', (x) => (v(x) ? '–' : `${x.valor.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} meses`), 'dos seus gastos guardados. O ideal é 6.', 'data-act="bas-aba" data-v="investir"'],
+    poupanca: ['Sobra', (x) => (v(x) ? '–' : pct(x.valor)), 'do que entrou no ano ficou com você. O ideal é 20% ou mais.', basPago() ? basIr('ano-resumo') : 'data-act="bas-aba" data-v="gastos"'],
+    fixos: ['Contas fixas', (x) => (v(x) ? '–' : pct(x.valor)), 'da renda já tem destino todo mês. O ideal é até 50%.', 'data-act="bas-aba" data-v="gastos"'],
+    sonho: ['Sonho principal', (x) => (v(x) ? '–' : pct(x.valor)), '', basIr('sonhos')] };
+  const tiles = H.itens.map((x) => { const [n, fv, d, at] = L[x.id]; const desc = x.id === 'sonho' ? (x.status ? `do caminho, ${BAS_OBJ_ST[x.status] || ''}.` : 'Dê um nome ao seu sonho para acompanhar.') : x.sit === 'sem' ? 'Anote entradas e gastos para medir.' : d;
+    return `<button class="bas-sd-t ${x.sit}" ${at}><span class="bas-sd-h"><b>${n}</b><em>${BAS_SIT[x.sit]}</em></span><span class="bas-sd-v">${fv(x)}</span><small>${desc}</small></button>`; }).join('');
+  const frase = H.nota == null ? voz('bas_vazio') : voz(H.nota >= 80 ? 'bas_saude_bom' : H.nota >= 60 ? 'bas_saude_med' : 'bas_saude_baixo');
+  return basSecao('Sua saúde financeira', '', `<div class="card bas-sd">${basAnel(H.nota == null ? 0 : H.nota / 100, 108, `<b>${H.nota == null ? '–' : H.nota}</b><small>de 100</small>`, H.nota == null ? '' : H.nota >= 80 ? 'ok' : H.nota >= 60 ? 'atencao' : 'baixo')}<p>${frase}</p></div><div class="bas-sd-g">${tiles}</div>`);
+}
+
+/* ---- Perfil: o cartão de membro (inclina com o dedo e vira com um toque, com os seus números atrás), saúde financeira, cor, voz e ajustes ---- */
 function basPerfil() {
   const p = S.profile; const t = p.prefs.tema; const k = typeof temaCustom === 'function' ? temaCustom() : { cor: '' }; const custom = t === 'custom' || (t === 'auto' && p.prefs.manual === 'custom');
   const desde = (p.criadoEm && /^\d{4}/.test(p.criadoEm)) ? p.criadoEm.slice(0, 4) : String(S.year); const C = S.C; const ult = S.year === NOW_Y ? NOW_M : 11;
-  const Q = E.conquistas({ C, ult, objetivos: objAnalise().itens }); const feitas = Q.filter((q) => q.ok).length;
+  const H = basSaude(ult);
   const num = String((p.email || p.nome || 'aven').split('').reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7) % 10000).padStart(4, '0');
   const membro = `<div class="bas-membro-w"><div class="bas-membro${S.basVirado ? ' virado' : ''}" data-act="bas-virar" role="button" tabindex="0" aria-label="Cartão de membro. Toque para virar.">
     <div class="bas-membro-in"><div class="bas-membro-f"><span class="bas-membro-holo" aria-hidden="true"></span><span class="bas-membro-t"><span class="bas-membro-m" aria-hidden="true">${LOGO}</span><span class="bas-membro-pl${basPago() ? ' foil' : ''}">${esc(planLabel().replace(/^Plano /, ''))}</span></span>
       <span class="bas-membro-chip" aria-hidden="true"></span><span class="bas-membro-num" aria-hidden="true">•••• •••• •••• ${num}</span><span class="bas-membro-n">${esc(p.nome || 'Minha conta')}</span>
-      <span class="bas-membro-pe"><span><small>Membro desde</small><b>${esc(desde)}</b></span><span><small>Conquistas</small><b>${feitas}/${Q.length}</b></span><span class="bas-membro-nfc" aria-hidden="true">${CC_NFC}</span></span></div>
+      <span class="bas-membro-pe"><span><small>Membro desde</small><b>${esc(desde)}</b></span><span><small>Saúde</small><b>${H.nota == null ? '–' : H.nota}</b></span><span class="bas-membro-nfc" aria-hidden="true">${CC_NFC}</span></span></div>
     <div class="bas-membro-v"><span class="bas-membro-faixa" aria-hidden="true"></span><div class="bas-membro-st"><span><small>Patrimônio</small><b>${brl0(C.patrimonio[ult])}</b></span><span><small>Guardou no ano</small><b>${C.T.poupanca != null ? pct(C.T.poupanca) : '–'}</b></span>
       <span><small>Investido no ano</small><b>${brl0(C.T.aplicado)}</b></span><span><small>Sonhos</small><b>${objLista().length}</b></span></div><span class="bas-membro-dica">Toque para virar</span></div></div></div></div>`;
-  const conq = basSecao('Conquistas', `<small class="bas-raio-t">${feitas} de ${Q.length}</small>`, `<div class="bas-conq">${Q.map((q) => `<div class="bas-conq-c${q.ok ? ' ok' : ''}" title="${esc(q.desc)}"><span class="bas-conq-i" aria-hidden="true">${q.ok ? '★' : I.lock}</span><b>${esc(q.nome)}</b><small>${esc(q.desc)}</small></div>`).join('')}</div>`);
+  const conq = basSaudeHtml(H);
   const cores = `<div class="bas-cores" role="group" aria-label="Cor do app">${CORES_DESTAQUE.map(([c, n]) => `<button style="--c:${c}" data-act="bas-cor" data-v="${c}" aria-label="${n}" aria-pressed="${custom && k.cor && k.cor.toLowerCase() === c.toLowerCase()}"></button>`).join('')}</div>`;
   const temas = [['auto', 'Automático'], ['light', 'Claro'], ['oled', 'Escuro']].map(([v, l]) => `<button${t === v ? ' class="on"' : ''} data-act="bas-tema" data-v="${v}" aria-pressed="${t === v}">${l}</button>`).join('');
   const vozes = Object.keys(VOZES).map((v) => `<button class="bas-voz${tomAtual() === v ? ' on' : ''}" data-act="voz" data-voz="${v}" aria-pressed="${tomAtual() === v}"><b>${VOZES[v].nome}</b><small>${esc(VOZ[v].bas_disp_sim || '')}</small></button>`).join('');
