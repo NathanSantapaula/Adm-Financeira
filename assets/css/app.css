@@ -2864,20 +2864,32 @@ html.side-mini .nav-g { height: 1px; margin: 10px 14px; font-size: 0; background
 @keyframes ia-traco { 0% { stroke-dashoffset: 22; } 45%, 82% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -22; } }
 @keyframes ia-no { 0%, 100% { opacity: .55; } 30% { opacity: 1; } }
 @keyframes ia-brilho { 0%, 30% { transform: scale(.6); opacity: .55; } 48% { transform: scale(1.2); opacity: 1; } 65%, 85% { transform: scale(1); opacity: 1; } 100% { transform: scale(.6); opacity: .55; } }
-/* botão do topo */
-.ia-card, .iap, .bell.ia-btn { --ia-preto: #050507; } /* centro preto do botão e do painel, nos três temas */
-/* botão do topo: centro preto, borda colorida girando (o mesmo anel do painel) e a onda em miniatura */
-.bell.ia-btn { border-color: transparent; background: var(--ia-preto); box-shadow: 0 0 16px -4px color-mix(in srgb, var(--accent) 70%, transparent); }
-.bell.ia-btn::before { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 2px; background: conic-gradient(from var(--ia-ang), var(--accent), var(--b1), var(--accent-2), color-mix(in srgb, var(--accent) 50%, var(--b-luz)), var(--accent)); pointer-events: none;
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); animation: ia-gira 7s linear infinite; }
-.bell.ia-btn:hover, .bell.ia-btn[aria-expanded="true"] { background: var(--ia-preto); box-shadow: 0 0 22px -2px color-mix(in srgb, var(--accent) 85%, transparent); }
-.ia-mini { position: relative; width: 22px; height: 20px; display: block; transform: rotate(-14deg); }
-.ia-mini i { position: absolute; left: 50%; width: var(--w); height: 7px; border-radius: 50%; translate: -50% 0; top: calc(var(--k) * 4px);
-  background: linear-gradient(100deg, var(--accent), var(--accent-2), color-mix(in srgb, var(--accent) 60%, var(--b-luz))); box-shadow: inset 0 -2px 2px rgba(0, 0, 0, .35), 0 -1px 0 rgba(0, 0, 0, .55); }
-.ia-mini i:first-child { box-shadow: inset 0 1px 1px rgba(255, 255, 255, .45), inset 0 -2px 2px rgba(0, 0, 0, .3); }
-.bell.ia-btn .ia-mini i { animation: ia-mini 3.6s ease-in-out infinite alternate; animation-delay: calc(var(--k) * -.3s); }
-@keyframes ia-mini { from { transform: translateX(-1.5px); } to { transform: translateX(1.5px); } }
-@media (prefers-reduced-motion: reduce) { .bell.ia-btn::before, .bell.ia-btn .ia-mini i { animation: none; } }
+/* selo do assistente (botão do topo e cabeçalho do painel): centro preto, anel colorido girando, um brilho que respira
+   em volta e a onda da tela inicial em miniatura (6 camadas que balançam e trocam de cor); tudo parado com reduzir movimento */
+.ia-card, .iap, .bell.ia-btn, .ia-orb.ia-selo { --ia-preto: #050507; }
+.bell.ia-btn, .ia-orb.ia-selo { position: relative; overflow: visible; border-color: transparent;
+  background: radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--accent) 16%, var(--ia-preto)), var(--ia-preto) 68%);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent), 0 0 12px -2px color-mix(in srgb, var(--accent) 75%, transparent);
+  animation: ia-respira 3s ease-in-out infinite; transition: transform 140ms var(--ease-out); }
+.bell.ia-btn::before, .ia-orb.ia-selo::before { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 2px; pointer-events: none; z-index: 1;
+  background: conic-gradient(from var(--ia-ang), var(--accent), var(--b1), var(--accent-2), color-mix(in srgb, var(--accent) 45%, #fff), var(--accent));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); animation: ia-gira 6s linear infinite; }
+.bell.ia-btn:hover, .bell.ia-btn[aria-expanded="true"] { background: radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--accent) 26%, var(--ia-preto)), var(--ia-preto) 70%); }
+.bell.ia-btn:active { transform: scale(.92); }
+@keyframes ia-respira {
+  0%, 100% { box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent), 0 0 10px -3px color-mix(in srgb, var(--accent) 70%, transparent); }
+  50% { box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 55%, transparent), 0 0 22px 1px color-mix(in srgb, var(--accent) 85%, transparent), 0 0 34px 2px color-mix(in srgb, var(--accent-2) 35%, transparent); } }
+.ia-mini { position: relative; z-index: 2; width: 22px; height: 22px; display: block; transform: rotate(-12deg); filter: drop-shadow(0 0 3px color-mix(in srgb, var(--accent) 60%, transparent)); }
+.ia-mini > span { position: absolute; left: 50%; top: calc(var(--k) * 3px); width: var(--w); height: 7px; border-radius: 50%; translate: -50% 0;
+  background: linear-gradient(100deg, var(--c4), color-mix(in srgb, var(--accent-2) 75%, var(--c4)), var(--accent-2), var(--accent), var(--b1), var(--c4)); background-size: 300% 100%; background-position: calc(var(--k) * 12%) 0;
+  box-shadow: inset 0 -1.5px 1.5px rgba(0, 0, 0, .45), inset 0 1px 0 rgba(255, 255, 255, .45);
+  animation: ia-mini-dobra 3.2s ease-in-out infinite alternate, ia-mini-cor 9s linear infinite; animation-delay: calc(var(--k) * -.26s), calc(var(--k) * -.4s); }
+.ia-mini > span:first-child { height: 8px; box-shadow: inset 0 1.5px 1px rgba(255, 255, 255, .55), inset 0 -1.5px 1.5px rgba(0, 0, 0, .3); }
+@keyframes ia-mini-dobra { from { transform: translateX(-1.3px) skewX(12deg); } to { transform: translateX(1.3px) skewX(-12deg); } }
+@keyframes ia-mini-cor { to { background-position: calc(var(--k) * 12% + 300%) 0; } }
+.ia-orb.ia-selo { display: grid; place-items: center; }
+.ia-orb.ia-selo .ia-mini { transform: rotate(-12deg) scale(1.15); }
+@media (prefers-reduced-motion: reduce) { .bell.ia-btn, .ia-orb.ia-selo, .bell.ia-btn::before, .ia-orb.ia-selo::before, .ia-mini > span { animation: none; } .bell.ia-btn { transition: none; } }
 /* conversa */
 .ia-log { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; overscroll-behavior: contain; scroll-behavior: smooth; }
 .ia-card .ia-log { margin-top: 14px; min-height: 110px; max-height: 300px; padding: 2px 4px; }

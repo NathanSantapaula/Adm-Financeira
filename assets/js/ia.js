@@ -327,10 +327,9 @@ const IA_PRODUTO = {
 const IA_MOEDA = ['receita', 'gasto', 'sobra', 'valor', 'restante', 'porDia', 'aportado', 'meta', 'falta', 'areaValor', 'noAno', 'alvo', 'ate', 'media', 'extra', 'aporte', 'livre', 'restaria', 'excesso', 'parcela', 'projecao'];
 const IA_PCT = ['pct', 'pctArea'];
 // símbolo do assistente: uma constelação que sobe até uma estrela (o dinheiro crescendo no "universo financeiro"); a linha se desenha e a estrela acende
-const IA_SIMBOLO = ic('<path class="ia-linha" d="M4 18.5 9.5 12.8 13.2 15.6 18.6 8.2"/><circle class="ia-no" cx="4" cy="18.5" r="1.6"/><circle class="ia-no" cx="9.5" cy="12.8" r="1.6"/><circle class="ia-no" cx="13.2" cy="15.6" r="1.6"/><path class="ia-estrela" d="M19 2.2c.4 2.5 1.4 3.6 3.6 4-2.2.4-3.2 1.5-3.6 4-.4-2.5-1.4-3.6-3.6-4 2.2-.4 3.2-1.5 3.6-4z"/>');
-// ícone do botão do topo: a onda da tela inicial em miniatura (4 camadas, a do meio mais larga)
-const IA_ICONE = `<span class="ia-mini" aria-hidden="true">${[14, 20, 22, 16].map((w, k) => `<i style="--k:${k};--w:${w}px"></i>`).join('')}</span>`;
-const iaOrb = (cls) => `<span class="ia-orb${cls ? ' ' + cls : ''}" aria-hidden="true"><i></i><i></i><i></i><b>${IA_SIMBOLO}</b></span>`;
+// selo do assistente: a onda da tela inicial em miniatura (6 camadas, mais larga no meio, como a grande)
+const IA_ICONE = `<span class="ia-mini" aria-hidden="true">${[12, 17, 20, 21, 18, 12].map((w, k) => `<span style="--k:${k};--w:${w}px"></span>`).join('')}</span>`;
+const iaOrb = (cls) => `<span class="ia-orb ia-selo${cls ? ' ' + cls : ''}" aria-hidden="true">${IA_ICONE}</span>`; // o mesmo selo do botão do topo
 const IA_ENVIAR = ic('<path d="M12 19V5M6 11l6-6 6 6"/>');
 
 const iaEstado = () => { if (!S.ia) S.ia = { msgs: [], pend: false }; return S.ia; };
