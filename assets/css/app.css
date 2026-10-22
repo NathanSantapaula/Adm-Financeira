@@ -2891,3 +2891,13 @@ html.side-mini .nav-g { height: 1px; margin: 10px 14px; font-size: 0; background
 @media (prefers-reduced-motion: reduce) {
   .ia-card::before, .iap::before, .ia-card::after, .ia-orb i, .ia-orb .ia-orbita, .ia-btn .ia-orbita, .ia-m, .ia-m.dig i { animation: none; }
 }
+
+/* Topo: ícones (busca e assistente) numa pílula de vidro e o perfil como ficha com nome, plano e seta */
+.topo-ic, .topo-eu { display: flex; align-items: center; background: var(--glass); -webkit-backdrop-filter: blur(18px) saturate(1.4); backdrop-filter: blur(18px) saturate(1.4); box-shadow: var(--shadow); border-radius: 999px; }
+.topo-ic { gap: 2px; padding: 4px; } .topo-ic:empty { display: none; }
+.topo-ic > .ab-ir { background: none; box-shadow: none; border: 0; }
+.topo-eu { gap: 10px; padding: 4px 12px 4px 4px; line-height: 1.2; text-align: left; color: var(--ink); font: inherit; }
+.topo-eu .av { width: 36px; height: 36px; box-shadow: none; }
+.topo-eu-t { display: grid; } .topo-eu-t b { font-size: 13.5px; font-weight: 650; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .topo-eu-t small { font-size: 12px; color: var(--ink-3); }
+.topo-eu-v { width: 16px; height: 16px; fill: none; stroke: var(--ink-3); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+@media (max-width: 900px) { .topo-eu-t, .topo-eu-v { display: none; } .topo-eu { padding: 3px; } }
