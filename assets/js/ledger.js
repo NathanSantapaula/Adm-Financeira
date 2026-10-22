@@ -96,7 +96,7 @@ function gastosDados() {
 /* ---- os quatro números do período ---- */
 function gNumeros(G) {
   const ano = G.mes < 0; const nomeP = gMesNome(); const C = S.C;
-  const orcLinha = ano ? (G.orcamento > 0 ? `de ${brl0(G.orcamento)} orçados no ano` : 'Sem orçamento definido no ano.')
+  const orcLinha = ano ? (G.orcamento > 0 ? `de ${brl0(G.orcamento)} orçados no ano.` : 'Sem orçamento definido no ano.')
     : `<span class="g-orc">Orçamento: ${orcEl(S.mes)}</span>`;
   const tom = G.uso == null ? '' : G.uso > 1 ? 'neg' : G.uso > 0.85 ? 'warn' : 'ok';
   const restoTxt = G.restante == null ? '' : G.restante >= 0 ? `Restam ${brl0(G.restante)}.` : `${brl0(-G.restante)} acima do orçado.`;

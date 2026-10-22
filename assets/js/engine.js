@@ -880,7 +880,8 @@
         .sort((a, b) => Math.abs(b.dif) - Math.abs(a.dif)).slice(0, 6);
     }
     // maiores gastos do período
-    const top = per.filter((e) => +e.valor > 0).slice().sort((a, b) => b.valor - a.valor).slice(0, 6);
+    const vistos = new Set(); // o mesmo gasto previsto (aluguel, escola) entra uma vez só, senão ocupa a lista mês a mês
+    const top = per.filter((e) => +e.valor > 0).slice().sort((a, b) => b.valor - a.valor).filter((e) => { if (e.tipo !== 'prev') return true; const k = e.id || e.nome; if (vistos.has(k)) return false; vistos.add(k); return true; }).slice(0, 6);
     // onde mais compra: lançamentos reais agrupados pelo estabelecimento
     const reaisPer = per.filter((e) => e.tipo === 'real' && +e.valor > 0);
     const estab = agrupar(reaisPer.filter((e) => nomeEstab(e.nome)), (e) => nomeEstab(e.nome), (e) => e.nome).map((g) => Object.assign(g, { media: r2(g.total / g.qtd) })).slice(0, 8);

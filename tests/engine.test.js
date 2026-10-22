@@ -306,6 +306,7 @@ ok(E.planoPermite('gratis', 'orcamento') && !E.planoPermite('gratis', 'carteira'
   const A = E.analiseGastos({ ano: 2026, mes: -1, meses: 3, entradas: ents, catsDesp: cats, orcamento: orc });
   ok(Math.abs(A.total - (2539.9 + 2639.9 + 3599.9)) < 0.01 && Math.abs(A.mediaMes - A.total / 3) < 0.01 && A.ritmo === null && A.delta === null, 'gastos: visão do ano');
   ok(Math.abs(E.sum(A.porMes) - A.total) < 0.01 && Math.abs(A.fixosMes[0] - 2000) < 0.01 && Math.abs(A.variaveisMes[2] - 1599.9) < 0.01, 'gastos: fixos e variáveis por mês');
+  ok(A.top.filter((e) => e.nome === 'Aluguel').length === 1 && A.top[0].nome === 'Aluguel', 'gastos: no ano, o gasto fixo aparece uma vez só nos maiores gastos');
   const F = E.analiseGastos({ ano: 2026, mes: -1, meses: 3, entradas: ents.concat([{ m: 6, dia: 0, valor: 2000, cat: fixa, area: 'Moradia', nome: 'Aluguel', tipo: 'prev' }]), catsDesp: cats, orcamento: orc });
   ok(Math.abs(F.mediaMes - A.total / 3) < 0.01, 'gastos: média do ano só com os meses decorridos (previsto futuro fora)');
   const Gp = E.analiseGastos({ ano: 2026, mes: -1, de: 1, ate: 2, meses: 3, entradas: ents, catsDesp: cats, orcamento: orc });
