@@ -2956,7 +2956,10 @@ html.side-mini .nav-g { height: 1px; margin: 10px 14px; font-size: 0; background
   .main { padding-top: 22px; }
   #view .page-h:first-child { padding-right: calc(var(--topo-w, 0px) + 16px); }
 }
-/* logos oficiais coloridas (Itaú e XP): a imagem inteira, sem máscara, sobre fundo branco em qualquer estilo (as letras do Itaú são vazadas) */
-.inst-ic img { display: block; width: 100%; height: 100%; object-fit: contain; }
-.inst-ic img[src*="/itau.svg"] { transform: scale(1.08); }
-.inst-ic img[src*="/xp.png"] { object-fit: cover; object-position: right bottom; transform: scale(1.06); transform-origin: right bottom; }
+/* logos oficiais do Itaú e da XP: vêm com as letras vazadas num quadrado; a máscara é invertida (fica só a letra),
+   então seguem os estilos de ícone como os outros bancos */
+.inst-ic i.inv { width: 100%; height: 100%; background: var(--g);
+  -webkit-mask: var(--m) var(--mp, center) / cover no-repeat, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+  mask: var(--m) var(--mp, center) / cover no-repeat, linear-gradient(#000 0 0); mask-composite: exclude; }
+.inst-ic i.inv[style*="xp.png"] { --mp: right bottom; }
+.inst-ic i.inv[style*="itau.svg"] { -webkit-mask-size: 114% 114%, auto; mask-size: 114% 114%, auto; } /* esconde a borda do quadrado da logo */
