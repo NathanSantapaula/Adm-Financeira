@@ -2066,7 +2066,7 @@ html.sem-rolagem { overflow: hidden; }
 .sonho .obj-chip[aria-selected="true"] { color: #0b1220; background: rgba(255, 255, 255, .92); border-color: transparent; }
 .sonho .info-i { color: rgba(255, 255, 255, .75); }
 .sonho-txt { margin: 0; max-width: 34em; color: var(--ink-2); font-size: 14px; line-height: 1.5; }
-.btn.sonho-btn { align-self: flex-start; margin-top: 6px; border: 0; background: #fff; color: #0b1220; font-weight: 600; }
+.sonho .btn.sonho-btn:not(.primary) { align-self: flex-start; margin-top: 6px; border: 0; background: #fff; color: #0b1220; font-weight: 600; }
 @media (max-width: 560px) { .sonho-c { padding: 16px 16px 14px; } }
 @media (prefers-reduced-motion: reduce) { .sonho-foto { transition: none; } .sonho.troca .sonho-foto { animation: none; } }
 
@@ -2949,10 +2949,20 @@ html.side-mini .nav-g { height: 1px; margin: 10px 14px; font-size: 0; background
 @media (prefers-reduced-motion: reduce) { .ia-onda i, .ia-int-t { animation: none; } .ia-comecar { transition: none; } }
 /* topo na mesma linha da marca e do título: no computador ele sai do fluxo e o título reserva a largura dele (--topo-w) */
 .topo-r { flex-wrap: wrap; justify-content: flex-end; }
+/* celular: olho, globo, período, assistente e perfil cabem numa linha só (antes o perfil caía sozinho na segunda) */
+@media (max-width: 480px) {
+  .topo-r, .htools { gap: 6px; }
+  .htools .olho, .htools .ab-ir { width: 36px; height: 36px; }
+  .per-pill { padding: 7px 6px 7px 10px; gap: 4px; }
+  .per-pill > svg:first-child { display: none; }
+  .topo-ic { padding: 2px; }
+  .topo-eu .av { width: 34px; height: 34px; }
+}
 @media (min-width: 901px) {
   .app { position: relative; }
   .topo { position: absolute; top: 0; right: 0; z-index: 7; padding-top: 22px; }
   .side, html .side { height: 100vh; height: 100dvh; padding-top: 22px; }
   .main { padding-top: 22px; }
   #view .page-h:first-child { padding-right: calc(var(--topo-w, 0px) + 16px); }
+  #view .welcome:first-child .wh { margin-top: 26px; } /* a saudação divide a linha com o topo; o título desce para não passar por baixo dos botões */
 }
