@@ -60,7 +60,7 @@ function render(opts) {
   S.C = S.plan && S.profile ? E.compute(S.plan, planCtx()) : null;
   hideTip();
   $('#view').classList.toggle('tela-nova', !same); // a entrada anima só na troca de tela
-  if (scr === 'app') { renderSide(); $('#view').innerHTML = viewHtml(); const ht = $('#view .htools'); const velho = $('#topo .htools'); if (velho) velho.remove(); if (ht && matchMedia('(min-width: 901px)').matches) $('#topo .topo-r').prepend(ht); } // no computador, olho, globo e período ficam na linha da busca e do perfil
+  if (scr === 'app') { renderSide(); $('#view').innerHTML = viewHtml(); const ht = $('#view .htools'); const velho = $('#topo .htools'); if (velho) velho.remove(); if (ht) $('#topo .topo-r').prepend(ht); document.documentElement.style.setProperty('--topo-w', $('#topo .topo-r').offsetWidth + 'px'); } // olho, globo e período na linha da busca e do perfil; --topo-w reserva o espaço ao lado do título
   else {
     $('#side').innerHTML = ''; $('#tabbar').innerHTML = '';
     const h = { landing: landingHtml, auth: authHtml, onboarding: onboardingHtml, checkout: checkoutHtml }[scr];
