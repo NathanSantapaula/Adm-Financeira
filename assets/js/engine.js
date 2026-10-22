@@ -914,63 +914,151 @@
   /* ---------- Assistente (local, sem modelo de linguagem) ----------
      iaIntencao(texto): reconhece a pergunta por palavras-chave (sem acento nem maiúscula; a frase mais longa que casar vence).
      iaResponder(id, d): monta a resposta com as análises que já existem. d = { C, mes, dia, disp (disponivelAporte), areas ({ área: gasto do mês }),
-     cart (analiseCarteira), obj (analiseObjetivos), avisos (quantos não lidos), recursos }. Devolve { id, chave, vars, cta, sug };
-     valores em reais vão como número e a interface formata (olho oculto) e aplica a voz. Nunca recomenda ativo nem promete rentabilidade. */
+     cart (analiseCarteira), obj (analiseObjetivos), avisos (quantos não lidos), recursos, perfil (nome do perfil de investidor), texto (a pergunta) }.
+     Devolve { id, chave, vars, cta, sug }; valores em reais vão como número e a interface formata (olho oculto) e aplica a voz.
+     Compras e investimentos citados na pergunta (com valor, parcelas ou produto) são comparados com o orçamento, a sobra e o disponível do mês.
+     Nunca recomenda ativo nem promete rentabilidade: produto citado recebe só a explicação e o encaminhamento ao assessor. */
   const IA_INTENCOES = {
-    recomendar: ['vale a pena', 'devo comprar', 'devo vender', 'qual acao', 'quais acoes', 'que acao', 'qual fundo', 'qual fii', 'melhor investimento', 'melhor acao', 'vai subir', 'vai cair', 'bitcoin', 'cripto', 'rentabilidade', 'quanto rende', 'me recomenda', 'indica um', 'dica de acao', 'onde investir meu dinheiro'],
-    reserva: ['reserva', 'emergencia', 'colchao', 'imprevisto'],
-    carteira: ['carteira', 'rebalance', 'alvo', 'onde aportar', 'onde investir', 'qual ativo', 'desequilibr', 'diversific', 'composicao'],
-    meta: ['meta de aporte', 'meta do mes', 'bati a meta', 'minha meta', 'meta mensal'],
-    aporte: ['aportar', 'aporte', 'quanto posso investir', 'quanto investir', 'disponivel', 'investir', 'aplicar', 'guardar'],
-    proventos: ['provento', 'dividendo', 'rendimento', 'jcp', 'juros sobre', 'renda passiva'],
-    patrimonio: ['patrimonio', 'quanto tenho', 'quanto acumulei', 'meu total', 'investido'],
-    objetivos: ['objetivo', 'sonho', 'aposentadoria', 'aposentar', 'quando vou', 'quando consigo', 'viagem', 'casa propria', 'carro novo'],
-    orcamento: ['orcamento', 'quanto posso gastar', 'quanto ainda posso', 'limite', 'estourei', 'estourar', 'cabe no mes'],
-    gastos: ['gasto', 'gastei', 'despesa', 'onde mais gasto', 'para onde vai', 'conta', 'compras', 'cartao'],
-    renda: ['renda', 'salario', 'entrada', 'ganhei', 'recebi', 'entrou', 'receita'],
-    sobra: ['sobra', 'sobrou', 'poupanca', 'poupei', 'economizei', 'no azul', 'no vermelho', 'saldo'],
-    dicas: ['dica', 'sugest', 'economizar', 'o que fazer', 'o que voce sugere', 'conselho', 'melhorar', 'como posso'],
+    recomendar: ['vale a pena', 'vale mais a pena', 'compensa', 'devo vender', 'qual acao', 'quais acoes', 'que acao', 'qual fundo', 'qual fii', 'melhor investimento', 'melhor acao', 'qual o melhor', 'qual a melhor',
+      'vai subir', 'vai cair', 'vai valorizar', 'rentabilidade', 'quanto rende', 'qual rende mais', 'rende mais', 'me recomenda', 'me indica', 'indica um', 'dica de acao', 'onde investir meu dinheiro', 'onde aplicar', 'o que comprar na bolsa', 'e seguro', 'garantido', 'devo investir em'],
+    investir: ['vou investir', 'quero investir', 'pensando em investir', 'comecar a investir', 'comecar investir', 'investir em', 'aplicar em', 'colocar dinheiro em', 'por dinheiro em', 'investimento em',
+      'como investir', 'primeiro investimento', 'sou iniciante', 'nunca investi', 'onde guardar meu dinheiro', 'quero aplicar', 'vou aplicar'],
+    produto: ['o que e', 'o que sao', 'como funciona o', 'como funciona a', 'como funcionam', 'me explica', 'explica', 'diferenca entre', 'qual a diferenca'],
+    compra: ['quero comprar', 'vou comprar', 'posso comprar', 'consigo comprar', 'da para comprar', 'devo comprar', 'pensando em comprar', 'comprar um', 'comprar uma', 'comprar o', 'comprar a', 'comprei', 'comprar',
+      'financiar', 'financiamento', 'parcelar', 'parcelado', 'em quantas vezes', 'a vista ou parcelado', 'cabe no bolso', 'trocar de carro', 'trocar o celular', 'gastar com', 'vale comprar', 'black friday'],
+    divida: ['divida', 'devendo', 'devo dinheiro', 'emprestimo', 'rotativo', 'cheque especial', 'nome sujo', 'negativad', 'atrasad', 'juros do cartao', 'quitar', 'renegociar', 'serasa'],
+    imposto: ['imposto', 'ir', 'irpf', 'declaracao', 'leao', 'come cotas', 'tributa'],
+    previsao: ['vou fechar', 'fechar o mes', 'fechar no azul', 'projecao', 'previsao', 'no ritmo', 'vai sobrar', 'vai faltar', 'chegar no fim do mes', 'fim do mes'],
+    mes_passado: ['mes passado', 'ultimo mes', 'mes anterior', 'como foi o mes'],
+    ano: ['no ano', 'este ano', 'esse ano', 'neste ano', 'nesse ano', 'ano todo', 'acumulado do ano', 'ate agora no ano'],
+    fixos: ['gastos fixos', 'gasto fixo', 'contas fixas', 'fixo', 'fixos', 'assinatura', 'recorrente', 'mensalidade'],
+    guardar: ['quanto devo guardar', 'quanto guardar', 'quanto poupar', 'quanto devo poupar', 'quanto economizar', 'porcentagem da renda', '50 30 20', 'regra 50'],
+    perfil: ['meu perfil', 'perfil de investidor', 'perfil investidor', 'suitability', 'conservador', 'moderado', 'arrojado', 'agressivo', 'tolerancia a risco'],
+    importar: ['importar', 'importo', 'extrato', 'ofx', 'csv', 'planilha', 'lancar gasto', 'registrar gasto', 'como lanco', 'cadastrar'],
+    renda_extra: ['renda extra', 'ganhar mais', 'aumentar a renda', 'aumentar minha renda', 'trabalho extra', 'freela'],
+    reserva: ['reserva', 'emergencia', 'colchao', 'imprevisto', 'fundo de emergencia', 'seguranca financeira', 'dinheiro guardado'],
+    carteira: ['carteira', 'rebalance', 'alvo', 'onde aportar', 'onde investir', 'qual ativo', 'desequilibr', 'equilibr', 'diversific', 'composicao', 'meus ativos', 'proximo aporte', 'onde colocar o aporte', 'distribui'],
+    meta: ['meta de aporte', 'meta do mes', 'bati a meta', 'minha meta', 'meta mensal', 'meta de investimento', 'cheguei na meta', 'atingi a meta'],
+    aporte: ['aportar', 'aporte', 'aportei', 'quanto posso investir', 'quanto investir', 'posso investir', 'quanto sobra para investir', 'disponivel', 'investir', 'investi', 'aplicar', 'guardar'],
+    proventos: ['provento', 'dividendo', 'rendimento', 'jcp', 'juros sobre', 'renda passiva', 'pagaram', 'yield', 'renda dos investimentos', 'renderam'],
+    patrimonio: ['patrimonio', 'quanto tenho', 'quanto ja tenho', 'quanto acumulei', 'meu total', 'investido', 'meu dinheiro investido', 'saldo investido', 'riqueza'],
+    objetivos: ['objetivo', 'sonho', 'aposentadoria', 'aposentar', 'quando vou', 'quando consigo', 'quando chego', 'viagem', 'casa propria', 'carro novo', 'meta de vida', 'casamento', 'intercambio', 'faculdade', 'quanto falta'],
+    orcamento: ['orcamento', 'quanto posso gastar', 'quanto ainda posso', 'posso gastar', 'quanto resta', 'quanto sobra para gastar', 'gastar ate', 'por dia', 'limite', 'estourei', 'estourar', 'cabe no mes'],
+    gastos: ['gasto', 'gastei', 'gastando', 'despesa', 'onde mais gasto', 'maior gasto', 'para onde vai', 'conta', 'compras', 'cartao', 'categoria', 'restaurante', 'mercado', 'delivery', 'ifood', 'uber', 'lazer'],
+    renda: ['renda', 'salario', 'entrada', 'ganhei', 'recebi', 'entrou', 'receita', 'quanto ganho'],
+    sobra: ['sobra', 'sobrou', 'sobrando', 'quanto sobra', 'poupanca', 'poupei', 'economizei', 'no azul', 'no vermelho', 'saldo', 'resultado do mes'],
+    dicas: ['dica', 'sugest', 'economizar', 'o que fazer', 'o que devo fazer', 'o que voce sugere', 'conselho', 'melhorar', 'como melhorar', 'como posso', 'gastando muito', 'proximo passo', 'por onde comeco', 'me ajuda', 'organizar'],
     avisos: ['aviso', 'notifica', 'alerta', 'novidade', 'pendencia', 'o que tem de novo'],
-    resumo: ['resumo', 'como estou', 'como vai', 'situacao', 'visao geral', 'panorama', 'balanco', 'meu mes'],
-    assessor: ['assessor', 'consultor', 'falar com', 'atendimento', 'humano', 'whatsapp'],
-    ajuda: ['ajuda', 'o que voce faz', 'o que voce sabe', 'como funciona', 'quem e voce', 'pode fazer'],
-    obrigado: ['obrigad', 'valeu', 'agradeco', 'show', 'perfeito'],
-    oi: ['oi', 'ola', 'bom dia', 'boa tarde', 'boa noite', 'e ai', 'hey', 'opa'],
+    resumo: ['resumo', 'como estou', 'como vai', 'como andam', 'situacao', 'visao geral', 'panorama', 'balanco', 'meu mes', 'minhas financas', 'estou bem', 'relatorio'],
+    assessor: ['assessor', 'consultor', 'falar com', 'atendimento', 'humano', 'whatsapp', 'contato', 'reuniao', 'marcar uma conversa'],
+    ajuda: ['ajuda', 'o que voce faz', 'o que voce sabe', 'como funciona', 'quem e voce', 'pode fazer', 'o que posso perguntar', 'quais perguntas', 'opcoes'],
+    obrigado: ['obrigad', 'valeu', 'agradeco', 'show', 'perfeito', 'top', 'otimo', 'ajudou', 'muito bom'],
+    tchau: ['tchau', 'ate mais', 'ate logo', 'falou', 'bye'],
+    oi: ['oi', 'oie', 'ola', 'bom dia', 'boa tarde', 'boa noite', 'e ai', 'eai', 'hey', 'opa', 'salve'],
   };
+  // produtos citados: a resposta explica o que são e encaminha a escolha ao assessor (nunca indica qual comprar)
+  const IA_PRODUTOS = { cdb: ['cdb', 'cdbs'], tesouro: ['tesouro', 'selic', 'ipca'], lci: ['lci', 'lca', 'lcis', 'lcas'], poupanca: ['poupanca'], fii: ['fii', 'fiis', 'fundo imobiliario', 'fundos imobiliarios'],
+    acoes: ['acao', 'acoes', 'bolsa'], previdencia: ['previdencia', 'pgbl', 'vgbl'], cripto: ['bitcoin', 'cripto', 'ethereum'], fundos: ['fundo de investimento', 'fundos de investimento', 'multimercado'],
+    exterior: ['dolar', 'exterior', 'etf', 'etfs', 'bdr', 'bdrs', 'stocks'] };
   // perguntas prontas das fichas (cada uma é reconhecida como a sua intenção, testado)
-  const IA_FICHAS = { resumo: 'Como estou neste mês?', orcamento: 'Quanto ainda posso gastar?', gastos: 'Onde mais gastei?', renda: 'Quanto entrou?', sobra: 'Quanto sobrou?',
-    aporte: 'Quanto posso investir?', meta: 'Bati a meta de aporte?', carteira: 'Onde aportar na carteira?', proventos: 'Quanto recebi de proventos?', patrimonio: 'Qual o meu patrimônio?',
-    objetivos: 'E os meus objetivos?', reserva: 'Qual a reserva de emergência ideal?', dicas: 'Alguma sugestão para mim?', avisos: 'Tenho avisos?', assessor: 'Falar com o assessor', ajuda: 'O que você sabe fazer?' };
+  const IA_FICHAS = { resumo: 'Como estou neste mês?', orcamento: 'Quanto ainda posso gastar?', compra: 'Posso comprar algo de R$ 2.000?', investir: 'Quero começar a investir', aporte: 'Quanto posso investir?',
+    previsao: 'Vou fechar o mês no azul?', gastos: 'Onde mais gastei?', fixos: 'Quanto são meus gastos fixos?', renda: 'Quanto entrou?', sobra: 'Quanto sobrou?', mes_passado: 'Como foi o mês passado?', ano: 'E no ano todo?',
+    meta: 'Bati a meta de aporte?', carteira: 'Onde aportar na carteira?', proventos: 'Quanto recebi de proventos?', patrimonio: 'Qual o meu patrimônio?', objetivos: 'E os meus objetivos?',
+    reserva: 'Qual a reserva de emergência ideal?', guardar: 'Quanto devo guardar por mês?', produto: 'O que é CDB?', perfil: 'Qual é o meu perfil?', divida: 'Como sair das dívidas?', renda_extra: 'Como ter uma renda extra?',
+    dicas: 'Alguma sugestão para mim?', importar: 'Como importo o extrato?', avisos: 'Tenho avisos?', assessor: 'Falar com o assessor', ajuda: 'O que você sabe fazer?' };
   const IA_PRECISA = { aporte: 'investimentos', meta: 'investimentos', proventos: 'investimentos', patrimonio: 'investimentos', carteira: 'carteira' };
-  function iaIntencao(texto) {
-    const t = ' ' + norm(texto).replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ') + ' ';
-    let melhor = null; let tam = 0;
-    Object.keys(IA_INTENCOES).forEach((id) => IA_INTENCOES[id].forEach((k) => {
-      // palavras curtas (oi, ola) só valem inteiras; as outras valem como começo de palavra (gasto casa gastos)
-      const ok = k.length <= 4 ? t.includes(' ' + k + ' ') : t.includes(' ' + k);
-      if (ok && k.length > tam) { melhor = id; tam = k.length; }
-    }));
-    return melhor || 'nao_entendi';
+  const iaLimpo = (texto) => ' ' + norm(texto).replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ') + ' ';
+  // palavra curta (oi, cdb) e expressão de várias palavras valem inteiras; palavra longa vale como começo (gasto casa gastos)
+  const iaTem = (t, k) => (k.length <= 4 || k.includes(' ') ? t.includes(' ' + k + ' ') : t.includes(' ' + k));
+  function iaMelhor(lista, texto) {
+    const t = iaLimpo(texto); let melhor = null; let tam = 0;
+    Object.keys(lista).forEach((id) => lista[id].forEach((k) => { if (k.length > tam && iaTem(t, k)) { melhor = id; tam = k.length; } }));
+    return melhor;
   }
+  const iaIntencao = (texto) => iaMelhor(IA_INTENCOES, texto) || 'nao_entendi';
+  const iaProduto = (texto) => iaMelhor(IA_PRODUTOS, texto);
+  // valor em reais citado na pergunta: "R$ 2.500,90", "3000", "3 mil", "2,5 mil", "10k" (anos soltos e "10x" não contam)
+  function iaValor(texto) {
+    const t = norm(texto).replace(/\b\d+\s*(x|vezes|parcelas?)\b/g, ' ');
+    const re = /(r\$\s*)?(\d{1,3}(?:\.\d{3})+|\d+)(?:,(\d{1,2}))?\s*(mil|k)?\b(\s*reais)?/g; let m;
+    while ((m = re.exec(t))) {
+      let v = +m[2].replace(/\./g, '') + (m[3] ? +('0.' + m[3]) : 0); if (m[4]) v *= 1000;
+      const moeda = m[1] || m[4] || m[5];
+      if (!(v > 0) || (!moeda && !m[3] && v >= 1990 && v <= 2100 && !m[2].includes('.'))) continue;
+      return r2(v);
+    }
+    return null;
+  }
+  const iaParcelas = (texto) => { const m = /\b(\d{1,3})\s*(x|vezes|parcelas)\b/.exec(norm(texto)); return m && +m[1] >= 2 ? +m[1] : null; };
   function iaResponder(id, d) {
-    const C = d.C; const m = d.mes; const rec = d.recursos || {}; const T = (C && C.T) || {};
+    const C = d.C; const m = d.mes; const rec = d.recursos || {}; const T = (C && C.T) || {}; const texto = d.texto || '';
     const r = (chave, vars, cta, sug) => ({ id, chave, vars: Object.assign({ mes: MES_LONGO[m] }, vars), cta: cta || null, sug: (sug || []).filter((s) => !IA_PRECISA[s] || rec[IA_PRECISA[s]]) });
     const nav = (rotulo, view) => ({ rotulo, acao: 'nav', view });
+    const assessor = { rotulo: 'Falar com o assessor', acao: 'contact' };
+    const receita = C ? +C.receita[m] || 0 : 0; const gasto = C ? +C.despesas[m] || 0 : 0; const sobra = receita - gasto;
+    const livre = rec.investimentos && d.disp ? Math.max(0, +d.disp.disponivel || 0) : Math.max(0, sobra); // o que dá para investir no mês
+    const prod = iaProduto(texto);
+    // produto citado numa pergunta de investimento: explica, compara com o disponível e encaminha a escolha ao assessor
+    if (prod && ['recomendar', 'aporte', 'investir', 'compra', 'produto', 'nao_entendi'].includes(id)) {
+      const v = iaValor(texto); const sugP = ['reserva', 'perfil', 'assessor'];
+      if (v && C) return r(v <= livre ? 'ia_produto_cabe' : 'ia_produto_passa', { produto: prod, valor: v, livre, falta: Math.max(0, v - livre) }, assessor, sugP);
+      return r(C && livre > 0 ? 'ia_produto_disp' : 'ia_produto', { produto: prod, livre }, assessor, sugP);
+    }
     if (IA_PRECISA[id] && !rec[IA_PRECISA[id]]) return r('ia_plano', {}, { rotulo: 'Conhecer os planos', acao: 'planos' }, ['resumo', 'gastos', 'dicas']);
     const vazio = !(T.receita > 0) && !(T.despesas > 0) && !(T.aplicado > 0);
-    const receita = C ? +C.receita[m] || 0 : 0; const gasto = C ? +C.despesas[m] || 0 : 0; const sobra = receita - gasto;
     const diasMes = new Date(2001, m + 1, 0).getDate(); const faltam = Math.max(1, diasMes - (+d.dia || diasMes) + 1);
     const areas = Object.keys(d.areas || {}).map((a) => ({ area: a, valor: d.areas[a] })).filter((a) => a.valor > 0).sort((a, b) => b.valor - a.valor);
     switch (id) {
-      case 'oi': return r('ia_oi', {}, null, ['resumo', 'aporte', 'avisos']);
+      case 'oi': return r('ia_oi', {}, null, ['resumo', 'compra', 'aporte', 'avisos']);
       case 'obrigado': return r('ia_obrigado', {}, null, ['dicas', 'objetivos']);
-      case 'ajuda': return r('ia_ajuda', {}, null, ['resumo', 'orcamento', 'carteira', 'objetivos']);
-      case 'assessor': return r('ia_assessor', {}, { rotulo: 'Falar com o assessor', acao: 'contact' }, ['resumo', 'dicas']);
-      case 'recomendar': return r('ia_nao_recomendo', {}, { rotulo: 'Falar com o assessor', acao: 'contact' }, ['carteira', 'reserva', 'assessor']);
+      case 'tchau': return r('ia_tchau', {}, null, ['resumo']);
+      case 'ajuda': return r('ia_ajuda', {}, null, ['resumo', 'compra', 'investir', 'objetivos']);
+      case 'assessor': return r('ia_assessor', {}, assessor, ['resumo', 'dicas']);
+      case 'recomendar': return r('ia_nao_recomendo', {}, assessor, ['carteira', 'reserva', 'perfil']);
+      case 'produto': return r('ia_produto_qual', {}, null, ['produto', 'investir', 'ajuda']);
+      case 'divida': return r('ia_divida', {}, assessor, ['orcamento', 'gastos', 'dicas']);
+      case 'imposto': return r('ia_imposto', {}, assessor, ['proventos', 'patrimonio']);
+      case 'renda_extra': return r('ia_renda_extra', {}, null, ['sobra', 'guardar']);
+      case 'perfil': return r(d.perfil ? 'ia_perfil' : 'ia_perfil_sem', { perfil: d.perfil || '' }, d.perfil ? assessor : null, ['investir', 'reserva']);
+      case 'importar': return r('ia_importar', {}, { rotulo: 'Importar extrato', acao: 'ingest' }, ['gastos', 'orcamento']);
       case 'avisos': return r(d.avisos > 0 ? 'ia_avisos' : 'ia_avisos_zero', { n: d.avisos }, d.avisos > 0 ? { rotulo: 'Ver todos os avisos', acao: 'avisos' } : null, ['resumo', 'orcamento']);
-      case 'nao_entendi': return r('ia_nao_entendi', {}, null, ['resumo', 'aporte', 'gastos', 'objetivos']);
+      case 'nao_entendi': return r('ia_nao_entendi', {}, null, ['resumo', 'compra', 'investir', 'objetivos']);
     }
-    if (vazio && id !== 'objetivos' && id !== 'reserva') return r('ia_sem_dados', {}, { rotulo: 'Importar extrato', acao: 'ingest' }, ['ajuda', 'objetivos']);
+    if (vazio && id !== 'objetivos' && id !== 'reserva') return r('ia_sem_dados', {}, { rotulo: 'Importar extrato', acao: 'ingest' }, ['importar', 'ajuda', 'objetivos']);
+    const orc = +C.orcamento[m] || 0; const resto = orc - gasto; const sobraPos = Math.max(0, sobra);
+    switch (id) {
+      case 'compra': {
+        const v = iaValor(texto); const n = iaParcelas(texto); const sugC = ['orcamento', 'objetivos', 'reserva']; const cta = nav('Ver gastos', 'despesas');
+        if (!v) return r('ia_compra_sem_valor', { livre: orc > 0 ? Math.max(0, resto) : sobraPos }, null, sugC);
+        if (n) return r(v / n <= sobraPos ? 'ia_compra_parc_ok' : 'ia_compra_parc_pesa', { valor: v, n, parcela: r2(v / n), sobra: sobraPos }, cta, sugC);
+        if (receita > 0 && v > receita * 3) { const meses = sobraPos > 0 ? Math.ceil(v / sobraPos) : null;
+          return r(meses && meses <= 120 ? 'ia_compra_grande' : 'ia_compra_grande_sem', { valor: v, meses }, { rotulo: 'Criar um objetivo', acao: 'objetivos' }, ['objetivos', 'guardar']); }
+        if (orc > 0 && v <= resto) return r('ia_compra_cabe', { valor: v, restante: resto - v }, cta, sugC);
+        if (v <= sobraPos) return r(orc > 0 ? 'ia_compra_sobra' : 'ia_compra_sobra_livre', { valor: v, excesso: v - Math.max(0, resto), sobra: sobraPos - v }, cta, sugC);
+        return r('ia_compra_nao', { valor: v, falta: v - sobraPos }, cta, ['objetivos', 'dicas', 'orcamento']);
+      }
+      case 'investir': {
+        const v = iaValor(texto); const cta = rec.investimentos ? nav('Ver investimentos', 'inv') : assessor; const sugI = rec.carteira ? ['reserva', 'carteira', 'perfil'] : ['reserva', 'perfil', 'produto'];
+        if (v) return r(v <= livre ? 'ia_inv_cabe' : 'ia_inv_passa', { valor: v, livre, restaria: Math.max(0, livre - v), falta: Math.max(0, v - livre) }, cta, sugI);
+        return r('ia_inv_geral', { livre }, cta, sugI);
+      }
+      case 'previsao': {
+        const reais = +(C.despReais || [])[m] || 0; const proj = r2(gasto - reais + (reais / Math.max(1, +d.dia || 1)) * diasMes); const sp = receita - proj;
+        if (!(receita > 0)) return r('ia_renda_vazio', {}, nav('Registrar rendas', 'rendas'), ['gastos']);
+        return r(sp >= 0 ? 'ia_prev_azul' : 'ia_prev_vermelho', { projecao: proj, sobra: Math.max(0, sp), valor: Math.max(0, -sp), porDia: orc > 0 ? Math.max(0, resto) / faltam : null }, nav('Ver gastos', 'despesas'), ['orcamento', 'dicas']);
+      }
+      case 'mes_passado': {
+        if (m === 0) return r('ia_mes_ant_sem', {}, null, ['resumo', 'ano']);
+        const k = m - 1; const rc = +C.receita[k] || 0; const g = +C.despesas[k] || 0;
+        return r(rc - g >= 0 ? 'ia_mes_ant' : 'ia_mes_ant_neg', { mesAnt: MES_LONGO[k], receita: rc, gasto: g, sobra: Math.abs(rc - g), aportado: +C.aplicado[k] || 0 }, null, ['resumo', 'ano']);
+      }
+      case 'ano': return r('ia_ano', { receita: T.receita || 0, gasto: T.despesas || 0, sobra: Math.max(0, T.investAlocado || 0), aportado: T.aplicado || 0 }, null, ['mes_passado', 'patrimonio', 'objetivos']);
+      case 'fixos': {
+        const fixa = C.despCat && C.despCat.fixa ? +C.despCat.fixa[m] || 0 : 0; if (!(gasto > 0)) return r('ia_gastos_vazio', {}, { rotulo: 'Importar extrato', acao: 'ingest' }, ['renda']);
+        return r('ia_fixos', { valor: fixa, pct: fixa / gasto, pctArea: receita > 0 ? fixa / receita : null }, nav('Ver gastos', 'despesas'), ['gastos', 'dicas']);
+      }
+      case 'guardar': return receita > 0 ? r('ia_guardar', { pct: sobra / receita, alvo: receita * 0.2, sobra: sobraPos }, null, ['reserva', 'objetivos']) : r('ia_guardar_geral', {}, null, ['renda']);
+    }
     switch (id) {
       case 'resumo': return r(sobra >= 0 ? 'ia_resumo' : 'ia_resumo_neg', { receita, gasto, sobra: Math.abs(sobra), n: d.avisos || 0 }, null, ['gastos', 'aporte', 'dicas']);
       case 'orcamento': {
@@ -1053,6 +1141,6 @@
   const api = { PLANOS, RECURSOS, ABA_RECURSO, planoPermite, planoMinimo, planoNorm, parseDataISO, MES, MES_LONGO, TAXONOMIA, ASSET_LEVELS, QUIZ, PERFIS, RETORNO_PADRAO, CATS_DESP, CATS_RENDA, FORMATO_BACKUP,
     z, add, sub, sum, r2, norm, monthIndex, parseValor, distribuir, parcelaMeses, parcelaFim, parcelaIndice, itemValores, carryItems,
     ativoKey, buildAssetTree, rebalance, contasMes, variacao, janelaAnterior, analiseInvest, disponivelAporte, analiseRenda, analiseGastos, analiseCarteira, nomeEstab, historico, ctxAno, OBJ_TIPOS, normObjetivos, analiseObjetivos, sugerirDivisao, aporteNecessario, notificacoes, scorePerfil, projetar, mesesAteMeta, simularObjetivo, migratePlan, compute, makeBackup, parseBackup,
-    templateSheets, parseImport, applyImport, gastosAreaMes, analiseLimites, repetirValores, acharFixo, feriadoBR, diaUtilBR, IA_INTENCOES, IA_FICHAS, iaIntencao, iaResponder };
+    templateSheets, parseImport, applyImport, gastosAreaMes, analiseLimites, repetirValores, acharFixo, feriadoBR, diaUtilBR, IA_INTENCOES, IA_FICHAS, IA_PRODUTOS, iaIntencao, iaProduto, iaValor, iaParcelas, iaResponder };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.FPEngine = api;
 })(typeof window !== 'undefined' ? window : globalThis);

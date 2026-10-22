@@ -254,7 +254,7 @@ const WG_IC = {
   constancia: '<rect x="3" y="4.5" width="18" height="16.5" rx="2.5"/><path d="M8 2.5v4M16 2.5v4M3 10h18M9 15.5l2 2 4-4"/>',
   carteira: '<path d="M21 12a9 9 0 1 1-9-9v9z"/><path d="M15 3.6A9 9 0 0 1 20.4 9H15z"/>',
   areas: '<path d="M4 6h16M4 12h11M4 18h6"/>',
-  destaques: '<ellipse cx="12" cy="12" rx="10.5" ry="4" transform="rotate(-28 12 12)"/><circle cx="20.6" cy="7.4" r="1.2"/><path d="M11 2.5c.7 4.6 2.6 7 6.6 8.2-4 1.2-5.9 3.6-6.6 8.2-.7-4.6-2.6-7-6.6-8.2 4-1.2 5.9-3.6 6.6-8.2z"/>',
+  destaques: '<path d="M4 18.5 9.5 12.8 13.2 15.6 18.6 8.2"/><circle cx="4" cy="18.5" r="1.6"/><circle cx="9.5" cy="12.8" r="1.6"/><circle cx="13.2" cy="15.6" r="1.6"/><path d="M19 2.2c.4 2.5 1.4 3.6 3.6 4-2.2.4-3.2 1.5-3.6 4-.4-2.5-1.4-3.6-3.6-4 2.2-.4 3.2-1.5 3.6-4z"/>',
   assessor: '<path d="M21 14.5a2 2 0 0 1-2 2H8l-4.5 4V5a2 2 0 0 1 2-2H19a2 2 0 0 1 2 2z"/><path d="M8 8.5h9M8 12h6"/>',
   orcamento: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/>',
   proventos: '<circle cx="9" cy="9" r="6"/><path d="M15.6 9.3A6 6 0 1 1 9.3 15.6"/>',

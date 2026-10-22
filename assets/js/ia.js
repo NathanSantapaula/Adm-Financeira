@@ -176,11 +176,158 @@ const IA_VOZ = {
   },
 };
 Object.keys(IA_VOZ).forEach((t) => { if (VOZ[t]) Object.assign(VOZ[t], IA_VOZ[t]); });
+// repertório ampliado: compras, investimentos citados, produtos, dívidas, previsão do mês, mês passado, ano e variações (chave_2, chave_3, sorteadas por resposta)
+const IA_VOZ_MAIS = {
+  consultivo: {
+    ia_ajuda: 'Eu leio os números do seu planejamento e respondo sobre o mês: entradas, gastos e onde, orçamento, sobra, previsão de fechamento, quanto dá para aportar, carteira contra o alvo, proventos, patrimônio, objetivos e avisos. Também comparo uma compra ou um investimento que você está pensando em fazer com o seu mês (diga o valor) e explico produtos como CDB, Tesouro e FIIs. Não indico ativos: isso é com o seu assessor.',
+    ia_oi_2: 'Olá, {nome}. Quer ver o resumo do mês ou tem alguma compra ou investimento em mente?',
+    ia_oi_3: '{saud}, {nome}. Estou com os números do seu planejamento abertos. O que vamos olhar?',
+    ia_obrigado_2: 'Disponha. Quando quiser, é só perguntar.',
+    ia_tchau: 'Até logo, {nome}. Eu sigo acompanhando o seu planejamento por aqui.',
+    ia_nao_entendi_2: 'Não entendi bem. Você pode perguntar, por exemplo, "posso comprar algo de R$ 1.500?" ou "quanto posso investir?".',
+    ia_nao_entendi_3: 'Essa eu não sei responder ainda. Toque em "Mais perguntas" para ver tudo o que eu sei.',
+    ia_resumo_2: '{Mes} até agora: {receita} de entradas, {gasto} de gastos e {sobra} de sobra.',
+    ia_disp_2: 'Há {valor} livres para investir em {mes}. Você já aplicou {aportado}.',
+    ia_dica_geral_2: 'Está tudo em ordem neste mês. Que tal revisar os objetivos ou conferir a reserva de emergência?',
+    ia_produto_qual: 'Sobre qual investimento? Posso explicar CDB, Tesouro Direto, LCI e LCA, poupança, fundos imobiliários, ações, fundos, previdência, investimentos no exterior e criptomoedas.',
+    ia_produto: '{explica} Se ele faz sentido para você depende do seu perfil, do prazo e dos seus objetivos: essa escolha vale fazer com o {consultor}.',
+    ia_produto_disp: '{explica} Neste mês, você tem {livre} disponíveis para investir. Qual produto usar depende do seu perfil e do prazo: vale decidir com o {consultor}.',
+    ia_produto_cabe: '{explica} Os {valor} cabem no que está disponível em {mes} ({livre}). Antes de aplicar, confira com o {consultor} se {produto} combina com o seu perfil.',
+    ia_produto_passa: '{explica} Os {valor} passam do disponível em {mes} ({livre}) em {falta}. Vale aplicar o que cabe agora e completar nos próximos meses, sem mexer na reserva. A escolha do produto é com o {consultor}.',
+    ia_inv_geral: 'Uma boa ordem: primeiro a reserva de emergência, depois os objetivos. Neste mês, você tem {livre} disponíveis para investir. O produto certo depende do seu perfil, e essa escolha vale fazer com o {consultor}.',
+    ia_inv_geral_2: 'Antes de escolher onde investir, vale ter a reserva de emergência montada. Hoje há {livre} livres no mês. Para escolher o produto, converse com o {consultor}.',
+    ia_inv_cabe: 'Cabe: você tem {livre} disponíveis em {mes}. Investindo {valor}, ainda restariam {restaria}. Para escolher onde, o alvo da carteira e o {consultor} ajudam.',
+    ia_inv_passa: 'Os {valor} passam do disponível em {mes} ({livre}) em {falta}. Investir mais do que sobra pode apertar o orçamento; uma saída é dividir o valor pelos próximos meses.',
+    ia_compra_sem_valor: 'Me diga o valor (por exemplo, "posso comprar um celular de R$ 2.000?") e eu comparo com o mês. Hoje cabem {livre} sem passar do planejado.',
+    ia_compra_cabe: 'Cabe no orçamento de {mes}: depois dessa compra de {valor}, ainda restariam {restante}.',
+    ia_compra_cabe_2: 'Dá para fazer: {valor} cabem no orçamento de {mes}, e sobram {restante}.',
+    ia_compra_sobra: 'Os {valor} passam do orçamento de {mes} em {excesso}, mas cabem na sobra do mês (ficariam {sobra}). Se a compra puder esperar, o orçamento agradece.',
+    ia_compra_sobra_livre: 'Cabe na sobra de {mes}: depois dos {valor}, ficariam {sobra}. Com um orçamento definido, eu também comparo com o seu limite.',
+    ia_compra_nao: 'Os {valor} passam da sobra de {mes} em {falta}. Vale juntar antes, como um objetivo, ou rever o momento da compra.',
+    ia_compra_grande: 'É uma compra grande: {valor}. Com a sobra de hoje, seriam cerca de {meses} meses juntando. Que tal criar um objetivo para ela? Assim eu acompanho o caminho.',
+    ia_compra_grande_sem: 'É uma compra grande: {valor}. Como o mês ainda não tem sobra, o melhor caminho é criar um objetivo e planejar os aportes.',
+    ia_compra_parc_ok: 'Em {n} vezes, seriam {parcela} por mês, o que cabe na sobra de hoje ({sobra}). Lembre que as parcelas ocupam os próximos meses do orçamento.',
+    ia_compra_parc_pesa: 'Em {n} vezes, seriam {parcela} por mês, mais do que a sobra de hoje ({sobra}). Parcelar assim deve apertar os próximos meses.',
+    ia_prev_azul: 'No ritmo atual, {mes} deve fechar com cerca de {projecao} em gastos e {sobra} de sobra.',
+    ia_prev_vermelho: 'No ritmo atual, {mes} deve fechar com cerca de {projecao} em gastos, {valor} acima das entradas. Ainda dá para ajustar.',
+    ia_mes_ant_sem: 'Janeiro é o primeiro mês do ano aberto, então não há mês anterior para comparar aqui.',
+    ia_mes_ant: 'Em {mesAnt}, entraram {receita}, saíram {gasto} e sobraram {sobra}. Você aplicou {aportado}.',
+    ia_mes_ant_neg: 'Em {mesAnt}, entraram {receita} e saíram {gasto}: {sobra} acima das entradas.',
+    ia_ano: 'No ano, até agora: {receita} de entradas, {gasto} de gastos, {sobra} de sobra e {aportado} aplicados.',
+    ia_fixos: 'Os gastos fixos de {mes} somam {valor}: {pct} dos gastos e {pctArea} das entradas.',
+    ia_guardar: 'Uma referência comum é guardar 20% da renda, cerca de {alvo} por mês para você. Neste mês, a sua sobra está em {pct} das entradas.',
+    ia_guardar_geral: 'Uma referência comum é guardar 20% da renda. Registre as entradas e eu calculo o seu número.',
+    ia_divida: 'Com dívidas, a ordem costuma ser: parar de usar o rotativo e o cheque especial, quitar primeiro as de juros mais altos e renegociar o que der. Vale conversar com o {consultor} para montar o plano.',
+    ia_imposto: 'Imposto de renda sobre investimentos e a declaração têm regras próprias para cada produto. Essa orientação é com o {consultor}.',
+    ia_renda_extra: 'Uma renda extra ajuda mais quando já tem destino: reserva, objetivo ou aporte. Registre-a em Rendas e eu passo a contar com ela na sobra.',
+    ia_perfil: 'O seu perfil de investidor é {perfil}. Ele orienta o tipo de investimento que combina com você; a escolha dos produtos é com o {consultor}.',
+    ia_perfil_sem: 'Você ainda não tem um perfil de investidor registrado. Ele é definido no diagnóstico e orienta o tipo de investimento que combina com você.',
+    ia_importar: 'Toque em "Importar extrato" e escolha o arquivo do banco (CSV ou OFX). Eu mostro uma prévia, você confere, e nada entra duas vezes.',
+  },
+  direto: {
+    ia_ajuda: 'Respondo sobre mês, orçamento, previsão, aporte, carteira, proventos, objetivos e avisos. Comparo compras e investimentos com o seu mês (diga o valor). Não indico ativos.',
+    ia_oi_2: 'Olá, {nome}. Resumo, compra ou investimento?',
+    ia_tchau: 'Até mais.',
+    ia_nao_entendi_2: 'Não entendi. Ex.: "posso comprar algo de R$ 1.500?".',
+    ia_produto_qual: 'Qual? CDB, Tesouro, LCI/LCA, poupança, FII, ações, fundos, previdência, exterior ou cripto.',
+    ia_produto: '{explica} A escolha é com o {consultor}.',
+    ia_produto_disp: '{explica} Disponível: {livre}. Escolha com o {consultor}.',
+    ia_produto_cabe: '{explica} {valor} cabem no disponível ({livre}). Confirme com o {consultor}.',
+    ia_produto_passa: '{explica} {valor} passam do disponível em {falta}.',
+    ia_inv_geral: 'Reserva primeiro. Disponível: {livre}. Produto: com o {consultor}.',
+    ia_inv_cabe: 'Cabe. Restariam {restaria}.',
+    ia_inv_passa: 'Passa do disponível em {falta}.',
+    ia_compra_sem_valor: 'Diga o valor. Hoje cabem {livre}.',
+    ia_compra_cabe: 'Cabe. Restariam {restante} no orçamento.',
+    ia_compra_sobra: 'Passa do orçamento em {excesso}, cabe na sobra. Ficariam {sobra}.',
+    ia_compra_sobra_livre: 'Cabe na sobra. Ficariam {sobra}.',
+    ia_compra_nao: 'Não cabe: faltam {falta}.',
+    ia_compra_grande: '{valor}: cerca de {meses} meses de sobra. Crie um objetivo.',
+    ia_compra_grande_sem: '{valor}: crie um objetivo.',
+    ia_compra_parc_ok: '{n}x de {parcela}. Cabe na sobra ({sobra}).',
+    ia_compra_parc_pesa: '{n}x de {parcela}. Passa da sobra ({sobra}).',
+    ia_prev_azul: 'Previsão: {projecao} em gastos, sobra de {sobra}.',
+    ia_prev_vermelho: 'Previsão: {projecao} em gastos, {valor} no vermelho.',
+    ia_mes_ant_sem: 'Sem mês anterior neste ano.',
+    ia_mes_ant: '{mesAnt}: entradas {receita}, gastos {gasto}, sobra {sobra}.',
+    ia_mes_ant_neg: '{mesAnt}: entradas {receita}, gastos {gasto}. {sobra} no vermelho.',
+    ia_ano: 'Ano: entradas {receita}, gastos {gasto}, sobra {sobra}, aplicado {aportado}.',
+    ia_fixos: 'Fixos: {valor} ({pct} dos gastos, {pctArea} da renda).',
+    ia_guardar: 'Referência: 20% da renda, {alvo}. Hoje: {pct}.',
+    ia_guardar_geral: 'Referência: 20% da renda.',
+    ia_divida: 'Corte rotativo e cheque especial, quite os juros mais altos, renegocie. Fale com o {consultor}.',
+    ia_imposto: 'Imposto: fale com o {consultor}.',
+    ia_renda_extra: 'Dê destino à renda extra e registre em Rendas.',
+    ia_perfil: 'Perfil: {perfil}.',
+    ia_perfil_sem: 'Sem perfil registrado. Faça o diagnóstico.',
+    ia_importar: 'Importar extrato: CSV ou OFX, com prévia.',
+  },
+  acolhedor: {
+    ia_ajuda: 'Eu olho os números do seu planejamento com você: entradas, gastos, orçamento, previsão do mês, aportes, carteira, proventos, objetivos e avisos. E se estiver pensando numa compra ou num investimento, me diga o valor que eu vejo se cabe no seu mês! Só não indico ativos: isso é com o seu assessor.',
+    ia_oi_2: 'Oi, {nome}! Pensando em alguma compra, num investimento ou quer ver como está o mês?',
+    ia_oi_3: '{saud}, {nome}! Estou aqui de olho no seu planejamento. Por onde começamos?',
+    ia_obrigado_2: 'Eu que agradeço a confiança! Volte sempre que quiser.',
+    ia_tchau: 'Até logo, {nome}! Eu fico por aqui cuidando dos números para você.',
+    ia_nao_entendi_2: 'Hum, não peguei. Tente algo como "posso comprar algo de R$ 1.500?" ou "quanto posso investir?".',
+    ia_nao_entendi_3: 'Essa ainda não sei! Toque em "Mais perguntas" para ver tudo o que eu consigo responder.',
+    ia_resumo_2: '{Mes} até aqui: {receita} entraram, {gasto} saíram e {sobra} ficaram com você!',
+    ia_disp_2: 'Você tem {valor} esperando para trabalhar por você em {mes}! Já aplicou {aportado}.',
+    ia_dica_geral_2: 'Seu mês está tranquilo! Que tal dar uma olhada nos objetivos ou na reserva de emergência?',
+    ia_produto_qual: 'Sobre qual investimento? Explico com prazer CDB, Tesouro Direto, LCI e LCA, poupança, fundos imobiliários, ações, fundos, previdência, exterior e criptomoedas.',
+    ia_produto: '{explica} Se ele combina com você depende do seu perfil e dos seus sonhos, e essa conversa é com o {consultor}.',
+    ia_produto_disp: '{explica} Neste mês você tem {livre} disponíveis para investir! Qual produto usar, o {consultor} ajuda a escolher com você.',
+    ia_produto_cabe: '{explica} Boa notícia: os {valor} cabem no disponível de {mes} ({livre}). Só confirme com o {consultor} se {produto} combina com o seu perfil.',
+    ia_produto_passa: '{explica} Os {valor} passam um pouco do disponível de {mes} ({livre}): faltam {falta}. Dá para começar com o que cabe e completar depois, sem tocar na reserva!',
+    ia_inv_geral: 'Que bom que você quer investir! Um bom caminho: primeiro a reserva de emergência, depois os objetivos. Neste mês há {livre} disponíveis, e o {consultor} ajuda a escolher o produto.',
+    ia_inv_geral_2: 'Investir é cuidar do seu futuro! Hoje há {livre} livres no mês. Monte a reserva primeiro e escolha o produto com o {consultor}.',
+    ia_inv_cabe: 'Cabe direitinho! Você tem {livre} disponíveis em {mes} e, investindo {valor}, ainda restariam {restaria}.',
+    ia_inv_passa: 'Os {valor} passam do disponível em {mes} ({livre}) em {falta}. Sem pressa: dá para dividir pelos próximos meses sem apertar o orçamento.',
+    ia_compra_sem_valor: 'Me conta o valor (tipo "posso comprar um celular de R$ 2.000?") que eu vejo se cabe! Hoje cabem {livre} sem sair do planejado.',
+    ia_compra_cabe: 'Pode ficar tranquilo: a compra de {valor} cabe no orçamento de {mes}, e ainda sobram {restante}!',
+    ia_compra_cabe_2: 'Cabe sim! Com {valor}, o orçamento de {mes} ainda fica com {restante}.',
+    ia_compra_sobra: 'Os {valor} passam {excesso} do orçamento de {mes}, mas cabem na sobra (ficariam {sobra}). Se der para esperar um pouquinho, melhor ainda!',
+    ia_compra_sobra_livre: 'Cabe na sobra de {mes}: depois dos {valor}, ainda ficariam {sobra}.',
+    ia_compra_nao: 'Os {valor} passam da sobra de {mes} em {falta}. Que tal transformar essa compra num objetivo? Assim ela chega sem aperto.',
+    ia_compra_grande: 'Que sonho! {valor} é uma compra grande: com a sobra de hoje, uns {meses} meses juntando. Vamos criar um objetivo para ela?',
+    ia_compra_grande_sem: '{valor} é uma compra grande! Vamos criar um objetivo e planejar com calma?',
+    ia_compra_parc_ok: 'Em {n} vezes ficam {parcela} por mês, e isso cabe na sobra de hoje ({sobra}). Só lembre que as parcelas vêm nos próximos meses também!',
+    ia_compra_parc_pesa: 'Em {n} vezes ficam {parcela} por mês, mais do que a sobra de hoje ({sobra}). Talvez valha mais parcelas, uma entrada maior ou esperar um pouco.',
+    ia_prev_azul: 'No ritmo de hoje, {mes} fecha com uns {projecao} em gastos e {sobra} de sobra. Está indo bem!',
+    ia_prev_vermelho: 'No ritmo de hoje, {mes} fecharia com uns {projecao} em gastos, {valor} acima das entradas. Ainda dá tempo de ajustar!',
+    ia_mes_ant_sem: 'Estamos em janeiro, então ainda não há mês anterior neste ano.',
+    ia_mes_ant: 'Em {mesAnt} entraram {receita}, saíram {gasto} e sobraram {sobra}. E você aplicou {aportado}!',
+    ia_mes_ant_neg: 'Em {mesAnt} entraram {receita} e saíram {gasto}, {sobra} acima das entradas. Este mês dá para equilibrar!',
+    ia_ano: 'No ano até aqui: {receita} de entradas, {gasto} de gastos, {sobra} de sobra e {aportado} aplicados!',
+    ia_fixos: 'Os gastos fixos de {mes} somam {valor}: {pct} dos gastos e {pctArea} das entradas.',
+    ia_guardar: 'Uma referência gostosa de seguir é guardar 20% da renda, uns {alvo} por mês para você. Neste mês, a sobra está em {pct} das entradas!',
+    ia_guardar_geral: 'Uma referência comum é guardar 20% da renda. Registre as entradas e eu calculo o seu número!',
+    ia_divida: 'Dívida tem saída! Primeiro pare o rotativo e o cheque especial, depois quite as de juros mais altos e renegocie o que der. O {consultor} pode montar esse plano com você.',
+    ia_imposto: 'Imposto tem regras próprias para cada investimento. O {consultor} explica direitinho para o seu caso!',
+    ia_renda_extra: 'Renda extra é ótima, ainda mais com destino certo: reserva, objetivo ou aporte! Registre em Rendas e eu conto com ela.',
+    ia_perfil: 'O seu perfil de investidor é {perfil}! Ele guia o tipo de investimento que combina com você, e o {consultor} ajuda a escolher os produtos.',
+    ia_perfil_sem: 'Ainda não há perfil de investidor registrado. Ele sai do diagnóstico e ajuda a escolher investimentos que combinam com você!',
+    ia_importar: 'É fácil: toque em "Importar extrato" e escolha o arquivo do banco (CSV ou OFX). Eu mostro uma prévia, você confere e pronto!',
+  },
+};
+Object.keys(IA_VOZ_MAIS).forEach((t) => { if (VOZ[t]) Object.assign(VOZ[t], IA_VOZ_MAIS[t]); });
+// explicação neutra de cada produto (educativa, sem promessa de rentabilidade)
+const IA_PRODUTO = {
+  cdb: ['CDB', 'O CDB é um título de renda fixa emitido por bancos: você empresta dinheiro ao banco e recebe juros, com garantia do FGC até o limite previsto.'],
+  tesouro: ['Tesouro Direto', 'O Tesouro Direto são títulos públicos: você empresta dinheiro ao governo, com opções ligadas à Selic, à inflação (IPCA) ou prefixadas.'],
+  lci: ['LCI e LCA', 'LCI e LCA são títulos de renda fixa de bancos ligados a imóveis e ao agronegócio, isentos de IR para pessoa física e com garantia do FGC.'],
+  poupanca: ['a poupança', 'A poupança é simples e tem resgate a qualquer hora, mas costuma render menos que outras opções de renda fixa.'],
+  fii: ['fundos imobiliários', 'Fundos imobiliários (FIIs) reúnem imóveis ou títulos do setor e distribuem rendimentos, mas as cotas sobem e descem na bolsa.'],
+  acoes: ['ações', 'Ações são partes de empresas negociadas na bolsa. Podem pagar dividendos, mas o preço oscila bastante, por isso combinam com prazos longos.'],
+  previdencia: ['previdência privada', 'A previdência privada (PGBL ou VGBL) é feita para o longo prazo, com regras próprias de imposto e de resgate.'],
+  cripto: ['criptomoedas', 'Criptomoedas oscilam muito e não têm garantias como a do FGC.'],
+  fundos: ['fundos de investimento', 'Fundos de investimento juntam o dinheiro de várias pessoas sob a gestão de um profissional, com taxas e riscos que variam de fundo para fundo.'],
+  exterior: ['investimentos no exterior', 'Investir no exterior (ETFs, BDRs ou dólar) diversifica a carteira, mas traz o risco do câmbio.'],
+};
 
-const IA_MOEDA = ['receita', 'gasto', 'sobra', 'valor', 'restante', 'porDia', 'aportado', 'meta', 'falta', 'areaValor', 'noAno', 'alvo', 'ate', 'media', 'extra', 'aporte'];
+const IA_MOEDA = ['receita', 'gasto', 'sobra', 'valor', 'restante', 'porDia', 'aportado', 'meta', 'falta', 'areaValor', 'noAno', 'alvo', 'ate', 'media', 'extra', 'aporte', 'livre', 'restaria', 'excesso', 'parcela', 'projecao'];
 const IA_PCT = ['pct', 'pctArea'];
-// símbolo do assistente: uma estrela de quatro pontas dentro de uma órbita (o "universo financeiro" do globo)
-const IA_SIMBOLO = ic('<g class="ia-orbita"><ellipse cx="12" cy="12" rx="10.5" ry="4" transform="rotate(-28 12 12)"/><circle cx="20.6" cy="7.4" r="1.5" class="ia-estrela"/></g><path d="M11 2.5c.7 4.6 2.6 7 6.6 8.2-4 1.2-5.9 3.6-6.6 8.2-.7-4.6-2.6-7-6.6-8.2 4-1.2 5.9-3.6 6.6-8.2z" class="ia-estrela"/>');
+// símbolo do assistente: uma constelação que sobe até uma estrela (o dinheiro crescendo no "universo financeiro"); a linha se desenha e a estrela acende
+const IA_SIMBOLO = ic('<path class="ia-linha" d="M4 18.5 9.5 12.8 13.2 15.6 18.6 8.2"/><circle class="ia-no" cx="4" cy="18.5" r="1.6"/><circle class="ia-no" cx="9.5" cy="12.8" r="1.6"/><circle class="ia-no" cx="13.2" cy="15.6" r="1.6"/><path class="ia-estrela" d="M19 2.2c.4 2.5 1.4 3.6 3.6 4-2.2.4-3.2 1.5-3.6 4-.4-2.5-1.4-3.6-3.6-4 2.2-.4 3.2-1.5 3.6-4z"/>');
 const iaOrb = (cls) => `<span class="ia-orb${cls ? ' ' + cls : ''}" aria-hidden="true"><i></i><i></i><i></i><b>${IA_SIMBOLO}</b></span>`;
 const IA_ENVIAR = ic('<path d="M12 19V5M6 11l6-6 6 6"/>');
 
@@ -190,6 +337,7 @@ function iaVars(v) {
   Object.keys(v || {}).forEach((k) => { const x = v[k];
     o[k] = IA_MOEDA.includes(k) ? brl0(x) : IA_PCT.includes(k) ? pct(x) : k === 'pp' ? (+x).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) + ' p.p.' : x; });
   if (o.mes) o.Mes = o.mes.charAt(0).toUpperCase() + o.mes.slice(1);
+  if (v && v.produto && IA_PRODUTO[v.produto]) { o.produto = IA_PRODUTO[v.produto][0]; o.explica = IA_PRODUTO[v.produto][1]; }
   return o;
 }
 const iaNome = () => String((S.profile && S.profile.nome) || '').trim().split(/\s+/)[0] || 'tudo bem';
@@ -205,6 +353,7 @@ function iaDados() {
       d.cart = E.analiseCarteira({ aporte: M.aporte, itens: M.items.map((i) => ({ nome: i.a.nome, classe: i.a.classe, tipo: i.a.tipo, alvo: i.alvo, valor: i.valor, preco: i.preco })) }); } catch (e) { d.cart = null; }
   }
   try { d.obj = objAnalise(); } catch (e) { d.obj = null; }
+  const pf = S.profile && S.profile.perfilInvestidor; if (pf && pf.resultado && E.PERFIS[pf.resultado]) d.perfil = E.PERFIS[pf.resultado].nome;
   return d;
 }
 
@@ -214,7 +363,7 @@ function iaEnviar(q) {
   const st = iaEstado(); q = String(q || '').trim().slice(0, 300); if (!q || st.pend) return;
   st.msgs.push({ de: 'eu', txt: q }); st.pend = true; iaRefresh();
   setTimeout(() => {
-    const id = E.iaIntencao(q); const r = E.iaResponder(id, iaDados());
+    const id = E.iaIntencao(q); const r = E.iaResponder(id, Object.assign(iaDados(), { texto: q })); r.v = Math.random();
     if (id === 'avisos') r.avisos = (S.notifs || []).filter((n) => !n.lida).slice(0, 3).map((n) => n.id);
     st.pend = false; st.msgs.push({ de: 'ia', r }); if (st.msgs.length > 40) st.msgs.splice(0, st.msgs.length - 40);
     iaRefresh();
@@ -230,14 +379,11 @@ function iaCta(c, i) {
 function iaMsgHtml(m, i) {
   if (m.de === 'eu') return `<div class="ia-m eu"><p>${esc(m.txt)}</p></div>`;
   const r = m.r; const avs = (r.avisos || []).map((id) => (S.notifs || []).find((n) => n.id === id)).filter(Boolean);
-  return `<div class="ia-m ia"><p>${esc(voz(r.chave, iaVars(r.vars)))}</p>${avs.length ? `<ul class="ia-av">${avs.map((n) => `<li class="${n.nivel}"><b>${esc(n.titulo)}</b><span>${esc(n.texto)}</span></li>`).join('')}</ul>` : ''}${iaCta(r.cta, i)}</div>`;
+  const vs = [r.chave, r.chave + '_2', r.chave + '_3'].filter((k) => VOZ[tomAtual()][k] != null); const ch = vs.length ? vs[Math.floor((r.v || 0) * vs.length)] : r.chave;
+  return `<div class="ia-m ia"><p>${esc(voz(ch, iaVars(r.vars)))}</p>${avs.length ? `<ul class="ia-av">${avs.map((n) => `<li class="${n.nivel}"><b>${esc(n.titulo)}</b><span>${esc(n.texto)}</span></li>`).join('')}</ul>` : ''}${iaCta(r.cta, i)}</div>`;
 }
-// boas-vindas: no widget, junto com o que o painel está vendo no mês (insights); no topo, só o resumo dos avisos
-function iaBoasHtml(comDestaques) {
-  const n = (S.notifs || []).filter((x) => !x.lida).length; const ins = comDestaques && S.C ? insights() : [];
-  return `<div class="ia-m ia"><p>${esc(voz('ia_oi', iaVars({})))} ${esc(voz('ia_boas'))}</p>${n ? `<p class="ia-nota">${esc(voz('ia_boas_av', { n }))}</p>` : ''}
-    ${ins.length ? `<ul class="ins ia-ins">${ins.map((x) => `<li class="${x.t}"><i></i><span>${esc(x.x)}${x.a ? ' ' + btnAcao(x.a) : ''}</span></li>`).join('')}</ul>` : ''}</div>`;
-}
+// boas-vindas: só a saudação curta (pedido do Nathan)
+const iaBoasHtml = () => `<div class="ia-m ia"><p>${esc(voz('ia_oi', iaVars({})))}</p></div>`;
 function iaLogHtml(onde) {
   const st = iaEstado(); const lim = onde === 'w' ? 6 : 40; const ini = Math.max(0, st.msgs.length - lim);
   const msgs = st.msgs.slice(ini).map((m, k) => iaMsgHtml(m, ini + k)).join('');
@@ -245,17 +391,25 @@ function iaLogHtml(onde) {
 }
 function iaFichasHtml() {
   const st = iaEstado(); const ult = st.msgs.slice().reverse().find((m) => m.de === 'ia'); const rec = { investimentos: temRecurso('investimentos'), carteira: temRecurso('carteira') };
-  const base = ['resumo', 'orcamento', 'aporte', 'carteira', 'objetivos', 'avisos'].filter((s) => (s !== 'aporte' || rec.investimentos) && (s !== 'carteira' || rec.carteira));
-  const ids = ult && ult.r.sug.length ? ult.r.sug : base;
-  return ids.slice(0, 4).map((id) => `<button class="np-chip ia-ficha" data-act="ia-perg" data-q="${esc(E.IA_FICHAS[id])}">${esc(E.IA_FICHAS[id])}</button>`).join('');
+  const pode = (id) => (!['aporte', 'meta', 'proventos', 'patrimonio'].includes(id) || rec.investimentos) && (id !== 'carteira' || rec.carteira);
+  const ficha = (id) => `<button class="np-chip ia-ficha" data-act="ia-perg" data-q="${esc(E.IA_FICHAS[id])}">${esc(E.IA_FICHAS[id])}</button>`;
+  if (S.iaMais) return Object.keys(E.IA_FICHAS).filter(pode).map(ficha).join('') + '<button class="np-chip ia-ficha ia-mais" data-act="ia-mais" aria-expanded="true">Menos</button>';
+  const ids = ult && ult.r.sug.length ? ult.r.sug : ['resumo', 'compra', 'investir', 'orcamento'].filter(pode);
+  return ids.slice(0, 4).map(ficha).join('') + '<button class="np-chip ia-ficha ia-mais" data-act="ia-mais" aria-expanded="false">Mais perguntas</button>';
 }
 const iaFormHtml = (onde) => `<form class="ia-f" data-form="ia" autocomplete="off"><input name="q" maxlength="300" placeholder="Pergunte sobre o seu dinheiro" aria-label="Pergunta para o assistente" enterkeyhint="send"><button class="ia-env" aria-label="Enviar pergunta">${IA_ENVIAR}</button></form>`;
 const iaConversaHtml = (onde) => `<div class="ia-log" data-ia-log="${onde}" role="log" aria-live="polite">${iaLogHtml(onde)}</div><div class="ia-fichas" data-ia-fichas role="group" aria-label="Sugestões de perguntas">${iaFichasHtml()}</div>${iaFormHtml(onde)}`;
 
 // widget da Visão geral (mesmo id "destaques" do antigo "O que o painel está vendo", para quem já personalizou)
-function iaWidgetHtml() {
-  return `<section class="card ia-card"><div class="c-h ia-h">${iaOrb()}<div><h3>Assistente ${esc(CFG.marca || '')}</h3><p class="keep">Converse sobre o seu mês, a carteira e os objetivos</p></div></div>${iaConversaHtml('w')}<p class="ia-disc disc">Respostas automáticas a partir do seu planejamento, sem indicação de investimentos.</p></section>`;
+// tela inicial (só na sessão, até tocar em Começar): nome, frase e um objeto ondulado se movendo, como os modelos de IA
+function iaIntroHtml() {
+  // largura em curva (mais larga no meio), para as dobras parecerem um objeto orgânico
+  const camadas = Array.from({ length: 14 }, (_, k) => `<i style="--k:${k};--w:${Math.round(130 + 85 * Math.sin(((k + 1) / 15) * Math.PI))}px"></i>`).join('');
+  return `<div class="ia-intro"><h3 class="ia-int-t">${esc(CFG.marca || '')} Intelligence</h3><p class="ia-int-s keep">Seu planejamento financeiro, em conversa</p>
+    <button class="ia-comecar" data-act="ia-comecar">Começar</button><div class="ia-onda" aria-hidden="true">${camadas}</div></div>`;
 }
+const iaWidgetCorpo = () => (S.iaComecou ? `<div class="c-h ia-h">${iaOrb()}<div><h3>Assistente ${esc(CFG.marca || '')}</h3><p class="keep">Converse sobre o seu mês, a carteira e os objetivos</p></div></div>${iaConversaHtml('w')}<p class="ia-disc disc">Respostas automáticas a partir do seu planejamento, sem indicação de investimentos.</p>` : iaIntroHtml());
+function iaWidgetHtml() { return `<section class="card ia-card">${iaWidgetCorpo()}</section>`; }
 // painel do topo (no lugar da central de notificações): abas Conversa e Avisos
 function iaPainelHtml(lista) {
   const aba = S.iaAba || 'conversa'; const novas = lista.filter((n) => !n.lida).length;
@@ -263,7 +417,7 @@ function iaPainelHtml(lista) {
   return `<div class="popover npop iap${S.notifAnim ? ' entra' : ''}" role="dialog" aria-label="Assistente" tabindex="-1">
     <div class="np-h ia-h">${iaOrb()}<div class="ia-h-t"><b>Assistente ${esc(CFG.marca || '')}</b><small>Seu planejamento, em conversa · ${esc(CFG.consultor)}</small></div><div class="np-h-a">${aba === 'avisos' && novas ? '<button class="lnk" data-act="notif-todas">Marcar como lidas</button>' : ''}<button class="icon-btn np-x" data-act="notif-fechar" aria-label="Fechar o assistente">${I.x}</button></div></div>
     <div class="np-chips ia-tabs" role="tablist">${tab('conversa', 'Conversa')}${tab('avisos', `Avisos${novas ? `<em>${novas}</em>` : ''}`)}</div>
-    ${aba === 'avisos' ? notifCorpo(lista) : `<div class="iap-c">${iaConversaHtml('p')}</div>`}</div>`;
+    ${aba === 'avisos' ? notifCorpo(lista) : `<div class="iap-c">${S.iaComecou ? iaConversaHtml('p') : iaIntroHtml()}</div>`}</div>`;
 }
 
 // atualiza só a conversa e as fichas (sem render(), sem perder o que está digitado)
@@ -276,7 +430,13 @@ function iaRefresh() {
 const iaRolar = () => document.querySelectorAll('[data-ia-log]').forEach((el) => { el.scrollTop = el.scrollHeight; });
 function iaAcao(act, ds) {
   switch (act) {
-    case 'ia-perg': iaEnviar(ds.q); return true;
+    case 'ia-perg': S.iaMais = false; iaEnviar(ds.q); return true;
+    case 'ia-comecar': {
+      S.iaComecou = true; document.querySelectorAll('.ia-card').forEach((el) => { el.innerHTML = iaWidgetCorpo(); }); document.querySelectorAll('.iap-c').forEach((el) => { el.innerHTML = iaConversaHtml('p'); });
+      const inp = document.querySelector('.iap .ia-f input') || document.querySelector('.ia-card .ia-f input'); if (inp) inp.focus({ preventScroll: true });
+      return true;
+    }
+    case 'ia-mais': S.iaMais = !S.iaMais; iaRefresh(); return true;
     case 'ia-aba': S.iaAba = ds.aba; notifRefresh(`.ia-tabs [data-aba="${ds.aba}"]`); iaRefresh(); return true;
     case 'ia-ir': {
       const m = iaEstado().msgs[+ds.i]; const c = m && m.r && m.r.cta; if (!c) return true;

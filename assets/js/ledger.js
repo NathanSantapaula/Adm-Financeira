@@ -170,9 +170,9 @@ function gWidgets(G) {
       return `<li><button class="g-area g-inst" ${x.k ? `data-act="g-busca" data-q="${esc(nome)}"` : 'disabled'}>${instIcone(x.k)}<span class="g-area-n"><b>${esc(nome)}</b></span>
         <span class="g-area-t"><i style="width:${((x.v / mx) * 100).toFixed(1)}%;--bc:${x.k ? instDe(x.k)[2] : 'var(--ink-3)'}"></i></span><span class="g-area-v"><b>${brl0(x.v)}</b><small>${pct(x.v / tot)}</small></span></button></li>`; }).join('')}</ul>
       ${soma[''] ? '<p class="cap">Marque "Pago com" nos lançamentos para separar o que está sem instituição.</p>' : ''}` : gVazio('Sem gastos neste período.')));
-    // meus cartões: um cartão por instituição usada no período, na cor dela, com o gasto e a fatia; tocar filtra a lista
+        // meus cartões: um cartão por instituição usada no período, na cor dela, com o gasto e a fatia; tocar filtra a lista
     const C2 = L.filter((x) => x.k); const quando = G.mes >= 0 ? 'em ' + MES_LONGO[G.mes] : perFrase();
-    add('cartoes', gCard('cartoes', 'Meus cartões', C2.length ? `<div class="cc-cards" role="list">${C2.map((x) => { const i = instDe(x.k); return `<button class="cc-card" role="listitem" style="--cb:${i[2]};--cf:${i[3]}" data-act="g-busca" data-q="${esc(i[1])}" aria-label="${esc(i[1])}: ${esc(brl(x.v))} ${esc(quando)}"><span class="cc-top">${instIcone(x.k)}<span class="cc-chip" aria-hidden="true"></span></span><span class="cc-nome">${esc(i[1])}</span><span class="cc-k">Gasto ${esc(quando)}</span><b class="cc-v">${brl(x.v)}</b><span class="cc-pct">${pct(x.v / tot)} do total</span></button>`; }).join('')}</div>` : gVazio('Marque "Pago com" ao lançar um gasto para ver um cartão por banco ou carteira.'))); }
+    add('cartoes', gCard('cartoes', 'Meus cartões', C2.length ? `<div class="cc-cards" role="list">${C2.map((x) => { const i = instDe(x.k); return `<button class="cc-card" role="listitem" style="--cb:${i[2]};--cf:${i[3]}" data-act="g-busca" data-q="${esc(i[1])}" aria-label="${esc(i[1])}: ${esc(brl(x.v))} ${esc(quando)}"><span class="cc-tex" aria-hidden="true"></span><span class="cc-top"><span class="cc-nfc" aria-hidden="true">${CC_NFC}</span><span class="cc-nome">${esc(i[1])}</span>${instIcone(x.k)}</span><span class="cc-pe"><span><small>Gasto ${esc(quando)}</small><b class="cc-v">${brl(x.v)}</b></span><span><small>Do total</small><b>${pct(x.v / tot)}</b></span></span></button>`; }).join('')}</div>` : gVazio('Marque "Pago com" ao lançar um gasto para ver um cartão por banco ou carteira.'))); }
   // limites por área: sempre de um mês (o escolhido; na visão do ano, o mês atual)
   { const m = G.mes >= 0 ? G.mes : S.year === NOW_Y ? NOW_M : 11; const L = E.analiseLimites((S.plan.settings || {}).limites, E.gastosAreaMes(S.plan, planCtx().carry, m)); const cor = { ok: 'var(--pos)', perto: 'var(--warn)', passou: 'var(--neg)' };
     const segL = L.reduce((t, x) => t + x.limite, 0); const segG = L.reduce((t, x) => t + x.gasto, 0); // barra em segmentos: tamanho = limite, preenchido até o gasto
@@ -505,6 +505,8 @@ const CAT_NOVA = '__nova';
    "escuro" (fundo grafite, símbolo na cor da instituição), "tingido" (vidro na cor de destaque, símbolo de uma cor só)
    e "auto" (cor no tema claro, escuro no escuro, tingido no personalizado).
    id, nome, cor da instituição, cor do símbolo sobre ela, sigla (sem logo), tamanho do símbolo no ícone (0 = sigla) */
+// ícone de pagamento por aproximação do cartão
+const CC_NFC = '<svg viewBox="0 0 24 24"><path d="M8.5 8.5a5 5 0 0 1 0 7M12 6a8.5 8.5 0 0 1 0 12M15.5 3.5a12 12 0 0 1 0 17"/></svg>';
 const INSTITUICOES = [
   ['nubank', 'Nubank', '#820AD1', '#fff', 'nu', 0.6], ['itau', 'Itaú', '#1A5493', '#FFF212', 'itaú', 0.84], ['bradesco', 'Bradesco', '#CC092F', '#fff', 'B', 0.62],
   ['santander', 'Santander', '#EC0000', '#fff', 'S', 0.58], ['bb', 'Banco do Brasil', '#FCFC30', '#465EFF', 'BB', 0.62], ['caixa', 'Caixa', '#005CA9', '#fff', 'CX', 0.8],

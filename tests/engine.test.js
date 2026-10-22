@@ -374,7 +374,8 @@ ok(E.planoPermite('gratis', 'orcamento') && !E.planoPermite('gratis', 'carteira'
 // --- assistente local: reconhece a pergunta e responde com as análises
 {
   ok(Object.keys(E.IA_FICHAS).every((id) => E.iaIntencao(E.IA_FICHAS[id]) === id), 'assistente: cada ficha é reconhecida como a sua pergunta');
-  const casos = [['Oi!', 'oi'], ['quanto ainda posso gastar hoje?', 'orcamento'], ['Onde vai o meu dinheiro? Gastei muito com o quê', 'gastos'], ['qual ação devo comprar?', 'recomendar'],
+  const casos = [['Oi!', 'oi'], ['quanto ainda posso gastar hoje?', 'orcamento'], ['Onde vai o meu dinheiro? Gastei muito com o quê', 'gastos'], ['qual ação devo comprar?', 'compra'], ['quero comprar um carro de 80 mil', 'compra'], ['Vou investir 5 mil', 'investir'], ['o que eu faço com a sobra?', 'sobra'], ['Estou devendo no cartão', 'divida'],
+    ['vou fechar o mês no vermelho?', 'previsao'], ['como foi o mês passado', 'mes_passado'],
     ['Quanto rende a poupança?', 'recomendar'], ['Bati a meta de aporte?', 'meta'], ['quanto posso aportar este mês', 'aporte'], ['Recebi dividendos?', 'proventos'],
     ['Quando vou conseguir me aposentar?', 'objetivos'], ['reserva de emergência', 'reserva'], ['blá blá', 'nao_entendi'], ['OBRIGADO', 'obrigado'], ['tenho alguma notificação?', 'avisos']];
   ok(casos.every(([t, id]) => E.iaIntencao(t) === id), 'assistente: frases livres viram a intenção certa (sem acento, maiúscula ou pontuação)');
@@ -398,6 +399,20 @@ ok(E.planoPermite('gratis', 'orcamento') && !E.planoPermite('gratis', 'carteira'
   ok(E.iaResponder('resumo', Object.assign({}, base, { C: E.compute({ year: 2026 }, {}) })).chave === 'ia_sem_dados', 'assistente: sem dados, convida a importar o extrato');
   const ob = E.iaResponder('objetivos', Object.assign({}, base, { obj: E.analiseObjetivos({ objetivos: [{ nome: 'Casa', valor: 100000, pct: 100, ano: 2030 }], patrimonio: 20000, aporte: 2000, retorno: 0, hoje: { ano: 2026, mes: 0 } }) }));
   ok(ob.chave === 'ia_obj_prazo' && ob.vars.nome === 'Casa' && ob.vars.pct === 0.2, 'assistente: objetivo no prazo, com progresso');
+  ok(E.iaValor('posso comprar um celular de R$ 2.500,90?') === 2500.9 && E.iaValor('carro de 80 mil') === 80000 && E.iaValor('10k') === 10000 && E.iaValor('em 2027 quero 3000') === 3000 && E.iaValor('em 10x') === null && E.iaValor('1.200 em 3x') === 1200,
+    'assistente: lê o valor citado (R$, mil, k), ignorando ano e parcelas');
+  ok(E.iaParcelas('em 10x') === 10 && E.iaParcelas('12 vezes') === 12 && E.iaParcelas('à vista') === null, 'assistente: lê o número de parcelas');
+  ok(E.iaProduto('vale a pena investir em CDB?') === 'cdb' && E.iaProduto('Tesouro Selic') === 'tesouro' && E.iaProduto('fundos imobiliários') === 'fii' && E.iaProduto('comprar um carro') === null, 'assistente: reconhece o produto citado');
+  const q = (t) => E.iaResponder(E.iaIntencao(t), Object.assign({}, base, { texto: t }));
+  ok(q('qual ação devo comprar?').chave === 'ia_produto_disp' && q('qual ação devo comprar?').cta.acao === 'contact' && q('qual ação devo comprar?').vars.produto === 'acoes', 'assistente: ação citada vira explicação e encaminhamento ao assessor, sem indicar qual');
+  ok(q('quero investir 1000 em CDB').chave === 'ia_produto_cabe' && q('quero investir 9 mil no tesouro').chave === 'ia_produto_passa', 'assistente: investimento com produto e valor é comparado com o disponível');
+  ok(q('vou investir 1.000').chave === 'ia_inv_cabe' && q('vou investir 1.000').vars.restaria === 2240 && q('quero investir 5 mil').chave === 'ia_inv_passa' && q('quero começar a investir').chave === 'ia_inv_geral', 'assistente: investimento citado comparado com o disponível do mês');
+  const bO = Object.assign({}, base, { C: E.compute(Object.assign({}, pl, { orcamento: new Array(12).fill(3000) }), {}) }); const qo = (t) => E.iaResponder(E.iaIntencao(t), Object.assign({}, bO, { texto: t }));
+  ok(qo('posso comprar um tênis de 500?').chave === 'ia_compra_cabe' && qo('posso comprar um tênis de 500?').vars.restante === 500, 'assistente: compra que cabe no orçamento');
+  ok(qo('posso comprar uma TV de 2.000?').chave === 'ia_compra_sobra' && qo('posso comprar uma TV de 2.000?').vars.excesso === 1000, 'assistente: compra que passa do orçamento mas cabe na sobra');
+  ok(qo('quero comprar um carro de 80 mil').chave === 'ia_compra_grande' && qo('quero comprar um carro de 80 mil').vars.meses === 20 && qo('quero comprar um carro de 80 mil').cta.acao === 'objetivos', 'assistente: compra grande vira objetivo, com os meses de sobra');
+  ok(qo('comprar um celular de 6000 em 10x').chave === 'ia_compra_parc_ok' && qo('comprar um celular de 6000 em 10x').vars.parcela === 600 && qo('posso comprar algo?').chave === 'ia_compra_sem_valor', 'assistente: compra parcelada e compra sem valor');
+  ok(q('Vou fechar o mês no azul?').chave === 'ia_prev_azul' && q('Quanto são meus gastos fixos?').vars.valor === 2000 && q('o que é LCI?').vars.produto === 'lci' && q('o que é isso?').chave === 'ia_produto_qual', 'assistente: previsão do mês, gastos fixos e produtos');
   ok(E.iaResponder('recomendar', base).chave === 'ia_nao_recomendo', 'assistente: não recomenda ativo nem promete rentabilidade');
   ok(E.iaResponder('reserva', base).vars.alvo === 12000, 'assistente: reserva de 6 meses pela média de gastos');
   ok(['resumo', 'gastos', 'aporte', 'dicas', 'avisos', 'patrimonio', 'proventos'].every((id) => { const x = E.iaResponder(id, base); return x.chave && Object.keys(x.vars).every((k) => typeof x.vars[k] !== 'string' || !/R\$/.test(x.vars[k])); }), 'assistente: valores vão como número (a interface formata e mascara)');
