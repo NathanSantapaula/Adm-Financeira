@@ -409,7 +409,7 @@ dialog.drawer[open] { display: flex; animation: drin .22s ease-out; }
 .imp-prev h4 { font-size: 15px; font-weight: 700; word-break: break-all; }
 .sum { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
 .warns { margin: 0; padding-left: 18px; font-size: 13px; color: var(--ink-2); display: grid; gap: 4px; }
-.plan-badge { display: inline-block; align-self: start; padding: 6px 14px; border-radius: 980px; background: var(--surface-3); font-weight: 600; font-size: 13.5px; }
+.plan-badge { display: inline-block; align-self: start; justify-self: start; padding: 6px 14px; border-radius: 980px; background: var(--surface-3); font-weight: 600; font-size: 13.5px; }
 .plan-badge.on { background: var(--accent); color: var(--on-accent); } .plan-badge.wait { background: var(--warn-soft); color: var(--warn); }
 .toast { position: fixed; left: 50%; bottom: calc(26px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%) translateY(20px); background: var(--ink); color: var(--bg); padding: 11px 18px; border-radius: 980px; font-size: 14px; opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 120; max-width: calc(100vw - 32px); }
 .toast.on { opacity: 1; transform: translateX(-50%) translateY(0); }
