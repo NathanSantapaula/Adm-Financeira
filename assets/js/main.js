@@ -15,9 +15,10 @@ function renderSide() {
   const btn = ([k, l]) => `<button data-act="nav" data-view="${k}" title="${esc(l)}" ${S.view === k ? 'aria-current="page"' : ''}>${I[k] || I.geral}<span>${l}</span>${k !== 'clientes' && !abaLiberada(k) ? `<em class="lk" title="Plano ${esc(nomePlano(planoMinimoDe(E.ABA_RECURSO[k] || 'fluxo')))}">${I.lock}</em>` : ''}</button>`;
   // no computador o menu recolhe para só o ícone "AV" e os ícones das abas (estado guardado no aparelho: html.side-mini)
   const mini = document.documentElement.classList.contains('side-mini');
-  // topo da página inteira: a marca não encolhe com o menu; à direita, a busca (nas abas que têm), o sino e o perfil
-  $('#topo').innerHTML = `<div class="topo-marca">${logoMarca()}</div><div class="topo-r">${buscaBtnHtml()}${typeof sinoHtml === 'function' ? sinoHtml() : ''}<button class="topo-eu" data-act="admin-open" aria-label="Abrir o seu perfil e o painel" title="${esc(nome)} · ${esc(planLabel())}">${avatarHtml(S.profile)}</button></div>`;
-  $('#side').innerHTML = `<button class="side-tog" data-act="side-toggle" aria-expanded="${!mini}" aria-label="${mini ? 'Expandir o menu' : 'Recolher o menu'}" title="${mini ? 'Expandir o menu' : 'Recolher o menu'}">${I.chev}</button>
+  // topo da página: à direita, a busca (nas abas que têm), o sino e o perfil; a marca fica no menu lateral
+  $('#topo').innerHTML = `<div class="topo-r">${buscaBtnHtml()}${typeof sinoHtml === 'function' ? sinoHtml() : ''}<button class="topo-eu" data-act="admin-open" aria-label="Abrir o seu perfil e o painel" title="${esc(nome)} · ${esc(planLabel())}">${avatarHtml(S.profile)}</button></div>`;
+  $('#side').innerHTML = `<div class="brand"><span class="brand-full">${logoMarca()}</span><span class="brand-mini" aria-hidden="true">${LOGO}</span>
+      <button class="side-tog" data-act="side-toggle" aria-expanded="${!mini}" aria-label="${mini ? 'Expandir o menu' : 'Recolher o menu'}" title="${mini ? 'Expandir o menu' : 'Recolher o menu'}">${I.chev}</button></div>
     <nav class="nav" aria-label="Seções">${navAgrupado(items, btn)}</nav>
     <div class="side-foot">${planoAtual() === 'gratis' ? cartaoPlanoHtml() : `<div class="advisor"><span class="adv-ic" aria-hidden="true">${esc(CFG.consultor.split(/\s+/).filter(Boolean).map((p, i, l) => (i === 0 || i === l.length - 1 ? p[0] : '')).join('').toUpperCase())}</span><div class="adv-t"><b>Seu assessor</b><span>${esc(CFG.consultor)}</span><small>Dúvidas sobre o seu planejamento? Fale direto, pelo canal que preferir.</small></div><button class="hp-btn sm" data-act="contact">Falar com o ${esc(primeiroNome())}</button></div>`}<div class="save" data-s="${S.save}">${statusText()}</div></div>`;
   const prim = ['geral', 'despesas', 'inv', 'cart'].filter((k) => items.some((i) => i[0] === k));
@@ -57,7 +58,7 @@ function render(opts) {
   S.C = S.plan && S.profile ? E.compute(S.plan, planCtx()) : null;
   hideTip();
   $('#view').classList.toggle('tela-nova', !same); // a entrada anima só na troca de tela
-  if (scr === 'app') { renderSide(); $('#view').innerHTML = viewHtml(); const ht = $('#view .htools'); if (ht && matchMedia('(min-width: 901px)').matches) $('#topo .topo-r').prepend(ht); } // no computador, olho, globo e período sobem para a linha do sino
+  if (scr === 'app') { renderSide(); $('#view').innerHTML = viewHtml(); }
   else {
     $('#side').innerHTML = ''; $('#tabbar').innerHTML = '';
     const h = { landing: landingHtml, auth: authHtml, onboarding: onboardingHtml, checkout: checkoutHtml }[scr];
