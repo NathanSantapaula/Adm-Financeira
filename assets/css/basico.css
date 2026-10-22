@@ -140,7 +140,7 @@ body[data-ui="basico"] input { font-size: max(16px, 1em); } /* sem zoom ao tocar
 .bas-op > .bas-n { flex: 1 1 150px; } .bas-op > .bas-n b { white-space: normal; } /* sem espaço, o seletor desce para a linha de baixo */
 
 /* ---------- Início: painel escuro, ações em círculos, cartão do objetivo sobreposto e atividade em linhas ---------- */
-:root { --bas-noite: #0E0F13; --bas-noite-ink: #F5F5F7; --bas-noite-2: rgba(245, 245, 247, .64); --bas-noite-pos: #30D158; --bas-noite-neg: #FF6B7A; }
+:root { --bas-noite: #0E0F13; --bas-noite-ink: #F5F5F7; --bas-noite-2: rgba(245, 245, 247, .64); --bas-noite-pos: #30D158; --bas-noite-neg: #FF6B7A; --bas-noite-warn: #FFB340; }
 :root[data-theme="oled"] { --bas-noite: #131318; }
 .bas-noite { position: relative; isolation: isolate; overflow: hidden; margin: calc(-16px - env(safe-area-inset-top, 0px)) -16px 0; padding: calc(18px + env(safe-area-inset-top, 0px)) 20px 66px; border-radius: 0 0 32px 32px; color: var(--bas-noite-ink); text-align: center;
   background: radial-gradient(110% 75% at 88% -12%, color-mix(in srgb, var(--accent) 42%, transparent), transparent 62%), radial-gradient(90% 70% at -5% 112%, color-mix(in srgb, var(--accent-2) 26%, transparent), transparent 60%), var(--bas-noite); }
@@ -164,7 +164,7 @@ body[data-ui="basico"] input { font-size: max(16px, 1em); } /* sem zoom ao tocar
 .bas-noite-s { margin: 8px 0 0; font-size: 13.5px; color: var(--bas-noite-2); }
 .bas-noite-s b { color: var(--bas-noite-ink); font-weight: 600; white-space: nowrap; }
 .bas-noite-s em { font-style: normal; font-weight: 650; } .bas-noite-s em.pos { color: var(--bas-noite-pos); } .bas-noite-s em.neg { color: var(--bas-noite-neg); }
-.bas-acs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin-top: 22px; }
+.bas-acs { display: grid; grid-template-columns: repeat(var(--n, 4), minmax(0, 1fr)); gap: 6px; margin-top: 22px; }
 .bas-ac { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 0; border: 0; background: transparent; color: var(--bas-noite-ink); font: inherit; font-size: 13px; font-weight: 600; -webkit-tap-highlight-color: transparent; }
 .bas-ac-c { width: 56px; height: 56px; display: grid; place-items: center; border-radius: 50%; background: var(--accent); color: var(--on-accent); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), 0 10px 24px -10px var(--accent); transition: transform 120ms var(--ease-out); }
 .bas-ac-c svg { width: 24px; height: 24px; stroke-width: 2; }
@@ -196,3 +196,35 @@ body[data-ui="basico"] input { font-size: max(16px, 1em); } /* sem zoom ao tocar
 .bas-noite-par small { font-size: 12px; color: var(--bas-noite-2); }
 .bas-noite-par b { font-size: 15px; font-weight: 650; font-variant-numeric: tabular-nums; white-space: nowrap; }
 :root[data-theme="oled"] .card.bas-sonho { background: var(--surface-2); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .09), var(--shadow-lg); }
+
+/* ---------- o mesmo painel nas outras abas ---------- */
+.bas-noite-t { margin: 0; font-size: 28px; font-weight: 700; letter-spacing: -.02em; line-height: 1.2; color: var(--bas-noite-ink); }
+.bas-noite-lim { max-width: 300px; margin: 12px auto 0; }
+.bas-noite .bas-bar { background: rgba(255, 255, 255, .14); }
+.bas-noite-lim .bas-noite-s { margin-top: 8px; }
+.bas-noite-s em.neg { color: var(--bas-noite-neg); }
+.bas-noite-eu { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 6px; }
+.bas-noite-eu .av { width: 76px; height: 76px; font-size: 28px; display: grid; place-items: center; box-shadow: 0 0 0 3px rgba(255, 255, 255, .14), 0 12px 30px -12px var(--accent); }
+.bas-noite-eu b { font-size: 22px; font-weight: 700; letter-spacing: -.02em; }
+.bas-noite-tag { padding: 4px 12px; border-radius: var(--r-pill); background: rgba(255, 255, 255, .09); font-size: 13px; color: var(--bas-noite-2); }
+.bas-ini[style*="--bc"] { background: color-mix(in srgb, var(--bc) 16%, transparent); color: var(--bc); }
+.bas-ativ button > svg:last-child { width: 18px; height: 18px; flex: none; color: var(--ink-3); }
+.bas-ativ button:disabled { opacity: 1; cursor: default; }
+.bas-ativ .bas-v { display: flex; flex-direction: column; align-items: flex-end; }
+.bas-p-s { margin-top: 10px; font-size: 14px; }
+.card.bas-sonho-modo { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.bas-sonho-modo .bas-sonho-l { flex: 1 1 160px; }
+.bas-sair { margin-top: 12px; } .bas-sair button { justify-content: center; } .bas-sair .bas-n { align-items: center; } .bas-sair b { color: var(--neg); }
+
+/* telas de detalhe: o número principal no mesmo painel escuro */
+.bas-tela .card.bas-hero { color: var(--bas-noite-ink); box-shadow: var(--shadow-lg);
+  background: radial-gradient(110% 80% at 90% -15%, color-mix(in srgb, var(--accent) 40%, transparent), transparent 62%), radial-gradient(90% 70% at -5% 115%, color-mix(in srgb, var(--accent-2) 24%, transparent), transparent 60%), var(--bas-noite); }
+:root[data-theme="oled"] .bas-tela .card.bas-hero { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .07), var(--shadow-lg); }
+.bas-tela .bas-hero .bas-k, .bas-tela .bas-hero .bas-p, .bas-tela .bas-hero .bas-n small { color: var(--bas-noite-2); }
+.bas-tela .bas-hero .bas-p b, .bas-tela .bas-hero .bas-big, .bas-tela .bas-hero .bas-n b { color: var(--bas-noite-ink); }
+.bas-tela .bas-hero .btn:not(.primary) { background: rgba(255, 255, 255, .1); border-color: transparent; color: var(--bas-noite-ink); }
+.bas-tela .bas-hero .bas-del { color: var(--bas-noite-neg) !important; }
+.bas-tela .bas-hero .bas-l li + li, .bas-tela .bas-hero .bas-cats li + li { border-color: rgba(255, 255, 255, .1); }
+.bas-tela .bas-hero .bas-bar { background: rgba(255, 255, 255, .14); }
+.bas-tela .bas-hero .bas-st { color: var(--bas-noite-warn); } .bas-tela .bas-hero .bas-st.ok { color: var(--bas-noite-pos); }
+.bas-noite-lim.over .bas-bar i { background: var(--bas-noite-neg); }
