@@ -194,7 +194,7 @@ const PER_TELAS = ['geral', 'inv', 'pro', 'rendas', 'despesas'];
 function yearControl(extra) {
   const ys = Object.keys(S.plans).map(Number).sort();
   const list = ys.map((y) => `<button class="yr-opt${y === S.year ? ' on' : ''}" data-act="year-pick" data-year="${y}">${y}${y === S.year ? I.check : ''}</button>`).join('');
-  const globo = S.view === 'geral' && typeof aberturaBtnHtml === 'function' ? aberturaBtnHtml() : ''; // o globo só abre pela Visão geral; busca e sino moram no topo da página
+  const globo = typeof aberturaBtnHtml === 'function' ? aberturaBtnHtml() : ''; // o botão do globo em todas as abas; busca e assistente moram no topo da página
   // nas abas com período, ano e período viram um botão só (periodoHtml com o ano dentro)
   if (PER_TELAS.includes(S.view) && typeof periodoHtml === 'function') return `<div class="htools">${olhoHtml()}${globo}${extra || ''}${periodoHtml(ys)}</div>`;
   return `<div class="htools">${olhoHtml()}${globo}${extra || ''}<div class="year"><button class="year-pill" data-act="year-toggle" aria-haspopup="true" aria-expanded="${S.yearOpen}"><span>${S.year}</span>${I.down}</button>

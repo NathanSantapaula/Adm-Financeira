@@ -575,7 +575,7 @@ function aberturaAdmHtml() {
 // botão do globo no topo das telas do painel (ao lado do olho e do sino)
 const I_GLOBO = ic('<circle cx="12" cy="12" r="8.6"/><path d="M3.4 12h17.2"/><path d="M12 3.4c2.4 2.3 3.6 5.2 3.6 8.6s-1.2 6.3-3.6 8.6c-2.4-2.3-3.6-5.2-3.6-8.6S9.6 5.7 12 3.4z"/>');
 function aberturaBtnHtml() { return aberturaPode() ? `<button class="ab-ir" data-act="ab-abrir" aria-label="Abrir o globo do patrimônio" title="Abrir o globo">${I_GLOBO}</button>` : ''; }
-function aberturaAbrir() { if (!AB && aberturaPode()) abAbrir(false); } // pelo botão do globo: direto nos detalhes
+function aberturaAbrir() { if (!AB && aberturaPode()) abAbrir(true); } // pelo botão do globo (SaaS e App): a tela inicial, a capa; os detalhes ficam a um toque
 function aberturaCampo(t) { S.profile.abertura = Object.assign(abOpcoes(), { [t.dataset.abf]: t.checked }); touch('profile'); }
 function aberturaQuando(v, btn) {
   S.profile.abertura = Object.assign(abOpcoes(), { quando: v === 'dia' ? 'dia' : 'sessao' }); touch('profile');

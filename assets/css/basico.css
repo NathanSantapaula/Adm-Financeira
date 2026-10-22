@@ -630,3 +630,42 @@ html[data-vt="aba"]::view-transition-new(root) { animation: 260ms cubic-bezier(.
   .bas-arco, .bas-ev-l { animation: none; } .bas-arco, .bas-roda-c > div, .bas-ev-p, .bas-ev-guia, .bas-membro-in, .bas-per-m { transition: none; }
 }
 .bas-membro::after { content: none; }
+
+/* ---------- rodada 4: o patrimônio brilha, dois botões, globo no topo, widgets extras e arrastar ---------- */
+/* o número do Início é o foco: maior, com luz na cor de destaque e um reflexo que passa devagar */
+.bas-noite-v.brilha { margin-top: 4px; font-size: clamp(40px, 11.4vw, 56px); letter-spacing: -.04em; white-space: nowrap; color: #fff;
+  text-shadow: 0 0 18px color-mix(in srgb, var(--accent) 70%, transparent), 0 0 42px color-mix(in srgb, var(--accent) 45%, transparent); animation: bas-brilha 4.5s ease-in-out infinite; }
+.bas-noite-v.brilha.longo { font-size: clamp(34px, 9.6vw, 48px); }
+.bas-noite-v.brilha .bas-cent { opacity: .45; }
+@keyframes bas-brilha { 0%, 100% { text-shadow: 0 0 14px color-mix(in srgb, var(--accent) 55%, transparent), 0 0 34px color-mix(in srgb, var(--accent) 30%, transparent); } 50% { text-shadow: 0 0 22px color-mix(in srgb, var(--accent) 85%, transparent), 0 0 56px color-mix(in srgb, var(--accent) 55%, transparent); } }
+/* os dois botões do Início: Novo gasto (vidro) e Investimento (cor de destaque) */
+.bas-bts { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; margin: 22px -6px 0; text-align: left; } /* um pouco mais largos que o conteúdo do painel */
+.bas-bt { display: flex; align-items: center; gap: 10px; min-height: 60px; padding: 10px 12px; border: 0; border-radius: 22px; font: inherit; color: var(--bas-noite-ink);
+  background: rgba(255, 255, 255, .08); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .12), inset 0 1px 0 rgba(255, 255, 255, .12); transition: transform 140ms var(--ease-out), background-color 160ms ease; -webkit-tap-highlight-color: transparent; }
+.bas-bt.prim { background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 88%, #fff), var(--accent)); color: var(--on-accent); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35), 0 14px 30px -12px var(--accent); }
+.bas-bt:active { transform: scale(.96); }
+.bas-bt-ic { width: 36px; height: 36px; flex: none; display: grid; place-items: center; border-radius: 12px; background: rgba(255, 255, 255, .12); }
+.bas-bt.prim .bas-bt-ic { background: rgba(255, 255, 255, .22); }
+.bas-bt-ic svg { width: 22px; height: 22px; stroke-width: 2; }
+.bas-bt-t { display: flex; flex-direction: column; min-width: 0; } .bas-bt-t b { font-size: 16px; font-weight: 700; } .bas-bt-t small { font-size: 12px; opacity: .78; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .bas-bt-t b { white-space: nowrap; }
+.bas-noite .bas-globo-btn { width: 40px; height: 40px; background: rgba(255, 255, 255, .08); border-color: rgba(255, 255, 255, .12); color: var(--bas-noite-ink); }
+.bas-noite .bas-globo-btn svg { width: 20px; height: 20px; }
+/* Meus sonhos: o botão do simulador não cobre mais o texto do sonho */
+.bas-sim-b { margin: 14px auto 0; }
+/* widgets extras */
+.card.bas-w-globo, .card.bas-w-saude { width: 100%; display: flex; align-items: center; gap: 14px; margin-top: 14px; padding: 16px; border-radius: 22px; color: inherit; font: inherit; text-align: left; }
+.bas-secs.sobe > .bas-sec:first-child > .card.bas-w-globo, .bas-secs.sobe > .bas-sec:first-child > .card.bas-w-saude { margin-top: 0; }
+.bas-w-globo > svg:last-child, .bas-w-saude > svg:last-child { width: 18px; height: 18px; flex: none; color: var(--ink-3); }
+.bas-w-orb { position: relative; width: 52px; height: 52px; flex: none; border-radius: 50%; background: radial-gradient(circle at 34% 28%, #fff, var(--accent) 42%, color-mix(in srgb, var(--accent-2) 75%, #000) 100%); box-shadow: 0 0 22px -2px var(--accent), inset -6px -8px 14px rgba(0, 0, 0, .35); }
+.bas-w-orb::after { content: ""; position: absolute; inset: -6px; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--accent) 60%, transparent); transform: rotateX(70deg); animation: bas-orbita 6s linear infinite; }
+@keyframes bas-orbita { to { transform: rotateX(70deg) rotateZ(360deg); } }
+.bas-w-saude .bas-anel-c b { font-size: 20px; font-weight: 750; } .bas-w-saude .bas-n small { white-space: normal; }
+/* organizar: alça para arrastar, tirar (−) e colocar (+) */
+.bas-org-h { width: 36px; height: 40px; flex: none; display: grid; place-items: center; color: var(--ink-3); cursor: grab; touch-action: none; }
+.bas-org-h svg { width: 20px; height: 20px; }
+.bas-org-l li { transition: box-shadow 160ms ease, scale 160ms var(--ease-out); padding-left: 6px; }
+.bas-org-l li.arrasta { position: relative; z-index: 3; scale: 1.03; box-shadow: var(--shadow-lg); transition: none; }
+.bas-org-l li.arrasta .bas-org-h { cursor: grabbing; color: var(--accent); }
+.bas-org-b.menos { color: var(--neg); } .bas-org-b.mais { color: var(--on-accent); background: var(--accent); }
+.bas-org-fora li { padding-left: 16px; }
+@media (prefers-reduced-motion: reduce) { .bas-noite-v.brilha, .bas-w-orb::after { animation: none; } .bas-bt { transition: none; } }
