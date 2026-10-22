@@ -16,7 +16,9 @@ function renderSide() {
   // no computador o menu recolhe para só o ícone "AV" e os ícones das abas (estado guardado no aparelho: html.side-mini)
   const mini = document.documentElement.classList.contains('side-mini');
   // topo da página: à direita, a busca (nas abas que têm), o sino e o perfil; a marca fica no menu lateral
+  const htAntes = $('#topo .htools'); // olho, globo e período movidos pelo render() (renderSide sozinho, no redimensionar, não os perde)
   $('#topo').innerHTML = `<div class="topo-r"><div class="topo-ic">${buscaBtnHtml()}${typeof sinoHtml === 'function' ? sinoHtml() : ''}</div><button class="topo-eu" data-act="admin-open" aria-label="Abrir o seu perfil e o painel" title="${esc(nome)} · ${esc(planLabel())}">${avatarHtml(S.profile)}<span class="topo-eu-t"><b>${esc(nome)}</b><small>${esc(planLabel())}</small></span><svg class="topo-eu-v" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></div>`;
+  if (htAntes) $('#topo .topo-r').prepend(htAntes);
   $('#side').innerHTML = `<div class="brand"><span class="brand-full">${logoMarca()}</span><span class="brand-mini" aria-hidden="true">${LOGO}</span>
       <button class="side-tog" data-act="side-toggle" aria-expanded="${!mini}" aria-label="${mini ? 'Expandir o menu' : 'Recolher o menu'}" title="${mini ? 'Expandir o menu' : 'Recolher o menu'}">${I.chev}</button></div>
     <nav class="nav" aria-label="Seções">${navAgrupado(items, btn)}</nav>
@@ -58,7 +60,7 @@ function render(opts) {
   S.C = S.plan && S.profile ? E.compute(S.plan, planCtx()) : null;
   hideTip();
   $('#view').classList.toggle('tela-nova', !same); // a entrada anima só na troca de tela
-  if (scr === 'app') { renderSide(); $('#view').innerHTML = viewHtml(); }
+  if (scr === 'app') { renderSide(); $('#view').innerHTML = viewHtml(); const ht = $('#view .htools'); const velho = $('#topo .htools'); if (velho) velho.remove(); if (ht && matchMedia('(min-width: 901px)').matches) $('#topo .topo-r').prepend(ht); } // no computador, olho, globo e período ficam na linha da busca e do perfil
   else {
     $('#side').innerHTML = ''; $('#tabbar').innerHTML = '';
     const h = { landing: landingHtml, auth: authHtml, onboarding: onboardingHtml, checkout: checkoutHtml }[scr];
