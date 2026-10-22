@@ -889,7 +889,7 @@ button.bas-cc-c { border: 0; font: inherit; text-align: left; cursor: pointer; t
   box-shadow: inset 0 0 0 calc(var(--t) * .028) var(--c), inset 0 0 calc(var(--t) * .2) color-mix(in srgb, var(--c) 45%, transparent), 0 0 calc(var(--t) * .14) color-mix(in srgb, var(--c) 50%, transparent);
   -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); animation: bas-holo 4s steps(1) infinite; }
 @keyframes bas-holo { 0%, 100% { opacity: 1; } 47% { opacity: .82; } 48% { opacity: 1; } 49% { opacity: .9; } 50% { opacity: 1; } }
-.bas-rosto-luz { fill: #fff; opacity: .16; } .bas-rosto-aro { fill: none; stroke: transparent; stroke-width: .8; }
+.bas-rosto-luz { fill: #fff; stroke: none; opacity: .22; filter: blur(1.2px); } :root[data-theme="light"] .bas-rosto-luz { opacity: .5; } /* reflexo suave, sem contorno */ .bas-rosto-aro { fill: none; stroke: transparent; stroke-width: .8; }
 .bas-rosto-m { --tr: color-mix(in oklab, var(--c) 78%, var(--ink)); filter: drop-shadow(0 0 3px color-mix(in srgb, var(--c) 70%, transparent)); transform: translate(var(--ox, 0), var(--oy, 0)); transition: transform 400ms var(--ease-out); }
 .bas-rosto-o { transform-box: fill-box; transform-origin: center; animation: bas-pisca 5.5s infinite, bas-olha 11s ease-in-out infinite; }
 .bas-rosto-o ellipse { fill: var(--tr); } .bas-rosto-arc, .bas-rosto-s { fill: none; stroke: var(--tr); stroke-width: 3.4; stroke-linecap: round; } .bas-rosto-s { stroke-width: 2.6; opacity: .8; }

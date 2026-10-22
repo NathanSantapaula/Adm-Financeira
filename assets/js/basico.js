@@ -855,7 +855,7 @@ function basRosto(nota, tam) {
   const ry = n < 40 ? 4.4 : 5.4;
   const olhos = n >= 90 && !sem ? '<path class="bas-rosto-arc" d="M31 46 Q37 39.5 43 46M57 46 Q63 39.5 69 46"/>' : `<ellipse cx="37" cy="44" rx="3.6" ry="${ry}"/><ellipse cx="63" cy="44" rx="3.6" ry="${ry}"/>`;
   const sob = !sem && n < 45 ? '<path class="bas-rosto-s" d="M30 37.5 Q35.5 36.5 41 33.5M70 37.5 Q64.5 36.5 59 33.5"/>' : '';
-  return `<span class="bas-rosto ${cls}" style="--t:${tam || 96}px;--c:${cor}" aria-hidden="true"><i class="bas-rosto-esf"></i><svg viewBox="0 0 100 100"><circle class="bas-rosto-aro" cx="50" cy="50" r="41.2"/>
+  return `<span class="bas-rosto ${cls}" style="--t:${tam || 96}px;--c:${cor}" aria-hidden="true"><i class="bas-rosto-esf"></i><svg viewBox="0 0 100 100"><ellipse class="bas-rosto-luz" cx="38" cy="25" rx="17" ry="8.5"/><circle class="bas-rosto-aro" cx="50" cy="50" r="41.2"/>
     <g class="bas-rosto-m"><g class="bas-rosto-o">${olhos}</g>${sob}<g class="bas-rosto-bw">${boca}</g></g></svg></span>`;
 }
 // o rosto acompanha o dedo ou o mouse (olhos até 3 unidades, cabeça até 6°); um quadro por vez, parado com "reduzir movimento"
