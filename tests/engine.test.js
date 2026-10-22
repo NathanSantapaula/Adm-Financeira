@@ -422,6 +422,15 @@ ok(E.interfaceDe('gratis', 'completo') === 'basico' && E.interfaceDe('qualquer')
   ok(['resumo', 'gastos', 'aporte', 'dicas', 'avisos', 'patrimonio', 'proventos'].every((id) => { const x = E.iaResponder(id, base); return x.chave && Object.keys(x.vars).every((k) => typeof x.vars[k] !== 'string' || !/R\$/.test(x.vars[k])); }), 'assistente: valores vão como número (a interface formata e mascara)');
 }
 
+{ const pl = { year: 2026, despesas: [{ id: 'f', area: 'Moradia', valores: new Array(12).fill(1000) }], lancamentos: [{ data: '2026-02-10', area: 'Lazer', valor: 50 }, { data: '2026-05-01', area: 'Lazer', valor: 30 }] };
+  const g = E.gastosAreaPeriodo(pl, [], 0, 2); ok(g.Moradia === 3000 && g.Lazer === 50, 'gastos por área num período somam os meses'); }
+{ const z = () => new Array(12).fill(0); const Cq = { aplicado: [500, 1000, 1000, 0].concat(new Array(8).fill(0)), metaAporteMes: new Array(12).fill(1000), investAlocado: [100, 200, 300, -50].concat(new Array(8).fill(0)),
+    receita: [5000, 5000, 5000, 5000].concat(new Array(8).fill(0)), despesas: [3000, 3000, 3000, 3000].concat(new Array(8).fill(0)), patrimonio: [10000, 11000, 12000, 20000].concat(new Array(8).fill(20000)) };
+  const q = E.conquistas({ C: Cq, ult: 3, objetivos: [{ progresso: 0.6 }] }); const ok1 = (id) => q.find((x) => x.id === id).ok;
+  ok(ok1('primeiro-aporte') && ok1('meta-mes') && ok1('tres-azul') && ok1('poupador') && ok1('reserva') && ok1('meio-sonho'), 'conquistas: todas cumpridas no exemplo');
+  const q2 = E.conquistas({ C: { aplicado: z(), metaAporteMes: z(), investAlocado: z(), receita: z(), despesas: z(), patrimonio: z() }, ult: 3, objetivos: [] });
+  ok(q2.every((x) => !x.ok), 'conquistas: nenhuma sem dados'); }
+
 // os scripts da interface dividem o escopo global: um nome de topo repetido entre arquivos derruba o arquivo inteiro no navegador
 { const fs = require('fs'); const path = require('path'); const dir = path.join(__dirname, '..', 'assets', 'js'); const dono = {}; const rep = [];
   fs.readdirSync(dir).filter((f) => f.endsWith('.js') && f !== 'engine.js' && f !== 'ingest.js').forEach((f) => {

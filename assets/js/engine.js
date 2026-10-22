@@ -689,6 +689,27 @@
     (plan.lancamentos || []).forEach((l) => { const d = parseDataISO(l.data); if (d && d.ano === plan.year && d.mes === m) somar(l.area, +l.valor || 0); });
     return out;
   }
+  // gasto de cada área num intervalo de meses (de..ate), somando gastosAreaMes mês a mês
+  function gastosAreaPeriodo(plan, carry, de, ate) {
+    const out = {}; for (let m = Math.max(0, de); m <= Math.min(11, ate); m++) { const g = gastosAreaMes(plan, carry, m); Object.keys(g).forEach((k) => { out[k] = r2((out[k] || 0) + g[k]); }); }
+    return out;
+  }
+  /* conquistas do App: marcos do ano até o mês ult (inclusive). o: { C (compute), ult, objetivos (itens de analiseObjetivos) } */
+  function conquistas(o) {
+    const C = o.C || {}; const ult = Math.max(0, Math.min(11, o.ult == null ? 11 : o.ult)); const ate = (a) => (a || []).slice(0, ult + 1);
+    const ap = ate(C.aplicado); const meta = ate(C.metaAporteMes); const sob = ate(C.investAlocado); const rec = sum(ate(C.receita)); const gas = ate(C.despesas);
+    let seq = 0; let melhorSeq = 0; sob.forEach((v) => { seq = v > 0.005 ? seq + 1 : 0; melhorSeq = Math.max(melhorSeq, seq); });
+    const mesesGasto = gas.filter((v) => v > 0.005); const mediaGasto = mesesGasto.length ? sum(mesesGasto) / mesesGasto.length : 0;
+    const patr = (C.patrimonio || [])[ult] || 0;
+    return [
+      { id: 'primeiro-aporte', nome: 'Primeiro investimento', desc: 'Investiu pela primeira vez no ano.', ok: ap.some((v) => v > 0.005) },
+      { id: 'meta-mes', nome: 'Meta batida', desc: 'Investiu a meta do mês ao menos uma vez.', ok: ap.some((v, i) => (+meta[i] || 0) > 0 && v >= meta[i] - 0.005) },
+      { id: 'tres-azul', nome: 'Três meses no azul', desc: 'Sobrou dinheiro três meses seguidos.', ok: melhorSeq >= 3 },
+      { id: 'poupador', nome: 'Poupador', desc: 'Guardou 20% ou mais do que entrou no ano.', ok: rec > 0 && (rec - sum(gas)) / rec >= 0.2 },
+      { id: 'reserva', nome: 'Reserva de 6 meses', desc: 'O patrimônio cobre seis meses de gastos.', ok: mediaGasto > 0 && patr >= mediaGasto * 6 },
+      { id: 'meio-sonho', nome: 'Meio caminho', desc: 'Um dos seus sonhos passou da metade.', ok: (o.objetivos || []).some((g) => (g.progresso || 0) >= 0.5) },
+    ];
+  }
   // cada limite com o gasto da área (nome comparado sem acento nem maiúscula); 80% ou mais = perto, acima de 100% = passou
   function analiseLimites(limites, gastos) {
     const g = {}; Object.keys(gastos || {}).forEach((k) => { g[norm(k)] = (g[norm(k)] || 0) + gastos[k]; });
@@ -1150,6 +1171,6 @@
   const api = { PLANOS, RECURSOS, ABA_RECURSO, planoPermite, planoMinimo, planoNorm, interfaceDe, parseDataISO, MES, MES_LONGO, TAXONOMIA, ASSET_LEVELS, QUIZ, PERFIS, RETORNO_PADRAO, CATS_DESP, CATS_RENDA, FORMATO_BACKUP,
     z, add, sub, sum, r2, norm, monthIndex, parseValor, distribuir, parcelaMeses, parcelaFim, parcelaIndice, itemValores, carryItems,
     ativoKey, buildAssetTree, rebalance, contasMes, gastosPorInst, variacao, janelaAnterior, analiseInvest, disponivelAporte, analiseRenda, analiseGastos, analiseCarteira, nomeEstab, historico, ctxAno, OBJ_TIPOS, normObjetivos, analiseObjetivos, sugerirDivisao, aporteNecessario, notificacoes, scorePerfil, projetar, mesesAteMeta, simularObjetivo, migratePlan, compute, makeBackup, parseBackup,
-    templateSheets, parseImport, applyImport, gastosAreaMes, analiseLimites, repetirValores, acharFixo, feriadoBR, diaUtilBR, IA_INTENCOES, IA_FICHAS, IA_PRODUTOS, iaIntencao, iaProduto, iaValor, iaParcelas, iaResponder };
+    templateSheets, parseImport, applyImport, gastosAreaMes, gastosAreaPeriodo, conquistas, analiseLimites, repetirValores, acharFixo, feriadoBR, diaUtilBR, IA_INTENCOES, IA_FICHAS, IA_PRODUTOS, iaIntencao, iaProduto, iaValor, iaParcelas, iaResponder };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.FPEngine = api;
 })(typeof window !== 'undefined' ? window : globalThis);
