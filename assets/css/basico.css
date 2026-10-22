@@ -909,3 +909,68 @@ button.bas-cc-c { border: 0; font: inherit; text-align: left; cursor: pointer; t
 @keyframes bas-cai { 0%, 100% { transform: rotate(0) translateY(0); } 50% { transform: rotate(-4deg) translateY(1.5px); } }
 @keyframes bas-pulo { 0% { transform: none; } 30% { transform: translateY(-14%) scale(.94, 1.06); } 55% { transform: translateY(0) scale(1.08, .92); } 75% { transform: scale(.97, 1.03); } 100% { transform: none; } }
 @media (prefers-reduced-motion: reduce) { .bas-rosto, .bas-rosto::before, .bas-rosto::after, .bas-rosto svg, .bas-rosto-o, .bas-rosto-bw, .bas-rosto.ok svg, .bas-rosto.baixo svg, .bas-rosto.ok .bas-rosto-bw, .bas-rosto.pulo, .bas-rosto-esf { animation: none; } .bas-rosto-m, .bas-rosto svg { transition: none; } }
+
+/* ---------- rodada 9: um gasto só (uma vez, todo mês ou parcelado) ---------- */
+.bas-form:has(input[name="tipo"][value="parc"]:checked) .bas-blk[data-blk="val"], .bas-form:has(input[name="tipo"]:not([value="parc"]):checked) .bas-blk[data-blk="parc"],
+.bas-form:has(input[name="tipo"]:not([value="uma"]):checked) .bas-blk[data-blk="data"], .bas-form:has(input[name="tipo"]:not([value="mes"]):checked) .bas-blk[data-blk="mesp"] { display: none; }
+/* Raio-X ao lado do período, em Gastos */
+.bas-pg-per { align-items: center; gap: 8px; flex-wrap: wrap; }
+.bas-rx { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px 0 6px; border: 0; border-radius: var(--r-pill); font: inherit; font-size: 14px; font-weight: 650; color: var(--ink);
+  background: var(--surface); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 35%, transparent), 0 8px 20px -12px var(--accent); transition: transform 140ms var(--ease-out); }
+.bas-rx:active { transform: scale(.96); } .bas-rx > svg { width: 14px; height: 14px; color: var(--ink-3); }
+.bas-rx-ic { width: 28px; height: 28px; display: grid; place-items: center; border-radius: 50%; color: var(--on-accent); background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 75%, #fff), var(--accent)); }
+.bas-rx-ic svg { width: 15px; height: 15px; }
+/* Patrimônio ano a ano em linha: brilho, área em degradê e o ponto de agora pulsando */
+.bas .bas-w-hl-svg { display: block; width: 100%; height: auto; margin-top: 12px; overflow: visible; }
+.bas-w-hl .h0 { stop-color: color-mix(in srgb, var(--accent) 38%, transparent); } .bas-w-hl .h1 { stop-color: color-mix(in srgb, var(--accent) 0%, transparent); }
+.bas-w-hl-r { stroke: color-mix(in srgb, var(--ink) 7%, transparent); stroke-dasharray: 2 5; }
+.bas-w-hl-a { stroke: none; opacity: 0; animation: bas-fade 900ms 500ms var(--ease-out) forwards; }
+.bas-w-hl-g { fill: none; stroke: var(--accent); stroke-width: 9; stroke-linecap: round; opacity: .18; filter: blur(5px); }
+.bas-w-hl-v { fill: none; stroke: var(--accent); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: bas-traco 1.3s var(--ease-out) forwards; }
+.bas-w-hl-d { fill: var(--surface); stroke: var(--accent); stroke-width: 1.6; opacity: 0; animation: bas-fade 300ms forwards; animation-delay: calc(300ms + var(--i) * 90ms); }
+.bas-w-hl-p { fill: var(--accent); stroke: var(--surface); stroke-width: 2.4; }
+.bas-w-hl-pp { fill: var(--accent); opacity: .5; transform-box: fill-box; transform-origin: center; animation: bas-pulsa 2.2s ease-out infinite; }
+.bas-w-hl-x { display: flex; justify-content: space-between; padding: 6px 2px 0; font-size: 11.5px; font-weight: 600; color: var(--ink-3); }
+.bas-w-hl-x b { font-weight: inherit; } .bas-w-hl-x b.on { color: var(--accent); font-weight: 750; }
+@keyframes bas-traco { to { stroke-dashoffset: 0; } }
+@keyframes bas-fade { to { opacity: 1; } }
+@keyframes bas-pulsa { 0% { transform: scale(1); opacity: .55; } 100% { transform: scale(3.2); opacity: 0; } }
+/* Seu ano: um cartão de aurora com 12 cápsulas de luz, uma por mês */
+.card.bas-w-ano { position: relative; overflow: hidden; width: 100%; display: grid; gap: 14px; margin-top: 14px; padding: 18px; border-radius: 26px; color: var(--bas-noite-ink); font: inherit; text-align: left;
+  background: var(--bas-noite); box-shadow: 0 18px 40px -20px var(--accent), inset 0 1px 0 rgba(255, 255, 255, .08); }
+.bas-w-ano-luz { position: absolute; inset: -40% -20% auto; height: 120%; background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 55%, transparent), transparent), radial-gradient(closest-side at 80% 60%, color-mix(in srgb, var(--bas-noite-pos) 30%, transparent), transparent); opacity: .55; filter: blur(10px); animation: bas-aurora-a 12s ease-in-out infinite alternate; pointer-events: none; }
+@keyframes bas-aurora-a { to { transform: translateX(12%) translateY(6%); } }
+.bas-w-ano-h { position: relative; display: flex; flex-direction: column; gap: 2px; }
+.bas-w-ano-h small { font-size: 13px; font-weight: 650; letter-spacing: .04em; text-transform: uppercase; color: var(--bas-noite-2); }
+.bas-w-ano-h > b { font-size: clamp(28px, 8vw, 34px); font-weight: 750; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.bas-w-ano-h > span { font-size: 14px; color: var(--bas-noite-2); } .bas-w-ano-h em { font-style: normal; font-weight: 700; color: var(--bas-noite-pos); }
+.bas-w-ano-g { position: relative; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); align-items: end; gap: 5px; height: 92px; }
+.bas-w-ano-g > span { height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 5px; }
+.bas-w-ano-g i { width: 100%; max-width: 16px; height: var(--h); border-radius: 99px; transform-origin: bottom; animation: bas-barra 700ms var(--ease-out) both; animation-delay: calc(var(--i) * 45ms); }
+.bas-w-ano-g .pos i { background: linear-gradient(180deg, var(--bas-noite-pos), color-mix(in srgb, var(--bas-noite-pos) 40%, transparent)); box-shadow: 0 0 12px -3px var(--bas-noite-pos); }
+.bas-w-ano-g .neg i { background: linear-gradient(180deg, var(--bas-noite-neg), color-mix(in srgb, var(--bas-noite-neg) 40%, transparent)); box-shadow: 0 0 12px -3px var(--bas-noite-neg); }
+.bas-w-ano-g .fut i { background: rgba(255, 255, 255, .1); }
+.bas-w-ano-g b { font-size: 10.5px; font-weight: 600; color: var(--bas-noite-2); } .bas-w-ano-g .on b { color: var(--bas-noite-ink); }
+.bas-w-ano-g .on i { outline: 2px solid rgba(255, 255, 255, .7); outline-offset: 2px; }
+/* Resumo do mês: o story em miniatura, inclinado e com brilho */
+.card.bas-w-res { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 14px; margin-top: 14px; padding: 18px; border-radius: 26px; overflow: hidden; }
+.bas-w-res-t { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.bas-w-res-t small { font-size: 13px; color: var(--ink-2); } .bas-w-res-t > b { font-size: 19px; font-weight: 750; letter-spacing: -.01em; } .bas-w-res-t > span { font-size: 13.5px; line-height: 1.4; color: var(--ink-2); }
+.bas-w-res-bts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; } .bas-w-res-bts .bas-sn-bt { min-height: 38px; padding: 0 14px; font-size: 13.5px; display: inline-flex; align-items: center; gap: 6px; } .bas-w-res-bts svg { width: 15px; height: 15px; }
+.bas-w-res-s { position: relative; width: 96px; aspect-ratio: 9 / 16; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 10px 9px; border: 0; border-radius: 16px; color: #fff; font: inherit; text-align: left; rotate: 6deg;
+  background: linear-gradient(165deg, color-mix(in srgb, var(--accent) 85%, #fff), var(--accent) 45%, color-mix(in srgb, var(--accent) 50%, #000)); box-shadow: 0 16px 30px -12px var(--accent), inset 0 1px 0 rgba(255, 255, 255, .4); animation: bas-story 5s ease-in-out infinite; }
+.bas-w-res-s::after { content: ''; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, .35) 50%, transparent 65%); background-size: 250% 100%; animation: bas-reflexo 4s ease-in-out infinite; }
+.bas-w-res-m { width: 18px; height: 18px; margin-bottom: auto; } .bas-w-res-m svg { width: 100%; height: 100%; }
+.bas-w-res-s small { font-size: 9px; opacity: .85; } .bas-w-res-s b { font-size: 13px; font-weight: 800; letter-spacing: -.01em; font-variant-numeric: tabular-nums; } .bas-w-res-s em { font-style: normal; font-size: 8.5px; opacity: .8; }
+.bas-w-res-l { display: grid; gap: 3px; width: 100%; margin-top: 6px; } .bas-w-res-l i { display: block; width: var(--w); height: 4px; border-radius: 9px; background: rgba(255, 255, 255, .55); } .bas-w-res-l i.pos { background: #fff; } .bas-w-res-l i.acc { background: rgba(255, 255, 255, .8); }
+@keyframes bas-story { 0%, 100% { rotate: 6deg; translate: 0 0; } 50% { rotate: 3deg; translate: 0 -4px; } }
+@keyframes bas-reflexo { 0%, 60% { background-position: 150% 0; } 100% { background-position: -50% 0; } }
+/* acabamento geral: botões com relevo, luz e resposta ao toque */
+.bas .bas-cta.primary, .bas-sn-bt.prim { background: linear-gradient(170deg, color-mix(in srgb, var(--accent) 82%, #fff), var(--accent) 55%, color-mix(in srgb, var(--accent) 88%, #000)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35), 0 12px 26px -12px var(--accent); }
+.bas-sn-bt { transition: transform 140ms var(--ease-out), box-shadow 200ms ease; } .bas-sn-bt:active, .bas .bas-cta:active { transform: scale(.97); }
+.bas-chip input:checked + span { box-shadow: 0 8px 18px -10px var(--accent); }
+.bas-fab { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35), 0 16px 32px -12px var(--accent), 0 0 0 6px color-mix(in srgb, var(--accent) 12%, transparent); }
+@media (prefers-reduced-motion: reduce) {
+  .bas-w-hl-a, .bas-w-hl-d { animation: none; opacity: 1; } .bas-w-hl-v { animation: none; stroke-dashoffset: 0; } .bas-w-hl-pp, .bas-w-ano-luz, .bas-w-ano-g i, .bas-w-res-s, .bas-w-res-s::after { animation: none; }
+  .bas-rx, .bas-sn-bt { transition: none; }
+}
