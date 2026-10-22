@@ -1,0 +1,15 @@
+/* Tour de boas-vindas (tour.js): tela escura, luz no item da vez e um cartão de vidro com o passo */
+.tour { --tour-veu: color-mix(in srgb, var(--hero-bg) 68%, transparent); position: fixed; inset: 0; z-index: 9000; }
+.tour.sem-alvo { background: var(--tour-veu); }
+.tour-luz { position: fixed; border-radius: 16px; box-shadow: 0 0 0 200vmax var(--tour-veu), 0 0 0 2px var(--accent), 0 0 24px var(--glow); pointer-events: none; transition: left 320ms var(--ease-out), top 320ms var(--ease-out), width 320ms var(--ease-out), height 320ms var(--ease-out); }
+.tour.sem-alvo .tour-luz { display: none; }
+.tour-card { position: fixed; width: min(340px, calc(100vw - 32px)); padding: 18px 18px 14px; border-radius: 20px; color: var(--ink);
+  background: var(--glass-strong); -webkit-backdrop-filter: blur(24px) saturate(1.5); backdrop-filter: blur(24px) saturate(1.5); box-shadow: var(--shadow-lg); animation: rise 360ms var(--ease-out) both; }
+.tour-n { font-size: 12px; font-weight: 650; color: var(--accent); }
+.tour-card h3 { margin: 4px 0 6px; font-size: 18px; letter-spacing: -0.01em; }
+.tour-card p { margin: 0; font-size: 14.5px; line-height: 1.5; color: var(--ink-2); }
+.tour-b { display: flex; align-items: center; gap: 8px; margin-top: 16px; }
+.tour-b > span { flex: 1; }
+.tour-pular { background: none; box-shadow: none; padding-inline: 4px; color: var(--ink-3); }
+@media (prefers-reduced-motion: reduce) { .tour-luz { transition: none; } .tour-card { animation: none; } }
+@media (prefers-reduced-transparency: reduce) { .tour-card { background: var(--surface); -webkit-backdrop-filter: none; backdrop-filter: none; } }

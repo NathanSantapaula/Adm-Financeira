@@ -214,7 +214,7 @@ function finishOb() {
   const o = S.ob; const perfil = o.perfil || { resultado: 'moderado', pontos: 0 };
   Object.assign(S.profile, { nome: o.nome.trim(), anoRef: +o.anoRef, patrimonioInicial: +o.patrimonio || 0, patrimonioAno: +o.anoRef, rendaMensal: +o.renda || 0,
     perfilInvestidor: { resultado: perfil.resultado, pontos: perfil.pontos, respostas: o.resp }, objetivos: obObjetivosFinais(o, E.RETORNO_PADRAO[perfil.resultado]),
-    retornoAnual: E.RETORNO_PADRAO[perfil.resultado], onboarded: true });
+    retornoAnual: E.RETORNO_PADRAO[perfil.resultado], onboarded: true, tourPendente: true }); // conta nova: tour de boas-vindas na primeira entrada
   S.profile.objetivoFoco = S.profile.objetivos[0] ? S.profile.objetivos[0].id : null; objSalvar();
   if (!S.plans[o.anoRef]) createPlan(+o.anoRef, null); else { S.year = +o.anoRef; S.plan = S.plans[S.year]; S.mes = defaultMes(S.year); }
   S.plan.settings.metaAporte = +o.metaAporte || 0; S.plan.settings.metaInvAno = +o.metaInvAno || 0; touch('plan');
