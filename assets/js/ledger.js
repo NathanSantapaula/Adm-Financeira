@@ -351,7 +351,7 @@ function viewRendas() {
     : ['ok', `Sua renda está distribuída em ${R.nFontes} fontes; a maior (${esc(R.maior.nome)}) responde por ${pct(R.pesoMaior)}. Isso reduz o impacto de perder uma delas.`]);
   if (R.cv != null && R.cv > 0.25) ins.push(['warn', `A renda oscila entre ${brl0(R.min)} e ${brl0(R.max)}. Planeje os gastos fixos pelo mês mais fraco e guarde o excedente dos meses bons.`]);
   if (R.comprometimento != null) ins.push([R.comprometimento > 0.5 ? 'warn' : 'ok', `Os gastos fixos (${brl0(R.fixosMes)} por mês) consomem ${pct(R.comprometimento)} da sua renda recorrente. Uma referência usada em educação financeira é deixar até 50% para as necessidades.`]);
-  if (R.poupanca != null) ins.push(R.poupanca >= 0.2 ? ['ok', `Você guarda ${pct(R.poupanca)} do que entra, acima da referência de 20%. É esse excedente que vira aporte em Investimentos.`] : ['info', `Sobram ${pct(Math.max(0, R.poupanca))} do que entra. Chegar a 20% significaria guardar cerca de ${brl0(Math.max(0, R.mediaMes * 0.2 - Math.max(0, R.sobraMes)))} a mais por mês.`]);
+  if (R.poupanca != null && R.poupanca < 0.2) ins.push(['info', /* acima de 20% o indicador Taxa de poupança já diz tudo */ `Sobram ${pct(Math.max(0, R.poupanca))} do que entra. Chegar a 20% significaria guardar cerca de ${brl0(Math.max(0, R.mediaMes * 0.2 - Math.max(0, R.sobraMes)))} a mais por mês.`]);
   if (R.coberturaPassiva) ins.push(['info', `Os proventos já pagam ${pct(R.coberturaPassiva, 1)} dos seus gastos. Em Proventos, o "número da independência" mostra quanto falta para pagarem tudo.`]);
   const html = {
     indicadores: `<div class="kpis">${k1}${k2}${k3}${k4}</div>`,
