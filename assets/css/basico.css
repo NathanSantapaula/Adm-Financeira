@@ -130,3 +130,11 @@ body[data-ui="basico"] input { font-size: max(16px, 1em); } /* sem zoom ao tocar
   .bas-tabs button, .bas .bas-cta, .bas-l button, .bas-op, .bas-eu, .bas-seta, .bas-bar i { transition: none; }
   .bas-tabs button:active, .bas .bas-cta:active, .bas-l button:active, .bas-op:active, .bas-eu:active, .bas-seta:active { transform: none; }
 }
+
+/* linhas sem toque (carteira) e o seletor de modo */
+.bas-li { padding: 12px 0; }
+.bas-troca { flex: none; margin-left: auto; }
+.bas-adm-troca { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 14px; margin: 12px 0; padding: 14px 16px; border-radius: var(--r-lg); background: var(--sheen), var(--glass-strong); box-shadow: inset 0 0 0 1px var(--glass-edge); }
+.bas-adm-troca > span { display: flex; flex-direction: column; min-width: 0; flex: 1 1 180px; }
+.bas-adm-troca small { color: var(--ink-2); font-size: 13px; }
+.bas-op > .bas-n { flex: 1 1 150px; } .bas-op > .bas-n b { white-space: normal; } /* sem espaço, o seletor desce para a linha de baixo */

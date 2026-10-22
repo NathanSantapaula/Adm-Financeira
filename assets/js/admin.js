@@ -16,7 +16,7 @@ const ADM_DESC = {
   'anos-de-planejamento': 'Abra, crie ou exclua anos.',
   telas: 'Escolha e organize os widgets de cada tela.',
   'abas-do-menu': 'Quais abas aparecem no menu.',
-  'versao-do-painel': 'Básico, simples como um app, ou Completo.',
+  'modo-do-app': 'Simples, como um app de banco, ou Completo.',
   aparencia: 'Tema e cor do painel.',
   'voz-do-painel': 'O tom dos destaques e avisos.',
   'backup-completo': 'Baixe ou restaure todos os seus dados.',
@@ -31,7 +31,7 @@ const ADM_IC = {
   telas: '<rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/>',
   'abas-do-menu': '<path d="M4 6h16M4 12h16M4 18h10"/>',
   'globo-do-patrimonio': '<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.4 2.3 3.6 5.2 3.6 8.5s-1.2 6.2-3.6 8.5c-2.4-2.3-3.6-5.2-3.6-8.5S9.6 5.8 12 3.5z"/>',
-  'versao-do-painel': '<rect x="7" y="3" width="10" height="18" rx="2.5"/><path d="M11 17.5h2"/>',
+  'modo-do-app': '<rect x="7" y="3" width="10" height="18" rx="2.5"/><path d="M11 17.5h2"/>',
   aparencia: '<path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.2 0 1.8-.9 1.4-1.9-.5-1.1.3-2.3 1.5-2.3H17a3.5 3.5 0 0 0 3.5-3.5c0-5.1-3.8-9.3-8.5-9.3z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10.5" cy="7.5" r="1"/><circle cx="15" cy="8" r="1"/>',
   'voz-do-painel': '<path d="M4 5.5h16v10H9l-5 4z"/>',
   'backup-completo': '<path d="M12 3.5v11M7.5 10l4.5 4.5 4.5-4.5M4 19.5h16"/>',
@@ -93,6 +93,7 @@ function adminHtml() {
   // página inicial: perfil, os três grupos (cada um abre a sua página), plano e sessão
   const grupos = ADM_GRUPOS.map((g) => `<button class="pf-card adm-grupo" data-act="adm-grupo" data-g="${g.id}"><span class="adm-gi" aria-hidden="true">${ic(`<path d="${g.ic}"/>`)}</span><span class="pf-t"><b>${esc(g.nome)}</b><small>${esc(g.desc)}</small></span><span class="pf-go">${I.chev}</span></button>`).join('');
   return `<button class="pf-card" data-act="perfil-abrir">${avatarHtml(p, 'lg')}<span class="pf-t"><b>${esc(p.nome || 'Minha conta')}</b><small>${esc(p.email || '')}</small><small>${esc(sub)}</small></span><span class="pf-go">Meu perfil${I.chev}</span></button>
+    ${typeof basEscolhe === 'function' && basEscolhe() ? `<div class="bas-adm-troca"><span><b>Modo do app</b><small>${BAS_NOMES.basico}: como um app de banco. ${BAS_NOMES.completo}: todas as telas.</small></span>${basTrocaHtml()}</div>` : ''}
     <div class="adm-grupos">${grupos}</div>
     <section class="dr-sec"><h3>Plano</h3>${plano}<div class="btn-row"><button class="btn" data-act="contact">Falar com o ${esc(primeiroNome())}</button></div></section>
     <section class="dr-sec"><h3>Sessão</h3><div class="btn-row"><button class="btn" data-act="goto-landing">Ver página inicial</button><button class="btn" data-act="terms">Termos e privacidade</button><button class="btn danger" data-act="sair">Sair</button></div></section>`;

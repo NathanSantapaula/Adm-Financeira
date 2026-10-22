@@ -185,7 +185,7 @@ function sinoHtml() {
   const rotulo = qtd ? `Assistente: ${qtd} ${qtd === 1 ? 'aviso não lido' : 'avisos não lidos'}` : 'Assistente';
   const grave = novas.some((n) => n.nivel === 'critico') ? ' crit' : '';
   // o sino deu lugar ao assistente (ia.js): o mesmo botão abre a conversa, com os avisos numa aba
-  return `<div class="notif"><button class="bell ia-btn${pulso ? ' pulso' : ''}" data-act="notif-toggle" aria-haspopup="dialog" aria-expanded="${!!S.notifOpen}" aria-label="${rotulo}" title="${rotulo}">${IA_SIMBOLO}${qtd ? `<span class="bell-n${grave}" aria-hidden="true">${qtd > 9 ? '9+' : qtd}</span>` : ''}</button>${S.notifOpen ? iaPainelHtml(lista) : ''}</div>`;
+  return `<div class="notif"><button class="bell ia-btn${pulso ? ' pulso' : ''}" data-act="notif-toggle" aria-haspopup="dialog" aria-expanded="${!!S.notifOpen}" aria-label="${rotulo}" title="${rotulo}">${IA_ICONE}${qtd ? `<span class="bell-n${grave}" aria-hidden="true">${qtd > 9 ? '9+' : qtd}</span>` : ''}</button>${S.notifOpen ? iaPainelHtml(lista) : ''}</div>`;
 }
 // lista de avisos (aba Avisos do assistente)
 function notifCorpo(lista) {

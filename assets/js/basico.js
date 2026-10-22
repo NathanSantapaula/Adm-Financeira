@@ -7,8 +7,12 @@
 const BASICO_PAGANTES = true; // pagantes podem trocar para o Básico; false = Básico só no plano gratuito
 const modoBasico = () => S.screen === 'app' && !!S.profile && !S.isAdmin && E.interfaceDe(planoAtual(), S.profile.interface, BASICO_PAGANTES) === 'basico';
 const basEscolhe = () => BASICO_PAGANTES && !S.isAdmin && planoAtual() !== 'gratis'; // só pagantes escolhem a versão
+const BAS_NOMES = { basico: 'Simples', completo: 'Completo' }; // nomes dos dois modos na tela (troque aqui, por exemplo, por "SaaS")
+// seletor dos dois modos: Perfil do Simples, página inicial do painel e o Mais do celular no Completo (só para quem pode escolher)
+const basTrocaHtml = () => { const v = E.interfaceDe(planoAtual(), S.profile.interface, BASICO_PAGANTES);
+  return `<div class="seg bas-troca" role="group" aria-label="Modo do app">${['basico', 'completo'].map((k) => `<button${v === k ? ' class="on"' : ''} data-act="bas-ui" data-v="${k}" aria-pressed="${v === k}">${BAS_NOMES[k]}</button>`).join('')}</div>`; };
 const BAS_ABAS = [['inicio', 'Início', I.geral], ['gastos', 'Gastos', I.despesas], ['investir', 'Investir', I.inv], ['perfil', 'Perfil', I.user]];
-const BAS_FORMS = new Set(['gasto', 'conta-f', 'entrada', 'aporte', 'meta', 'objetivo', 'perfil']); // telas de formulário escondem as abas
+const BAS_FORMS = new Set(['gasto', 'conta-f', 'entrada', 'aporte', 'meta', 'objetivo', 'perfil', 'provento']); // telas de formulário escondem as abas
 const BAS_AREAS = ['Alimentação', 'Moradia', 'Transporte', 'Saúde', 'Lazer', 'Compras', 'Contas', 'Educação'];
 // onde o dinheiro foi investido: rótulo, tipo e classe do ativo (os mesmos campos do Completo)
 const BAS_ONDE = [['Poupança', 'RENDA FIXA', 'Poupança'], ['CDB', 'RENDA FIXA', "CDB's"], ['Tesouro Direto', 'RENDA FIXA', 'Tesouro Direto'], ['LCI ou LCA', 'RENDA FIXA', 'LCI/LCA'],
@@ -150,7 +154,9 @@ function basInvestir(m) {
   const g = objFoco(objAnalise());
   const obj = basCard(`<div class="bas-ch"><h2 class="bas-h2">Meu objetivo</h2><button class="lnk strong" ${g ? basIr('objetivos') : basIr('objetivo')}>${g ? 'Ver todos' : 'Criar'}</button></div>
     ${g ? `<button class="bas-obj" ${basIr('objetivo', { id: g.id })}>${objIcone(g, 0)}${basNome(esc(objNomeDe(g)), `${brl0(g.saldo)} de ${brl0(g.valor)}${g.ano ? ' até ' + g.ano : ''}`)}<b class="bas-pct">${pct(g.progresso)}</b></button>${basBarra(g.progresso)}<p class="bas-p">${esc(objFrase(g))}</p>` : '<p class="bas-p">Uma viagem, uma reserva, a casa própria: dê um nome ao seu sonho e acompanhe quanto falta.</p>'}`);
-  return `${basTopo('Investir')}${hero}${meta}${feitos}${obj}<p class="bas-disc keep">Projeção ilustrativa, sem promessa de rentabilidade.</p>`;
+  const prov = temRecurso('proventos') ? basCard(`<button class="bas-obj" ${basIr('proventos')}>${basNome('Proventos', `Dividendos e rendimentos · ${brl(C.T.faturamento)} em ${S.year}`)}<b class="pos">${brl(C.faturamento[m])}</b>${I.chev}</button>`) : '';
+  const cart = temRecurso('carteira') ? basCard(`<button class="bas-obj" ${basIr('carteira')}>${basNome('Minha carteira', 'Como o dinheiro está dividido e onde investir agora')}${I.chev}</button>`) : '';
+  return `${basTopo('Investir')}${hero}${meta}${feitos}${prov}${cart}${obj}<p class="bas-disc keep">Projeção ilustrativa, sem promessa de rentabilidade.</p>`;
 }
 
 /* ---- Perfil: conta, olho, tema, ajustes e versão ---- */
@@ -158,10 +164,10 @@ function basPerfil() {
   const p = S.profile; const t = p.prefs.tema;
   const temas = [['auto', 'Automático'], ['light', 'Claro'], ['oled', 'Escuro']].map(([v, l]) => `<button${t === v ? ' class="on"' : ''} data-act="bas-tema" data-v="${v}" aria-pressed="${t === v}">${l}</button>`).join('');
   const op = (attrs, icone, b, s) => `<button class="bas-op" ${attrs}>${icone}${basNome(b, s)}${I.chev}</button>`;
-  const versao = basEscolhe() ? op('data-act="bas-ui" data-v="completo"', I.relatorio, 'Usar a versão Completa', 'Todas as telas, gráficos e análises.')
-    : planoAtual() === 'gratis' && !S.isAdmin ? op('data-act="upgrade" data-plano="investidor"', I.inv, `Conhecer o plano ${esc(nomePlano('investidor'))}`, 'A versão Completa, com investimentos e carteira.') : '';
+  const versao = basEscolhe() ? '' : planoAtual() === 'gratis' && !S.isAdmin ? op('data-act="upgrade" data-plano="investidor"', I.inv, `Conhecer o plano ${esc(nomePlano('investidor'))}`, `O modo ${BAS_NOMES.completo}, com proventos e carteira.`) : '';
   return `${basTopo('Perfil', true)}
     ${basCard(`<button class="bas-eu" ${basIr('perfil')}>${avatarHtml(p, 'lg')}${basNome(esc(p.nome || 'Minha conta'), esc(planLabel()))}${I.chev}</button>`)}
+    ${basEscolhe() ? basCard(`<div class="bas-op">${basNome('Modo do app', `${BAS_NOMES.basico}: direto ao ponto. ${BAS_NOMES.completo}: todas as telas e gráficos.`)}${basTrocaHtml()}</div>`) : ''}
     ${basCard(`<label class="bas-op bas-sw">${basNome('Esconder valores', 'Troca os valores por ••••.')}<span class="wg-sw"><input type="checkbox" data-act="privado" ${S.privado ? 'checked' : ''} aria-label="Esconder valores"><span></span></span></label>
       <div class="bas-op">${basNome('Tema')}<div class="seg" role="group" aria-label="Tema">${temas}</div></div>`)}
     ${basCard(`${op(basIr('objetivos'), OBJ_ICONES.viagem || I.inv, 'Meus objetivos', 'O que você quer conquistar.')}${op(basIr('meta'), I.inv, 'Meta de investimento', 'Quanto investir por mês.')}
@@ -248,8 +254,29 @@ function basTelaAno() {
   return basDet('Ano do planejamento', `${basCard(`<ul class="bas-l">${ys.map((y) => `<li><button data-act="bas-ano" data-y="${y}">${basNome(String(y), y === S.year ? 'Aberto agora' : '')}${y === S.year ? I.check : I.chev}</button></li>`).join('')}</ul>`)}
     ${S.plans[prox] ? '' : `<button class="btn lg bas-cta bas-add" data-act="bas-ano" data-y="${prox}">${I.plus}Começar ${prox}</button><p class="bas-p">Entradas, contas e investimentos vêm com valores zerados. Parcelas em andamento aparecem sozinhas.</p>`}`);
 }
+// proventos do mês: o que cada ativo pagou; tocar corrige o valor
+function basTelaProventos() {
+  const m = S.mes; const C = S.C; const L = S.plan.ativos.filter((a) => Math.abs(+a.pr[m] || 0) > 0.005).sort((x, y) => y.pr[m] - x.pr[m]);
+  return basDet('Proventos', `${basCard(`<small class="bas-k">Recebido em ${MES_LONGO[m]}</small><b class="bas-big">${brl(C.faturamento[m])}</b><p class="bas-p">${brl(C.T.faturamento)} no ano. Dividendo reinvestido conta como investimento.</p>
+    ${S.plan.ativos.length ? `<button class="btn primary lg bas-cta bas-add" ${basIr('provento')}>${I.plus}Registrar provento</button>` : '<p class="bas-p">Registre um investimento primeiro: o provento é sempre de um deles.</p>'}`, 'bas-hero')}
+    ${L.length ? basCard(`<div class="bas-ch"><h2 class="bas-h2">Quem pagou</h2></div><ul class="bas-l">${L.map((a) => basLinha(basIr('provento', { id: a.id }), basNome(esc(a.nome), esc(a.classe || '')), `<b class="pos">${brl(a.pr[m])}</b>`)).join('')}</ul>`) : basCard(basVazio(`Nenhum provento em ${MES_LONGO[m]}.`))}`);
+}
+function basTelaProvento(o) {
+  const p = S.plan; const m = S.mes; const a = o.id ? p.ativos.find((x) => x.id === o.id) : null; if (o.id && !a) return basSumiu();
+  if (a) return basForm('provento', esc(a.nome), basValor('valor', +a.pr[m] || 0, `Quanto pagou em ${MES_LONGO[m]}?`), { excluir: `Apagar o provento de ${MES_LONGO[m]}` });
+  return basForm('provento', 'Registrar provento', `${basValor('valor', 0, 'Quanto recebeu?')}${basChips('ativo', p.ativos.map((x) => [x.id, x.nome]), (p.ativos[0] || {}).id, 'De qual investimento')}<p class="bas-p">Fica registrado em ${MES_LONGO[m]} de ${S.year}.</p>`, { ok: 'Registrar' });
+}
+// carteira: divisão por classe e, com alvos definidos, onde colocar o disponível do mês (E.analiseCarteira via cartAnalise)
+function basTelaCarteira() {
+  const { M, K } = cartAnalise(); const total = K.classes.reduce((t, c) => t + c.valor, 0); const comAlvo = K.itens.some((i) => i.w > 0);
+  const sug = K.itens.filter((i) => i.sug > 0.004).sort((a, b) => b.sug - a.sug);
+  return basDet('Minha carteira', `${basCard(`<small class="bas-k">Total na carteira</small><b class="bas-big">${brl(total)}</b>${total > 0 ? `<ul class="bas-l bas-cats">${K.classes.slice().sort((a, b) => b.valor - a.valor).map((c, i) => `<li><span class="bas-cl bas-li">${basNome(esc(c.classe || 'Outros'), comAlvo ? `alvo ${pct(c.alvo / 100)}` : '')}<b>${pct(c.atual / 100)}</b><span class="bas-bar fina" aria-hidden="true"><i style="width:${Math.min(100, c.atual).toFixed(1)}%;--bc:${PAL[i % 6]}"></i></span></span></li>`).join('')}</ul>` : basVazio('Registre um investimento para ver a divisão.')}`, 'bas-hero')}
+    ${basCard(`<div class="bas-ch"><h2 class="bas-h2">Onde investir agora</h2></div>${!comAlvo ? `<p class="bas-p bas-p0">Combine com o ${esc(primeiroNome())} quanto quer em cada investimento e o app mostra onde colocar cada aporte.</p><button class="btn lg bas-cta bas-add" ${basIr('contato')}>Falar com o ${esc(primeiroNome())}</button>`
+      : sug.length ? `<p class="bas-p bas-p0">Para deixar a carteira mais perto do combinado com ${brl(M.aporte)} disponíveis:</p><ul class="bas-l">${sug.map((i) => `<li><span class="bas-cl bas-li">${basNome(esc(i.nome), esc(i.classe || ''))}<b class="pos">${brl(i.sug)}</b></span></li>`).join('')}</ul>` : basVazio('Sem valor disponível para investir neste mês.')}`)}
+    <p class="bas-disc keep">Sugestão de divisão pelo alvo combinado, sem indicação de ativos nem promessa de rentabilidade.</p>`);
+}
 const BAS_TELAS = { gasto: basTelaGasto, conta: basTelaConta, 'conta-f': basTelaContaF, entrada: basTelaEntrada, aporte: basTelaAporte, meta: basTelaMeta,
-  objetivos: basTelaObjetivos, objetivo: basTelaObjetivo, categoria: basTelaCategoria, perfil: basTelaPerfil, contato: basTelaContato, ano: basTelaAno };
+  objetivos: basTelaObjetivos, objetivo: basTelaObjetivo, categoria: basTelaCategoria, perfil: basTelaPerfil, contato: basTelaContato, ano: basTelaAno, proventos: basTelaProventos, provento: basTelaProvento, carteira: basTelaCarteira };
 
 /* ================= gravação (no mesmo formato do Completo) ================= */
 function basErro(f, msg) { const e = f.querySelector('.bas-err'); e.textContent = msg; e.hidden = false; return false; }
@@ -295,6 +322,12 @@ function basSalvar(f) {
         a = p.ativos.find((x) => E.norm(x.nome) === E.norm(nome)) || ativoInserir({ tipo: k[1], classe: k[2], grupo: null, subgrupo: null, nome }); }
       a.ap[m] = E.r2((+a.ap[m] || 0) + sinal * v); ok(`${sinal > 0 ? 'Investimento' : 'Resgate'} registrado em ${a.nome}.`); return;
     }
+    case 'provento': {
+      if (!temRecurso('proventos')) return false;
+      const v = val('valor'); if (Number.isNaN(v) || v < 0 || (!t.id && !(v > 0))) return basErro(f, 'Informe o valor, como 35,20.');
+      if (t.id) { const a = p.ativos.find((x) => x.id === t.id); if (a) a.pr[m] = E.r2(v); ok('Provento atualizado.'); return; }
+      const a = p.ativos.find((x) => x.id === d.ativo); if (!a) return basErro(f, 'Escolha de qual investimento.'); a.pr[m] = E.r2((+a.pr[m] || 0) + v); ok(`Provento de ${a.nome} registrado.`); return;
+    }
     case 'meta': { const v = d.valor && d.valor.trim() ? val('valor') : 0; if (Number.isNaN(v) || v < 0) return basErro(f, 'Informe um valor, como 500,00.'); p.settings.metaAporte = E.r2(v); ok('Meta salva.'); return; }
     case 'objetivo': {
       const L = objLista(); const g = t.id ? L.find((x) => x.id === t.id) : null; const v = val('valor'); if (!(v > 0)) return basErro(f, 'Informe quanto custa o objetivo.');
@@ -316,6 +349,7 @@ function basExcluir(el) {
   else if (t.t === 'conta') p.despesas = p.despesas.filter((x) => x.id !== t.id);
   else if (t.t === 'entrada') p.rendas = p.rendas.filter((x) => x.id !== t.id);
   else if (t.t === 'aporte') { const a = p.ativos.find((x) => x.id === t.id); if (a) a.ap[m] = 0; }
+  else if (t.t === 'provento') { const a = p.ativos.find((x) => x.id === t.id); if (a) a.pr[m] = 0; }
   else if (t.t === 'objetivo') { const pr = S.profile; pr.objetivos = objLista().filter((x) => x.id !== t.id); if (pr.objetivoFoco === t.id) pr.objetivoFoco = pr.objetivos[0] ? pr.objetivos[0].id : null; objSalvar(); basFechar(); toast('Objetivo excluído.'); return; }
   touch('plan'); basFechar(); toast('Excluído.');
 }
@@ -331,9 +365,9 @@ function basPagar() {
 function basAdmHtml() {
   if (S.isAdmin) return '';
   const op = (v, n, d) => `<button class="ap-voz" data-act="bas-ui" data-v="${v}" aria-pressed="${E.interfaceDe(planoAtual(), S.profile.interface, BASICO_PAGANTES) === v}"><b>${n}</b><small>${d}</small></button>`;
-  const corpo = basEscolhe() ? `<div class="ap-vozes">${op('basico', 'Básico', 'Simples, como um app: o mês, os gastos e quanto dá para investir.')}${op('completo', 'Completo', 'Todas as telas, gráficos e análises.')}</div>`
-    : `<p class="mmsg">Você está na versão Básica. A Completa vem com o plano ${esc(nomePlano('investidor'))}.</p><div class="btn-row"><button class="btn" data-act="upgrade" data-plano="investidor">Conhecer o plano ${esc(nomePlano('investidor'))}</button></div>`;
-  return `<section class="dr-sec"><h3>Versão do painel</h3>${corpo}</section>`;
+  const corpo = basEscolhe() ? `<div class="ap-vozes">${op('basico', BAS_NOMES.basico, 'Como um app de banco: o mês, os gastos e quanto dá para investir.')}${op('completo', BAS_NOMES.completo, 'Todas as telas, gráficos e análises.')}</div>`
+    : `<p class="mmsg">Você está no modo ${BAS_NOMES.basico}. O ${BAS_NOMES.completo} vem com o plano ${esc(nomePlano('investidor'))}.</p><div class="btn-row"><button class="btn" data-act="upgrade" data-plano="investidor">Conhecer o plano ${esc(nomePlano('investidor'))}</button></div>`;
+  return `<section class="dr-sec"><h3>Modo do app</h3>${corpo}</section>`;
 }
 function basObHtml() { return basEscolhe() ? `<div class="bas-ob"><p class="qn">Como você quer ver o painel?</p>${basAdmHtml().replace(/<\/?section[^>]*>|<h3>.*?<\/h3>/g, '')}</div>` : ''; }
 
@@ -349,7 +383,7 @@ function basAcao(act, ds, el) {
     case 'bas-ano': { const y = +ds.y; basLimpar(); if (S.plans[y]) { if (y !== S.year) switchYear(y); else render(); } else createPlan(y, S.plan); return true; }
     case 'bas-sair': if (!el.dataset.ok) { el.dataset.ok = '1'; el.querySelector('b').textContent = 'Toque de novo para sair'; return true; } basLimpar(); sair(); return true;
     case 'bas-tema': if (ds.v !== 'auto') S.profile.prefs.tema = ds.v; definirTema(ds.v === 'auto' ? 'auto-on' : ds.v); render(); return true;
-    case 'bas-ui': S.profile.interface = ds.v === 'basico' ? 'basico' : 'completo'; touch('profile'); basLimpar(); if (S.screen === 'app') { closeAdmin(); S.basAba = 'inicio'; window.scrollTo(0, 0); } render(); toast(ds.v === 'basico' ? 'Versão Básica ligada.' : 'Versão Completa ligada.'); return true;
+    case 'bas-ui': S.profile.interface = ds.v === 'basico' ? 'basico' : 'completo'; touch('profile'); basLimpar(); if (S.screen === 'app') { closeAdmin(); S.basAba = 'inicio'; window.scrollTo(0, 0); } render(); toast(`Modo ${BAS_NOMES[ds.v === 'basico' ? 'basico' : 'completo']} ligado.`); return true;
     default: return false;
   }
 }

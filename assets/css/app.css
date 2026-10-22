@@ -2865,10 +2865,19 @@ html.side-mini .nav-g { height: 1px; margin: 10px 14px; font-size: 0; background
 @keyframes ia-no { 0%, 100% { opacity: .55; } 30% { opacity: 1; } }
 @keyframes ia-brilho { 0%, 30% { transform: scale(.6); opacity: .55; } 48% { transform: scale(1.2); opacity: 1; } 65%, 85% { transform: scale(1); opacity: 1; } 100% { transform: scale(.6); opacity: .55; } }
 /* botão do topo */
-.bell.ia-btn { border-color: transparent; color: var(--on-accent); background: radial-gradient(circle at 32% 28%, var(--b-luz), var(--accent) 55%, var(--b3));
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent), 0 0 18px -3px color-mix(in srgb, var(--accent) 75%, transparent); }
-.bell.ia-btn:hover, .bell.ia-btn[aria-expanded="true"] { background: radial-gradient(circle at 32% 28%, var(--b-luz), var(--accent) 60%, var(--b3)); box-shadow: 0 0 0 1px var(--accent), 0 0 24px -2px var(--accent); }
-.bell.ia-btn svg { width: 22px; height: 22px; }
+.ia-card, .iap, .bell.ia-btn { --ia-preto: #050507; } /* centro preto do botão e do painel, nos três temas */
+/* botão do topo: centro preto, borda colorida girando (o mesmo anel do painel) e a onda em miniatura */
+.bell.ia-btn { border-color: transparent; background: var(--ia-preto); box-shadow: 0 0 16px -4px color-mix(in srgb, var(--accent) 70%, transparent); }
+.bell.ia-btn::before { content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 2px; background: conic-gradient(from var(--ia-ang), var(--accent), var(--b1), var(--accent-2), color-mix(in srgb, var(--accent) 50%, var(--b-luz)), var(--accent)); pointer-events: none;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0); animation: ia-gira 7s linear infinite; }
+.bell.ia-btn:hover, .bell.ia-btn[aria-expanded="true"] { background: var(--ia-preto); box-shadow: 0 0 22px -2px color-mix(in srgb, var(--accent) 85%, transparent); }
+.ia-mini { position: relative; width: 22px; height: 20px; display: block; transform: rotate(-14deg); }
+.ia-mini i { position: absolute; left: 50%; width: var(--w); height: 7px; border-radius: 50%; translate: -50% 0; top: calc(var(--k) * 4px);
+  background: linear-gradient(100deg, var(--accent), var(--accent-2), color-mix(in srgb, var(--accent) 60%, var(--b-luz))); box-shadow: inset 0 -2px 2px rgba(0, 0, 0, .35), 0 -1px 0 rgba(0, 0, 0, .55); }
+.ia-mini i:first-child { box-shadow: inset 0 1px 1px rgba(255, 255, 255, .45), inset 0 -2px 2px rgba(0, 0, 0, .3); }
+.bell.ia-btn .ia-mini i { animation: ia-mini 3.6s ease-in-out infinite alternate; animation-delay: calc(var(--k) * -.3s); }
+@keyframes ia-mini { from { transform: translateX(-1.5px); } to { transform: translateX(1.5px); } }
+@media (prefers-reduced-motion: reduce) { .bell.ia-btn::before, .bell.ia-btn .ia-mini i { animation: none; } }
 /* conversa */
 .ia-log { display: flex; flex-direction: column; gap: 10px; overflow-y: auto; overscroll-behavior: contain; scroll-behavior: smooth; }
 .ia-card .ia-log { margin-top: 14px; min-height: 110px; max-height: 300px; padding: 2px 4px; }
@@ -2911,6 +2920,9 @@ html.side-mini .nav-g { height: 1px; margin: 10px 14px; font-size: 0; background
 /* Topo: ícones (busca e assistente) numa pílula de vidro e o perfil como ficha com nome, plano e seta */
 .topo-ic, .topo-eu { display: flex; align-items: center; background: var(--glass); -webkit-backdrop-filter: blur(18px) saturate(1.4); backdrop-filter: blur(18px) saturate(1.4); box-shadow: var(--shadow); border-radius: 999px; }
 .topo-ic { gap: 2px; padding: 4px; } .topo-ic:empty { display: none; }
+/* o vidro da pílula fica num ::before: backdrop-filter no próprio .topo-ic prenderia o painel do assistente (position: fixed) à largura da pílula no celular */
+.topo-ic { position: relative; isolation: isolate; z-index: 2; -webkit-backdrop-filter: none; backdrop-filter: none; }
+.topo-ic::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; -webkit-backdrop-filter: blur(18px) saturate(1.4); backdrop-filter: blur(18px) saturate(1.4); pointer-events: none; }
 .topo-ic > .ab-ir { background: none; box-shadow: none; border: 0; }
 .topo-eu { gap: 10px; padding: 4px 12px 4px 4px; line-height: 1.2; text-align: left; color: var(--ink); font: inherit; }
 .topo-eu .av { width: 36px; height: 36px; box-shadow: none; }
