@@ -12,7 +12,7 @@ const BAS_NOMES = { basico: 'App', completo: 'SaaS' }; // nomes das duas versõe
 const basTrocaHtml = () => { const v = E.interfaceDe(planoAtual(), S.profile.interface, BASICO_PAGANTES);
   return `<div class="seg bas-troca" role="group" aria-label="Versão do AVEN">${['basico', 'completo'].map((k) => `<button${v === k ? ' class="on"' : ''} data-act="bas-ui" data-v="${k}" aria-pressed="${v === k}">${BAS_NOMES[k]}</button>`).join('')}</div>`; };
 const BAS_ABAS = [['inicio', 'Início', I.geral], ['gastos', 'Gastos', I.despesas], ['investir', 'Investir', I.inv], ['perfil', 'Perfil', I.user]];
-const BAS_FORMS = new Set(['gasto', 'conta-f', 'entrada', 'aporte', 'meta', 'objetivo', 'perfil', 'provento', 'limite', 'alvos']); // telas de formulário escondem as abas
+const BAS_FORMS = new Set(['gasto', 'conta-f', 'entrada', 'aporte', 'meta', 'objetivo', 'perfil', 'provento', 'limite', 'alvos', 'ponto']); // telas de formulário escondem as abas
 const BAS_AREAS = ['Alimentação', 'Moradia', 'Transporte', 'Saúde', 'Lazer', 'Compras', 'Contas', 'Educação'];
 const I_VOLTA = ic('<path d="m15 6-6 6 6 6"/>');
 
@@ -31,8 +31,8 @@ const BAS_VOZ = {
 Object.keys(BAS_VOZ).forEach((t) => { if (VOZ[t]) Object.assign(VOZ[t], BAS_VOZ[t]); });
 
 /* ---------- peças de tela ---------- */
-// o consultor tem também a aba Clientes, a mesma do SaaS
-const basAbas = () => BAS_ABAS.concat(S.isAdmin && Store.mode === 'cloud' ? [['clientes', 'Clientes', I.clientes]] : []);
+// o consultor abre Clientes pelo fim do Perfil (tela `clientes`)
+const basAbas = () => BAS_ABAS;
 const basAba = () => (basAbas().some((a) => a[0] === S.basAba) ? S.basAba : 'inicio');
 const basPilha = () => (S.basPilha = S.basPilha || []);
 const basTopoPilha = () => basPilha()[basPilha().length - 1] || null;
@@ -95,7 +95,7 @@ function basicoHtml() {
   const t = basTopoPilha();
   if (t) { const f = BAS_TELAS[t.t]; return `<div class="bas bas-tela" data-t="${t.t}">${f ? f(t) : basSumiu()}</div>`; }
   const a = basAba(); const m = S.mes;
-  return `<div class="bas" data-aba="${a}">${a === 'gastos' ? basGastos(m) : a === 'investir' ? basInvestir(m) : a === 'perfil' ? basPerfil() : a === 'clientes' ? `<div class="bas-pg bas-clientes">${viewClientes()}</div>` : basInicio(m)}</div>`;
+  return `<div class="bas" data-aba="${a}">${a === 'gastos' ? basGastos(m) : a === 'investir' ? basInvestir(m) : a === 'perfil' ? basPerfil() : basInicio(m)}</div>`;
 }
 
 /* ================= abas ================= */
@@ -316,14 +316,13 @@ function basPerfil() {
   const vozes = Object.keys(VOZES).map((v) => `<button class="bas-voz${tomAtual() === v ? ' on' : ''}" data-act="voz" data-voz="${v}" aria-pressed="${tomAtual() === v}"><b>${VOZES[v].nome}</b><small>${esc(VOZ[v].bas_disp_sim || '')}</small></button>`).join('');
   const modo = basEscolhe() ? basCard(`<div class="bas-op">${basNome('Versão do AVEN', `${BAS_NOMES.basico}: no jeito de celular. ${BAS_NOMES.completo}: o painel completo, com todas as telas.`)}${basTrocaHtml()}</div>`)
     : planoAtual() === 'gratis' && !S.isAdmin ? `<ul class="bas-ativ">${basRow('data-act="upgrade" data-plano="investidor"', I.inv, `Conhecer o plano ${esc(nomePlano('investidor'))}`, `O ${BAS_NOMES.basico} completo e o ${BAS_NOMES.completo}, com proventos, carteira e simulador.`, I.chev)}</ul>` : '';
-  const linhas = [basRow(basIr('perfil'), I.user, 'Meu perfil', 'Nome e como prefere ser chamado', I.chev), basRow(basIr('ia'), IA_ICONE, 'Assistente e avisos', 'Pergunte e veja o que merece atenção', I.chev), basRow(basIr('sonhos'), OBJ_ICONES.viagem || I_META, 'Meus sonhos', `${objLista().length} ${objLista().length === 1 ? 'sonho' : 'sonhos'}`, I.chev),
-    basRow('data-act="bas-importar"', I_IMPORTAR, 'Importar extrato', 'Traz os gastos do banco (CSV ou OFX)', I.chev), basRow(basIr('limite'), I_META, 'Limite do mês', +S.plan.settings.orcPadrao > 0 ? `${brl(S.plan.settings.orcPadrao)} por mês` : 'Quanto gastar por mês, no máximo', I.chev),
-    basRow(basIr('meta'), I_META, 'Meta de investimento', +S.plan.settings.metaAporte > 0 ? `${brl(S.plan.settings.metaAporte)} por mês` : 'Quanto investir por mês', I.chev), basRow(basIr('ano'), I.relatorio, 'Ano do planejamento', String(S.year), I.chev),
-    basRow(basIr('contato'), I.chat, `Falar com o ${esc(primeiroNome())}`, 'Dúvidas sobre o seu dinheiro', I.chev)];
-  return `<div class="bas-pg bas-pg-p">${basCab('Perfil')}${membro}${conq}
+  const st = S.plan.settings; const plano = `<button class="card bas-pj-bt" ${basIr('planejamento')}><span class="bas-pj-bic" aria-hidden="true">${I_PLANO}</span><span class="bas-n"><b>Planejamento</b><small>Metas, limites, minhas instituições e anos</small></span>${I.chev}
+    <span class="bas-pj-res"><span><small>Investir</small><b>${+st.metaAporte > 0 ? brl0(st.metaAporte) : '–'}</b></span><span><small>Gastar até</small><b>${+st.orcPadrao > 0 ? brl0(st.orcPadrao) : '–'}</b></span><span><small>Instituições</small><b>${instMinhas().length}</b></span></span></button>`;
+  const cli = S.isAdmin && Store.mode === 'cloud' ? basSecao('Consultor', '', `<ul class="bas-ativ">${basRow(basIr('clientes'), I.clientes, 'Clientes', 'Cadastros e planos', I.chev)}</ul>`) : '';
+  return `<div class="bas-pg bas-pg-p">${basCab('Perfil')}${membro}${plano}${conq}
     ${basSecao('Sua cor', `<button class="bas-tg" data-act="bas-cores" aria-expanded="${!!S.basCores}" aria-label="${S.basCores ? 'Recolher' : 'Abrir'} as cores">${I.down}</button>`, !S.basCores ? '' : `<div class="card bas-aparencia">${cores}<div class="seg bas-temas" role="group" aria-label="Tema">${temas}</div><label class="bas-op bas-sw">${basNome('Sons', 'Um toque curto ao salvar, pagar e trocar de tela.')}<span class="wg-sw"><input type="checkbox" data-act="bas-sons" ${basSomLigado() ? 'checked' : ''} aria-label="Sons"><span></span></span></label></div>`)}
     ${basSecao('Jeito de falar', '', `<div class="bas-vozes">${vozes}</div>`)}${modo ? basSecao('Versão', '', modo) : ''}
-    ${basSecao('Ajustes', '', `<ul class="bas-ativ">${linhas.join('')}</ul>`)}<ul class="bas-ativ bas-sair"><li><button data-act="bas-sair">${basNome('Sair')}</button></li></ul></div>`;
+    ${cli}<ul class="bas-ativ bas-sair"><li><button data-act="bas-sair">${basNome('Sair')}</button></li></ul></div>`;
 }
 
 /* ---- Assistente com os avisos (o sino agora mora aqui): abas Conversa e Avisos ---- */
@@ -853,8 +852,34 @@ function basTelaSaude() {
     <p class="bas-disc keep">Uma leitura simples dos seus números, não uma recomendação de investimento.</p>`);
 }
 
+/* ---- Planejamento: metas, ponto de partida, limites, minhas instituições e anos (o grupo Planejamento do SaaS, no jeito de celular) ---- */
+const I_PLANO = ic('<path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/>');
+function basTelaPlanejamento() {
+  const st = S.plan.settings; const lim = st.limites || {}; const areas = Object.keys(lim).filter((a) => +lim[a] > 0); const livres = BAS_AREAS.filter((a) => !areas.includes(a));
+  const tile = (t, ic0, nome, v, vazio) => `<button class="bas-pj-t" ${basIr(t)}><span class="bas-pj-ic" aria-hidden="true">${ic0}</span><small>${nome}</small>${v != null && v > 0 ? `<b>${brl0(v)}</b>` : `<b class="vz">${vazio}</b>`}</button>`;
+  const metas = `<div class="bas-pj-g">${tile('meta', I.inv, 'Investir por mês', +st.metaAporte, 'Definir')}${tile('limite', I.despesas, 'Gastar no máximo', +st.orcPadrao, 'Definir')}
+    ${tile('ponto', I_META, `Meta de ${S.year}`, +st.metaInvAno, 'Soma dos meses')}${tile('ponto', I.cart, 'Patrimônio inicial', st.patrimonioInicial, 'Automático')}</div>`;
+  const limites = `<div class="card bas-pj-lim">${areas.length ? `<ul class="bas-ativ">${areas.map((a) => basRow(basIr('limite', { area: a }), esc(a.slice(0, 1)), esc(a), `${brl(+lim[a])} por mês`, I.chev)).join('')}</ul>` : '<p class="bas-p">Nenhuma categoria com limite. O app avisa a 80% e quando passar.</p>'}
+    ${livres.length ? `<div class="bas-lim-add"><small>Pôr limite em</small>${livres.map((a) => `<button ${basIr('limite', { area: a })}>${I.plus}${esc(a)}</button>`).join('')}</div>` : ''}</div>`;
+  const e = S.profile.instEstilo || 'auto';
+  const inst = `<div class="card bas-pj-inst"><div class="bas-pj-ig">${INSTITUICOES.map(([id, nome]) => `<label class="bas-pj-i"><input type="checkbox" data-bas-inst="${id}" ${instMinhas().includes(id) ? 'checked' : ''}>${instIcone(id)}<span>${esc(nome)}</span><i class="bas-pj-ok" aria-hidden="true">${I.check}</i></label>`).join('')}</div>
+    <small class="bas-pj-n">Estilo dos ícones</small><div class="seg bas-temas bas-pj-est" role="group" aria-label="Estilo dos ícones">${INST_ESTILOS.map(([v, l]) => `<button class="${e === v ? 'on' : ''}" data-act="inst-estilo" data-v="${v}" aria-pressed="${e === v}">${l}</button>`).join('')}</div></div>`;
+  const n = instMinhas().length;
+  return basDet('Planejamento', `<p class="bas-p">Metas, limites e o que o app usa para fazer as contas de ${S.year}.</p>${basSecao('Metas', '', metas)}${basSecao('Limites por categoria', '', limites)}
+    ${basSecao('Minhas instituições', `<small class="bas-pj-n">${n ? `${n} ${n === 1 ? 'marcada' : 'marcadas'}` : 'Nenhuma'}</small>`, `<p class="bas-p">Marque os bancos e cartões que você usa. Só eles aparecem ao lançar um gasto.</p>${inst}`)}
+    ${basSecao('Mais', '', `<ul class="bas-ativ">${basRow(basIr('sonhos'), I_META, 'Meus sonhos', `${objLista().length} ${objLista().length === 1 ? 'sonho' : 'sonhos'}`, I.chev)}${basRow(basIr('ano'), I.relatorio, 'Anos do planejamento', `Aberto: ${S.year}`, I.chev)}</ul>`)}`);
+}
+function basTelaPonto() {
+  const st = S.plan.settings;
+  return basForm('ponto', 'Ponto de partida', `${basValor('patr', st.patrimonioInicial, `Quanto você tinha investido no início de ${S.year}?`)}<p class="bas-p">Deixe vazio para o app calcular sozinho: o patrimônio informado mais os aportes dos anos anteriores.</p>
+    ${basValor('anual', +st.metaInvAno || 0, `Meta de investimento de ${S.year}`)}<p class="bas-p">Opcional. Vazio, vale a soma das metas de cada mês.</p>`);
+}
+// o consultor abre a tela Clientes do SaaS, como é, pelo fim do Perfil
+const basTelaClientes = () => basDet('Clientes', `<div class="bas-clientes">${viewClientes()}</div>`);
+document.addEventListener('change', (e) => { const t = e.target; if (!t.matches || !t.matches('input[data-bas-inst]')) return; instMinhaAlternar(t.dataset.basInst, t.checked); basSom('toque');
+  const n = instMinhas().length; const c = document.querySelector('.bas-pj-n'); if (c) c.textContent = n ? `${n} ${n === 1 ? 'marcada' : 'marcadas'}` : 'Nenhuma'; });
 const BAS_TELAS = { gasto: basTelaGasto, conta: basTelaConta, 'conta-f': basTelaContaF, entrada: basTelaEntrada, aporte: basTelaAporte, meta: basTelaMeta,
-  objetivos: basTelaObjetivos, objetivo: basTelaObjetivo, categoria: basTelaCategoria, perfil: basTelaPerfil, contato: basTelaContato, ano: basTelaAno, ia: basTelaIa, saude: basTelaSaude, periodo: basTelaPeriodo, organizar: basTelaOrganizar, entradas: basTelaEntradas, sonhos: basTelaSonhos, 'sonho-det': basTelaSonhoDet, cartao: basTelaCartao, 'ano-resumo': basTelaAnoResumo, historico: basTelaHistorico, raiox: basTelaRaioX, resumo: basTelaResumo, limite: basTelaLimite, avisos: basTelaAvisos, simular: basTelaSimular, alvos: basTelaAlvos, proventos: basTelaProventos, provento: basTelaProvento, carteira: basTelaCarteira };
+  objetivos: basTelaObjetivos, objetivo: basTelaObjetivo, categoria: basTelaCategoria, perfil: basTelaPerfil, contato: basTelaContato, ano: basTelaAno, ia: basTelaIa, saude: basTelaSaude, periodo: basTelaPeriodo, organizar: basTelaOrganizar, entradas: basTelaEntradas, sonhos: basTelaSonhos, 'sonho-det': basTelaSonhoDet, cartao: basTelaCartao, 'ano-resumo': basTelaAnoResumo, historico: basTelaHistorico, raiox: basTelaRaioX, resumo: basTelaResumo, limite: basTelaLimite, avisos: basTelaAvisos, simular: basTelaSimular, alvos: basTelaAlvos, proventos: basTelaProventos, provento: basTelaProvento, carteira: basTelaCarteira, planejamento: basTelaPlanejamento, ponto: basTelaPonto, clientes: basTelaClientes };
 
 /* ================= gravação (no mesmo formato do Completo) ================= */
 function basErro(f, msg) { const e = f.querySelector('.bas-err'); e.textContent = msg; e.hidden = false; return false; }
@@ -919,6 +944,9 @@ function basSalvar(f) {
       if (t.id) { const a = p.ativos.find((x) => x.id === t.id); if (a) a.pr[m] = E.r2(v); ok('Provento atualizado.'); return; }
       const a = p.ativos.find((x) => x.id === d.ativo); if (!a) return basErro(f, 'Escolha de qual investimento.'); a.pr[m] = E.r2((+a.pr[m] || 0) + v); ok(`Provento de ${a.nome} registrado.`); return;
     }
+    case 'ponto': { const vp = d.patr && d.patr.trim() ? val('patr') : null; const va = d.anual && d.anual.trim() ? val('anual') : 0;
+      if ((vp != null && (Number.isNaN(vp) || vp < 0)) || Number.isNaN(va) || va < 0) return basErro(f, 'Informe valores como 50.000,00.');
+      p.settings.patrimonioInicial = vp == null ? null : E.r2(vp); p.settings.metaInvAno = E.r2(va); ok('Ponto de partida salvo.'); return; }
     case 'meta': { const v = d.valor && d.valor.trim() ? val('valor') : 0; if (Number.isNaN(v) || v < 0) return basErro(f, 'Informe um valor, como 500,00.'); p.settings.metaAporte = E.r2(v); ok('Meta salva.'); return; }
     case 'objetivo': {
       const L = objLista(); const g = t.id ? L.find((x) => x.id === t.id) : null; const v = val('valor'); if (!(v > 0)) return basErro(f, 'Informe quanto custa o objetivo.');

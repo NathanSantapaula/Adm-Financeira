@@ -856,3 +856,29 @@ button.bas-cc-c { border: 0; font: inherit; text-align: left; cursor: pointer; t
 @media (prefers-reduced-motion: reduce) {
   .bas-rosto, .bas-rosto-o ellipse, .bas-sdx-luz, .bas-sdx-p li, .bas-sdx-n, .card.bas-sdx-i, .bas-pv-g i { animation: none; } .bas-tg svg, .bas-al-bar i, .bas-inv-bt { transition: none; }
 }
+
+/* ---------- rodada 7: o Planejamento no lugar dos Ajustes ---------- */
+.card.bas-pj-bt { width: 100%; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; margin-top: 14px; padding: 16px; border-radius: 24px; color: inherit; font: inherit; text-align: left; transition: transform 140ms var(--ease-out); }
+.card.bas-pj-bt:active { transform: scale(.98); } .bas-pj-bt > svg { width: 18px; height: 18px; color: var(--ink-3); }
+.bas-pj-bic, .bas-pj-ic { display: grid; place-items: center; border-radius: 14px; color: var(--on-accent); background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 80%, #fff), var(--accent)); box-shadow: 0 8px 18px -10px var(--accent); }
+.bas-pj-bic { width: 44px; height: 44px; } .bas-pj-bic svg { width: 22px; height: 22px; }
+.bas-pj-res { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.bas-pj-res span { display: flex; flex-direction: column; padding: 8px 10px; border-radius: 14px; background: color-mix(in srgb, var(--ink) 5%, transparent); min-width: 0; }
+.bas-pj-res small { font-size: 11.5px; color: var(--ink-2); } .bas-pj-res b { font-size: 14px; font-variant-numeric: tabular-nums; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bas-pj-g { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.bas-pj-t { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 14px; border: 0; border-radius: 22px; background: var(--surface); box-shadow: var(--shadow); color: inherit; font: inherit; text-align: left; transition: transform 140ms var(--ease-out); }
+.bas-pj-t:active { transform: scale(.97); } .bas-pj-ic { width: 34px; height: 34px; margin-bottom: 8px; border-radius: 11px; } .bas-pj-ic svg { width: 18px; height: 18px; }
+.bas-pj-t small { font-size: 12.5px; color: var(--ink-2); } .bas-pj-t b { font-size: 18px; font-weight: 750; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+.card.bas-pj-lim, .card.bas-pj-inst { padding: 14px; border-radius: 24px; display: grid; gap: 12px; } .bas-pj-lim .bas-ativ { margin: 0; }
+.bas-pj-n { font-size: 13px; font-weight: 650; color: var(--ink-2); }
+.bas-pj-ig { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.bas-pj-i { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 4px 10px; border-radius: 18px; background: color-mix(in srgb, var(--ink) 4%, transparent); cursor: pointer; text-align: center; transition: transform 140ms var(--ease-out), box-shadow 200ms ease; }
+.bas-pj-i:active { transform: scale(.95); } .bas-pj-i input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.bas-pj-i span:not(.inst-ic) { font-size: 12px; font-weight: 600; color: var(--ink-2); line-height: 1.2; } .bas-pj-i .inst-ic { width: 40px; height: 40px; }
+.bas-pj-ok { position: absolute; top: 6px; right: 6px; width: 18px; height: 18px; display: grid; place-items: center; border-radius: 50%; background: var(--accent); color: var(--on-accent); opacity: 0; transform: scale(.6); transition: opacity 160ms ease, transform 160ms var(--ease-out); }
+.bas-pj-ok svg { width: 11px; height: 11px; stroke-width: 3; }
+.bas-pj-i:has(input:checked) { box-shadow: inset 0 0 0 2px var(--accent); background: color-mix(in srgb, var(--accent) 8%, transparent); } .bas-pj-i:has(input:checked) .bas-pj-ok { opacity: 1; transform: none; }
+.bas-pj-i:has(input:checked) span:not(.inst-ic) { color: var(--ink); } .bas-pj-i:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .card.bas-pj-bt, .bas-pj-t, .bas-pj-i, .bas-pj-ok { transition: none; } }
+.bas-pj-t b.vz { font-size: 15px; font-weight: 650; color: var(--ink-2); }
+.bas-pj-est { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: -6px; } .bas-pj-est button { min-width: 0; padding: 0 4px; font-size: 13px; }
