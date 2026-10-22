@@ -2670,16 +2670,6 @@ button.wg-ic:active { transform: scale(.92); }
 .adv-t b { font-size: 14.5px; font-weight: 650; color: var(--ink); } .adv-t span { font-size: 13px; } .adv-t small { margin-top: 4px; font-size: 12px; line-height: 1.4; color: var(--ink-3); }
 .advisor .hp-btn { width: 100%; }
 @media (prefers-reduced-motion: reduce) { .nav button:active { transform: none; } }
-/* Vidro neon (fosco): estados escolhidos (aba do menu e do celular, opção ligada nos seletores) e botões principais.
-   Redondo; degradê da cor de destaque clara no alto até quase preto embaixo; fio fino de luz; reflexo suave no alto; halo neon. */
-.nav button[aria-current="page"], .nav button:active, .tabs button[aria-current="page"], .tabs button:active, .seg button.on, .ap-modo input:checked + span, .chip-m.on, .yr-opt.on { position: relative; isolation: isolate; color: var(--on-accent); font-weight: 600; border-color: transparent; border-radius: 999px; background: radial-gradient(110% 130% at 50% -10%, color-mix(in srgb, var(--accent) 62%, #fff) 0%, var(--accent) 34%, color-mix(in srgb, var(--accent) 48%, #000) 74%, color-mix(in srgb, var(--accent) 26%, #000) 100%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), inset 0 0 0 1px color-mix(in srgb, color-mix(in srgb, var(--accent) 65%, #fff) 70%, transparent), 0 0 14px color-mix(in srgb, var(--accent) 70%, transparent), 0 0 34px color-mix(in srgb, var(--accent) 35%, transparent); }
-.nav button[aria-current="page"]::after, .nav button:active::after, .tabs button[aria-current="page"]::after, .tabs button:active::after, .seg button.on::after, .ap-modo input:checked + span::after, .chip-m.on::after, .yr-opt.on::after { content: ""; position: absolute; left: 18%; right: 18%; top: 2px; height: 46%; border-radius: 999px; background: radial-gradient(60% 100% at 50% 0%, rgba(255, 255, 255, .34), rgba(255, 255, 255, 0) 75%); pointer-events: none; z-index: -1; }
-.nav button[aria-current="page"] svg, .tabs button[aria-current="page"] svg, .nav button:active svg, .tabs button:active svg { color: var(--on-accent); filter: drop-shadow(0 0 3px rgba(255, 255, 255, .45)); }
-html.side-mini .nav button { width: 46px; height: 46px; margin-inline: auto; padding: 0; border-radius: 50%; }
-.btn.primary, .hp-btn:not(.vidro):not(.ghost), .per-m.ponta { background: radial-gradient(110% 130% at 50% -10%, color-mix(in srgb, var(--accent) 62%, #fff) 0%, var(--accent) 34%, color-mix(in srgb, var(--accent) 48%, #000) 74%, color-mix(in srgb, var(--accent) 26%, #000) 100%); color: var(--on-accent);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), inset 0 0 0 1px color-mix(in srgb, color-mix(in srgb, var(--accent) 65%, #fff) 70%, transparent), 0 0 14px color-mix(in srgb, var(--accent) 70%, transparent), 0 0 34px color-mix(in srgb, var(--accent) 35%, transparent); }
-.nav button:active, .tabs button:active { transform: scale(.98); transition: transform 120ms var(--ease-out); }
-@media (prefers-reduced-motion: reduce) { .tabs button:active { transform: none; } }
 
 /* Estrutura: topo da página inteira (marca que não encolhe, busca, sino e perfil) e menu sem caixa, só os botões sobre o fundo */
 .app { grid-template-rows: auto minmax(0, 1fr); }
@@ -2707,33 +2697,8 @@ html.side-mini .side > .side-tog { margin: 0 auto 8px; }
   .main { padding-top: 12px; }
 }
 
-/* Gráficos e barras de progresso brilhantes (metal + neon): o desenho vem de metalBar/metalDefs (charts.js); --bc é a cor da série */
-.chart .mb { filter: drop-shadow(0 0 5px color-mix(in srgb, var(--bc) 50%, transparent)); }
-.chart .mb.cur { filter: drop-shadow(0 0 9px color-mix(in srgb, var(--bc) 85%, transparent)) drop-shadow(0 0 22px color-mix(in srgb, var(--bc) 40%, transparent)); }
-.chart .mb.fut { opacity: .55; filter: none; }
-.chart .mb-topo { stroke: color-mix(in srgb, var(--bc) 50%, #fff); stroke-width: 2; stroke-linecap: round; }
-.chart .mb-pill rect { fill: color-mix(in srgb, var(--accent) 88%, transparent); filter: drop-shadow(0 0 8px color-mix(in srgb, var(--accent) 60%, transparent)); }
-.chart .mb-pill text { fill: var(--on-accent); font-size: 11px; font-weight: 700; } .chart .mb-pill circle { fill: var(--on-accent); stroke: var(--accent); stroke-width: 1.5; }
-.kbar i, .idp-b .a, .ced-soma-b i, .oc-uso-b i { --bc: var(--accent); }
-.kbar.ok i { --bc: var(--pos); } .kbar.warn i { --bc: var(--warn); } .idp-b .x { --bc: var(--neg); }
-.kbar i, .idp-b .a, .idp-b .x, .ced-soma-b i, .oc-uso-b i { background: linear-gradient(180deg, color-mix(in srgb, var(--bc) 45%, #fff), var(--bc) 55%, color-mix(in srgb, var(--bc) 80%, #000)); box-shadow: 0 0 8px color-mix(in srgb, var(--bc) 60%, transparent), 0 0 18px color-mix(in srgb, var(--bc) 25%, transparent); }
-@media (prefers-reduced-transparency: reduce) { .chart .mb, .chart .mb.cur { filter: none; } }
-:root[data-theme="light"] .chart .mb { filter: drop-shadow(0 0 3px color-mix(in srgb, var(--bc) 35%, transparent)); }
-:root[data-theme="light"] .chart .mb.cur { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--bc) 55%, transparent)); }
-/* O mesmo design em todo gráfico e linha de progresso: halo neon na cor (--bc) de linhas, roscas, anéis e barras em HTML */
-.chart path.ln { filter: drop-shadow(0 0 4px color-mix(in srgb, var(--bc) 70%, transparent)) drop-shadow(0 0 12px color-mix(in srgb, var(--bc) 35%, transparent)); }
-.dn-seg, .ring-pg, .cmp-seg { filter: drop-shadow(0 0 5px color-mix(in srgb, var(--bc) 60%, transparent)); }
-i[style*="--bc"] { background: linear-gradient(180deg, color-mix(in srgb, var(--bc) 50%, #fff), var(--bc) 55%, color-mix(in srgb, var(--bc) 85%, #000)); box-shadow: 0 0 8px color-mix(in srgb, var(--bc) 55%, transparent), 0 0 16px color-mix(in srgb, var(--bc) 22%, transparent); }
-:root[data-theme="light"] .chart path.ln { filter: drop-shadow(0 0 3px color-mix(in srgb, var(--bc) 45%, transparent)); }
-:root[data-theme="light"] i[style*="--bc"] { box-shadow: 0 0 6px color-mix(in srgb, var(--bc) 35%, transparent); }
-@media (prefers-reduced-transparency: reduce) { .chart path.ln, .dn-seg, .ring-pg, .cmp-seg { filter: none; } }
-.bar i, .macc-bar i, .hb-t i, .meter i { --bc: var(--accent); } .bar.warn i, .macc-bar.warn i { --bc: var(--c4); } .bar.neg i, .macc-bar.neg i { --bc: var(--neg); }
-.rfbv-t i { --bc: var(--c1); } .kbar.dup i.dv { --bc: var(--c3); }
-.bar i, .macc-bar i, .hb-t i, .meter i, .rfbv-t i, .kbar.dup i.dv { background: linear-gradient(180deg, color-mix(in srgb, var(--bc) 50%, #fff), var(--bc) 55%, color-mix(in srgb, var(--bc) 85%, #000)); box-shadow: 0 0 8px color-mix(in srgb, var(--bc) 55%, transparent), 0 0 16px color-mix(in srgb, var(--bc) 22%, transparent); }
-/* destaque com luz: só a barra em foco acende (luz descendo e um brilho de lanterna no topo); as outras recuam */
-.chart svg:has(.mb.cur) .mb:not(.cur):not(.fut) { opacity: .55; filter: none; }
-.chart .mb-flare { fill: #fff; filter: blur(1.5px) drop-shadow(0 0 6px #fff) drop-shadow(0 0 12px color-mix(in srgb, var(--bc) 80%, #fff)); }
-:root[data-theme="light"] .chart .mb-flare { filter: blur(1.2px) drop-shadow(0 0 4px color-mix(in srgb, var(--bc) 60%, #fff)); }
+/* barras em HTML com a cor no template (--bc) */
+i[style*="--bc"] { background: var(--bc); }
 /* ficha de variação (+8%) ao lado dos números */
 .var-chip { display: inline-flex; align-items: center; margin-left: 8px; padding: 2px 9px; border-radius: 999px; vertical-align: middle; font-size: 12px; font-weight: 650; letter-spacing: 0; line-height: 1.4; color: var(--ink-2); background: color-mix(in srgb, var(--ink) 8%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 14%, transparent); }
 .var-chip.pos { color: var(--pos); background: color-mix(in srgb, var(--pos) 14%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--pos) 40%, transparent), 0 0 10px color-mix(in srgb, var(--pos) 25%, transparent); }
@@ -2780,3 +2745,17 @@ i[style*="--bc"] { background: linear-gradient(180deg, color-mix(in srgb, var(--
 html.side-mini .nav-g { height: 1px; margin: 10px 14px; font-size: 0; background: var(--line); }
 .advisor.plano .adv-ic svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; }
 .advisor .adv-lnk { font-size: 12.5px; color: var(--ink-2); }
+
+/* Globo, primeiro nível ("capa", como um herói de site): globo grande embaixo, título, frase e dois botões; "Ver o meu universo" leva aos detalhes */
+.ab-capa-c { position: absolute; z-index: 4; left: 50%; top: max(9vh, 64px); width: min(760px, 92vw); transform: translateX(-50%); text-align: center; display: none; }
+.ab.ab-capa .ab-capa-c { display: block; animation: rise 700ms var(--ease-out) both; }
+.ab.ab-capa :is(.ab-esq, .ab-ferr, .ab-card, .ab-entrar) { opacity: 0; visibility: hidden; pointer-events: none; }
+.ab :is(.ab-esq, .ab-ferr, .ab-entrar) { transition: opacity 500ms var(--ease-out) 250ms, visibility 0s 250ms; }
+.ab-capa-k { margin: 0 0 12px; font-size: 15px; color: var(--ab-ink-2); }
+.ab-capa-t { margin: 0; font-size: clamp(44px, 7.4vw, 104px); line-height: .98; font-weight: 700; letter-spacing: -0.045em; color: var(--ab-ink); text-shadow: 0 0 46px color-mix(in srgb, var(--accent) 45%, transparent); }
+.ab-capa-s { margin: 20px auto 0; max-width: 540px; font-size: 16.5px; line-height: 1.5; color: var(--ab-ink-2); }
+:root[data-theme="light"] .ab-capa-s { color: var(--on-accent); font-weight: 500; text-shadow: 0 1px 12px color-mix(in srgb, var(--accent) 55%, black); } /* no claro a frase fica sobre a esfera saturada */
+.ab-capa-b { margin-top: 28px; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
+.ab-capa-b .hp-btn span { margin-left: 6px; }
+@media (max-width: 759px) { .ab-capa-c { top: max(13vh, 84px); } .ab-capa-s { font-size: 15px; } .ab-capa-b { flex-direction: column; align-items: stretch; } }
+@media (prefers-reduced-motion: reduce) { .ab.ab-capa .ab-capa-c { animation: none; } .ab :is(.ab-esq, .ab-ferr, .ab-entrar) { transition: none; } }

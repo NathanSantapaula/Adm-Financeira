@@ -1,8 +1,8 @@
 /* Tela de abertura "Seu universo financeiro": aparece uma vez por sessão, antes do painel, para quem tem patrimônio.
    No centro, um globo de pontos que gira sozinho e com o arraste (com inércia); os pontos se afastam do mouse e têm
    as cores da composição da carteira. Em volta, em camadas separadas: dividendos (micro pontos dourados), aportes de
-   cada mês (losangos verdes numa órbita própria), as classes da carteira (orbs que pulsam, do tamanho da proporção) e
-   os objetivos (cristais hexagonais em órbita, com o progresso na borda). Tocar em qualquer um abre o detalhe.
+   cada mês (losangos verdes numa órbita própria), e as classes da carteira (orbs que
+   pulsam, do tamanho da proporção). Tocar em qualquer um abre o detalhe.
    Um "i" sobrevoa o globo e explica o que é cada coisa. O "Ao vivo" simula o rendimento do patrimônio a 12% ao ano
    desde as 6h da manhã (sem promessa de resultado). O título conversa com as mesmas frases da Visão geral.
    Tudo em canvas 2D, sem biblioteca. As cores vêm do tema (fundo, destaque e a paleta --c1…--c6), claro ou escuro.
@@ -26,9 +26,11 @@ function abTema() {
   // no claro, as cores da cena saem todas da cor de destaque (tons vizinhos no círculo de cores, mesma saturação e luz):
   // o globo é uma joia na cor de destaque e tudo em volta conversa com ela; só os dividendos guardam o dourado, de contraponto
   const viz = (d, l) => abDeHsl(abHsl(acc)[0] + d, 0.7, l == null ? 0.52 : l);
-  const cls = escuro ? cls0 : [0, 32, -32, 64, -64, 96].map((d) => viz(d));
+  let cls = escuro ? cls0 : [0, 32, -32, 64, -64, 96].map((d) => viz(d));
+  // mais de 6 classes: tons que faltam no círculo (no escuro, entre as cores das classes; no claro, mais vizinhos da cor de destaque)
+  for (let i = cls.length; i < A.D.classes.length; i++) { const j = (i - 6) % 6, v = Math.floor((i - 6) / 6) * 0.1;
+    cls.push(escuro ? abDeHsl([300, 58, 165, 15, 90, 270][j], 0.75, 0.6 + v) : viz([128, -96, 160, -128, 192, -160][j], 0.52 + v)); }
   A.T = { escuro, bg, ink: k('--ink'), ink2: k('--ink-2'), acc, acc2, pos: escuro ? k('--pos') : viz(-60, 0.42), neg: k('--neg'), ouro: escuro ? k('--c4') : [226, 160, 40], cls,
-    obj: escuro ? ['--c4', '--c6', '--c2', '--c3', '--c1'].map(k) : [48, -48, 96, -96, 0].map((d) => viz(d, 0.5)),
     luz: escuro ? branco : k('--surface'), // brilho e contorno: branco no escuro, superfície no claro
     soma: escuro ? 'lighter' : 'screen', // luz que soma no escuro; no claro, "screen" clareia sobre a esfera colorida sem estourar
     // no claro o globo vira uma joia: esfera saturada na cor de destaque, com pontos quase brancos (um toque do tom de cada classe) e textos claros
@@ -70,7 +72,7 @@ function aberturaTalvez() {
   const hoje = new Date().toDateString();
   try { if (sessionStorage.getItem('fp:abertura') || (op.quando === 'dia' && localStorage.getItem('fp:aberturaDia') === hoje)) return; } catch (e) { return; }
   try { sessionStorage.setItem('fp:abertura', '1'); localStorage.setItem('fp:aberturaDia', hoje); } catch (e) { /* ignora */ }
-  abAbrir();
+  abAbrir(true);
 }
 
 /* ---------- dados do cliente para a cena ---------- */
@@ -81,24 +83,27 @@ function abDados() {
     if (temRecurso('carteira') && p.ativos.length) { const K = cartAnalise().K; if (K.total > 0) classes = K.classes.filter((c) => c.valor > 0).map((c) => ({ nome: c.classe, valor: c.valor, pct: c.atual / 100, alvo: K.somaAlvo > 0 ? c.alvo / 100 : null })); }
     if (!classes.length) { const comp = composicao(); const tot = comp.reduce((a, b) => a + b.value, 0); classes = comp.map((c) => ({ nome: c.label, valor: c.value, pct: tot > 0 ? c.value / tot : 0, alvo: null })); }
   } catch (e) { classes = []; }
-  classes = classes.slice(0, 6).map((c, i) => Object.assign(c, { k: i }));
+  classes = classes.map((c, i) => Object.assign(c, { k: i })); // todas as classes (as cores passam de 6 em abTema)
   const div = []; const apo = [];
   (p.ativos || []).forEach((a) => (a.pr || []).forEach((v, i) => { if (+v > 0) div.push({ ativo: a.nome, mes: i, valor: +v }); }));
   for (let i = 0; i < 12; i++) { const v = +C.aplicado[i] || 0; if (v > 0) { const top = (p.ativos || []).reduce((b, a) => ((+(a.ap || [])[i] || 0) > (b ? +(b.ap || [])[i] || 0 : 0) ? a : b), null); apo.push({ mes: i, valor: v, prov: (p.ativos || []).reduce((s, a) => s + (+(a.pr || [])[i] || 0), 0), ativo: top ? top.nome : '' }); } }
-  let objs = [];
-  try { const A = objAnalise(); objs = A.itens.slice(0, 5).map((g, i) => ({ nome: objNomeDe(g), progresso: g.progresso, status: g.status, saldo: g.saldo, valor: g.valor, previsto: g.previsto, ano: g.ano, k: i % 5 })); } catch (e) { objs = []; }
+  // gastos do ano até o mês mostrado, somados por nome (previstos, parcelas e lançamentos, como em areasDe2): no globo de mapa, cada um é uma luz
+  let gastos = []; try { const gm = new Map(); const add = (nome, area, v) => { if (!(v > 0)) return; const k = String(nome || area || 'Gasto').trim(); const g = gm.get(k.toLowerCase()) || { nome: k, area: area || 'Outros', valor: 0 }; g.valor += v; gm.set(k.toLowerCase(), g); };
+    p.despesas.concat(planCtx().carry).forEach((it) => add(it.nome, it.area, E.sum(E.itemValores(it, p.year).slice(0, m + 1))));
+    (p.lancamentos || []).forEach((l) => { const d = E.parseDataISO(l.data); if (d && d.ano === p.year && d.mes <= m) add(l.desc, l.area, +l.valor); });
+    gastos = [...gm.values()].sort((a, b) => b.valor - a.valor).slice(0, 40); } catch (e) { gastos = []; }
   const nome = (pr.apelido || (pr.nome || '').split(' ')[0] || '').trim();
   const op = abOpcoes();
   const rotulo = p.year === NOW_Y ? 'Seu patrimônio' : p.year < NOW_Y ? `Patrimônio em dez. de ${p.year}` : `Previsto para dez. de ${p.year}`;
-  return { op, rotulo, vivo: op.vivo && p.year === NOW_Y, patr: C.patrimonio[m], cresc: C.patrimonio[m] - C.patrimonioBase, ano: p.year, classes, div: op.dividendos ? div.slice(0, 140) : [], apo: op.aportes ? apo : [], objs: op.objetivos ? objs : [], nome, meta: metaDoAporte() };
+  return { op, rotulo, vivo: op.vivo && p.year === NOW_Y, patr: C.patrimonio[m], cresc: C.patrimonio[m] - C.patrimonioBase, ano: p.year, classes, div: op.dividendos ? div.slice(0, 140) : [], apo: op.aportes ? apo : [], gastos, nome, meta: metaDoAporte() };
 }
 
 /* ---------- montagem ---------- */
 // a cena precisa de patrimônio para existir
 const aberturaPode = () => !!(S.plan && S.C && temRecurso('patrimonio') && S.C.patrimonio[abMesDe(S.plan.year)] > 0);
 const abOpcoes = () => Object.assign({}, ABERTURA_PADRAO, (S.profile && S.profile.abertura) || {});
-function abAbrir() {
-  const D = abDados(); const el = document.createElement('div'); el.className = 'ab'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', 'Boas-vindas ao seu universo financeiro');
+function abAbrir(capa) { // capa: primeiro nível (globo grande embaixo, título e dois botões); sem capa, direto nos detalhes
+  const D = abDados(); const el = document.createElement('div'); el.className = 'ab' + (capa ? ' ab-capa' : ''); el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', 'Boas-vindas ao seu universo financeiro');
   el.innerHTML = `<canvas class="ab-cv" aria-hidden="true"></canvas>
     <div class="ab-marca">${logoMarca()}</div>
     <div class="ab-esq"><p class="ab-saud">${esc(saudacaoHora())}${D.nome ? ', ' + esc(D.nome) : ''}.</p>
@@ -108,11 +113,13 @@ function abAbrir() {
       <button class="ab-olho" type="button"></button>
       <div class="ab-zoom" role="group" aria-label="Zoom"><button type="button" data-z="mais" aria-label="Aproximar">+</button><button type="button" data-z="menos" aria-label="Afastar">−</button><button type="button" data-z="tudo" aria-label="Ver tudo" hidden>⤢</button></div></div>
     <div class="ab-card" hidden role="status"></div>
-    <button class="ab-entrar" type="button">Entrar no meu painel<span aria-hidden="true">→</span></button>`;
+    <button class="ab-entrar" type="button">Entrar no meu painel<span aria-hidden="true">→</span></button>
+    <div class="ab-capa-c"><p class="ab-capa-k">${esc(saudacaoHora())}${D.nome ? ', ' + esc(D.nome) : ''}</p><h1 class="ab-capa-t">Seu universo<br>financeiro</h1><p class="ab-capa-s"></p>
+      <div class="ab-capa-b"><button class="hp-btn lg ab-capa-entrar" type="button">Entrar no meu painel<span aria-hidden="true">→</span></button><button class="hp-btn lg vidro ab-capa-ver" type="button">Ver o meu universo<span aria-hidden="true">→</span></button></div></div>`;
   document.body.appendChild(el); document.documentElement.classList.add('sem-rolagem');
   const cv = el.querySelector('.ab-cv'); const ctx = cv.getContext('2d');
   AB = { el, cv, ctx, D, t0: performance.now(), rotY: 0.7, rotX: -0.28, vY: 0, vX: 0, arr: null, mouse: null, alvos: [], sel: null, raf: 0, calmo: abCalmo(),
-    fix: null, solta: null, voo: new Map(), arrasto: null, z: 1, ox: 0, oy: 0, zA: 1, oxA: 0, oyA: 0, oc: D.op.valores === 'ocultar' || (D.op.valores !== 'mostrar' && !!S.privado) }; // fix: item preso no lugar; z/ox/oy: zoom e deslocamento da vista (e os alvos)
+    fix: null, solta: null, voo: new Map(), arrasto: null, z: 1, ox: 0, oy: 0, zA: 1, oxA: 0, oyA: 0, oc: D.op.valores === 'ocultar' || (D.op.valores !== 'mostrar' && !!S.privado), kc: capa ? 1 : 0, kcA: capa ? 1 : 0, km: D.op.estilo === 'classico' ? 0 : 1 }; // km: 1 = globo de mapa (aro de luz e continentes), 0 = clássico (malha e pontos das classes) // kc: 1 = capa, 0 = detalhes (desliza entre os dois) // fix: item preso no lugar; z/ox/oy: zoom e deslocamento da vista (e os alvos)
   AB.estilos = new Map(); AB.baldes = new Map(); AB.ver = 0; AB.fonte = getComputedStyle(document.body).fontFamily; AB.ult = performance.now(); AB.tc = 0;
   // se o globo completo não puder rodar aqui (sem canvas, erro ao montar ou escolha do cliente), entra a versão simples
   try {
@@ -124,7 +131,9 @@ function abAbrir() {
   } catch (er) { abSimples(); }
   if (!D.op.titulo) el.querySelector('.ab-tit').hidden = true; if (!D.vivo) el.querySelector('.ab-vivo').hidden = true;
   abEventos(); abAnoUi(); abOlhoUi(); if (D.op.titulo) abTitulo(); if (D.vivo) abVivo();
-  const b = el.querySelector('.ab-entrar'); b.addEventListener('click', abFechar); setTimeout(() => b.focus({ preventScroll: true }), 50);
+  const b = el.querySelector('.ab-entrar'); b.addEventListener('click', abFechar);
+  el.querySelector('.ab-capa-entrar').addEventListener('click', abFechar); el.querySelector('.ab-capa-ver').addEventListener('click', abDetalhes); abCapaTxt();
+  setTimeout(() => (capa ? el.querySelector('.ab-capa-entrar') : b).focus({ preventScroll: true }), 50);
   // um erro em qualquer quadro (ou um aparelho lento demais) troca para a versão simples, em vez de deixar a tela vazia
   const quadro = (agora) => { if (!AB || AB.leve) return; try { abQuadro(agora); abVigia(agora); } catch (er) { abSimples(); return; } if (!AB.leve) AB.raf = requestAnimationFrame(quadro); };
   if (!AB.leve) AB.raf = requestAnimationFrame(quadro);
@@ -139,7 +148,7 @@ function abVigia(agora) {
 function abSimples() {
   const A = AB; if (!A || A.leve) return; A.leve = true; cancelAnimationFrame(A.raf);
   if (A.ro) A.ro.disconnect(); if (A.mo) A.mo.disconnect(); A.ro = A.mo = null;
-  A.el.querySelector('.ab-card').hidden = true; A.sel = A.segura = A.sobre = null; A.z = A.zA = 1; A.ox = A.oxA = A.oy = A.oyA = 0; A.el.classList.remove('ab-ampliado'); A.el.classList.add('ab-leve');
+  A.el.querySelector('.ab-card').hidden = true; A.sel = A.segura = A.sobre = null; A.z = A.zA = 1; A.ox = A.oxA = A.oy = A.oyA = 0; A.el.classList.remove('ab-ampliado', 'ab-capa'); A.kc = A.kcA = 0; A.el.classList.add('ab-leve');
   const s = document.createElement('div'); s.className = 'abs';
   s.innerHTML = `<div class="abs-halo"></div><div class="abs-orb"><div class="abs-anel a1"><i></i></div><div class="abs-anel a2"><i></i></div><div class="abs-esfera"></div></div><div class="abs-txt" aria-live="polite"></div>`;
   A.el.insertBefore(s, A.el.querySelector('.ab-cv').nextSibling); abSimplesTxt();
@@ -165,34 +174,48 @@ async function abAno(dir) {
   const A = AB; if (!A || A.trocando) return; const L = abAnos(); const y = L[L.indexOf(S.year) + dir]; if (y == null) return;
   A.trocando = true; try { await switchYear(y); } finally { A.trocando = false; } if (AB !== A) return;
   A.D = abDados();
-  if (!A.leve) { abCard(null); A.segura = A.sobre = null; A.fix = A.solta = A.arrasto = null; A.voo.clear(); abPreparar(); A.ver++; A.zona = null; A.quadroSig = null; if (!A.calmo) A.t0 = performance.now(); abZoomEm(1, 0, 0, 0, 0); }
+  if (!A.leve) { abTema(); abCard(null); A.segura = A.sobre = null; A.fix = A.solta = A.arrasto = null; A.voo.clear(); abPreparar(); A.ver++; A.zona = null; A.quadroSig = null; if (!A.calmo) A.t0 = performance.now(); abZoomEm(1, 0, 0, 0, 0); }
   clearTimeout(A.tT); clearInterval(A.tV); const tit = A.el.querySelector('.ab-tit'); const viv = A.el.querySelector('.ab-vivo');
   tit.hidden = !A.D.op.titulo; viv.hidden = !A.D.vivo; A.el.querySelector('.ab-tt').textContent = ''; abTamanho();
-  if (A.D.op.titulo) abTitulo(); if (A.D.vivo) abVivo(); abAnoUi(); abSimplesTxt();
+  if (A.D.op.titulo) abTitulo(); if (A.D.vivo) abVivo(); abAnoUi(); abSimplesTxt(); abCapaTxt();
 }
 function abOlhoUi() { const b = AB.el.querySelector('.ab-olho'); const r = AB.oc ? 'Mostrar valores' : 'Ocultar valores'; b.innerHTML = AB.oc ? I_OLHO_OFF : I_OLHO; b.setAttribute('aria-pressed', AB.oc); b.setAttribute('aria-label', r); b.title = r; }
 // o olho do globo: com "como o olhinho" ele também vale para o painel; com "visíveis" ou "ocultos" fixos, vale só aqui
 function abOlho() {
-  const A = AB; A.oc = !A.oc; abOlhoUi(); if (A.sel) abCard(A.sel); abSimplesTxt();
+  const A = AB; A.oc = !A.oc; abOlhoUi(); if (A.sel) abCard(A.sel); abSimplesTxt(); abCapaTxt();
   if (A.D.op.valores === 'olho' && S.privado !== A.oc) { S.privado = A.oc; try { localStorage.setItem('fp:privado', S.privado ? '1' : '0'); } catch (e) { /* ignora */ } document.documentElement.dataset.privado = S.privado ? '1' : '0'; render(); }
 }
+// posição do globo entre a capa (kc = 1) e os detalhes (kc = 0), com suavização nas pontas
+function abGeo() { const A = AB; if (!A.gd) return; const k = A.kc * A.kc * (3 - 2 * A.kc); ['cx', 'cy', 'R'].forEach((p) => { A[p] = A.gd[p] + (A.gc[p] - A.gd[p]) * k; }); }
+// da capa para os detalhes: o globo sobe para o lugar dele e a tela de detalhes aparece
+function abDetalhes() { const A = AB; if (!A) return; A.kcA = 0; if (A.calmo || A.leve) { A.kc = 0; abGeo(); } A.el.classList.remove('ab-capa'); setTimeout(() => { const b = A.el.querySelector('.ab-entrar'); if (b) b.focus({ preventScroll: true }); }, 60); }
+// frase da capa: o patrimônio e quanto cresceu, respeitando o olho do globo
+function abCapaTxt() { const A = AB; const s = A && A.el.querySelector('.ab-capa-s'); if (!s) return; const D = A.D; const c = D.cresc;
+  s.textContent = `${D.rotulo}: ${abR(D.patr)}${Math.abs(c) >= 1 ? `, ${c > 0 ? 'mais' : 'menos'} ${abR(Math.abs(c))} em ${D.ano}` : ''}. Entre direto no painel ou veja tudo o que gira em volta do seu dinheiro.`; }
 function abTamanho() {
   if (!AB || AB.leve) return; const r = AB.el.getBoundingClientRect(); const dpr = Math.min(window.devicePixelRatio || 1, 2);
   AB.W = r.width; AB.H = r.height; AB.cv.width = AB.W * dpr; AB.cv.height = AB.H * dpr; AB.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   const estreito = AB.W < 760; AB.estreito = estreito;
-  AB.cx = estreito ? AB.W * 0.5 : AB.W * 0.665; AB.cy = estreito ? AB.H * 0.47 : AB.H * 0.47; AB.R = Math.min(AB.W, AB.H) * (estreito ? 0.31 : 0.3);
-  // a órbita dos objetivos não invade o texto da esquerda
-  const viv = AB.el.querySelector('.ab-vivo'); const lim = estreito ? AB.W / 2 - 34 : AB.cx - viv.getBoundingClientRect().right - 40; AB.OA = Math.max(1.2, Math.min(estreito ? 1.42 : 1.6, lim / AB.R));
+  const gd = { cx: estreito ? AB.W * 0.5 : AB.W * 0.665, cy: AB.H * 0.47, R: Math.min(AB.W, AB.H) * (estreito ? 0.31 : 0.3) };
+  const Rc = estreito ? AB.W * 0.78 : Math.min(AB.W * 0.47, AB.H * 0.95); AB.gd = gd; AB.gc = { cx: AB.W / 2, cy: AB.H * (estreito ? 0.42 : 0.2) + Rc, R: Rc }; abGeo(); // capa: globo grande, centrado e cortado embaixo
 }
 // pontos do globo, malha, anel, estrelas e as órbitas: calculados uma vez (vetores unitários)
 function abPreparar() {
   const A = AB; let s = 11; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647; A.rnd = rnd;
   const N = matchMedia('(max-width: 760px)').matches ? 2600 : 4600; const cls = A.D.classes.length ? A.D.classes : [{ pct: 1, k: 0 }];
+  const terra = (x, y, z) => Math.sin(3.4 * x + 1.6 * Math.sin(5.1 * z)) + Math.sin(4.2 * z + 1.4 * Math.sin(4.6 * y)) + 0.8 * Math.sin(5.3 * y + 2 * Math.sin(3.9 * x)) > 0.6;
   A.pts = []; for (let i = 0; i < N; i++) {
     const y = 1 - (i / (N - 1)) * 2; const r = Math.sqrt(1 - y * y); const t = i * 2.39996; const u = (1 - y) / 2 + (rnd() - 0.5) * 0.06;
     let acc = 0; let k = cls[cls.length - 1].k; for (const c of cls) { acc += c.pct; if (u <= acc) { k = c.k; break; } }
     A.pts.push({ v: [Math.cos(t) * r, y, Math.sin(t) * r], k });
   }
+  // mapa da capa: pontos bem mais juntos, só sobre a terra (x, y, z, aceso)
+  const M = matchMedia('(max-width: 760px)').matches ? 14000 : 30000; const mapa = [];
+  for (let i = 0; i < M; i++) { const y = 1 - (i / (M - 1)) * 2; const r = Math.sqrt(1 - y * y); const t = i * 2.39996; const x = Math.cos(t) * r, z = Math.sin(t) * r; if (terra(x, y, z)) mapa.push(x, y, z, rnd() < 0.0025 ? 1 : 0); }
+  A.mapa = new Float32Array(mapa);
+  A.gpos = A.D.gastos.map((g, i) => 4 * Math.floor(((i * 0.618034 + 0.31) % 1) * (mapa.length / 4))); // cada área num ponto de terra, espalhadas
+  // cometas ao fundo: cada um cruza a tela de cima para baixo e some, em ciclos próprios
+  A.cometas = Array.from({ length: 5 }, () => ({ fase: rnd() * 9000, dur: 1600 + rnd() * 1400, ciclo: 6000 + rnd() * 8000, x: 0.35 + rnd() * 0.75, y: -0.05 + rnd() * 0.4, ang: 2.55 + rnd() * 0.35, len: 0.45 + rnd() * 0.3 }));
   A.malha = []; for (let mm = 0; mm < 12; mm++) { const lo = (mm / 12) * Math.PI * 2; const L = []; for (let k = 0; k <= 40; k++) { const la = -Math.PI / 2 + (k / 40) * Math.PI; L.push([Math.cos(la) * Math.cos(lo), Math.sin(la), Math.cos(la) * Math.sin(lo)]); } A.malha.push(L); }
   for (let k = 1; k < 9; k++) { const la = -Math.PI / 2 + (k / 9) * Math.PI; const L = []; for (let j = 0; j <= 60; j++) { const lo = (j / 60) * Math.PI * 2; L.push([Math.cos(la) * Math.cos(lo), Math.sin(la), Math.cos(la) * Math.sin(lo)]); } A.malha.push(L); }
   A.anel = []; for (let i = 0; i < 700; i++) { const a = rnd() * Math.PI * 2; const rr = 1.18 + rnd() * 0.16; A.anel.push({ a, rr, b: 0.15 + rnd() * 0.35 }); }
@@ -206,15 +229,13 @@ function abPreparar() {
 function abProj(v) { const A = AB; const cY = Math.cos(A.rotY), sY = Math.sin(A.rotY), cX = Math.cos(A.rotX), sX = Math.sin(A.rotX);
   const x2 = v[0] * cY - v[2] * sY, z2 = v[0] * sY + v[2] * cY; const y2 = v[1] * cX - z2 * sX, z3 = v[1] * sX + z2 * cX; return [A.cx + x2 * A.R, A.cy + y2 * A.R, z3]; }
 const abRot = (v, ax, ay) => { let [x, y, z] = v; const c1 = Math.cos(ax), s1 = Math.sin(ax); [y, z] = [y * c1 - z * s1, y * s1 + z * c1]; const c2 = Math.cos(ay), s2 = Math.sin(ay); [x, z] = [x * c2 - z * s2, x * s2 + z * c2]; return [x, y, z]; };
-// órbita dos objetivos: elipse fixa na tela (não gira com o globo), como planetas em volta
-function abOrbita(ang) { const A = AB; const OA = A.OA, OB = 0.46, ROT = -0.2; const ox = Math.cos(ang) * A.R * OA, oy = Math.sin(ang) * A.R * OB;
-  return { x: A.cx + ox * Math.cos(ROT) - oy * Math.sin(ROT), y: A.cy + A.R * 0.06 + ox * Math.sin(ROT) + oy * Math.cos(ROT), frente: Math.sin(ang) > 0 }; }
 
 /* ---------- desenho ---------- */
 // junta retângulos por estilo e desenha cada grupo de uma vez (mesmos retângulos, na mesma mistura, só com menos trocas de cor)
 function abBalde(estilo) { let b = AB.baldes.get(estilo); if (!b) { b = []; AB.baldes.set(estilo, b); } return b; }
 function abDespejar(ctx) { AB.baldes.forEach((b, estilo) => { if (!b.length) return; ctx.fillStyle = estilo; for (let j = 0; j < b.length; j += 3) ctx.fillRect(b[j], b[j + 1], b[j + 2], b[j + 2]); b.length = 0; }); }
 function abQuadro(agora) {
+  if (AB.kc !== AB.kcA) { AB.kc += (AB.kcA - AB.kc) * 0.07; if (Math.abs(AB.kcA - AB.kc) < 0.002) AB.kc = AB.kcA; abGeo(); }
   const A = AB; const ctx = A.ctx; const T = A.T; const W = A.W, H = A.H, cx = A.cx, cy = A.cy, R = A.R;
   if (!(W > 0 && H > 0 && A.cv.width > 0)) return; // tela ainda sem tamanho (aba oculta): nada a desenhar
   A.agora = agora;
@@ -222,7 +243,8 @@ function abQuadro(agora) {
   const dt = Math.min(50, agora - A.ult) / 1000; if (!A.calmo) A.tc += dt * 1000; A.ult = agora; const t = A.tc / 1000; abVoo(dt);
   const entra = A.calmo ? 1 : Math.max(0, Math.min(1, (agora - A.t0) / 1800)); const e = 1 - Math.pow(1 - entra, 3);
   // giro: sozinho devagar, arraste com inércia (a inércia some de vez quando fica imperceptível)
-  if (!A.arr) { A.rotY += (A.calmo ? 0 : 0.0018) + A.vY; A.rotX = Math.max(-1.1, Math.min(1.1, A.rotX + A.vX)); A.vY *= 0.95; A.vX *= 0.95; if (Math.abs(A.vY) < 1e-6) A.vY = 0; if (Math.abs(A.vX) < 1e-6) A.vX = 0; }
+  const parado = A.sel && A.sel.tipo === 'gasto'; // luz de gasto escolhida: o globo para
+  if (!A.arr && !parado) { A.rotY += (A.calmo ? 0 : 0.0018) + A.vY; A.rotX = Math.max(-1.1, Math.min(1.1, A.rotX + A.vX)); A.vY *= 0.95; A.vX *= 0.95; if (Math.abs(A.vY) < 1e-6) A.vY = 0; if (Math.abs(A.vX) < 1e-6) A.vX = 0; }
   // item preso: o escolhido, o que está sob o dedo ou sob o mouse; ao trocar, o anterior volta deslizando
   // o item arrastado ou em voo não fica preso pelo mouse em cima (só um toque o prende)
   const sobre = A.sobre && !A.voo.has(A.sobre.id) && !(A.arrasto && A.arrasto.id === A.sobre.id) ? A.sobre : null;
@@ -232,7 +254,7 @@ function abQuadro(agora) {
   const kz = A.calmo ? 1 : 0.22; A.z += (A.zA - A.z) * kz; A.ox += (A.oxA - A.ox) * kz; A.oy += (A.oyA - A.oy) * kz;
   if (Math.abs(A.zA - A.z) < 1e-4 && Math.abs(A.oxA - A.ox) < 0.05 && Math.abs(A.oyA - A.oy) < 0.05) { A.z = A.zA; A.ox = A.oxA; A.oy = A.oyA; }
   // nada mudou desde o último quadro (cena parada pelo "reduzir movimento"): não redesenha
-  const sig = [A.tc, A.rotY, A.rotX, e, A.sel && A.sel.id, id, A.solta && A.solta.id, W, H, A.ver, A.mouse && A.mouse.join(), abOc(), A.z, A.ox, A.oy].join('|');
+  const sig = [A.kc, A.tc, A.rotY, A.rotX, e, A.sel && A.sel.id, id, A.solta && A.solta.id, W, H, A.ver, A.mouse && A.mouse.join(), abOc(), A.z, A.ox, A.oy].join('|');
   if (sig === A.quadroSig) return; A.quadroSig = sig;
   const dpr = A.cv.width / W; const zoom = A.z !== 1 || A.ox !== 0 || A.oy !== 0;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0); A.alvos = []; ctx.clearRect(0, 0, W, H);
@@ -241,6 +263,11 @@ function abQuadro(agora) {
   ctx.globalCompositeOperation = 'source-over';
   // no escuro, estrelas; no claro, confete nas cores da carteira
   A.estrelas.forEach(([x, y, r, al], i) => { ctx.fillStyle = abRgba(T.escuro ? T.luz : T.poeira[i % 4], al * (T.escuro ? 1 : 0.4) * (0.75 + 0.25 * Math.sin(t * 1.3 + i))); const rr = T.escuro ? r : r * 1.6; ctx.fillRect(x * W, y * H, rr, rr); });
+  if (A.km && !A.calmo) A.cometas.forEach((c) => { const q = (A.tc + c.fase) % c.ciclo; if (q > c.dur) return; const k = q / c.dur; const L = c.len * Math.max(W, H); const dx = Math.cos(c.ang), dy = Math.sin(c.ang);
+    const hx = c.x * W + dx * L * k, hy = c.y * H + dy * L * k; const cauda = 90 + 90 * c.len; const al = Math.sin(k * Math.PI); const cab = T.escuro ? T.luz : T.acc;
+    const gc = ctx.createLinearGradient(hx, hy, hx - dx * cauda, hy - dy * cauda); gc.addColorStop(0, abRgba(cab, 0.9 * al)); gc.addColorStop(0.25, abRgba(T.acc, 0.45 * al)); gc.addColorStop(1, abRgba(T.acc, 0));
+    ctx.strokeStyle = gc; ctx.lineWidth = 1.6; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(hx - dx * cauda, hy - dy * cauda); ctx.stroke();
+    ctx.fillStyle = abRgba(cab, al); ctx.beginPath(); ctx.arc(hx, hy, 1.6, 0, 7); ctx.fill(); });
   let g = ctx.createRadialGradient(cx, cy, R * 0.6, cx, cy, R * 1.8); g.addColorStop(0, abRgba(T.acc, T.escuro ? 0.28 : 0.42)); g.addColorStop(0.45, abRgba(T.escuro ? T.acc : T.acc2, T.escuro ? 0.08 : 0.14)); g.addColorStop(1, abRgba(T.acc, 0));
   ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, R * 1.8, 0, 7); ctx.fill();
   g = ctx.createRadialGradient(cx - R * 0.32, cy - R * 0.38, R * 0.04, cx, cy, R);
@@ -251,36 +278,53 @@ function abQuadro(agora) {
   const esfera = (c) => { if (!T.escuro) { c.shadowColor = abRgba(T.acc, 0.55); c.shadowBlur = 60; c.shadowOffsetY = 18; }
     c.globalAlpha = T.escuro ? 1 : e; c.fillStyle = g; c.beginPath(); c.arc(cx, cy, R * e, 0, 7); c.fill(); c.globalAlpha = 1; c.shadowBlur = 0; c.shadowOffsetY = 0; };
   if (T.escuro || e < 1) esfera(ctx); else camada('esfera', esfera);
+  if (T.escuro && A.km) { ctx.fillStyle = abRgba(T.bg, 0.88); ctx.beginPath(); ctx.arc(cx, cy, R * e, 0, 7); ctx.fill(); } // mapa: miolo escuro, a luz fica no aro
   // lente de leitura: em volta do valor do centro, pontos e itens recuam (menores e mais apagados), com transição suave
-  const Z = abZona(); const lente = (x, y) => { const dx = (x - Z.x) / Z.rx, dy = (y - Z.y) / Z.ry; const d = Math.sqrt(dx * dx + dy * dy); if (d >= 1) return 1;
-    const s = Math.max(0, (d - 0.3) / 0.7); return 0.1 + 0.9 * s * s * (3 - 2 * s); };
-  // objetivos (atrás)
-  const ob = A.D.objs.map((o, i, arr) => { const q = abOrbita((i / arr.length) * Math.PI * 2 + 0.5 + t * 0.06); const f = abFixo('o' + o.k, q.x, q.y, q.frente ? 1 : 0); return { o, x: f[0], y: f[1], frente: f[2] > 0.5, k: lente(f[0], f[1]) }; });
-  abElipse(false); ob.filter((p) => !p.frente).forEach((p) => abCristal(p, t));
+  const Z = abZona(); const lente = (x, y) => { if (A.kc > 0.98) return 1; const dx = (x - Z.x) / Z.rx, dy = (y - Z.y) / Z.ry; const d = Math.sqrt(dx * dx + dy * dy); if (d >= 1) return 1;
+    const s = Math.max(0, (d - 0.3) / 0.7); return 1 - (1 - (0.1 + 0.9 * s * s * (3 - 2 * s))) * (1 - A.kc); }; // sem lente na capa (não há texto no centro)
   // camadas de trás
   const anel = A.anel.map((q) => abProj(abRot([Math.cos(q.a + t * 0.05) * q.rr, 0, Math.sin(q.a + t * 0.05) * q.rr], 0.42, 0)));
   const div = A.div.map((q, i) => { const p = abProj(abRot([Math.cos(q.fase + t * q.vel) * q.rr, 0, Math.sin(q.fase + t * q.vel) * q.rr], q.inc, q.gir)); return { q, p: abFixo('d' + i, p[0], p[1], p[2]) }; });
   const apo = A.D.apo.map((a, i, arr) => { const p = abProj(abRot([Math.cos((i / arr.length) * Math.PI * 2 + t * 0.12) * 1.3, 0, Math.sin((i / arr.length) * Math.PI * 2 + t * 0.12) * 1.3], 0.95, 0.4)); return { a, p: abFixo('a' + a.mes, p[0], p[1], p[2]) }; });
   ctx.globalCompositeOperation = T.soma;
-  anel.forEach((q, i) => { if (q[2] < 0) abBalde(abEstilo(T.acc, A.anel[i].b * 0.7)).push(q[0], q[1], 1.2); }); abDespejar(ctx);
+  const ka = 1 - 0.4 * A.km; anel.forEach((q, i) => { if (q[2] < 0) abBalde(abEstilo(T.acc, A.anel[i].b * 0.7 * ka)).push(q[0], q[1], 1.2); }); abDespejar(ctx);
   abTrilha(false, t); div.forEach((d) => { if (d.p[2] < 0) { ctx.globalAlpha = lente(d.p[0], d.p[1]); abDiv(d, false); } }); apo.forEach((a) => { if (a.p[2] < 0) { ctx.globalAlpha = lente(a.p[0], a.p[1]); abLosango(a, false); } }); ctx.globalAlpha = 1;
   // malha
   // (trechos agrupados por transparência só para trocar a cor menos vezes)
-  ctx.lineWidth = 1; const tracos = new Map(); A.malha.forEach((L) => { let ant = null; L.forEach((v) => { const p = abProj(v); if (ant) { const prof = (p[2] + ant[2]) / 2; if (prof > -0.05) { const es = abEstilo(T.escuro ? T.acc : T.luz, (T.escuro ? 0.2 : 0.3) * (0.25 + prof * 0.75) * e * lente((p[0] + ant[0]) / 2, (p[1] + ant[1]) / 2)); let l = tracos.get(es); if (!l) tracos.set(es, (l = [])); l.push(ant[0], ant[1], p[0], p[1]); } } ant = p; }); });
+  ctx.lineWidth = 1; const tracos = new Map(); A.malha.forEach((L) => { let ant = null; L.forEach((v) => { const p = abProj(v); if (ant) { const prof = (p[2] + ant[2]) / 2; if (prof > -0.05) { const es = abEstilo(T.escuro ? T.acc : T.luz, (T.escuro ? 0.2 : 0.3) * (0.25 + prof * 0.75) * e * (1 - A.km) * lente((p[0] + ant[0]) / 2, (p[1] + ant[1]) / 2)); let l = tracos.get(es); if (!l) tracos.set(es, (l = [])); l.push(ant[0], ant[1], p[0], p[1]); } } ant = p; }); });
   // cada trecho segue com o próprio traço: no tema escuro as pontas que se encostam somam luz, e isso faz parte do desenho
   tracos.forEach((l, es) => { ctx.strokeStyle = es; for (let j = 0; j < l.length; j += 4) { ctx.beginPath(); ctx.moveTo(l[j], l[j + 1]); ctx.lineTo(l[j + 2], l[j + 3]); ctx.stroke(); } });
   // pontos do globo (entram espalhados e se juntam; afastam-se do mouse)
   const mx = A.mouse ? A.mouse[0] : -9999, my = A.mouse ? A.mouse[1] : -9999;
   // projeção feita aqui mesmo (sem criar listas por ponto) e os pontos agrupados por cor antes de pintar
-  const cY = Math.cos(A.rotY), sY = Math.sin(A.rotY), cX = Math.cos(A.rotX), sX = Math.sin(A.rotX);
-  for (let i = 0; i < A.pts.length; i++) { const pt = A.pts[i]; const v = pt.v;
+  const cY = Math.cos(A.rotY), sY = Math.sin(A.rotY), cX = Math.cos(A.rotX), sX = Math.sin(A.rotX); 
+  for (let i = 0; i < A.pts.length && !A.km; i++) { const pt = A.pts[i]; const v = pt.v;
     const x2 = v[0] * cY - v[2] * sY, z2 = v[0] * sY + v[2] * cY; let sx = cx + x2 * R, sy = cy + (v[1] * cX - z2 * sX) * R; const z = v[1] * sX + z2 * cX;
     if (e < 1) { const k = (1 - e) * (1.6 + (i % 7) * 0.35); sx = cx + (sx - cx) * (1 + k); sy = cy + (sy - cy) * (1 + k); }
     let realce = 0; if (z > 0) { const dx = sx - mx, dy = sy - my, d = Math.hypot(dx, dy); if (d < 110) { const f = (110 - d) / 110; sx += (dx / (d || 1)) * f * 30; sy += (dy / (d || 1)) * f * 30; realce = f; } }
-    const kl = lente(sx, sy); const prof = (z + 1) / 2; const tam = (0.5 + prof * 2.1) * (1 + realce * 0.8) * (0.55 + 0.45 * kl); const al = Math.min(1, (0.06 + prof * 0.85) * (1 + realce)) * e * kl;
+    const kl = lente(sx, sy); const prof = (z + 1) / 2; const tam = (0.5 + prof * 2.1) * (1 + realce * 0.8) * (0.55 + 0.45 * kl);  const al = Math.min(1, (0.06 + prof * 0.85) * (1 + realce)) * e * kl;
     abBalde(abEstilo(T.pts[pt.k], al)).push(sx - tam / 2, sy - tam / 2, tam);
   }
   abDespejar(ctx);
+  // mapa: pontos claros sobre a terra, com algumas luzes acesas
+  const focos = []; if (A.km) { const m = A.mapa; const km = e;
+    for (let j = 0; j < m.length; j += 4) { const x2 = m[j] * cY - m[j + 2] * sY, z2 = m[j] * sY + m[j + 2] * cY; const z = m[j + 1] * sX + z2 * cX; if (z <= 0) continue;
+      const sx = cx + x2 * R, sy = cy + (m[j + 1] * cX - z2 * sX) * R; const tam = 1.1 + z * 1.3;
+      abBalde(abEstilo(T.luz, (0.2 + z * 0.75) * km * lente(sx, sy))).push(sx - tam / 2, sy - tam / 2, tam); if (m[j + 3] && z > 0.1) focos.push(sx, sy, z, j); }
+    abDespejar(ctx); }
+  // mapa: luzes acesas sobre os continentes, pulsando devagar
+  if (focos.length) { ctx.globalCompositeOperation = T.soma; for (let j = 0; j < focos.length; j += 4) { const [fx, fy, fz, fi] = focos.slice(j, j + 4);
+    const rf = R * 0.016 * (0.6 + fz) * (A.calmo ? 1 : 0.85 + 0.15 * Math.sin(t * 1.7 + fi)); const gf = ctx.createRadialGradient(fx, fy, 0, fx, fy, rf);
+    gf.addColorStop(0, abRgba(T.luz, 0.9 * e)); gf.addColorStop(0.18, abRgba(T.acc, 0.7 * e)); gf.addColorStop(1, abRgba(T.acc, 0));
+    ctx.fillStyle = gf; ctx.beginPath(); ctx.arc(fx, fy, rf, 0, 7); ctx.fill(); } ctx.globalCompositeOperation = 'source-over'; }
+  // mapa: uma luz por gasto (somado pelo nome), maior e mais forte quanto maior o gasto (tocar mostra o valor)
+  if (A.km && A.D.gastos.length) { const m = A.mapa; const gmax = A.D.gastos[0].valor || 1; ctx.globalCompositeOperation = T.soma;
+    A.D.gastos.forEach((g, i) => { const j = A.gpos[i]; const x2 = m[j] * cY - m[j + 2] * sY, z2 = m[j] * sY + m[j + 2] * cY; const f = abFixo('g' + i, cx + x2 * R, cy + (m[j + 1] * cX - z2 * sX) * R, m[j + 1] * sX + z2 * cX); if (f[2] <= 0.05) return;
+      const k = 0.25 + 0.75 * Math.sqrt(g.valor / gmax); /* os menores ainda aparecem; o maior brilha mais */ const esc_ = A.sel && A.sel.id === 'g' + i; const pu = A.calmo ? 1 : esc_ ? 1.15 + 0.3 * Math.sin(t * 5) : 0.9 + 0.1 * Math.sin(t * 2 + i); /* escolhida: pulsa a luz */ const rg = R * (0.04 + 0.1 * k) * (0.6 + 0.4 * f[2]) * pu; const al = Math.min(1, 0.6 + 0.5 * k) * e * lente(f[0], f[1]);
+      const gg = ctx.createRadialGradient(f[0], f[1], 0, f[0], f[1], rg); gg.addColorStop(0, abRgba(T.luz, al)); gg.addColorStop(0.14, abRgba(T.acc, al * 0.95)); gg.addColorStop(0.45, abRgba(T.acc, al * 0.32)); gg.addColorStop(1, abRgba(T.acc, 0));
+      ctx.fillStyle = gg; ctx.beginPath(); ctx.arc(f[0], f[1], rg, 0, 7); ctx.fill(); ctx.fillStyle = abRgba(T.luz, al); ctx.beginPath(); ctx.arc(f[0], f[1], 1.2 + 2.6 * k, 0, 7); ctx.fill(); // miolo nítido
+      A.alvos.push({ id: 'g' + i, x: f[0], y: f[1], r: Math.max(14, rg * 0.5), tipo: 'gasto', d: Object.assign({ i }, g) }); });
+    ctx.globalCompositeOperation = 'source-over'; }
   // classes da carteira: orbs que pulsam na superfície, do tamanho da proporção
   A.nos.forEach((n) => { const p0 = abProj([Math.cos(n.la) * Math.cos(n.lo), Math.sin(n.la), Math.cos(n.la) * Math.sin(n.lo)]); const p = abFixo('c' + n.c.k, p0[0], p0[1], p0[2]); if (p[2] < -0.15) return;
     const c = T.cls[n.c.k]; const rr = (6 + Math.sqrt(n.c.pct * 100) * 3) * (0.75 + (p[2] + 1) * 0.15); const pulso = 1 + 0.08 * Math.sin(t * 2.4 + n.lo); ctx.globalAlpha = lente(p[0], p[1]);
@@ -292,22 +336,24 @@ function abQuadro(agora) {
   });
   // camadas da frente
   ctx.globalCompositeOperation = T.escuro ? 'lighter' : 'source-over';
-  anel.forEach((q, i) => { if (q[2] >= 0) abBalde(abEstilo(T.escuro ? T.acc : T.acc2, A.anel[i].b * (T.escuro ? 1 : 1.3) * lente(q[0], q[1]))).push(q[0], q[1], T.escuro ? 1.4 : 1.8); }); abDespejar(ctx);
+  anel.forEach((q, i) => { if (q[2] >= 0) abBalde(abEstilo(T.escuro ? T.acc : T.acc2, A.anel[i].b * (T.escuro ? 1 : 1.3) * ka * lente(q[0], q[1]))).push(q[0], q[1], T.escuro ? 1.4 : 1.8); }); abDespejar(ctx);
   ctx.globalCompositeOperation = 'source-over';
   abTrilha(true, t); div.forEach((d) => { if (d.p[2] >= 0) { ctx.globalAlpha = lente(d.p[0], d.p[1]); abDiv(d, true); } }); apo.forEach((a) => { if (a.p[2] >= 0) { ctx.globalAlpha = lente(a.p[0], a.p[1]); abLosango(a, true); } }); ctx.globalAlpha = 1;
   // borda luminosa do globo (sombra larga, igual em todo quadro depois da entrada: camada pronta)
   const borda = (c) => { c.strokeStyle = T.escuro ? abRgba(T.acc, 0.5) : 'rgba(255,255,255,.75)'; c.lineWidth = 2; c.shadowColor = abRgba(T.acc, 1); c.shadowBlur = 20; c.beginPath(); c.arc(cx, cy, R * 1.005 * e, 0, 7); c.stroke(); c.shadowBlur = 0; };
   if (e < 1) borda(ctx); else camada('borda', borda);
-  // objetivos (frente)
-  abElipse(true); ob.filter((p) => p.frente).forEach((p) => abCristal(p, t));
-  if (A.D.op.info) abInfo(t, lente);
+  // mapa: aro de luz forte na borda (branco no fio, cor de destaque por dentro e por fora)
+  if (A.km) { const k = e; const ar = ctx.createRadialGradient(cx, cy, R * 0.78, cx, cy, R * 1.16);
+    [[0, T.acc, 0], [0.32, T.acc, 0.08], [0.53, T.acc, 0.5], [0.579, T.luz, 0.95], [0.6, T.acc, 0.65], [0.68, T.acc, 0.25], [1, T.acc, 0]].forEach(([p, c, a]) => ar.addColorStop(p, abRgba(c, a * k)));
+    ctx.globalCompositeOperation = T.soma; ctx.fillStyle = ar; ctx.beginPath(); ctx.arc(cx, cy, R * 1.16, 0, 7); ctx.fill(); ctx.globalCompositeOperation = 'source-over'; }
+  if (A.D.op.info && A.kc < 0.5) abInfo(t, lente); // na capa o "i" ficaria sobre o título
   // valor no centro, por cima de tudo: um véu macio em elipse (escuro no tema escuro, o tom profundo da esfera no claro)
   // dá contraste sem moldura; as linhas pequenas ganham uma sombra curta. Depois da entrada vira camada pronta.
   const fonte = A.fonte; const veu = T.escuro ? T.bg : T.esfera.borda;
-  const textos = (c) => {
-    c.save(); c.globalAlpha = e; c.translate(Z.x, Z.y); c.scale(1, Z.ry / Z.rx); const vg = c.createRadialGradient(0, 0, 0, 0, 0, Z.rx * 1.12);
+  const textos = (c) => { const va = e * (1 - A.kc); if (va <= 0.01) return; // na capa o valor do centro some (a frase de cima já mostra o patrimônio)
+    c.save(); c.globalAlpha = va; c.translate(Z.x, Z.y); c.scale(1, Z.ry / Z.rx); const vg = c.createRadialGradient(0, 0, 0, 0, 0, Z.rx * 1.12);
     vg.addColorStop(0, abRgba(veu, T.escuro ? 0.66 : 0.5)); vg.addColorStop(0.5, abRgba(veu, T.escuro ? 0.44 : 0.32)); vg.addColorStop(1, abRgba(veu, 0)); c.fillStyle = vg; c.beginPath(); c.arc(0, 0, Z.rx * 1.12, 0, 7); c.fill(); c.restore();
-    c.textAlign = 'center'; c.globalAlpha = e; c.shadowColor = abRgba(veu, 0.9); c.shadowBlur = 8;
+    c.textAlign = 'center'; c.globalAlpha = va; c.shadowColor = abRgba(veu, 0.9); c.shadowBlur = 8;
     c.fillStyle = abRgba(T.texto2, 1); c.font = `600 ${Math.max(11, Math.round(R * 0.06))}px ${fonte}`; c.fillText(A.D.rotulo, cx, cy - R * 0.08);
     c.shadowColor = T.escuro ? abRgba(T.acc, 0.85) : abRgba(veu, 0.8); c.shadowBlur = T.escuro ? 24 : 16; c.fillStyle = abRgba(T.texto, 1); c.font = `780 ${Math.round(R * 0.2)}px ${fonte}`; c.fillText(abR(A.D.patr), cx, cy + R * 0.11);
     c.shadowColor = abRgba(veu, 0.9); c.shadowBlur = 8;
@@ -341,7 +387,7 @@ function abFixo(id, x, y, z) {
   if (g && g.id === id) { A.voo.set(id, { ox: g.x - r[0], oy: g.y - r[1], vx: g.vx, vy: g.vy }); A.arrasto = null; }
   const v = A.voo.get(id); if (v) r = [r[0] + v.ox, r[1] + v.oy, r[2]];
   // o item escolhido treme de leve (o detalhe desconta o tremor em abCardPos para não tremer junto)
-  if (A.sel && A.sel.id === id && !A.calmo) { const t = A.tc / 1000; A.trem = [Math.sin(t * 57) * 0.6, Math.cos(t * 43) * 0.5]; r = [r[0] + A.trem[0], r[1] + A.trem[1], r[2]]; }
+  if (A.sel && A.sel.id === id && !A.calmo && A.sel.tipo !== 'gasto') { const t = A.tc / 1000; A.trem = [Math.sin(t * 57) * 0.6, Math.cos(t * 43) * 0.5]; r = [r[0] + A.trem[0], r[1] + A.trem[1], r[2]]; }
   return r;
 }
 // mola de volta para a rota: devagar e com um pequeno balanço
@@ -357,8 +403,6 @@ function abCamada(nome, desenha) {
   c.setTransform(A.cv.width / A.W, 0, 0, A.cv.height / A.H, 0, 0); c.clearRect(0, 0, A.W, A.H); desenha(c);
   A.camadas[nome] = { chave, cv }; return cv;
 }
-function abElipse(frente) { const A = AB; const ctx = A.ctx; const OA = A.OA; ctx.save(); ctx.translate(A.cx, A.cy + A.R * 0.06); ctx.rotate(-0.2); ctx.strokeStyle = abRgba(A.T.acc, 0.32); ctx.lineWidth = 1.2; ctx.setLineDash([2, 6]);
-  ctx.beginPath(); ctx.ellipse(0, 0, A.R * OA, A.R * 0.46, 0, frente ? 0 : Math.PI, frente ? Math.PI : Math.PI * 2); ctx.stroke(); ctx.restore(); }
 function abTrilha(frente, t) { const A = AB; const ctx = A.ctx; if (!A.D.apo.length) return; ctx.strokeStyle = abRgba(A.T.pos, frente ? 0.45 : 0.15); ctx.lineWidth = 1.2; ctx.setLineDash([1, 5]);
   let ant = null; for (let i = 0; i <= 90; i++) { const a = (i / 90) * Math.PI * 2; const p = abProj(abRot([Math.cos(a) * 1.3, 0, Math.sin(a) * 1.3], 0.95, 0.4)); if (ant && (p[2] >= 0) === frente) { ctx.beginPath(); ctx.moveTo(ant[0], ant[1]); ctx.lineTo(p[0], p[1]); ctx.stroke(); } ant = p; }
   ctx.setLineDash([]); }
@@ -374,22 +418,6 @@ function abLosango(a, frente) { const A = AB; const ctx = A.ctx; const T = A.T; 
   ctx.strokeStyle = abRgba(T.luz, al * 0.75); ctx.lineWidth = 1; ctx.beginPath(); P.forEach((q, i) => (i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]))); ctx.closePath(); ctx.stroke();
   ctx.restore();
   if (frente) A.alvos.push({ id: 'a' + a.a.mes, x: a.p[0], y: a.p[1], r: Math.max(13, h * 1.7), tipo: 'aporte', d: a.a }); }
-const abHexPts = (x, y, rr, gir) => Array.from({ length: 6 }, (_, i) => [x + Math.cos(gir + (i * Math.PI) / 3) * rr, y + Math.sin(gir + (i * Math.PI) / 3) * rr]);
-const abHexPath = (ctx, pts) => { ctx.beginPath(); pts.forEach((q, i) => (i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]))); ctx.closePath(); };
-// objetivo: cristal hexagonal com facetas, anéis em hexágono pulsando e o progresso desenhado na borda
-function abCristal(p, t) {
-  const A = AB; const ctx = A.ctx; const o = p.o; const cor = A.T.obj[o.k]; const luz = A.T.luz; const rr = (A.estreito ? 15 : 22) * (p.frente ? 1 : 0.8); const pct = o.status === 'concluido' ? 1 : Math.max(0, Math.min(1, o.progresso || 0)); const al = (p.frente ? 1 : 0.6) * (p.k == null ? 1 : p.k);
-  ctx.globalAlpha = al; let gg = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, rr * 3); gg.addColorStop(0, abRgba(cor, 0.47)); gg.addColorStop(1, abRgba(cor, 0)); ctx.fillStyle = gg; ctx.beginPath(); ctx.arc(p.x, p.y, rr * 3, 0, 7); ctx.fill();
-  [1.55, 1.95, 2.4].forEach((k, j) => { const fase = (t * 0.5 + j / 3) % 1; ctx.strokeStyle = abRgba(cor, 1); ctx.globalAlpha = al * (0.5 - j * 0.14) * (1 - fase * 0.5); ctx.lineWidth = 1.3; abHexPath(ctx, abHexPts(p.x, p.y, rr * (k + fase * 0.3), Math.PI / 6)); ctx.stroke(); });
-  const Hx = abHexPts(p.x, p.y, rr, Math.PI / 6 + t * 0.15); ctx.shadowColor = abRgba(cor, 1); ctx.shadowBlur = 22;
-  Hx.forEach((q, i) => { const q2 = Hx[(i + 1) % 6]; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(q[0], q[1]); ctx.lineTo(q2[0], q2[1]); ctx.closePath(); ctx.fillStyle = abRgba(cor, 1); ctx.globalAlpha = al * [0.95, 0.75, 0.45, 0.3, 0.5, 0.8][i]; ctx.fill(); });
-  ctx.shadowBlur = 0; ctx.globalAlpha = al; ctx.strokeStyle = abRgba(luz, 0.75); ctx.lineWidth = 1.2; abHexPath(ctx, Hx); ctx.stroke();
-  gg = ctx.createRadialGradient(p.x - rr * 0.3, p.y - rr * 0.35, 0, p.x - rr * 0.3, p.y - rr * 0.35, rr * 0.7); gg.addColorStop(0, 'rgba(255,255,255,.85)'); gg.addColorStop(1, 'rgba(255,255,255,0)'); ctx.fillStyle = gg; abHexPath(ctx, Hx); ctx.fill();
-  const anel = abHexPts(p.x, p.y, rr * 1.32, -Math.PI / 2); const lados = 6 * pct; ctx.strokeStyle = abRgba(A.T.escuro ? luz : A.T.ink, 0.14); ctx.lineWidth = 3; abHexPath(ctx, anel); ctx.stroke();
-  if (lados > 0) { ctx.strokeStyle = abRgba(cor, 1); ctx.beginPath(); ctx.moveTo(anel[0][0], anel[0][1]); for (let i = 0; i < Math.floor(lados); i++) { const q = anel[(i + 1) % 6]; ctx.lineTo(q[0], q[1]); }
-    const resto = lados - Math.floor(lados); if (resto > 0 && lados < 6) { const a = anel[Math.floor(lados) % 6], b = anel[(Math.floor(lados) + 1) % 6]; ctx.lineTo(a[0] + (b[0] - a[0]) * resto, a[1] + (b[1] - a[1]) * resto); } ctx.stroke(); }
-  ctx.globalAlpha = 1; A.alvos.push({ id: 'o' + o.k, x: p.x, y: p.y, r: rr * 1.6, tipo: 'objetivo', d: o });
-}
 // "i" sobrevoando o globo
 function abInfo(t, lente) { const A = AB; const ctx = A.ctx; const T = A.T; const ang = -2.25 + t * 0.18; const raio = A.R * 1.22;
   const x0 = A.cx + Math.cos(ang) * raio, y0 = A.cy + Math.sin(ang) * raio; const [x, y] = abFixo('i', x0, y0, 0); const dx = x - x0, dy = y - y0; // a cauda acompanha o "i" quando ele está preso
@@ -475,8 +503,8 @@ function abCard(a) {
   if (a.tipo === 'classe') { cor = T.cls[d.k]; h = `<small>Investimento</small><b>${esc(d.nome)}</b><span class="ab-v">${abR(d.valor)}</span><span>${pct(d.pct)} da carteira${d.alvo != null ? ` · alvo ${pct(d.alvo)}` : ''}</span>`; }
   else if (a.tipo === 'aporte') { cor = T.pos; h = `<small>◆ Aporte de ${esc(MES_LONGO[d.mes])}</small><b class="ab-v">${abR(d.valor)}</b>${d.ativo ? `<span>Principal destino: ${esc(d.ativo)}</span>` : ''}${A.D.meta > 0 ? `<span>${d.valor + d.prov >= A.D.meta - 0.5 ? 'Na meta mensal' : 'Meta mensal de ' + abR(A.D.meta)}</span>` : ''}`; }
   else if (a.tipo === 'div') { cor = T.ouro; h = `<small>● Dividendo</small><b class="ab-v">${abR(d.valor)}</b><span>${esc(d.ativo)} · ${esc(mes(d.mes))}</span>`; }
-  else if (a.tipo === 'objetivo') { cor = T.obj[d.k]; const ok = d.status === 'concluido'; h = `<small>Objetivo</small><b>${esc(d.nome)}</b><span class="ab-v">${abR(d.saldo)} <em>de ${abR(d.valor)}</em></span><span>${ok ? 'Conquistado' : pct(d.progresso) + ' do caminho'}${!ok && d.previsto ? ` · previsto para ${esc(MES_LONGO[d.previsto.mes])} de ${d.previsto.ano}` : ''}</span>`; }
-  else if (a.tipo === 'info') { h = `<small>O que você está vendo</small><ul class="ab-leg"><li><i style="background:var(--c1)"></i>O globo é o seu patrimônio; as cores são as classes da carteira.</li>${A.D.op.classes ? '<li><i class="o"></i>Orbs que pulsam: cada classe, do tamanho da proporção.</li>' : ''}${A.D.apo.length ? '<li><i class="l"></i>Losangos verdes: os aportes de cada mês.</li>' : ''}${A.D.div.length ? '<li><i style="background:var(--c4)"></i>Pontinhos dourados: cada dividendo recebido.</li>' : ''}${A.D.objs.length ? '<li><i class="h"></i>Cristais em órbita: os seus objetivos. Toque para ver o nome e o progresso.</li>' : ''}</ul><span>Arraste para girar. Toque em qualquer ponto para ver o detalhe. Para aproximar, use a roda do mouse, dois dedos, dois toques ou os botões + e −; com zoom, arrastar move a vista.</span>`; }
+  else if (a.tipo === 'gasto') { h = `<small>✦ Gasto · ${esc(d.area)}</small><b>${esc(d.nome)}</b><span class="ab-v">${abR(d.valor)}</span><span>${d.i + 1}º maior gasto ${A.D.ano === NOW_Y ? 'do ano até agora' : 'de ' + A.D.ano}</span>`; }
+  else if (a.tipo === 'info') { h = `<small>O que você está vendo</small><ul class="ab-leg"><li><i style="background:var(--c1)"></i>O globo é o seu patrimônio; as cores são as classes da carteira.</li>${A.D.op.classes ? '<li><i class="o"></i>Orbs que pulsam: cada classe, do tamanho da proporção.</li>' : ''}${A.D.apo.length ? '<li><i class="l"></i>Losangos verdes: os aportes de cada mês.</li>' : ''}${A.D.div.length ? '<li><i style="background:var(--c4)"></i>Pontinhos dourados: cada dividendo recebido.</li>' : ''}${A.km && A.D.gastos.length ? '<li><i class="o"></i>Luzes no mapa: os seus maiores gastos do ano; quanto mais brilha, maior foi.</li>' : ''}</ul><span>Arraste para girar. Toque em qualquer ponto para ver o detalhe. Para aproximar, use a roda do mouse, dois dedos, dois toques ou os botões + e −; com zoom, arrastar move a vista.</span>`; }
   const perto = A.zA > 1.9; const zb = a.tipo === 'info' ? '' : `<button class="ab-zbtn" type="button">${perto ? 'Ver tudo' : 'Aproximar'}</button>`;
   A.selCor = cor; A.trem = null; el.style.setProperty('--ab-cor', abRgba(cor, 1)); el.innerHTML = `<button class="ab-x" type="button" aria-label="Fechar">×</button>${h}${zb}`; el.hidden = false;
   el.querySelector('.ab-x').addEventListener('click', () => abCard(null));
@@ -527,7 +555,6 @@ const AB_CAMADAS = [
   ['titulo', 'Título', 'Frases sobre o seu momento, digitadas na hora.'],
   ['vivo', 'Ao vivo', 'Quanto o patrimônio rende hoje no horário comercial (dias úteis, 9h às 18h), numa estimativa.'],
   ['classes', 'Investimentos', 'Orbs que pulsam, uma por classe da carteira, do tamanho da proporção.'],
-  ['objetivos', 'Objetivos', 'Cristais em órbita; o nome e o progresso aparecem ao tocar.'],
   ['aportes', 'Aportes', 'Losangos verdes, um por mês com aporte.'],
   ['dividendos', 'Dividendos', 'Pontinhos dourados, um por dividendo recebido.'],
   ['info', 'Ajuda (i)', 'O "i" que sobrevoa o globo e explica cada símbolo.'],
@@ -540,6 +567,7 @@ function aberturaAdmHtml() {
     <div class="ab-adm"><label class="ap-auto"><span><b>Abrir ao entrar</b><small>${pode ? 'Antes da Visão geral.' : 'Quando houver patrimônio registrado.'}</small></span><span class="wg-sw"><input type="checkbox" data-abf="ligada" ${op.ligada ? 'checked' : ''} aria-label="Abrir o globo ao entrar"><span></span></span></label>
     <div class="ap-custom"><div class="ap-linha"><span>Quando</span>${seg('ab-quando', 'quando', [['sessao', 'Sempre'], ['dia', '1× por dia']], 'Quando o globo abre')}</div>
       <div class="ap-linha"><span title="Olhinho: abre como o olho do painel estiver">Valores</span>${seg('ab-valores', 'valores', [['olho', 'Olhinho'], ['mostrar', 'Visíveis'], ['ocultar', 'Ocultos']], 'Valores ao abrir o globo')}</div>
+      <div class="ap-linha"><span title="Mapa: continentes em pontos e aro de luz. Clássico: malha e pontos nas cores da carteira">Visual</span>${seg('ab-estilo', 'estilo', [['mapa', 'Mapa'], ['classico', 'Clássico']], 'Visual do globo')}</div>
       <div class="ap-linha"><span title="A completa vira a simples sozinha se o aparelho não der conta">Versão</span>${seg('ab-globo', 'globo', [['auto', 'Completa'], ['simples', 'Simples']], 'Versão do globo')}</div></div>
     <div class="ab-fichas" role="group" aria-label="O que aparece no globo">${AB_CAMADAS.map(([k, l, d]) => `<label class="ab-ficha" title="${esc(d)}"><input type="checkbox" data-abf="${k}" ${op[k] ? 'checked' : ''}><span>${l}</span></label>`).join('')}</div>
     <button class="btn" data-act="ab-ver" ${pode ? '' : 'disabled'}>Ver o globo agora</button></div></section>`;
@@ -547,11 +575,15 @@ function aberturaAdmHtml() {
 // botão do globo no topo das telas do painel (ao lado do olho e do sino)
 const I_GLOBO = ic('<circle cx="12" cy="12" r="8.6"/><path d="M3.4 12h17.2"/><path d="M12 3.4c2.4 2.3 3.6 5.2 3.6 8.6s-1.2 6.3-3.6 8.6c-2.4-2.3-3.6-5.2-3.6-8.6S9.6 5.7 12 3.4z"/>');
 function aberturaBtnHtml() { return aberturaPode() ? `<button class="ab-ir" data-act="ab-abrir" aria-label="Abrir o globo do patrimônio" title="Abrir o globo">${I_GLOBO}</button>` : ''; }
-function aberturaAbrir() { if (!AB && aberturaPode()) abAbrir(); }
+function aberturaAbrir() { if (!AB && aberturaPode()) abAbrir(false); } // pelo botão do globo: direto nos detalhes
 function aberturaCampo(t) { S.profile.abertura = Object.assign(abOpcoes(), { [t.dataset.abf]: t.checked }); touch('profile'); }
 function aberturaQuando(v, btn) {
   S.profile.abertura = Object.assign(abOpcoes(), { quando: v === 'dia' ? 'dia' : 'sessao' }); touch('profile');
   btn.parentNode.querySelectorAll('button').forEach((b) => { const on = b.dataset.v === S.profile.abertura.quando; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+}
+function aberturaEstilo(v, btn) {
+  S.profile.abertura = Object.assign(abOpcoes(), { estilo: v === 'classico' ? 'classico' : 'mapa' }); touch('profile');
+  btn.parentNode.querySelectorAll('button').forEach((b) => { const on = b.dataset.v === S.profile.abertura.estilo; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
 }
 function aberturaGlobo(v, btn) {
   S.profile.abertura = Object.assign(abOpcoes(), { globo: v === 'simples' ? 'simples' : 'auto' }); touch('profile');

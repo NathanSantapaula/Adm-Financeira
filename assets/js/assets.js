@@ -181,12 +181,12 @@ function invAportesChart(el) {
   const m = { t: deitado ? 24 : 44, r: 6, b: 24, l: 6 }; const H = Math.max(240, Math.min(360, altura(el))); const ih = H - m.t - m.b; const band = (W - m.l - m.r) / nb;
   const sob = C.investAlocado.map((v) => Math.max(0, v)); const hi = Math.max(100, ...ids.map((i) => Math.max(ap[i], sob[i], mm[i] * 1.08))); const lo = Math.min(0, ...ids.map((i) => ap[i]));
   const y = (v) => m.t + (ih * (hi - v)) / (hi - lo); const bw = Math.min(34, band * 0.6); const bate = (i) => mm[i] > 0 && ap[i] >= mm[i] - 0.005; const y0 = y(0);
-  const uid = 'ia' + (++METAL_N); let g = metalDefs(uid, ['var(--accent)', 'var(--pos)', 'var(--neg)']); let mk = '';
+  let g = ''; let mk = '';
   for (let j = 0; j < nb; j++) {
     const i = ids[j]; const cx = m.l + band * (j + 0.5); const x = (cx - bw / 2).toFixed(1); const v = ap[i]; const fut = i > lim ? ' fut' : '';
     if (sob[i] > Math.max(0, v) + 0.5) g += `<rect class="ia-sob" x="${x}" y="${y(sob[i]).toFixed(1)}" width="${bw.toFixed(1)}" height="${(y0 - y(sob[i])).toFixed(1)}" rx="4"/>`;
     if (Math.abs(v) > 0.005) { const y1 = v > 0 ? y(v) : y0; const hh = Math.abs(y(v) - y0);
-      const k = v < 0 ? 2 : bate(i) ? 1 : 0; g += metalBar(uid, k, ['var(--accent)', 'var(--pos)', 'var(--neg)'][k], +x, y1, bw, hh, { fut: !!fut, cur: i === cur, topo: v > 0 });
+      g += `<rect class="ia-bar${v < 0 ? ' neg' : bate(i) ? ' ok' : ''}${fut}" x="${x}" y="${y1.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(1, hh).toFixed(1)}" rx="4"/>`;
       const ly = (v > 0 ? y(v) : y0) - 6; const t = escSvg(tickFmt(Math.round(v))); const cls = `ia-v${bate(i) ? ' ok' : ''}${fut}`;
       g += deitado ? `<text class="${cls}" x="${cx.toFixed(1)}" y="${ly.toFixed(1)}" text-anchor="middle">${t}</text>` : `<text class="${cls}" transform="translate(${(cx + 4).toFixed(1)} ${ly.toFixed(1)}) rotate(-90)">${t}</text>`; }
     if (mm[i] > 0) mk += `<line class="ia-meta" x1="${(cx - bw / 2 - 4).toFixed(1)}" x2="${(cx + bw / 2 + 4).toFixed(1)}" y1="${y(mm[i]).toFixed(1)}" y2="${y(mm[i]).toFixed(1)}"/>`;

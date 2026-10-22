@@ -20,24 +20,11 @@ const hideTip = () => { const t = document.getElementById('tip'); if (t) t.hidde
 // no toque o balão fica até tocar fora do gráfico
 document.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse' && !(e.target.closest && e.target.closest('.chart'))) hideTip(); }, true);
 
-/* Barras metálicas e neon (em todos os gráficos de barras): degradê da cor com uma faixa de luz (como um Gradient Ramp), fio aceso
-   no alto, halo na cor da série; o mês em destaque brilha mais e os meses que ainda não chegaram ficam listrados.
-   As cores vêm de var(--...), por isso os stops usam style; cada gráfico tem ids próprios (METAL_N). */
-let METAL_N = 0;
-function metalDefs(uid, cores) {
-  return `<defs>${cores.map((c, k) => `<linearGradient id="${uid}g${k}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" style="stop-color:color-mix(in srgb, ${c} 55%, #fff)"/><stop offset=".45" style="stop-color:${c}"/><stop offset="1" style="stop-color:color-mix(in srgb, ${c} 88%, #000)"/></linearGradient>`).join('')}<linearGradient id="${uid}l" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".6"/><stop offset=".55" stop-color="#fff" stop-opacity="0"/></linearGradient><pattern id="${uid}h" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="2.2" height="6" fill="rgba(255, 255, 255, .3)"/></pattern></defs>`;
-}
-function metalBar(uid, k, cor, x, y, w, h, o) { // o: { fut, cur, topo }
-  const r = Math.max(0, Math.min(8, w / 4, h / 2)).toFixed(1); const a = `x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${Math.max(1, h).toFixed(1)}" rx="${r}"`;
-  return `<g class="mb${o.fut ? ' fut' : ''}${o.cur ? ' cur' : ''}" style="--bc:${cor}"><rect ${a} fill="url(#${uid}g${k})"/>${o.fut ? `<rect ${a} fill="url(#${uid}h)"/>` : ''}${o.cur && o.topo && h > 8 ? `<rect class="mb-luz" ${a} fill="url(#${uid}l)"/><circle class="mb-flare" cx="${(x + w / 2).toFixed(1)}" cy="${(y + 5).toFixed(1)}" r="${Math.min(7, w / 4).toFixed(1)}"/>` : ''}${o.topo && h > 4 ? `<line class="mb-topo" x1="${(x + w * 0.18).toFixed(1)}" x2="${(x + w * 0.82).toFixed(1)}" y1="${(y + 1.2).toFixed(1)}" y2="${(y + 1.2).toFixed(1)}"/>` : ''}</g>`;
-}
-// etiqueta do valor sobre a barra em destaque (como na referência)
-const metalPill = (cx, yTopo, txt) => { const w = Math.max(44, txt.length * 6.6 + 18); return `<g class="mb-pill"><rect x="${(cx - w / 2).toFixed(1)}" y="${(yTopo - 28).toFixed(1)}" width="${w.toFixed(1)}" height="20" rx="10"/><text x="${cx.toFixed(1)}" y="${(yTopo - 14).toFixed(1)}" text-anchor="middle">${escSvg(txt)}</text><circle cx="${cx.toFixed(1)}" cy="${(yTopo - 4).toFixed(1)}" r="2.5"/></g>`; };
 /* Barras empilhadas por mês, com marcas opcionais (ex.: meta ou orçamento) */
 function chartBars(el, cfg) {
   if (!el) return;
   const W = Math.max(200, Math.floor(el.clientWidth || 640)); const H = cfg.height || 240;
-  const m = { t: cfg.cur >= 0 ? 34 : 10, r: 6, b: 24, l: 44 }; const uid = 'cb' + (++METAL_N);
+  const m = { t: 10, r: 6, b: 24, l: 44 };
   const n = cfg.labels.length; const iw = W - m.l - m.r; const ih = H - m.t - m.b; const band = iw / n;
   const pos = []; const neg = [];
   for (let i = 0; i < n; i++) { let up = 0; let dn = 0; cfg.bars.forEach((s) => { const v = s.values[i] || 0; if (v > 0) up += v; else dn += v; }); pos.push(up); neg.push(dn); }
@@ -47,15 +34,14 @@ function chartBars(el, cfg) {
   const y = (v) => m.t + ih * (1 - (v - lo) / (hi - lo));
   let g = ''; const nt = Math.round((hi - lo) / step);
   for (let k = 0; k <= nt; k++) { const v = lo + k * step; const yy = y(v); g += `<line x1="${m.l}" x2="${W - m.r}" y1="${yy}" y2="${yy}" class="${Math.abs(v) < 1e-9 ? 'gz' : 'gl'}"/><text x="${m.l - 8}" y="${yy + 4}" text-anchor="end">${tickFmt(+v.toFixed(2))}</text>`; }
-  const bw = Math.min(34, band * 0.6); let bars = metalDefs(uid, cfg.bars.map((s) => s.color)); let mk = ''; let lab = '';
+  const bw = Math.min(34, band * 0.6); let bars = ''; let mk = ''; let lab = '';
   for (let i = 0; i < n; i++) {
     const x0 = m.l + band * i + (band - bw) / 2; let up = 0; let dn = 0;
     cfg.bars.forEach((s) => {
       const v = s.values[i] || 0; if (Math.abs(v) < 0.005) return; let y1; let y2;
       if (v > 0) { y1 = y(up + v); y2 = y(up); up += v; } else { y1 = y(dn); y2 = y(dn + v); dn += v; }
-      bars += metalBar(uid, cfg.bars.indexOf(s), s.color, x0, Math.min(y1, y2), bw, Math.abs(y2 - y1), { fut: cfg.futDe != null && i >= cfg.futDe, cur: cfg.cur === i, topo: v > 0 });
+      bars += `<rect x="${x0.toFixed(1)}" y="${Math.min(y1, y2).toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(1, Math.abs(y2 - y1)).toFixed(1)}" rx="4" fill="${s.color}" stroke="var(--surface)" stroke-width="1.5"/>`;
     });
-    if (cfg.cur === i && pos[i] > 0) bars += metalPill(x0 + bw / 2, y(pos[i]), tickFmt(Math.round(pos[i])));
     marks.forEach((k) => { if (k.values[i] > 0) mk += `<line x1="${(x0 - 4).toFixed(1)}" x2="${(x0 + bw + 4).toFixed(1)}" y1="${y(k.values[i]).toFixed(1)}" y2="${y(k.values[i]).toFixed(1)}" stroke="${k.color}" stroke-width="3" stroke-linecap="round"/>`; });
     if (band >= 28 || i % 2 === 0 || cfg.cur === i) lab += `<text x="${(m.l + band * i + band / 2).toFixed(1)}" y="${H - 6}" text-anchor="middle" class="${cfg.cur === i ? 'cur-l' : ''}">${escSvg(cfg.labels[i])}</text>`;
   }
@@ -83,7 +69,7 @@ function curvaSuave(pts) {
 }
 /* Linha/área: várias séries (a tracejada serve para projeção) e linha de meta opcional */
 function chartLine(el, cfg) {
-  if (!el) return; cfg = Object.assign({ brilho: true }, cfg); // todo gráfico de linha brilha (mesmo design neon das barras)
+  if (!el) return;
   const W = Math.max(200, Math.floor(el.clientWidth || 640)); const H = cfg.height || 240;
   const m = { t: 14, r: 12, b: 24, l: 50 };
   const n = cfg.labels.length; const iw = W - m.l - m.r; const ih = H - m.t - m.b;
@@ -103,7 +89,7 @@ function chartLine(el, cfg) {
     const d = caminho(pts);
     if (s.area) { defs += `<linearGradient id="${gid}${si}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${s.color}" stop-opacity="${cfg.brilho ? '.36' : '.28'}"/>${cfg.brilho ? `<stop offset=".55" stop-color="${s.color}" stop-opacity=".1"/>` : ''}<stop offset="1" stop-color="${s.color}" stop-opacity="0"/></linearGradient>`; paths += `<path d="${d} L${pts[pts.length - 1][0].toFixed(1)} ${y(Math.max(lo, 0))} L${pts[0][0].toFixed(1)} ${y(Math.max(lo, 0))} Z" fill="url(#${gid}${si})"/>`; }
     if (cfg.brilho && !s.dashed) paths += `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="${(s.w || 2.5) + 5}" stroke-linecap="round" opacity=".35" filter="url(#${gid}f)"/>`;
-    paths += `<path class="ln" style="--bc:${s.color}" d="${d}" fill="none" stroke="${s.color}" stroke-width="${s.w || 2.5}" stroke-linecap="round" stroke-linejoin="round"${s.dashed ? ' stroke-dasharray="2 7"' : ''}/>`;
+    paths += `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="${s.w || 2.5}" stroke-linecap="round" stroke-linejoin="round"${s.dashed ? ' stroke-dasharray="2 7"' : ''}/>`;
     // cfg.pontoFinal: o último valor em destaque (ponto com halo)
     // cfg.pontos: uma bolinha em cada mês; com cfg.cur, o mês atual ganha halo e os meses seguintes ficam mais claros
     if (cfg.pontos && si === 0) {
@@ -148,7 +134,7 @@ function chartDonut(el, cfg) {
   if (!el) return;
   const S = Math.min(220, Math.max(150, Math.floor(el.clientWidth || 200))); const R = S / 2 - 12; const C = 2 * Math.PI * R; const total = cfg.items.reduce((a, b) => a + Math.max(0, b.value), 0);
   let off = 0; let arcs = '';
-  if (total > 0) cfg.items.forEach((it) => { const f = Math.max(0, it.value) / total; if (f <= 0) return; const len = Math.max(0, f * C - 2); arcs += `<circle class="dn-seg" style="--bc:${it.color}" cx="${S / 2}" cy="${S / 2}" r="${R}" fill="none" stroke="${it.color}" stroke-width="22" stroke-dasharray="${len.toFixed(2)} ${(C - len).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" transform="rotate(-90 ${S / 2} ${S / 2})"><title>${escSvg(it.label)}</title></circle>`; off += f * C; });
+  if (total > 0) cfg.items.forEach((it) => { const f = Math.max(0, it.value) / total; if (f <= 0) return; const len = Math.max(0, f * C - 2); arcs += `<circle cx="${S / 2}" cy="${S / 2}" r="${R}" fill="none" stroke="${it.color}" stroke-width="22" stroke-dasharray="${len.toFixed(2)} ${(C - len).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" transform="rotate(-90 ${S / 2} ${S / 2})"><title>${escSvg(it.label)}</title></circle>`; off += f * C; });
   else arcs = `<circle cx="${S / 2}" cy="${S / 2}" r="${R}" fill="none" stroke="var(--line)" stroke-width="22"/>`;
   el.innerHTML = `<svg width="${S}" height="${S}" viewBox="0 0 ${S} ${S}" role="img" aria-label="${escSvg(cfg.aria)}">${arcs}<text x="${S / 2}" y="${S / 2 - 2}" text-anchor="middle" class="dn-t">${escSvg(cfg.title || '')}</text><text x="${S / 2}" y="${S / 2 + 16}" text-anchor="middle" class="dn-s">${escSvg(cfg.sub || '')}</text></svg>`;
 }
@@ -156,7 +142,7 @@ function chartDonut(el, cfg) {
 /* Anel de progresso (devolve SVG como texto) */
 function ring(p, o) {
   o = o || {}; const S = o.size || 120; const sw = o.stroke || 12; const R = S / 2 - sw; const C = 2 * Math.PI * R; const f = Math.max(0, Math.min(1, p || 0));
-  return `<svg class="ring" width="${S}" height="${S}" viewBox="0 0 ${S} ${S}" role="img" aria-label="${escSvg(o.aria || '')}"><circle cx="${S / 2}" cy="${S / 2}" r="${R}" fill="none" stroke="var(--line)" stroke-width="${sw}"/><circle class="ring-pg" style="--bc:${o.color || 'var(--accent)'}" cx="${S / 2}" cy="${S / 2}" r="${R}" fill="none" stroke="${o.color || 'var(--accent)'}" stroke-width="${sw}" stroke-linecap="round" stroke-dasharray="${(f * C).toFixed(2)} ${C.toFixed(2)}" transform="rotate(-90 ${S / 2} ${S / 2})"/><text x="${S / 2}" y="${S / 2 + (o.sub ? -1 : 6)}" text-anchor="middle" class="ring-t">${escSvg(o.label || '')}</text>${o.sub ? `<text x="${S / 2}" y="${S / 2 + 17}" text-anchor="middle" class="ring-s">${escSvg(o.sub)}</text>` : ''}</svg>`;
+  return `<svg class="ring" width="${S}" height="${S}" viewBox="0 0 ${S} ${S}" role="img" aria-label="${escSvg(o.aria || '')}"><circle cx="${S / 2}" cy="${S / 2}" r="${R}" fill="none" stroke="var(--line)" stroke-width="${sw}"/><circle cx="${S / 2}" cy="${S / 2}" r="${R}" fill="none" stroke="${o.color || 'var(--accent)'}" stroke-width="${sw}" stroke-linecap="round" stroke-dasharray="${(f * C).toFixed(2)} ${C.toFixed(2)}" transform="rotate(-90 ${S / 2} ${S / 2})"/><text x="${S / 2}" y="${S / 2 + (o.sub ? -1 : 6)}" text-anchor="middle" class="ring-t">${escSvg(o.label || '')}</text>${o.sub ? `<text x="${S / 2}" y="${S / 2 + 17}" text-anchor="middle" class="ring-s">${escSvg(o.sub)}</text>` : ''}</svg>`;
 }
 
 /* Barras horizontais em HTML: items = [{label, value, color?}] */
@@ -169,7 +155,7 @@ function hbars(items, fmtv) {
    (ou no último mês do ano corrente, marcado como "hoje") e rótulo do ano em cada faixa.
    cfg: { pontos: [{ ano, mes, v }], color, height, aria, tip(i), rotuloPonto(v) } */
 function chartHistorico(el, cfg) {
-  if (!el) return; cfg = Object.assign({ brilho: true }, cfg);
+  if (!el) return;
   const P = cfg.pontos || []; const n = P.length; if (!n) { el.innerHTML = ''; return; }
   const W = Math.max(200, Math.floor(el.clientWidth || 640)); const H = cfg.height || 260; const cor = cfg.color || 'var(--accent)';
   const m = { t: 26, r: 18, b: 26, l: 52 }; const iw = W - m.l - m.r; const ih = H - m.t - m.b;
@@ -224,12 +210,12 @@ function chartAnos(el, cfg) {
   const y = (v) => m.t + ih * (1 - (v - lo) / (hi - lo));
   let g = ''; const nt = Math.round((hi - lo) / step);
   for (let q = 0; q <= nt; q++) { const v = lo + q * step; g += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}" class="${Math.abs(v) < 1e-9 ? 'gz' : 'gl'}"/><text x="${m.l - 8}" y="${(y(v) + 4).toFixed(1)}" text-anchor="end">${tickFmt(+v.toFixed(2))}</text>`; }
-  const grupo = Math.min(band * 0.72, k * 30); const bw = Math.max(4, grupo / k - 3); const uid = 'ca' + (++METAL_N); let bars = metalDefs(uid, cfg.series.map((s) => s.color)); let lab = '';
+  const grupo = Math.min(band * 0.72, k * 30); const bw = Math.max(4, grupo / k - 3); let bars = ''; let lab = '';
   for (let i = 0; i < n; i++) {
     const x0 = m.l + band * i + (band - grupo) / 2;
     cfg.series.forEach((s, j) => {
       const v = +s.values[i] || 0; if (Math.abs(v) < 0.005) return; const y1 = y(Math.max(0, v)); const y2 = y(Math.min(0, v));
-      bars += metalBar(uid, j, s.color, x0 + j * (bw + 3), y1, bw, y2 - y1, { fut: cfg.parcial === i, topo: true });
+      bars += `<rect x="${(x0 + j * (bw + 3)).toFixed(1)}" y="${y1.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(1, y2 - y1).toFixed(1)}" rx="4" fill="${s.color}"${cfg.parcial === i ? ' fill-opacity=".55"' : ''}/>`;
     });
     lab += `<text x="${(m.l + band * i + band / 2).toFixed(1)}" y="${H - 6}" text-anchor="middle" class="${cfg.parcial === i ? 'cur-l' : ''}">${escSvg(cfg.labels[i])}${cfg.parcial === i ? '*' : ''}</text>`;
   }

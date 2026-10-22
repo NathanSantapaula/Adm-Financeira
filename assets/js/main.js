@@ -189,6 +189,7 @@ function onClick(e) {
       case 'ab-ver': aberturaVer(); break;
       case 'ab-valores': aberturaValores(ds.v, el); break;
       case 'ab-globo': aberturaGlobo(ds.v, el); break;
+      case 'ab-estilo': aberturaEstilo(ds.v, el); break;
       case 'ab-abrir': aberturaAbrir(); break;
       case 'perfil-abrir': S.maisOpen = false; S.adminPage = 'perfil'; if (!S.adminOpen) openAdmin('perfil'); else renderAdmin(true); break;
       case 'perfil-voltar': S.adminPage = 'inicio'; renderAdmin(true); break;
