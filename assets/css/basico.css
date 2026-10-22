@@ -245,7 +245,7 @@ body[data-ui="basico"] input { font-size: max(16px, 1em); } /* sem zoom ao tocar
 
 /* anel de progresso (SVG) */
 .bas-anel { position: relative; width: var(--t); height: var(--t); flex: none; }
-.bas-anel svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.bas-anel > svg { width: 100%; height: 100%; transform: rotate(-90deg); }
 .bas-anel-f { fill: none; stroke: color-mix(in srgb, var(--ink) 9%, transparent); stroke-width: 10; }
 .bas-anel-v { fill: none; stroke: var(--accent); stroke-width: 10; stroke-linecap: round; animation: bas-anel 900ms var(--ease-out) both; }
 .bas-anel.ok .bas-anel-v { stroke: var(--pos); }
@@ -385,7 +385,7 @@ body[data-ui="basico"] input { font-size: max(16px, 1em); } /* sem zoom ao tocar
   .bas-anel-v, .bas-arco { animation: none; } .bas-arco, .bas-fab, .bas-cores button, .bas-membro { transition: none; }
 }
 .bas .bas-spark { width: 100%; height: 70px; stroke: none; }
-.bas .bas-roda svg, .bas .bas-anel svg { width: 100%; height: 100%; stroke: none; }
+.bas .bas-roda svg, .bas .bas-anel > svg { width: 100%; height: 100%; stroke: none; }
 .bas-patr-h { flex-wrap: wrap; } .bas-patr .bas-n b { white-space: normal; overflow: visible; }
 .bas-patr-h .bas-n { flex: 1 1 100%; } .bas-patr .bas-big { white-space: nowrap; overflow-wrap: normal; } .bas-patr .bas-var { margin-top: 0; }
 .bas-temas button { padding: 6px 4px; white-space: nowrap; min-height: 40px; }
@@ -669,3 +669,72 @@ html[data-vt="aba"]::view-transition-new(root) { animation: 260ms cubic-bezier(.
 .bas-org-b.menos { color: var(--neg); } .bas-org-b.mais { color: var(--on-accent); background: var(--accent); }
 .bas-org-fora li { padding-left: 16px; }
 @media (prefers-reduced-motion: reduce) { .bas-noite-v.brilha, .bas-w-orb::after { animation: none; } .bas-bt { transition: none; } }
+
+/* ---------- rodada 5: widgets inteligentes, sonhos e a tela do cartão ---------- */
+.card.bas-w-hist, .card.bas-w-aviso, .card.bas-w-ritmo, .card.bas-w-maior { width: 100%; display: block; margin-top: 14px; padding: 16px; border-radius: 24px; color: inherit; font: inherit; text-align: left; }
+.bas-secs.sobe > .bas-sec:first-child > .card { margin-top: 0; }
+/* patrimônio ano a ano: barras com a do ano atual acesa */
+.bas-w-hist-h { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.bas-w-hist-h em { font-style: normal; font-size: 13px; font-weight: 700; padding: 3px 10px; border-radius: var(--r-pill); }
+.bas-w-hist-h em.pos { color: var(--pos); background: var(--pos-soft); } .bas-w-hist-h em.neg { color: var(--neg); background: var(--neg-soft); }
+.bas-w-hist-g { display: flex; align-items: flex-end; gap: 8px; height: 132px; margin-top: 14px; }
+.bas-w-hist-g > span { position: relative; flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; }
+.bas-w-hist-g i { display: block; width: 100%; max-width: 46px; height: var(--h); border-radius: 12px 12px 6px 6px; background: color-mix(in srgb, var(--accent) 22%, transparent); transform-origin: bottom; animation: bas-barra 700ms var(--ease-out) both; animation-delay: calc(var(--i) * 60ms); }
+.bas-w-hist-g span.on i { background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 70%, #fff), var(--accent)); box-shadow: 0 0 22px -4px var(--accent); }
+.bas-w-hist-g b { font-size: 11.5px; font-weight: 600; color: var(--ink-3); } .bas-w-hist-g span.on b { color: var(--accent); }
+.bas-w-hist-g small { position: absolute; top: calc(100% - var(--h) - 34px); white-space: nowrap; font-size: 12px; font-weight: 700; color: var(--ink); }
+.bas-w-hist-g.meses { gap: 4px; } .bas-w-hist-g.meses i { border-radius: 6px; }
+/* o que o assistente notou */
+.card.bas-w-aviso { display: flex; align-items: center; gap: 12px; }
+.bas-w-aviso-ic { width: 44px; height: 44px; flex: none; display: grid; place-items: center; border-radius: 50%; background: radial-gradient(circle at 50% 38%, color-mix(in srgb, var(--accent) 18%, #050507), #050507 70%); box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--accent) 60%, transparent), 0 0 16px -3px var(--accent); }
+.bas-w-aviso .bas-n b { white-space: normal; } .bas-w-aviso .bas-n small { font-size: 13.5px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.bas-w-aviso.alerta { box-shadow: inset 3px 0 0 var(--warn), var(--spec), var(--shadow); } .bas-w-aviso.critico { box-shadow: inset 3px 0 0 var(--neg), var(--spec), var(--shadow); }
+.bas-w-aviso > em { font-style: normal; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: var(--r-pill); background: var(--accent); color: var(--on-accent); }
+.bas-w-aviso > svg:last-child { width: 18px; height: 18px; flex: none; color: var(--ink-3); }
+/* ritmo do mês */
+.bas-w-ritmo .bas-ch small { font-size: 13px; color: var(--ink-2); }
+.bas .bas-w-ritmo svg { display: block; width: 100%; height: 90px; margin: 6px 0 8px; overflow: visible; stroke: none; }
+.bas-w-ritmo-a { fill: color-mix(in srgb, var(--accent) 16%, transparent); }
+.bas-w-ritmo-v { fill: none; stroke: var(--accent); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.bas-w-ritmo-p { stroke: var(--accent); stroke-width: 2; stroke-dasharray: 4 5; vector-effect: non-scaling-stroke; opacity: .7; }
+.bas-w-ritmo.passa .bas-w-ritmo-p { stroke: var(--neg); }
+.bas-w-ritmo-l { stroke: var(--warn); stroke-width: 1.5; stroke-dasharray: 2 4; vector-effect: non-scaling-stroke; }
+/* calendário do mês */
+.bas-cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px; }
+.bas-cal-s { text-align: center; font-size: 11px; font-weight: 600; color: var(--ink-3); padding-bottom: 2px; }
+.bas-cal-d { aspect-ratio: 1; border: 0; border-radius: 10px; font: inherit; font-size: 12px; font-weight: 600; color: var(--ink-2); background: color-mix(in srgb, var(--accent) calc(var(--a) * 100%), color-mix(in srgb, var(--ink) 5%, transparent)); transition: transform 120ms var(--ease-out); }
+.bas-cal-d[style*="--a:0."] { color: var(--ink); } .bas-cal-d.fut { opacity: .45; }
+.bas-cal-d.hoje { box-shadow: inset 0 0 0 2px var(--ink); } .bas-cal-d.sel { transform: scale(1.12); box-shadow: 0 6px 16px -6px var(--accent), inset 0 0 0 2px var(--accent); }
+.bas-cal-sel { font-size: 13px; color: var(--ink-2); }
+/* dia da semana que mais gasta */
+.bas-w-sem { display: flex; align-items: flex-end; gap: 8px; height: 100px; }
+.bas-w-sem span { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; }
+.bas-w-sem i { width: 100%; max-width: 30px; height: var(--h); border-radius: 8px; background: color-mix(in srgb, var(--ink) 12%, transparent); }
+.bas-w-sem span.on i { background: var(--accent); box-shadow: 0 0 16px -4px var(--accent); } .bas-w-sem b { font-size: 11px; color: var(--ink-3); } .bas-w-sem span.on b { color: var(--accent); }
+/* Meus sonhos: carrossel para escolher o principal e os botões do palco */
+.bas-sn-dica { margin: 0 0 8px; font-size: 13px; color: var(--ink-3); }
+.bas-sn-c { display: flex; gap: 10px; margin: 0 -16px 14px; padding: 4px 16px 8px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.bas-sn-c::-webkit-scrollbar { display: none; }
+.bas-sn { flex: none; width: 108px; scroll-snap-align: start; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 12px 8px; border: 0; border-radius: 22px; background: var(--surface); box-shadow: var(--shadow); color: inherit; font: inherit; transition: transform 140ms var(--ease-out), box-shadow 200ms ease; }
+.bas-sn:active { transform: scale(.95); }
+.bas-sn.on { box-shadow: inset 0 0 0 2px var(--accent), 0 10px 24px -12px var(--accent); }
+.bas-sn b { max-width: 100%; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .bas-sn small { font-size: 12px; color: var(--ink-2); }
+.bas-sn .bas-anel-c .obj-ic { width: 32px; height: 32px; border-radius: 10px; } .bas-sn .bas-anel-c .obj-ic svg { width: 18px; height: 18px; }
+.bas-sn.novo { background: color-mix(in srgb, var(--accent) 10%, transparent); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--accent) 35%, transparent); }
+.bas-sn-mais { width: 54px; height: 54px; display: grid; place-items: center; border-radius: 50%; background: var(--accent); color: var(--on-accent); } .bas-sn-mais svg { width: 24px; height: 24px; stroke-width: 2.4; }
+.bas-palco-sn { margin-top: 0; }
+.bas-sn-st { margin-top: 8px; padding: 3px 12px; border-radius: var(--r-pill); font-size: 12.5px; font-weight: 700; color: var(--ink-2); background: color-mix(in srgb, var(--ink) 7%, transparent); }
+.bas-sn-st.ok { color: var(--pos); background: var(--pos-soft); } .bas-sn-st.atencao { color: var(--warn); background: var(--warn-soft); } .bas-sn-st.baixo { color: var(--neg); background: var(--neg-soft); }
+.bas-sn-bts { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 16px; }
+.bas-sn-bt { min-height: 44px; padding: 0 18px; border: 0; border-radius: var(--r-pill); font: inherit; font-size: 14.5px; font-weight: 650; color: var(--ink); background: color-mix(in srgb, var(--ink) 8%, transparent); }
+.bas-sn-bt.prim { background: var(--accent); color: var(--on-accent); box-shadow: 0 10px 22px -10px var(--accent); }
+/* detalhe do sonho */
+.bas-sd-top { display: flex; align-items: center; gap: 16px; } .bas-sd-top .bas-anel-c b { font-size: 18px; color: var(--bas-noite-ink); }
+.card.bas-sd-st { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 16px; margin-top: 12px; padding: 16px 18px; border-radius: 22px; }
+.bas-sd-st span { display: flex; flex-direction: column; } .bas-sd-st small { font-size: 12.5px; color: var(--ink-2); } .bas-sd-st b { font-size: 17px; font-variant-numeric: tabular-nums; }
+.bas-sd-acoes { position: static; background: none; }
+/* o cartão grande no topo da tela do cartão; os do carrossel agora são botões */
+button.bas-cc-c { border: 0; font: inherit; text-align: left; cursor: pointer; transition: transform 140ms var(--ease-out); } button.bas-cc-c:active { transform: scale(.97); }
+.bas-cc-c.bas-cc-big { width: 100%; margin-top: 6px; padding: 20px 22px; border-radius: 24px; }
+.bas-cc-big .bas-cc-v b { font-size: 30px; } .bas-cc-big .bas-cc-n { font-size: 18px; }
+@media (prefers-reduced-motion: reduce) { .bas-w-hist-g i { animation: none; } .bas-cal-d, .bas-sn, button.bas-cc-c { transition: none; } }
