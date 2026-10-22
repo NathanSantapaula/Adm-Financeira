@@ -72,6 +72,7 @@ function render(opts) {
   window.scrollTo(window.scrollX, same ? y : 0); S.lastKey = key;
   drawAll();
   if (scr === 'app' && !modoBasico() && typeof aberturaTalvez === 'function') aberturaTalvez();
+  if (scr === 'app' && !modoBasico() && typeof tourTalvez === 'function') tourTalvez(); // não abre com o globo aberto; o abFechar chama de novo
   if (scr === 'app' && S.lastCount !== key + ':' + S.year) { S.lastCount = key + ':' + S.year; contarNumeros($('#view')); }
   if (scr === 'landing') initReveal();
   if (typeof notifTitulo === 'function') notifTitulo();

@@ -161,7 +161,7 @@ function abFechar() {
   if (!AB) return; const A = AB; AB = null; cancelAnimationFrame(A.raf); clearTimeout(A.tT); clearInterval(A.tV); if (A.ro) A.ro.disconnect(); if (A.mo) A.mo.disconnect();
   document.removeEventListener('keydown', A.tecla, true);
   A.el.classList.add('saindo'); document.documentElement.classList.remove('sem-rolagem');
-  setTimeout(() => A.el.remove(), abCalmo() ? 0 : 520);
+  setTimeout(() => { A.el.remove(); if (typeof tourTalvez === 'function') tourTalvez(); }, abCalmo() ? 0 : 520);
 }
 /* ---------- outros anos e o olhinho do globo ---------- */
 const AB_SETA_E = ic('<path d="M14.5 6l-6 6 6 6"/>'); const AB_SETA_D = ic('<path d="M9.5 6l6 6-6 6"/>');
