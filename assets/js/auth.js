@@ -151,7 +151,7 @@ function onboardingHtml() {
     body = `<h2>Seu diagnóstico.</h2><div class="diag">
       <div class="dg"><small>Patrimônio hoje</small><b>${brl0(+o.patrimonio || 0)}</b></div><div class="dg"><small>Perfil</small><b>${pf.nome}</b></div>
       <div class="dg"><small>Objetivos</small><b>${A.itens.length || 'a definir'}</b><span>${A.itens.length ? brl0(A.valorTotal) + ' no total' : 'cadastre no painel'}</span></div><div class="dg"><small>Aporte mensal</small><b>${+o.metaAporte ? brl0(+o.metaAporte) : 'a definir'}</b></div></div>
-      ${lista}<p class="sub">${quando}</p><p class="cap">Projeção ilustrativa, baseada em uma hipótese de retorno, e não uma promessa de rentabilidade.</p>
+      ${lista}<p class="sub">${quando}</p><p class="cap">Projeção ilustrativa, baseada em uma hipótese de retorno, e não uma promessa de rentabilidade.</p>${typeof basObHtml === 'function' ? basObHtml() : ''}
       <div class="btn-row center"><button class="btn primary lg" data-act="ob-finish">Abrir meu painel</button>${pend ? `<button class="btn lg" data-act="ob-finish-pay">Concluir assinatura do plano ${esc(nomePlano(pend))}</button>` : `<button class="btn lg" data-act="ob-finish-talk">Revisar com o ${esc(primeiroNome())}</button>`}</div>`;
   }
   return `<div class="ob">${dots}<div class="ob-card">${body}</div></div>`;

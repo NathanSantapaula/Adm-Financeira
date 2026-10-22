@@ -11,6 +11,7 @@ const navAgrupado = (items, btn) => GRUPOS_NAV.map(([t, ks]) => { const its = it
 // no plano gratuito o rodapé do menu convida a conhecer o Investidor (como o Upgrade Pro); nos pagos fica o cartão do assessor
 const cartaoPlanoHtml = () => `<div class="advisor plano"><span class="adv-ic" aria-hidden="true">${I.inv || '★'}</span><div class="adv-t"><b>Conheça o plano ${esc(nomePlano('investidor'))}</b><small>Investimentos, proventos e a carteira no mesmo painel, com o disponível para aportar todo mês.</small></div><button class="hp-btn sm" data-act="upgrade" data-plano="investidor">Conhecer</button><button class="lnk adv-lnk" data-act="contact">Falar com o ${esc(primeiroNome())}</button></div>`;
 function renderSide() {
+  if (modoBasico()) { basicoBarra(); return; } // modo Básico (basico.js): abas embaixo, sem menu lateral nem topo
   const items = navItems(); const nome = (S.profile && S.profile.nome) || 'Minha conta';
   const btn = ([k, l]) => `<button data-act="nav" data-view="${k}" title="${esc(l)}" ${S.view === k ? 'aria-current="page"' : ''}>${I[k] || I.geral}<span>${l}</span>${k !== 'clientes' && !abaLiberada(k) ? `<em class="lk" title="Plano ${esc(nomePlano(planoMinimoDe(E.ABA_RECURSO[k] || 'fluxo')))}">${I.lock}</em>` : ''}</button>`;
   // no computador o menu recolhe para só o ícone "AV" e os ícones das abas (estado guardado no aparelho: html.side-mini)
@@ -32,6 +33,7 @@ function renderSide() {
 function emptyState() { return `<div class="empty-state"><h2>Crie o planejamento de ${S.year || NOW_Y}</h2><p>Comece com a estrutura: rendas, categorias de gastos, investimentos e proventos. Também é possível importar uma planilha .xlsx pelo painel administrativo.</p><div class="btn-row"><button class="btn primary lg" data-act="create-plan">Começar planejamento de ${S.year || NOW_Y}</button></div></div>`; }
 
 function viewHtml() {
+  if (modoBasico()) return basicoHtml();
   if (!S.plan) return emptyState();
   switch (S.view) {
     case 'rendas': return viewRendas();
@@ -55,12 +57,12 @@ function render(opts) {
   const key = scr + ':' + (scr === 'app' ? S.view : scr === 'onboarding' && S.ob ? S.ob.step + '.' + S.ob.q : scr === 'auth' ? S.authMode : '');
   const same = S.lastKey === key;
   if (soft && scr !== 'app' && same) return;
-  S.needsRender = false; document.body.dataset.screen = scr; document.documentElement.dataset.icones = (S.profile && S.profile.instEstilo) || 'auto'; S.renderSeq = (S.renderSeq || 0) + 1;
+  S.needsRender = false; document.body.dataset.screen = scr; document.documentElement.dataset.icones = (S.profile && S.profile.instEstilo) || 'auto'; document.body.dataset.ui = modoBasico() ? 'basico' : 'completo'; S.renderSeq = (S.renderSeq || 0) + 1;
   const y = window.scrollY; const tw = $('.tablewrap'); const tws = tw ? [tw.scrollLeft, tw.scrollTop] : null;
   S.C = S.plan && S.profile ? E.compute(S.plan, planCtx()) : null;
   hideTip();
   $('#view').classList.toggle('tela-nova', !same); // a entrada anima só na troca de tela
-  if (scr === 'app') { renderSide(); $('#view').innerHTML = viewHtml(); const ht = $('#view .htools'); const velho = $('#topo .htools'); if (velho) velho.remove(); if (ht) $('#topo .topo-r').prepend(ht); document.documentElement.style.setProperty('--topo-w', $('#topo .topo-r').offsetWidth + 'px'); } // olho, globo e período na linha da busca e do perfil; --topo-w reserva o espaço ao lado do título
+  if (scr === 'app') { renderSide(); $('#view').innerHTML = viewHtml(); const ht = $('#view .htools'); const velho = $('#topo .htools'); if (velho) velho.remove(); const tr = $('#topo .topo-r'); if (ht && tr) tr.prepend(ht); if (tr) document.documentElement.style.setProperty('--topo-w', tr.offsetWidth + 'px'); } // olho, globo e período na linha da busca e do perfil; --topo-w reserva o espaço ao lado do título
   else {
     $('#side').innerHTML = ''; $('#tabbar').innerHTML = '';
     const h = { landing: landingHtml, auth: authHtml, onboarding: onboardingHtml, checkout: checkoutHtml }[scr];
@@ -69,7 +71,7 @@ function render(opts) {
   const tw2 = $('.tablewrap'); if (tw2 && tws && same) { tw2.scrollLeft = tws[0]; tw2.scrollTop = tws[1]; }
   window.scrollTo(window.scrollX, same ? y : 0); S.lastKey = key;
   drawAll();
-  if (scr === 'app' && typeof aberturaTalvez === 'function') aberturaTalvez();
+  if (scr === 'app' && !modoBasico() && typeof aberturaTalvez === 'function') aberturaTalvez();
   if (scr === 'app' && S.lastCount !== key + ':' + S.year) { S.lastCount = key + ':' + S.year; contarNumeros($('#view')); }
   if (scr === 'landing') initReveal();
   if (typeof notifTitulo === 'function') notifTitulo();
@@ -211,7 +213,7 @@ function onClick(e) {
       case 'del-year': confirmBox(`Excluir o planejamento de ${ds.year}?`, 'Todos os valores deste ano serão apagados. Esta ação não pode ser desfeita. Faça um backup antes, se precisar.', 'Excluir', () => deletePlan(+ds.year)); break;
       case 'sair': closeAdmin(); sair(); break;
       case 'privado': alternarPrivado(); break;
-      default: if (!notifAcao(act, ds) && !iaAcao(act, ds) && !simAcao(act, ds) && !histAcao(act, ds) && !objAcao(act, ds) && !painelAcao(act, ds)) wgAcao(act, ds); break;
+      default: if (!basAcao(act, ds) && !notifAcao(act, ds) && !iaAcao(act, ds) && !simAcao(act, ds) && !histAcao(act, ds) && !objAcao(act, ds) && !painelAcao(act, ds)) wgAcao(act, ds); break;
     }
   }
   if (S.stale) { S.stale = false; clearTimeout(S.staleT); render(); }
