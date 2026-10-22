@@ -883,9 +883,13 @@ button.bas-cc-c { border: 0; font: inherit; text-align: left; cursor: pointer; t
 .bas-rosto::after { content: ''; position: absolute; inset: 1%; border-radius: 50%; background: conic-gradient(from 0deg, transparent 0 55%, color-mix(in srgb, var(--c) 70%, #fff) 80%, transparent 100%);
   -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px)); mask: radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 1.5px)); animation: bas-giro 5s linear infinite; opacity: .9; }
 .bas-rosto svg { position: relative; z-index: 1; width: 100%; height: 100%; overflow: visible; rotate: var(--rz, 0deg); transition: rotate 500ms var(--ease-out); animation: bas-respira 3.6s ease-in-out infinite; }
-.bas-rosto-esf { position: absolute; inset: 8%; border-radius: 50%; background: radial-gradient(circle at 38% 30%, color-mix(in oklab, var(--c) 45%, #fff), var(--c) 55%, color-mix(in oklab, var(--c) 70%, #000)); box-shadow: inset 0 -6px 12px color-mix(in oklab, var(--c) 60%, #000), 0 8px 18px -6px color-mix(in srgb, var(--c) 60%, transparent); transition: background 600ms ease; }
-.bas-rosto-luz { fill: #fff; opacity: .32; } .bas-rosto-aro { fill: none; stroke: rgba(255, 255, 255, .35); stroke-width: .8; }
-.bas-rosto-m { --tr: color-mix(in oklab, var(--c) 22%, var(--bas-noite)); transform: translate(var(--ox, 0), var(--oy, 0)); transition: transform 400ms var(--ease-out); }
+.bas-rosto-esf { position: absolute; inset: 8%; border-radius: 50%; /* holograma: vidro quase transparente, linhas finas e borda de luz na cor da nota */
+  background: repeating-linear-gradient(0deg, color-mix(in srgb, var(--c) 16%, transparent) 0 1px, transparent 1px 4px), radial-gradient(circle at 38% 30%, color-mix(in srgb, var(--c) 34%, transparent), color-mix(in srgb, var(--c) 10%, transparent) 62%, color-mix(in srgb, var(--c) 26%, transparent));
+  box-shadow: inset 0 0 0 calc(var(--t) * .028) var(--c), inset 0 0 calc(var(--t) * .2) color-mix(in srgb, var(--c) 45%, transparent), 0 0 calc(var(--t) * .14) color-mix(in srgb, var(--c) 50%, transparent);
+  -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); animation: bas-holo 4s steps(1) infinite; }
+@keyframes bas-holo { 0%, 100% { opacity: 1; } 47% { opacity: .82; } 48% { opacity: 1; } 49% { opacity: .9; } 50% { opacity: 1; } }
+.bas-rosto-luz { fill: #fff; opacity: .16; } .bas-rosto-aro { fill: none; stroke: transparent; stroke-width: .8; }
+.bas-rosto-m { --tr: color-mix(in oklab, var(--c) 78%, var(--ink)); filter: drop-shadow(0 0 3px color-mix(in srgb, var(--c) 70%, transparent)); transform: translate(var(--ox, 0), var(--oy, 0)); transition: transform 400ms var(--ease-out); }
 .bas-rosto-o { transform-box: fill-box; transform-origin: center; animation: bas-pisca 5.5s infinite, bas-olha 11s ease-in-out infinite; }
 .bas-rosto-o ellipse { fill: var(--tr); } .bas-rosto-arc, .bas-rosto-s { fill: none; stroke: var(--tr); stroke-width: 3.4; stroke-linecap: round; } .bas-rosto-s { stroke-width: 2.6; opacity: .8; }
 .bas-rosto-b { fill: none; stroke: var(--tr); stroke-width: 3.6; stroke-linecap: round; stroke-linejoin: round; } .bas-rosto-b.cheia { fill: var(--tr); stroke-width: 2.4; }
@@ -904,4 +908,4 @@ button.bas-cc-c { border: 0; font: inherit; text-align: left; cursor: pointer; t
 @keyframes bas-balanca { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-3deg); } 75% { transform: rotate(3deg); } }
 @keyframes bas-cai { 0%, 100% { transform: rotate(0) translateY(0); } 50% { transform: rotate(-4deg) translateY(1.5px); } }
 @keyframes bas-pulo { 0% { transform: none; } 30% { transform: translateY(-14%) scale(.94, 1.06); } 55% { transform: translateY(0) scale(1.08, .92); } 75% { transform: scale(.97, 1.03); } 100% { transform: none; } }
-@media (prefers-reduced-motion: reduce) { .bas-rosto, .bas-rosto::before, .bas-rosto::after, .bas-rosto svg, .bas-rosto-o, .bas-rosto-bw, .bas-rosto.ok svg, .bas-rosto.baixo svg, .bas-rosto.ok .bas-rosto-bw, .bas-rosto.pulo { animation: none; } .bas-rosto-m, .bas-rosto svg { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .bas-rosto, .bas-rosto::before, .bas-rosto::after, .bas-rosto svg, .bas-rosto-o, .bas-rosto-bw, .bas-rosto.ok svg, .bas-rosto.baixo svg, .bas-rosto.ok .bas-rosto-bw, .bas-rosto.pulo, .bas-rosto-esf { animation: none; } .bas-rosto-m, .bas-rosto svg { transition: none; } }
