@@ -1082,7 +1082,7 @@ button.bas-cc-c { border: 0; font: inherit; text-align: left; cursor: pointer; t
 .bas-hl-div { stroke: color-mix(in srgb, var(--ink) 22%, transparent); stroke-width: 1; stroke-dasharray: 3 4; vector-effect: non-scaling-stroke; }
 .bas-w-hl2 .h0 { stop-color: color-mix(in srgb, var(--accent) 34%, transparent); } .bas-w-hl2 .h1 { stop-color: color-mix(in srgb, var(--accent) 0%, transparent); }
 .bas-hl-a { opacity: 0; animation: bas-fade 900ms 400ms var(--ease-out) forwards; }
-.bas-hl-l { fill: none; stroke: var(--accent); stroke-width: 2.4; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; stroke-dasharray: 1; stroke-dashoffset: 1;
+.bas-hl-l { fill: none; stroke: var(--accent); stroke-width: 2.4; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; stroke-dasharray: 4000; stroke-dashoffset: 4000; /* em px da tela: com non-scaling-stroke o Safari ignora o pathLength e cortava a linha */
   filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 55%, transparent)); animation: bas-traco 1.4s var(--ease-out) forwards; }
 .bas-hl-d { position: absolute; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: var(--surface); box-shadow: 0 0 0 1.6px var(--accent); pointer-events: none; transition: transform 120ms var(--ease-out); }
 .bas-hl-d.fim { width: 10px; height: 10px; margin: -5px 0 0 -5px; background: var(--accent); box-shadow: 0 0 0 3px var(--surface), 0 0 14px var(--accent); }
@@ -1173,7 +1173,7 @@ button.bas-cc-c { border: 0; font: inherit; text-align: left; cursor: pointer; t
 /* ---------- rodada 12: recorde, sequência, cartões 3D, assistente vivo, fundo pela hora, linha do sonho ---------- */
 /* recorde do patrimônio: selo dourado e um brilho que passa pelo número quando a contagem termina */
 .bas-noite-v.recorde.celebra { background: linear-gradient(110deg, var(--bas-noite-ink) 40%, #ffe7a3 50%, var(--bas-noite-ink) 60%) 0 0 / 250% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: bas-rec 1.6s var(--ease-out) 2; }
-.bas-noite-v.recorde.celebra .bas-cent { color: transparent; }
+.bas-noite-v.recorde.celebra .bas-cent { color: color-mix(in srgb, var(--bas-noite-ink) 45%, transparent); -webkit-text-fill-color: currentColor; opacity: 1; } /* com opacidade própria, o texto do filho saía do background-clip do pai e os centavos sumiam */
 @keyframes bas-rec { from { background-position: 120% 0; } to { background-position: -20% 0; } }
 /* sequência: anel de 12 segmentos que acendem, um ponto de luz que orbita e o número no centro */
 .card.bas-sq { width: 100%; display: flex; align-items: center; gap: 16px; margin-top: 14px; padding: 16px; border-radius: 24px; color: inherit; font: inherit; text-align: left; }
@@ -1298,7 +1298,8 @@ button.bas-sx-b { border: 0; font: inherit; color: inherit; text-align: left; cu
 .bas-en-h > span { display: flex; flex-direction: column; min-width: 0; } .bas-en-h small { font-size: 13.5px; color: var(--bas-noite-2); }
 .bas-en-h b { font-size: clamp(32px, 9.5vw, 42px); font-weight: 750; letter-spacing: -.03em; font-variant-numeric: tabular-nums; } .bas-en-h .bas-cent { opacity: .5; }
 .bas-en-g { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); align-items: end; gap: 5px; height: 96px; margin-top: 16px; }
-.bas-en-g > span { height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 5px; }
+.bas-en-g > button { padding: 0; border: 0; background: none; font: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent; transition: transform 140ms var(--ease-out); } .bas-en-g > button:active { transform: scale(.92); }
+.bas-en-g > button { height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 5px; }
 .bas-en-g i { width: 100%; max-width: 18px; height: var(--h); border-radius: 6px; background: rgba(255, 255, 255, .16); transform-origin: bottom; animation: bas-barra 700ms var(--ease-out) both; }
 .bas-en-g .on i { background: linear-gradient(180deg, color-mix(in srgb, var(--bas-noite-pos) 80%, #fff), var(--bas-noite-pos)); box-shadow: 0 0 14px -3px var(--bas-noite-pos); }
 .bas-en-g .fut i { opacity: .45; } .bas-en-g b { font-size: 10.5px; font-weight: 600; color: var(--bas-noite-2); } .bas-en-g .on b { color: var(--bas-noite-ink); }

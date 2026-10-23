@@ -4,7 +4,7 @@ As marcas pertencem às respectivas instituições. Aparecem só para o cliente 
 
 | Arquivo | Fonte |
 |---|---|
-| nubank.svg, picpay.svg, mercadopago.svg | Simple Icons 13.21.0 (CC0), simpleicons.org |
+| nubank.svg, picpay.svg, mercadopago.svg, ifood.svg | Simple Icons 13.21.0 (CC0), simpleicons.org |
 | itau.svg | Wikimedia Commons, "Itaú Unibanco logo 2023.svg" (logo atual, colorida) |
 | bradesco.svg | Wikimedia Commons, "Banco Bradesco logo.svg" (recortado no símbolo) |
 | santander.svg | Wikimedia Commons, "Banco santander logo.svg" (recortado no símbolo) |

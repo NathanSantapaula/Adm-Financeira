@@ -230,10 +230,11 @@ function basTelaEntradas() {
   if (prov > 0 && R.coberturaPassiva != null && R.coberturaPassiva >= 0.01) fr.push(['pos', `Os proventos (${brl0(prov)}) já cobrem <b>${pct(Math.min(1, R.coberturaPassiva))}</b> dos seus gastos.`]);
   if (R.comprometimento != null && R.comprometimento >= 0.05) fr.push([R.comprometimento > 0.6 ? 'neg' : 'pos', `As contas fixas levam <b>${pct(R.comprometimento)}</b> da renda que se repete.`]);
   if (futuro > 0) fr.push(['inv', `Até dezembro ainda estão previstos <b>${brl0(futuro)}</b> em entradas.`]);
-  const barras = C.receita.map((v, m) => `<span class="${m >= j.de && m <= j.ate ? 'on' : ''}${m > ult ? ' fut' : ''}"><i style="--h:${Math.max(3, (v / mx) * 100).toFixed(1)}%"></i><b>${MES[m][0]}</b></span>`).join('');
+  // tocar numa barra mostra aquele mês (o ano e vários meses ficam na pílula do período, acima)
+  const barras = C.receita.map((v, m) => `<button class="${m >= j.de && m <= j.ate ? 'on' : ''}${m > ult ? ' fut' : ''}" data-act="bas-en-mes" data-m="${m}" aria-label="${cap(MES_LONGO[m])}: ${esc(brl0(v))}" aria-pressed="${m >= j.de && m <= j.ate}"><i style="--h:${Math.max(3, (v / mx) * 100).toFixed(1)}%"></i><b>${MES[m][0]}</b></button>`).join('');
   const tile = (n, v, sub) => `<span class="bas-en-k"><small>${n}</small><b>${v}</b>${sub ? `<em>${sub}</em>` : ''}</span>`;
-  return basDet('Entradas', `<section class="bas-en-hero"><div class="bas-en-h"><span><small>Entrou ${esc(basJanFrase())}</small><b>${basCent(tot)}</b></span><button class="bas-inv-pl" ${basIr('entrada')} aria-label="Nova entrada">${I.plus}<span>Entrada</span></button></div>
-      <div class="bas-en-g" aria-hidden="true">${barras}</div></section>
+  return basDet('Entradas', `<div class="bas-pg-per">${basPerPill()}</div><section class="bas-en-hero"><div class="bas-en-h"><span><small>Entrou ${esc(basJanFrase())}</small><b>${basCent(tot)}</b></span><button class="bas-inv-pl" ${basIr('entrada')} aria-label="Nova entrada">${I.plus}<span>Entrada</span></button></div>
+      <div class="bas-en-g" role="group" aria-label="Entradas mês a mês">${barras}</div></section>
     <div class="bas-en-ks">${tile('Média por mês', brl0(R.mediaMes))}${tile('Previsível', fontes.length ? pct(prev) : '–', `${brl0(prevMes)} por mês`)}
       ${tile('Renda passiva', R.passiva != null ? pct(R.passiva) : '–', prov > 0 ? `${brl0(prov)} em proventos` : 'Ainda sem proventos')}${tile('Guardou', R.poupanca != null ? pct(R.poupanca) : '–', `${brl0(R.sobraMes)} por mês`)}</div>
     ${fontes.length ? basSecao('De onde vem', `<small class="bas-raio-t">${fontes.length} ${fontes.length === 1 ? 'fonte' : 'fontes'}</small>`, `<div class="card bas-en-f">${fontes.map(([r, v], i) => `<button class="bas-en-fo" ${basIr('entrada', { id: r.id })}>
@@ -319,7 +320,7 @@ function basInvestir() {
 }
 // o gráfico do patrimônio segue o dedo (manipulação direta): o mês mais perto do toque aparece em cima, sem redesenhar
 function basEvLigar() {
-  const ev = document.querySelector('.bas-ev'); if (!ev || ev.dataset.on) return; ev.dataset.on = '1';
+  const ev = document.querySelector('.bas-ev[data-pts]'); if (!ev || ev.dataset.on) return; ev.dataset.on = '1';
   const g = ev.querySelector('.bas-ev-g'); const pts = JSON.parse(ev.dataset.pts); const dd = JSON.parse(ev.dataset.d); const W = +ev.dataset.w; const H = +ev.dataset.h;
   const ponto = ev.querySelector('.bas-ev-p'); const guia = ev.querySelector('.bas-ev-guia'); const k = ev.querySelector('[data-ev="k"]'); const v = ev.querySelector('[data-ev="v"]');
   const k0 = k.textContent; const v0 = v.innerHTML; let ult = -1; const topo = pts.reduce((b, p, n) => (p[1] < pts[b][1] ? n : b), 0);
@@ -1659,6 +1660,7 @@ function basAcao(act, ds, el) {
     case 'bas-ia-avisos': S.basIaAba = 'avisos'; basAbrir('ia', {}); return true;
     case 'bas-dia': { const w = el.closest('.bas-w-cal'); if (w) { w.querySelectorAll('.bas-cal-d.sel').forEach((x) => x.classList.remove('sel')); el.classList.add('sel'); w.querySelector('.bas-cal-sel').textContent = el.dataset.r; basSom('toque'); } return true; }
     case 'bas-foco': { if (!objLista().some((x) => x.id === ds.id)) return true; S.profile.objetivoFoco = ds.id; objSalvar(); basRetorno('ok'); if (ds.volta) basFechar(); else render(); toast('Sonho principal trocado.'); return true; }
+    case 'bas-en-mes': S.basPer = null; S.mes = Math.max(0, Math.min(11, +ds.m)); basSom('toque'); render(); return true;
     case 'bas-per-at': { const n = +ds.n; const ref = S.year === NOW_Y ? NOW_M : 11; S.basPerIni = null;
       if (n <= 1) { S.basPer = null; S.mes = ref; } else if (n >= 12) { S.basPer = { de: 0, ate: 11 }; S.mes = ref; } else { S.basPer = { de: Math.max(0, ref - n + 1), ate: ref }; S.mes = ref; }
       basFechar(); return true; }
