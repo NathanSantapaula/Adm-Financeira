@@ -412,6 +412,8 @@ function basDesenhar() {
   if (st) { const falhou = () => st.classList.add('sem-3d'); if (typeof o3Ligar === 'function') o3Ligar(st, st.dataset.tipo, falhou); else falhou(); }
   basEvLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basContar(); basCartoes3d();
   const wr = document.querySelector('.bas-wr'); if (wr && !wr.dataset.lig) { wr.dataset.lig = '1'; basWrIr(wr, 0); }
+  const sq = document.querySelector('[data-sq-conta]'); if (sq && !sq.dataset.lig && !matchMedia('(prefers-reduced-motion: reduce)').matches) { sq.dataset.lig = '1'; const alvo = +sq.dataset.sqConta; const t0 = performance.now();
+    const passo = (t) => { const k = Math.min(1, (t - t0) / 900); sq.textContent = Math.round(alvo * (1 - Math.pow(1 - k, 3))); if (k < 1 && sq.isConnected) requestAnimationFrame(passo); }; if (alvo > 0) requestAnimationFrame(passo); }
   basSurpresas();
   const c = document.querySelector('.bas-membro');
   if (c && !c.dataset.tilt && !matchMedia('(prefers-reduced-motion: reduce)').matches) { c.dataset.tilt = '1';
@@ -848,8 +850,13 @@ function basTelaAnoHist(o) {
 // sequência: aportes mês a mês deste ano e do anterior (a soma de ap de cada ativo) e a contagem (E.sequenciaMeses, testada)
 function basSeqDados() {
   const apl = (pl) => { const v = new Array(12).fill(0); ((pl && pl.ativos) || []).forEach((a) => (a.ap || []).forEach((x, m) => { v[m] += +x || 0; })); return v; };
-  const ult = S.year === NOW_Y ? NOW_M : 11; const ant = apl(S.plans[S.year - 1]); const atu = apl(S.plan).slice(0, ult + 1); const vals = ant.concat(atu);
-  const meses = vals.map((v, i) => ({ ano: i < 12 ? S.year - 1 : S.year, mes: i % 12, v })); return { ult, vals, meses, Q: E.sequenciaMeses(vals, vals.length - 1) };
+  const ult = S.year === NOW_Y ? NOW_M : 11; const anos = Object.keys(S.plans).map(Number).filter((y) => y <= S.year).sort((a, b) => a - b);
+  const cr = String((S.profile && S.profile.criadoEm) || ''); const dIni = /^\d{4}-\d{2}/.test(cr) ? { ano: +cr.slice(0, 4), mes: +cr.slice(5, 7) - 1 } : { ano: anos[0] || S.year, mes: 0 };
+  // o primeiro mês com aporte pode ser anterior à conta (dados importados): começa no que vier primeiro
+  let ini = dIni; anos.forEach((y) => { const v = apl(S.plans[y]); const k = v.findIndex((x) => x > 0); if (k >= 0 && (y < ini.ano || (y === ini.ano && k < ini.mes))) ini = { ano: y, mes: k }; });
+  const meses = []; for (let y = ini.ano; y <= S.year; y++) { const v = apl(S.plans[y]); for (let m = y === ini.ano ? ini.mes : 0; m <= (y === S.year ? ult : 11); m++) meses.push({ ano: y, mes: m, v: v[m] }); }
+  if (!meses.length) meses.push({ ano: S.year, mes: ult, v: 0 }); const vals = meses.map((x) => x.v);
+  return { ult, vals, meses, ini, Q: E.sequenciaMeses(vals, vals.length - 1) };
 }
 // constelação: 12 estrelas num caminho que sobe; cada mês seguido acende uma, as acesas se ligam e a mais nova pulsa
 function basConstelacao(n) {
@@ -859,7 +866,7 @@ function basConstelacao(n) {
     ${P.map((q, i) => `<circle class="bas-ct-e${i < k ? ' on' : ''}${i === k - 1 ? ' nova' : ''}" cx="${q[0]}" cy="${q[1]}" r="${i < k ? (i === k - 1 ? 3.6 : 2.6) : 1.6}" style="--i:${i}"/>`).join('')}</svg>`;
 }
 // marcos da sequência, como conquistas que acendem
-const BAS_SEQ_MARCOS = [[3, 'Constância', '3 meses seguidos'], [6, 'Meio ano', '6 meses seguidos'], [12, 'Um ano inteiro', '12 meses seguidos'], [24, 'Dois anos', '24 meses seguidos']];
+const BAS_SEQ_MARCOS = [[3, 'Constância', '3 meses seguidos', 'bronze'], [6, 'Meio ano', '6 meses seguidos', 'prata'], [12, 'Um ano inteiro', '12 meses seguidos', 'ouro'], [24, 'Dois anos', '24 meses seguidos', 'platina'], [36, 'Lenda', '36 meses seguidos', 'diamante']];
 // abertura do mês: no começo de um mês novo, uma retrospectiva do mês que passou, em 4 telas que passam sozinhas
 function basTelaRetro(o) {
   const m = o.id != null ? +o.id : NOW_M - 1; if (!(m >= 0) || !S.C) return basSumiu(); const C = S.C; const carry = E.carryItems(S.plans, S.year);
@@ -907,19 +914,38 @@ function basConquistaPng(q) {
   txt(`Feito com ${CFG.marca || 'AVEN'}`, 30, 500, 'rgba(245,245,247,0.5)', H - 70);
   return new Promise((ok) => cv.toBlob((b) => ok(b), 'image/png'));
 }
+// escudo de um marco em SVG: metal do nível, estrela no centro, o número e um brilho que passa quando conquistado
+function basEscudo(q, nivel, on) {
+  return `<svg class="bas-esc-svg" viewBox="0 0 100 112" aria-hidden="true"><defs><linearGradient id="esc-${q}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" class="e0"/><stop offset=".5" class="e1"/><stop offset="1" class="e2"/></linearGradient></defs>
+    <path class="bas-esc-b" d="M50 4 L90 18 V52 C90 80 72 98 50 108 C28 98 10 80 10 52 V18 Z" fill="url(#esc-${q})"/><path class="bas-esc-i" d="M50 14 L81 25 V52 C81 74 67 88 50 97 C33 88 19 74 19 52 V25 Z"/>
+    <path class="bas-esc-e" d="M50 30 l5.6 11.4 12.6 1.8 -9.1 8.9 2.1 12.5 -11.2 -5.9 -11.2 5.9 2.1 -12.5 -9.1 -8.9 12.6 -1.8 z"/><text class="bas-esc-n" x="50" y="88" text-anchor="middle">${q}</text>${on ? '' : '<path class="bas-esc-l" d="M43 58 h14 v10 h-14 z M46 58 v-4 a4 4 0 0 1 8 0 v4"/>'}</svg>`;
+}
+// Sua sequência: gamificação no jeito do AVEN. Astro com o número que conta, órbitas e partículas; os últimos meses em fila;
+// há quanto tempo está no app e a constância desde então; escudos por nível (bronze a diamante) e o calendário de todos os meses
 function basTelaSequencia() {
-  const { ult, meses, Q } = basSeqDados(); const n = Q.atual; const hoje = new Date(); const fimMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).getDate(); const faltam = fimMes - hoje.getDate();
-  const corrente = S.year === NOW_Y; const comAporte = meses.filter((x) => x.v > 0).length; const prox = BAS_SEQ_MARCOS.find((m) => m[0] > Q.maior);
-  const status = n === 0 ? 'Faça um aporte este mês para acender a primeira estrela.' : Q.contaHoje ? `${cap(MES_LONGO[ult])} já brilha. Sua sequência está garantida até o fim do mês.`
-    : corrente ? `Faltam <b>${faltam} ${faltam === 1 ? 'dia' : 'dias'}</b> para fazer o aporte de ${MES_LONGO[ult]} e manter a sequência.` : `Falta o aporte de ${MES_LONGO[ult]}.`;
-  const grade = meses.map((x, i) => { const atual = i === meses.length - 1; return `<span class="bas-sx-m${x.v > 0 ? ' on' : ''}${atual ? ' agora' : ''}" title="${cap(MES_LONGO[x.mes])} de ${x.ano}"><i aria-hidden="true">${x.v > 0 ? '★' : ''}</i><b>${MES[x.mes][0]}</b></span>`; }).join('');
-  return basDet('Sua sequência', `<section class="bas-sx-hero"><div class="bas-sx-ceu">${basConstelacao(n)}</div><b class="bas-sx-n">${n}</b><span class="bas-sx-k">${n === 1 ? 'mês seguido investindo' : 'meses seguidos investindo'}</span>
-      <p class="bas-sx-s">${status}</p>${!Q.contaHoje && corrente && temRecurso('aporte_simples') ? `<button class="bas-dp-bt bas-sx-bt" ${basIrInv()}>Investir agora</button>` : ''}</section>
-    <div class="bas-sx-st"><span><small>Atual</small><b>${n}</b></span><span><small>Recorde</small><b>${Q.maior}</b></span><span><small>Meses com aporte</small><b>${comAporte}</b></span></div>
-    ${basSecao(`${S.year - 1} e ${S.year}`, '', `<div class="card bas-sx-cal"><div class="bas-sx-ano"><small>${S.year - 1}</small><div class="bas-sx-g">${grade.split('</span>').slice(0, 12).join('</span>')}</span></div></div>
-      <div class="bas-sx-ano"><small>${S.year}</small><div class="bas-sx-g">${grade.split('</span>').slice(12).join('</span>')}</div></div></div>`)}
-    ${basSecao('Marcos', prox ? `<small class="bas-raio-t">Próximo: ${prox[0]} meses</small>` : '', `<div class="bas-sx-mc">${BAS_SEQ_MARCOS.map(([q, nm, d]) => (Q.maior >= q ? `<button class="bas-sx-b on" ${basIr('conquista', { id: q })}><i aria-hidden="true">${q}</i><b>${nm}</b><small>Desbloqueado · ver cartão</small></button>` : `<span class="bas-sx-b"><i aria-hidden="true">${q}</i><b>${nm}</b><small>${Math.max(0, q - n)} ${q - n === 1 ? 'mês' : 'meses'} para chegar</small></span>`)).join('')}</div>`)}
-    ${basSecao('Como funciona', '', `<div class="card bas-sx-como"><p class="bas-p bas-p0">Cada mês em que você investe qualquer valor acende uma estrela. A sequência conta os meses seguidos; o mês atual só apaga se terminar sem aporte. Dividendos reinvestidos também contam.</p></div>`)}`);
+  const { ult, meses, ini, Q } = basSeqDados(); const n = Q.atual; const hoje = new Date(); const fimMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).getDate(); const faltam = fimMes - hoje.getDate();
+  const corrente = S.year === NOW_Y; const com = meses.filter((x) => x.v > 0).length; const tot = meses.length; const prox = BAS_SEQ_MARCOS.find((m) => m[0] > n); const ant = [...BAS_SEQ_MARCOS].reverse().find((m) => m[0] <= n);
+  const base = ant ? ant[0] : 0; const prog = prox ? (n - base) / (prox[0] - base) : 1;
+  const status = n === 0 ? 'Faça um aporte este mês e acenda o seu astro.' : Q.contaHoje ? `${cap(MES_LONGO[ult])} já está garantido. Continue no próximo mês!`
+    : corrente ? `Faltam <b>${faltam} ${faltam === 1 ? 'dia' : 'dias'}</b> para o aporte de ${MES_LONGO[ult]}. Não deixe o astro apagar!` : `Falta o aporte de ${MES_LONGO[ult]}.`;
+  const parts = Array.from({ length: 16 }, (_, k) => `<i style="--x:${(k * 37) % 100}%;--d:${(k * 0.43) % 4}s;--t:${3 + (k % 5) * 0.6}s"></i>`).join('');
+  const fila = meses.slice(-6).map((x, k, a) => { const agora = k === a.length - 1; return `<button class="bas-sq-dia${x.v > 0 ? ' on' : ''}${agora ? ' agora' : ''}" data-act="bas-sq-dia" data-r="${esc(`${cap(MES_LONGO[x.mes])} de ${x.ano}: ${x.v > 0 ? brl0(x.v) + ' investidos' : agora ? 'ainda sem aporte' : 'sem aporte'}`)}" style="--i:${k}"><span>${x.v > 0 ? I.check : agora ? '' : '·'}</span><b>${MES[x.mes].slice(0, 3)}</b></button>`; }).join('');
+  const desde = `${cap(MES_LONGO[ini.mes])} de ${ini.ano}`; const temp = tot >= 12 ? `${Math.floor(tot / 12)} ${tot >= 24 ? 'anos' : 'ano'}${tot % 12 ? ` e ${tot % 12} ${tot % 12 === 1 ? 'mês' : 'meses'}` : ''}` : `${tot} ${tot === 1 ? 'mês' : 'meses'}`;
+  const anos = [...new Set(meses.map((x) => x.ano))];
+  const cal = anos.map((y) => `<div class="bas-sq-ano"><small>${y}</small><div class="bas-sq-cal">${MES.map((nm, m) => { const x = meses.find((z) => z.ano === y && z.mes === m); return `<i class="${!x ? 'fora' : x.v > 0 ? 'on' : ''}" title="${cap(MES_LONGO[m])} de ${y}"></i>`; }).join('')}</div></div>`).join('');
+  return basDet('Sua sequência', `<section class="bas-sqx" data-act="bas-sq-astro"><span class="bas-sqx-parts" aria-hidden="true">${parts}</span>
+      <div class="bas-sqx-astro${n > 0 ? ' aceso' : ''}"><span class="bas-sqx-orb o1"></span><span class="bas-sqx-orb o2"></span><span class="bas-sqx-orb o3"></span><span class="bas-sqx-nucleo"><b data-sq-conta="${n}">${n}</b></span></div>
+      <b class="bas-sqx-t">${n === 1 ? 'mês de sequência' : 'meses de sequência'}</b><p class="bas-sqx-s">${status}</p>
+      ${prox ? `<div class="bas-sqx-prox"><span>Próximo escudo: <b>${esc(prox[1])}</b></span><span class="bas-sqx-pb"><i style="width:${(prog * 100).toFixed(1)}%"></i></span><small>${prox[0] - n} ${prox[0] - n === 1 ? 'mês' : 'meses'} para chegar</small></div>` : '<div class="bas-sqx-prox"><span>Você conquistou todos os escudos. Lenda!</span></div>'}
+      ${!Q.contaHoje && corrente && temRecurso('aporte_simples') ? `<button class="bas-dp-bt bas-sqx-bt" ${basIrInv()}>Investir agora</button>` : ''}</section>
+    <div class="card bas-sq-fila"><div class="bas-sq-fila-l">${fila}</div><p class="bas-sq-fila-r" aria-live="polite">Toque num mês</p></div>
+    <div class="bas-sq-ks"><span><small>No ${esc(CFG.marca || 'app')} há</small><b>${temp}</b><em>desde ${desde}</em></span><span><small>Meses com aporte</small><b>${com} de ${tot}</b><em>${pct(com / tot)} de constância</em></span>
+      <span><small>Recorde</small><b>${Q.maior} ${Q.maior === 1 ? 'mês' : 'meses'}</b><em>${Q.maior > n ? `faltam ${Q.maior - n} para igualar` : n > 0 ? 'é a sequência de agora' : 'comece hoje'}</em></span></div>
+    ${basSecao('Escudos', `<small class="bas-raio-t">${BAS_SEQ_MARCOS.filter((m) => Q.maior >= m[0]).length} de ${BAS_SEQ_MARCOS.length}</small>`, `<div class="bas-esc">${BAS_SEQ_MARCOS.map(([q, nm, , nv], k) => { const on = Q.maior >= q;
+      return on ? `<button class="bas-esc-c on ${nv}" ${basIr('conquista', { id: q })} style="--i:${k}">${basEscudo(q, nv, true)}<b>${esc(nm)}</b><small>Conquistado</small></button>`
+        : `<span class="bas-esc-c ${nv}" style="--i:${k}">${basEscudo(q, nv, false)}<b>${esc(nm)}</b><small>${Math.max(0, q - n)} ${q - n === 1 ? 'mês' : 'meses'} para chegar</small></span>`; }).join('')}</div>`)}
+    ${basSecao('Todos os seus meses', '', `<div class="card bas-sq-cals">${cal}<p class="bas-sq-leg"><i class="on"></i>com aporte <i></i>sem aporte</p></div>`)}
+    ${basSecao('Como funciona', '', `<div class="card bas-sx-como"><p class="bas-p bas-p0">Cada mês em que você investe qualquer valor mantém a sequência viva. O mês atual só apaga se terminar sem aporte. Dividendos reinvestidos também contam. Cada nível de sequência dá um escudo: bronze, prata, ouro, platina e diamante.</p></div>`)}`);
 }
 function basSequenciaHtml() {
   const { ult, Q } = basSeqDados(); const n = Q.atual; const ceu = basConstelacao(n);
@@ -1342,6 +1368,8 @@ function basAcao(act, ds, el) {
     case 'bas-rolar': { const a = document.getElementById(ds.alvo); if (a) a.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }); return true; }
     case 'bas-tema-ciclo': { const ord = ['auto', 'light', 'oled']; const v = ord[(ord.indexOf(S.profile.prefs.tema) + 1) % 3]; if (v !== 'auto') S.profile.prefs.tema = v; definirTema(v === 'auto' ? 'auto-on' : v); render(); toast(`Tema: ${{ auto: 'automático', light: 'claro', oled: 'escuro' }[v]}.`); return true; }
     case 'bas-voltar': basFechar(); return true;
+    case 'bas-sq-dia': { const w = el.closest('.bas-sq-fila'); if (w) { w.querySelectorAll('.bas-sq-dia').forEach((b) => b.classList.toggle('sel', b === el)); w.querySelector('.bas-sq-fila-r').textContent = el.dataset.r; basSom('toque'); } return true; }
+    case 'bas-sq-astro': { const a = document.querySelector('.bas-sqx-astro'); if (a && !matchMedia('(prefers-reduced-motion: reduce)').matches) { a.classList.remove('festa'); void a.offsetWidth; a.classList.add('festa'); basVibra(12); basSom('ok'); } return true; }
     case 'bas-wr': { const w = el.closest('.bas-wr'); if (w) { basWrIr(w, (+w.dataset.i || 0) + (+ds.d || 1)); basSom('toque'); } return true; }
     case 'bas-retro-share': basPartilhar(+ds.m); return true;
     case 'bas-cq-share': basConquistaPng(+ds.q).then((b) => basEnviaPng(b, `${(CFG.marca || 'aven').toLowerCase()}-conquista-${ds.q}-meses.png`, 'Minha conquista')); return true;
