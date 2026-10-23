@@ -1108,8 +1108,7 @@ function basTelaSequencia() {
     ${basSecao('Escudos', `<small class="bas-raio-t">${BAS_SEQ_MARCOS.filter((m) => Q.maior >= m[0]).length} de ${BAS_SEQ_MARCOS.length}</small>`, `<div class="bas-esc">${BAS_SEQ_MARCOS.map(([q, nm, , nvM], k) => { const on = Q.maior >= q; const nv = nvM;
       return on ? `<button class="bas-esc-c bas-br on ${nv}" ${basIr('conquista', { id: q })} style="--i:${k}">${basBrasao(q, nv, true)}<b>${esc(nm)}</b><small>${cap(nv)}</small></button>`
         : `<span class="bas-esc-c bas-br ${nv}" style="--i:${k}">${basBrasao(q, nv, false)}<b>${esc(nm)}</b><small>${Math.max(0, q - n)} ${q - n === 1 ? 'mês' : 'meses'} para chegar</small></span>`; }).join('')}</div>`)}
-    ${basSecao('Todos os seus meses', `<small class="bas-raio-t">${com} de ${tot} com aporte</small>`, cal)}
-    ${basSecao('Como funciona', '', `<div class="card bas-sx-como"><p class="bas-p bas-p0">Cada mês em que você investe qualquer valor mantém a sequência viva. O mês atual só apaga se terminar sem aporte. Dividendos reinvestidos também contam. Cada nível de sequência dá um escudo: bronze, prata, ouro, platina e diamante.</p></div>`)}`);
+    ${basSecao('Todos os seus meses', `<small class="bas-raio-t">${com} de ${tot} com aporte</small>`, cal)}`);
 }
 function basSequenciaHtml() {
   const { ult, Q } = basSeqDados(); const n = Q.atual; const ceu = basConstelacao(n);
