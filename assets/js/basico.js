@@ -15,7 +15,7 @@ const BAS_NOMES = { basico: 'App', completo: 'SaaS' }; // nomes das duas versõe
 const basTrocaHtml = () => { const v = basInterface();
   return `<div class="seg bas-troca" role="group" aria-label="Versão do AVEN">${['basico', 'completo'].map((k) => `<button${v === k ? ' class="on"' : ''} data-act="bas-ui" data-v="${k}" aria-pressed="${v === k}">${BAS_NOMES[k]}</button>`).join('')}</div>`; };
 const BAS_ABAS = [['inicio', 'Início', I.geral], ['gastos', 'Gastos', I.despesas], ['investir', 'Investir', I.inv], ['perfil', 'Perfil', I.user]];
-const BAS_FORMS = new Set(['gasto', 'conta-f', 'entrada', 'aporte', 'meta', 'objetivo', 'perfil', 'provento', 'limite', 'alvos', 'ponto', 'excluir', 'retro']); // telas de formulário (e a retrospectiva, em tela cheia) escondem as abas
+const BAS_FORMS = new Set(['gasto', 'conta', 'conta-f', 'entrada', 'aporte', 'meta', 'objetivo', 'perfil', 'provento', 'limite', 'alvos', 'ponto', 'excluir', 'retro']); // telas de formulário (e a retrospectiva, em tela cheia) escondem as abas
 const BAS_AREAS = ['Alimentação', 'Moradia', 'Transporte', 'Saúde', 'Lazer', 'Compras', 'Contas', 'Educação'];
 const I_VOLTA = ic('<path d="m15 6-6 6 6 6"/>');
 
@@ -548,34 +548,31 @@ function basGastoLembra(f, x, valor) {
   const d = f.querySelector('.bas-lembra'); if (d) { d.hidden = false; d.textContent = `Da última vez: ${brl(x.valor)} em ${x.area || 'Outros'}${x.inst && instDe(x.inst) ? ' · ' + instDe(x.inst)[1] : ''}.`; }
 }
 document.addEventListener('input', (e) => { const t = e.target; if (!t.matches || !t.matches('form[data-t="gasto"] input[name="desc"]')) return; const x = basMemGastos().get(E.norm(t.value)); if (x) basGastoLembra(t.form, x, false); });
-function basTelaGasto(o) {
-  const p = S.plan; const l = o.id ? p.lancamentos.find((x) => x.id === o.id) : null; if (o.id && !l) return basSumiu();
-  const a0 = l ? l.area : o.area || ''; const usadas = p.despesas.map((x) => x.area).concat(p.lancamentos.map((x) => x.area));
+function basTelaGasto(o, it) {
+  const p = S.plan; const l = !it && o.id ? p.lancamentos.find((x) => x.id === o.id) : null; if (o.id && !l && !it) return basSumiu();
+  const a0 = l ? l.area : it ? it.area : o.area || ''; const usadas = p.despesas.map((x) => x.area).concat(p.lancamentos.map((x) => x.area));
   const areas = [...new Set(BAS_AREAS.concat(usadas, a0 ? [a0] : []).filter(Boolean))].slice(0, 16);
   // um gasto só: uma vez (com data), todo mês (até dezembro) ou parcelado; os dois últimos são gravados como no SaaS (previsto em plan.despesas)
-  const tipo = o.modo === 'parc' || o.modo === 'mes' ? o.modo : 'uma';
-  // inteligente: os gastos que mais se repetem viram atalhos e o último banco usado já vem marcado
-  const mem = basMemGastos(); const rec = l ? [] : [...mem.values()].sort((a, b) => b.n - a.n || String(b.data).localeCompare(String(a.data))).slice(0, 6);
-  const i0 = l ? l.inst || '' : ([...(p.lancamentos || [])].reverse().find((x) => x.inst && instMinhas().includes(x.inst)) || {}).inst || '';
-  return basForm('gasto', l ? 'Editar gasto' : 'Novo gasto', `${l ? '' : basChips('tipo', [['uma', 'Uma vez'], ['mes', 'Todo mês'], ['parc', 'Parcelado']], tipo, 'Como é o gasto')}
-    <div class="bas-blk" data-blk="val">${basValor('valor', l ? Math.abs(l.valor) : 0, 'Quanto foi?')}</div>
-    ${l ? '' : `<div class="bas-blk" data-blk="parc">${basValor('total', 0, 'Valor total da compra')}${basCampo('n', 'Em quantas vezes?', 10, 'inputmode="numeric" maxlength="3"')}<p class="bas-p">A primeira parcela cai em ${MES_LONGO[S.mes]} de ${S.year}.</p></div>`}
-    ${rec.length ? `<div class="bas-rec"><small>Recentes</small><div class="bas-rec-l">${rec.map((x) => `<button type="button" data-act="bas-gasto-rec" data-k="${esc(E.norm(x.desc))}">${x.inst && instDe(x.inst) ? instIcone(x.inst) : `<i class="bas-rec-i" aria-hidden="true">${esc(basIniciais(x.desc))}</i>`}<span>${esc(x.desc)}</span></button>`).join('')}</div></div>` : ''}
-    ${basCampo('desc', 'Com o quê?', l ? l.desc : '', 'placeholder="Ex.: Mercado, Aluguel, Celular" list="bas-dl-desc" autocomplete="off"')}<datalist id="bas-dl-desc">${[...mem.values()].map((x) => `<option value="${esc(x.desc)}">`).join('')}</datalist>
+  const tipo = it ? (it.parcel ? 'parc' : 'mes') : o.modo === 'parc' || o.modo === 'mes' ? o.modo : 'uma';
+  // inteligente: o último banco usado já vem marcado e o nome conhecido lembra categoria e banco
+  const mem = basMemGastos(); const pc = it && it.parcel; const ini = pc ? { ano: pc.ano, mes: pc.mes } : { ano: S.year, mes: S.mes };
+  const i0 = l ? l.inst || '' : it ? it.inst || '' : ([...(p.lancamentos || [])].reverse().find((x) => x.inst && instMinhas().includes(x.inst)) || {}).inst || '';
+  return basForm(it ? 'conta' : 'gasto', l || it ? 'Editar gasto' : 'Novo gasto', `${l ? '' : basChips('tipo', [['uma', 'Uma vez'], ['mes', 'Todo mês'], ['parc', 'Parcelado']], tipo, 'Como é o gasto')}
+    <div class="bas-blk" data-blk="val">${basValor('valor', l ? Math.abs(l.valor) : it && !pc ? +it.valores[S.mes] || 0 : 0, it && !pc ? `Quanto foi? Vale de ${MES_LONGO[S.mes]} em diante` : 'Quanto foi?')}</div>
+    ${l ? '' : `<div class="bas-blk" data-blk="parc">${basValor('total', pc ? pc.total : 0, 'Valor total da compra')}${basCampo('n', 'Em quantas vezes?', pc ? pc.n : 10, 'inputmode="numeric" maxlength="3"')}<p class="bas-p">A primeira parcela cai em ${MES_LONGO[ini.mes]} de ${ini.ano}.</p></div>`}
+    ${basCampo('desc', 'Com o quê?', l ? l.desc : it ? it.nome : '', 'placeholder="Ex.: Mercado, Aluguel, Celular" list="bas-dl-desc" autocomplete="off"')}<datalist id="bas-dl-desc">${[...mem.values()].map((x) => `<option value="${esc(x.desc)}">`).join('')}</datalist>
     <p class="bas-p bas-lembra" aria-live="polite" hidden></p>
     ${basChips('area', areas.map((a) => [a, a]), a0, 'Categoria')}${basCampo('areaNova', 'Ou escreva outra categoria', '', 'placeholder="Ex.: Pets"')}
     <fieldset class="bas-fs"><legend>Pago com</legend><div class="bas-chips bas-inst">${['', ...new Set(instMinhas().concat(i0 ? [i0] : []))].filter((v) => !v || instDe(v)).map((v) => `<label class="bas-chip"><input type="radio" name="inst" value="${v}" ${v === i0 ? 'checked' : ''}><span>${v ? instIcone(v) + esc(instDe(v)[1]) : 'Não informar'}</span></label>`).join('')}<button type="button" class="bas-chip-add" ${basIr('planejamento')}>${I.plus}${instMinhas().length ? 'Bancos' : 'Escolher bancos'}</button></div></fieldset>
     <label class="bas-fl bas-blk" data-blk="data"><span>Quando</span><input type="date" name="data" value="${esc(l ? l.data : basDataMes(S.mes))}" min="${S.year}-01-01" max="${S.year}-12-31"></label>
-    ${l ? '' : `<p class="bas-p bas-blk" data-blk="mesp">Vale de ${MES_LONGO[S.mes]} até dezembro. Quando você anotar o pagamento, ele é marcado como pago, sem contar duas vezes.</p>`}`, { excluir: l ? 'Excluir gasto' : '' });
+    ${l ? '' : `<p class="bas-p bas-blk" data-blk="mesp">Vale de ${MES_LONGO[S.mes]} até dezembro. Quando você anotar o pagamento, ele é marcado como pago, sem contar duas vezes.</p>`}`, { excluir: l || it ? 'Excluir gasto' : '' });
 }
 // conta do mês: gasto fixo ou parcela
 function basTelaConta(o) {
-  const p = S.plan; const m = S.mes; const x = basContas(m).itens.find((i) => i.id === o.id); if (!x) return basSumiu();
-  const it = p.despesas.find((i) => i.id === o.id); const lid = it && it.baixas && it.baixas[S.year + '-' + m]; const pg = lid && p.lancamentos.find((l) => l.id === lid);
-  const acoes = it ? `${!x.pago ? `<button class="btn primary lg bas-cta bas-add" data-act="bas-pagar">${I.check}Marcar como paga</button>` : pg ? `<button class="btn lg bas-cta bas-add" ${basIr('gasto', { id: pg.id })}>Ver o pagamento</button>` : ''}
-    ${it.parcel ? '' : `<button class="btn lg bas-cta bas-add" ${basIr('conta-f', { id: it.id })}>Editar conta</button>`}<button class="btn lg bas-cta bas-add bas-del" data-act="bas-excluir">Excluir conta</button>` : `<p class="bas-p">Parcela de uma compra de ${x.herdado}. Ela é editada no planejamento daquele ano.</p>`;
-  return basDet(esc(x.nome), basCard(`<small class="bas-k">${x.parcela ? `Parcela ${x.parcela.i} de ${x.parcela.n}` : 'Todo mês'} · ${MES_LONGO[m]}</small><b class="bas-big">${brl(x.valor)}</b>
-    <p class="bas-p"><em class="bas-st${x.pago ? ' ok' : ''}">${x.pago ? 'Pago' : 'A pagar'}</em>${x.area ? ' · ' + esc(x.area) : ''}</p>${acoes}`, 'bas-hero'));
+  const p = S.plan; const it = p.despesas.find((i) => i.id === o.id); if (it) return basTelaGasto(o, it);
+  const x = basContas(S.mes).itens.find((i) => i.id === o.id); if (!x) return basSumiu();
+  return basDet(esc(x.nome), basCard(`<small class="bas-k">${x.parcela ? `Parcela ${x.parcela.i} de ${x.parcela.n}` : 'Todo mês'} · ${MES_LONGO[S.mes]}</small><b class="bas-big">${brl(x.valor)}</b>
+    <p class="bas-p">${x.area ? esc(x.area) + ' · ' : ''}Parcela de uma compra de ${x.herdado}. Ela é editada no planejamento daquele ano.</p>`, 'bas-hero'));
 }
 // nova conta (todo mês ou parcelada) ou editar uma de todo mês
 function basTelaContaF(o) {
@@ -1316,7 +1313,7 @@ function basTelaCartao(o) {
   const tot = ents.reduce((s, e) => s + +e.valor, 0); const sai = basSomaJ(S.C.despesas); const areas = {}; ents.forEach((e) => { areas[e.area] = (areas[e.area] || 0) + +e.valor; });
   const la = Object.keys(areas).map((k) => [k, areas[k]]).sort((a, b) => b[1] - a[1]); const mx = la.length ? la[0][1] : 1;
   const linhas = ents.slice().sort((a, b) => b.m - a.m || b.dia - a.dia).map((e) => basRow(e.tipo === 'real' ? basIr('gasto', { id: e.id }) : basIr('conta', { id: e.id }), esc(basIniciais(e.nome || e.area)), esc(e.nome || e.area), `${esc(e.area)} · ${e.dia ? `${pad2(e.dia)}/${pad2(e.m + 1)}` : `${MES[e.m]}, ${e.parcela ? 'parcela ' + e.parcela : 'conta do mês'}`}`, `<b>−${basCent(e.valor)}</b>`));
-  return basDet(esc(i[1]), `<div class="bas-cc-c bas-cc-big" ${basCcEstilo(o.id).attr}><span class="bas-cc-t"><span class="bas-cc-nfc" aria-hidden="true">${CC_NFC}</span>${instIcone(o.id)}</span><span class="bas-cc-n">${esc(i[1])}</span><span class="bas-cc-v"><small>${esc(cap(basJanFrase()))}</small><b>${basCent(tot)}</b></span><span class="bas-cc-p">${pct(tot / (sai || 1))} dos gastos</span></div>
+  return basDet(esc(i[1]), `<div class="bas-pg-per">${basPerPill()}</div><div class="bas-cc-c bas-cc-big" ${basCcEstilo(o.id).attr}><span class="bas-cc-t"><span class="bas-cc-nfc" aria-hidden="true">${CC_NFC}</span>${instIcone(o.id)}</span><span class="bas-cc-n">${esc(i[1])}</span><span class="bas-cc-v"><small>${esc(cap(basJanFrase()))}</small><b>${basCent(tot)}</b></span><span class="bas-cc-p">${pct(tot / (sai || 1))} dos gastos</span></div>
     ${la.length ? basSecao('Por categoria', '', `<div class="card bas-raio-a">${la.map(([n, v], k) => `<button ${basIr('categoria', { area: n })}><span>${esc(n)}</span><span class="bas-raio-b"><i style="width:${((v / mx) * 100).toFixed(1)}%;--bc:${PAL[k % 6]}"></i></span><b>${brl0(v)}</b></button>`).join('')}</div>`) : ''}
     ${linhas.length ? basSecao(`Gastos no ${esc(i[1])}`, `<small class="bas-raio-t">${linhas.length} ${linhas.length === 1 ? 'item' : 'itens'}</small>`, `<ul class="bas-ativ">${linhas.join('')}</ul>`) : basCard(basVazio('Nenhum gasto neste cartão no período.'))}`, `<button class="bell bas-gear" ${basIr('cartao-estilo', { id: o.id })} aria-label="Personalizar o cartão" title="Personalizar o cartão">${I_ENGRENAGEM}</button>`);
 }
@@ -1520,6 +1517,19 @@ function basSalvar(f) {
       const fx = E.acharFixo(p.despesas, desc, dt.ano, dt.mes); if (fx) { nl.itemId = fx.id; nl.cat = fx.cat; fx.baixas = Object.assign({}, fx.baixas, { [dt.ano + '-' + dt.mes]: nl.id }); msg = `Conta “${fx.nome}” marcada como paga.`; }
       S.mes = dt.mes; ok(msg); return;
     } // todo mês e parcelado seguem para a gravação da conta, logo abaixo
+    case 'conta': {
+      const it = p.despesas.find((x) => x.id === t.id); if (!it) { basFechar(); return; }
+      const nome = (d.desc || '').trim(); const area = (d.areaNova || '').trim() || d.area || it.area || 'Contas'; if (!nome) return basErro(f, 'Diga com o quê, como Aluguel.');
+      if (d.tipo === 'uma') { // vira um gasto só: sai a conta, os pagamentos já anotados continuam como gastos comuns
+        const v = val('valor'); if (!(v > 0)) return basErro(f, 'Informe quanto foi, como 25,90.'); const dt = E.parseDataISO(d.data); if (!dt || dt.ano !== S.year) return basErro(f, `Escolha uma data de ${S.year}.`);
+        p.lancamentos.forEach((l) => { if (l.itemId === it.id) delete l.itemId; }); p.despesas = p.despesas.filter((x) => x !== it);
+        p.lancamentos.push({ id: uid(), origem: 'manual', data: d.data, desc: nome, valor: E.r2(v), cat: basCat(false), area, sub: '', inst: d.inst || '' }); S.mes = dt.mes; ok('Gasto atualizado.'); return; }
+      Object.assign(it, { nome, area, inst: d.inst || '' });
+      if (d.tipo === 'parc') { const total = val('total'); const n = parseInt(d.n, 10); if (!(total > 0)) return basErro(f, 'Informe o valor total da compra.'); if (!(n >= 1 && n <= 120)) return basErro(f, 'Informe de 1 a 120 parcelas.');
+        it.parcel = Object.assign({ ano: S.year, mes: m }, it.parcel, { total: E.r2(total), n }); it.valores = z12(); ok('Gasto atualizado.'); return; }
+      const v = val('valor'); if (!(v > 0)) return basErro(f, 'Informe o valor por mês.');
+      if (it.parcel) { delete it.parcel; it.valores = z12(); } fillFrom(it.valores, E.r2(v), m); ok('Gasto atualizado.'); return;
+    }
     case 'conta-f': {
       const it = t.id ? p.despesas.find((x) => x.id === t.id) : null; const nome = (d.nome || '').trim(); if (!nome) return basErro(f, 'Diga com o quê, como Aluguel.');
       const area = d.area || 'Contas';
@@ -1591,7 +1601,7 @@ function basExcluir(el) {
   if (!el.dataset.ok) { el.dataset.ok = '1'; el.textContent = 'Toque de novo para excluir'; return; }
   const t = basTopoPilha(); const p = S.plan; const m = S.mes;
   if (t.t === 'gasto') { const l = p.lancamentos.find((x) => x.id === t.id); if (l) { desfazerBaixa(l); p.lancamentos = p.lancamentos.filter((x) => x !== l); } }
-  else if (t.t === 'conta') p.despesas = p.despesas.filter((x) => x.id !== t.id);
+  else if (t.t === 'conta') { p.lancamentos.forEach((l) => { if (l.itemId === t.id) delete l.itemId; }); p.despesas = p.despesas.filter((x) => x.id !== t.id); }
   else if (t.t === 'entrada') p.rendas = p.rendas.filter((x) => x.id !== t.id);
   else if (t.t === 'aporte') { const a = p.ativos.find((x) => x.id === t.id); if (a) a.ap[m] = 0; }
   else if (t.t === 'provento') { const a = p.ativos.find((x) => x.id === t.id); if (a) a.pr[m] = 0; }
