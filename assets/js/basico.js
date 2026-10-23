@@ -243,8 +243,8 @@ function basGastos() {
   secs.onde = basOndeHtml(); secs.limites = basLimitesHtml();
   const lanc = basLancJan().slice(0, 8);
   secs.ultimos = lanc.length ? basSecao('Últimos gastos', '', `<ul class="bas-ativ">${lanc.map(basLancLinha).join('')}</ul>`) : '';
-  return `<div class="bas-pg bas-pg-g">${basCab('Gastos', `<button class="bell" data-act="bas-importar" aria-label="Importar extrato do banco" title="Importar extrato">${I_IMPORTAR}</button>`)}<div class="bas-pg-per">${basPerPill()}<button class="bas-rx" ${basPago() ? basIr('raiox') : 'data-act="upgrade" data-plano="investidor"'}><span class="bas-rx-ic" aria-hidden="true">${I_RAIOX}</span>Raio-X${basPago() ? '' : I.lock}</button></div>
-    ${basOrdenar('gastos', secs)}${basOrganizarBtn('gastos')}<button class="bas-fab" ${basIr('gasto')} aria-label="Adicionar gasto">${I.plus}</button></div>`;
+  return `<div class="bas-pg bas-pg-g">${basCab('Gastos', `<button class="bell" data-act="bas-importar" aria-label="Importar extrato do banco" title="Importar extrato">${I_IMPORTAR}</button><button class="bas-inv-pl" ${basIr('gasto')} aria-label="Novo gasto">${I.plus}<span>Gasto</span></button>`)}<div class="bas-pg-per">${basPerPill()}<button class="bas-rx" ${basPago() ? basIr('raiox') : 'data-act="upgrade" data-plano="investidor"'}><span class="bas-rx-ic" aria-hidden="true">${I_RAIOX}</span>Raio-X${basPago() ? '' : I.lock}</button></div>
+    ${basOrdenar('gastos', secs)}${basOrganizarBtn('gastos')}</div>`;
 }
 // toque num arco ou na legenda: destaca a categoria e mostra o valor no centro, sem redesenhar; o segundo toque abre
 function basArco(el) {
@@ -806,17 +806,40 @@ function basTelaAnoHist(o) {
     ${L.parcial ? `<p class="bas-disc keep">${ano} em andamento: valores até ${MES_LONGO[L.meses - 1]}. As comparações com ${A ? A.ano : 'o ano anterior'} usam o ano dele inteiro.</p>` : ''}<p class="bas-disc keep">Patrimônio a custo: o que você informou ajustado pelos aportes, sem a variação de mercado.</p>`);
 }
 // sequência: meses seguidos com aporte (E.sequenciaMeses, testada), somando o ano anterior; anel de 12 segmentos que acendem
-function basSequenciaHtml() {
+// sequência: aportes mês a mês deste ano e do anterior (a soma de ap de cada ativo) e a contagem (E.sequenciaMeses, testada)
+function basSeqDados() {
   const apl = (pl) => { const v = new Array(12).fill(0); ((pl && pl.ativos) || []).forEach((a) => (a.ap || []).forEach((x, m) => { v[m] += +x || 0; })); return v; };
-  const ult = S.year === NOW_Y ? NOW_M : 11; const vals = apl(S.plans[S.year - 1]).concat(apl(S.plan).slice(0, ult + 1)); const Q = E.sequenciaMeses(vals, vals.length - 1);
-  // constelação: 12 estrelas num caminho que sobe; cada mês seguido acende uma, as acesas se ligam e a mais nova pulsa
-  const n = Q.atual; const k = Math.min(n, 12); const P = [[8, 72], [21, 60], [33, 67], [45, 51], [57, 57], [66, 41], [79, 45], [88, 29], [100, 35], [108, 19], [120, 23], [126, 8]];
+  const ult = S.year === NOW_Y ? NOW_M : 11; const ant = apl(S.plans[S.year - 1]); const atu = apl(S.plan).slice(0, ult + 1); const vals = ant.concat(atu);
+  const meses = vals.map((v, i) => ({ ano: i < 12 ? S.year - 1 : S.year, mes: i % 12, v })); return { ult, vals, meses, Q: E.sequenciaMeses(vals, vals.length - 1) };
+}
+// constelação: 12 estrelas num caminho que sobe; cada mês seguido acende uma, as acesas se ligam e a mais nova pulsa
+function basConstelacao(n) {
+  const k = Math.min(n, 12); const P = [[8, 72], [21, 60], [33, 67], [45, 51], [57, 57], [66, 41], [79, 45], [88, 29], [100, 35], [108, 19], [120, 23], [126, 8]];
   const caminho = (a) => a.map((q, i) => `${i ? 'L' : 'M'}${q[0]} ${q[1]}`).join(' ');
-  const ceu = `<svg viewBox="0 0 134 80" aria-hidden="true"><path class="bas-ct-p" d="${caminho(P)}"/>${k > 1 ? `<path class="bas-ct-l" d="${caminho(P.slice(0, k))}" pathLength="1"/>` : ''}
+  return `<svg viewBox="0 0 134 80" aria-hidden="true"><path class="bas-ct-p" d="${caminho(P)}"/>${k > 1 ? `<path class="bas-ct-l" d="${caminho(P.slice(0, k))}" pathLength="1"/>` : ''}
     ${P.map((q, i) => `<circle class="bas-ct-e${i < k ? ' on' : ''}${i === k - 1 ? ' nova' : ''}" cx="${q[0]}" cy="${q[1]}" r="${i < k ? (i === k - 1 ? 3.6 : 2.6) : 1.6}" style="--i:${i}"/>`).join('')}</svg>`;
+}
+// marcos da sequência, como conquistas que acendem
+const BAS_SEQ_MARCOS = [[3, 'Constância', '3 meses seguidos'], [6, 'Meio ano', '6 meses seguidos'], [12, 'Um ano inteiro', '12 meses seguidos'], [24, 'Dois anos', '24 meses seguidos']];
+function basTelaSequencia() {
+  const { ult, meses, Q } = basSeqDados(); const n = Q.atual; const hoje = new Date(); const fimMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).getDate(); const faltam = fimMes - hoje.getDate();
+  const corrente = S.year === NOW_Y; const comAporte = meses.filter((x) => x.v > 0).length; const prox = BAS_SEQ_MARCOS.find((m) => m[0] > Q.maior);
+  const status = n === 0 ? 'Faça um aporte este mês para acender a primeira estrela.' : Q.contaHoje ? `${cap(MES_LONGO[ult])} já brilha. Sua sequência está garantida até o fim do mês.`
+    : corrente ? `Faltam <b>${faltam} ${faltam === 1 ? 'dia' : 'dias'}</b> para fazer o aporte de ${MES_LONGO[ult]} e manter a sequência.` : `Falta o aporte de ${MES_LONGO[ult]}.`;
+  const grade = meses.map((x, i) => { const atual = i === meses.length - 1; return `<span class="bas-sx-m${x.v > 0 ? ' on' : ''}${atual ? ' agora' : ''}" title="${cap(MES_LONGO[x.mes])} de ${x.ano}"><i aria-hidden="true">${x.v > 0 ? '★' : ''}</i><b>${MES[x.mes][0]}</b></span>`; }).join('');
+  return basDet('Sua sequência', `<section class="bas-sx-hero"><div class="bas-sx-ceu">${basConstelacao(n)}</div><b class="bas-sx-n">${n}</b><span class="bas-sx-k">${n === 1 ? 'mês seguido investindo' : 'meses seguidos investindo'}</span>
+      <p class="bas-sx-s">${status}</p>${!Q.contaHoje && corrente && temRecurso('aporte_simples') ? `<button class="bas-dp-bt bas-sx-bt" ${basIrInv()}>Investir agora</button>` : ''}</section>
+    <div class="bas-sx-st"><span><small>Atual</small><b>${n}</b></span><span><small>Recorde</small><b>${Q.maior}</b></span><span><small>Meses com aporte</small><b>${comAporte}</b></span></div>
+    ${basSecao(`${S.year - 1} e ${S.year}`, '', `<div class="card bas-sx-cal"><div class="bas-sx-ano"><small>${S.year - 1}</small><div class="bas-sx-g">${grade.split('</span>').slice(0, 12).join('</span>')}</span></div></div>
+      <div class="bas-sx-ano"><small>${S.year}</small><div class="bas-sx-g">${grade.split('</span>').slice(12).join('</span>')}</div></div></div>`)}
+    ${basSecao('Marcos', prox ? `<small class="bas-raio-t">Próximo: ${prox[0]} meses</small>` : '', `<div class="bas-sx-mc">${BAS_SEQ_MARCOS.map(([q, nm, d]) => `<span class="bas-sx-b${Q.maior >= q ? ' on' : ''}"><i aria-hidden="true">${q}</i><b>${nm}</b><small>${Q.maior >= q ? 'Desbloqueado' : `${Math.max(0, q - n)} ${q - n === 1 ? 'mês' : 'meses'} para chegar`}</small></span>`).join('')}</div>`)}
+    ${basSecao('Como funciona', '', `<div class="card bas-sx-como"><p class="bas-p bas-p0">Cada mês em que você investe qualquer valor acende uma estrela. A sequência conta os meses seguidos; o mês atual só apaga se terminar sem aporte. Dividendos reinvestidos também contam.</p></div>`)}`);
+}
+function basSequenciaHtml() {
+  const { ult, Q } = basSeqDados(); const n = Q.atual; const ceu = basConstelacao(n);
   const txt = n === 0 ? (Q.maior > 0 ? `Sua maior sequência foi de ${Q.maior} ${Q.maior === 1 ? 'mês' : 'meses'}. Um aporte este mês acende a primeira estrela.` : 'Cada mês com aporte acende uma estrela. Comece este mês.')
     : `${Q.contaHoje ? 'Este mês já brilha.' : `Falta o aporte de ${MES_LONGO[ult]} para acender a próxima.`}${Q.maior > n ? ` Seu recorde: ${Q.maior} meses.` : n > 1 ? ' É o seu recorde!' : ''}`;
-  return `<button class="card bas-sq${n >= 3 ? ' forte' : ''}" ${basIrInv()}><span class="bas-ct">${ceu}</span>
+  return `<button class="card bas-sq${n >= 3 ? ' forte' : ''}" ${basIr('sequencia')}><span class="bas-ct">${ceu}</span>
     <span class="bas-n"><small>Sequência</small><b>${n === 0 ? 'Comece hoje' : `${n} ${n === 1 ? 'mês' : 'meses'} seguidos investindo`}</b><small class="bas-sq-t">${txt}</small></span></button>`;
 }
 function basWidgetsInicio(secs) {
@@ -1109,7 +1132,7 @@ const basTelaClientes = () => basDet('Clientes', `<div class="bas-clientes">${vi
 document.addEventListener('change', (e) => { const t = e.target; if (!t.matches || !t.matches('input[data-bas-inst]')) return; instMinhaAlternar(t.dataset.basInst, t.checked); basSom('toque');
   const n = instMinhas().length; const c = document.querySelector('.bas-pj-n'); if (c) c.textContent = n ? `${n} ${n === 1 ? 'marcada' : 'marcadas'}` : 'Nenhuma'; });
 const BAS_TELAS = { gasto: basTelaGasto, conta: basTelaConta, 'conta-f': basTelaContaF, entrada: basTelaEntrada, aporte: basTelaAporte, meta: basTelaMeta,
-  objetivos: basTelaObjetivos, objetivo: basTelaObjetivo, categoria: basTelaCategoria, perfil: basTelaPerfil, contato: basTelaContato, ano: basTelaAno, ia: basTelaIa, saude: basTelaSaude, periodo: basTelaPeriodo, organizar: basTelaOrganizar, entradas: basTelaEntradas, sonhos: basTelaSonhos, 'sonho-det': basTelaSonhoDet, cartao: basTelaCartao, 'ano-hist': basTelaAnoHist, 'cartao-estilo': basTelaCartaoEstilo, 'ano-resumo': basTelaAnoResumo, historico: basTelaHistorico, raiox: basTelaRaioX, resumo: basTelaResumo, limite: basTelaLimite, avisos: basTelaAvisos, simular: basTelaSimular, alvos: basTelaAlvos, proventos: basTelaProventos, provento: basTelaProvento, carteira: basTelaCarteira, planejamento: basTelaPlanejamento, privacidade: () => basDet('Privacidade e termos', `<div class="card bas-pol">${politicaHtml(CFG, Store.mode === 'cloud')}</div>`), excluir: basTelaExcluir, ponto: basTelaPonto, clientes: basTelaClientes };
+  objetivos: basTelaObjetivos, objetivo: basTelaObjetivo, categoria: basTelaCategoria, perfil: basTelaPerfil, contato: basTelaContato, ano: basTelaAno, ia: basTelaIa, saude: basTelaSaude, periodo: basTelaPeriodo, organizar: basTelaOrganizar, entradas: basTelaEntradas, sonhos: basTelaSonhos, 'sonho-det': basTelaSonhoDet, cartao: basTelaCartao, sequencia: basTelaSequencia, 'ano-hist': basTelaAnoHist, 'cartao-estilo': basTelaCartaoEstilo, 'ano-resumo': basTelaAnoResumo, historico: basTelaHistorico, raiox: basTelaRaioX, resumo: basTelaResumo, limite: basTelaLimite, avisos: basTelaAvisos, simular: basTelaSimular, alvos: basTelaAlvos, proventos: basTelaProventos, provento: basTelaProvento, carteira: basTelaCarteira, planejamento: basTelaPlanejamento, privacidade: () => basDet('Privacidade e termos', `<div class="card bas-pol">${politicaHtml(CFG, Store.mode === 'cloud')}</div>`), excluir: basTelaExcluir, ponto: basTelaPonto, clientes: basTelaClientes };
 
 /* ================= gravação (no mesmo formato do Completo) ================= */
 function basErro(f, msg) { const e = f.querySelector('.bas-err'); e.textContent = msg; e.hidden = false; return false; }
