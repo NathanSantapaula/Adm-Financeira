@@ -15,7 +15,7 @@ const BAS_NOMES = { basico: 'App', completo: 'SaaS' }; // nomes das duas versõe
 const basTrocaHtml = () => { const v = basInterface();
   return `<div class="seg bas-troca" role="group" aria-label="Versão do AVEN">${['basico', 'completo'].map((k) => `<button${v === k ? ' class="on"' : ''} data-act="bas-ui" data-v="${k}" aria-pressed="${v === k}">${BAS_NOMES[k]}</button>`).join('')}</div>`; };
 const BAS_ABAS = [['inicio', 'Início', I.geral], ['gastos', 'Gastos', I.despesas], ['investir', 'Investir', I.inv], ['perfil', 'Perfil', I.user]];
-const BAS_FORMS = new Set(['gasto', 'conta-f', 'entrada', 'aporte', 'meta', 'objetivo', 'perfil', 'provento', 'limite', 'alvos', 'ponto', 'excluir']); // telas de formulário escondem as abas
+const BAS_FORMS = new Set(['gasto', 'conta-f', 'entrada', 'aporte', 'meta', 'objetivo', 'perfil', 'provento', 'limite', 'alvos', 'ponto', 'excluir', 'retro']); // telas de formulário (e a retrospectiva, em tela cheia) escondem as abas
 const BAS_AREAS = ['Alimentação', 'Moradia', 'Transporte', 'Saúde', 'Lazer', 'Compras', 'Contas', 'Educação'];
 const I_VOLTA = ic('<path d="m15 6-6 6 6 6"/>');
 
@@ -189,9 +189,10 @@ function basInicio() {
   const rec = antes.length > 0 && C.patrimonio[j.ate] > Math.max(...antes) + 0.5;
   // fundo do painel pela hora do dia: manhã, tarde ou noite
   const hr = new Date().getHours(); const fase = hr >= 5 && hr < 12 ? 'manha' : hr >= 12 && hr < 18 ? 'tarde' : 'noite';
+  const metaM = C.metaAporteMes[j.ate] || 0; const humor = basAvisoNivel() ? 'atento' : rec || (metaM > 0 && D.aportado >= metaM) ? 'festa' : 'calmo';
   const hero = `<section class="bas-noite" data-fase="${fase}">
     <header class="bas-noite-h"><button class="bas-eu-m" ${basIr('perfil')} aria-label="Meu perfil">${avatarHtml(pr)}<span class="bas-eu-t"><small>${esc(saudacaoHora())},</small><b>${esc(nome || 'você')}${basPago() ? `<em class="bas-plano-chip">${esc(nomePlano(planoAtual()))}</em>` : ''}</b></span></button>
-      <span class="bas-noite-r"><button class="bell ia-btn${basAvisoNivel()}" ${basIr('ia')} aria-label="Assistente${av ? `: ${av} avisos novos` : ''}" title="Assistente">${IA_ICONE}${av ? `<span class="bell-n" aria-hidden="true">${av > 9 ? '9+' : av}</span>` : ''}</button>${typeof aberturaPode === 'function' && aberturaPode() ? `<button class="bell bas-globo-btn" data-act="bas-globo" aria-label="Abrir o globo do patrimônio" title="Seu universo">${I_GLOBO}</button>` : ''}${olhoHtml()}</span></header>
+      <span class="bas-noite-r"><button class="bell ia-btn${basAvisoNivel()} humor-${humor}" ${basIr('ia')} aria-label="Assistente${av ? `: ${av} avisos novos` : ''}" title="Assistente">${IA_ICONE}${av ? `<span class="bell-n" aria-hidden="true">${av > 9 ? '9+' : av}</span>` : ''}</button>${typeof aberturaPode === 'function' && aberturaPode() ? `<button class="bell bas-globo-btn" data-act="bas-globo" aria-label="Abrir o globo do patrimônio" title="Seu universo">${I_GLOBO}</button>` : ''}${olhoHtml()}</span></header>
     <div class="bas-noite-p">${basPerPill(true)}</div>
     <small class="bas-noite-k">Patrimônio total</small><b class="bas-noite-v brilha${rec ? ' recorde' : ''}${brl(C.patrimonio[j.ate]).length > 13 ? ' longo' : ''}" data-conta="${C.patrimonio[j.ate]}">${basCent(C.patrimonio[j.ate])}</b>
     ${V.va != null ? `<p class="bas-noite-s"><em class="${V.dif >= 0 ? 'pos' : 'neg'}">${V.dif >= 0 ? '↗ +' : '↘ −'}${brl0(Math.abs(V.dif))} (${pct(Math.abs(V.va), 1)})</em> ${basJanFrase()}${rec ? ' <span class="bas-rec-t">· seu maior patrimônio</span>' : ''}</p>` : ''}
@@ -374,10 +375,20 @@ function basCartoes3d() {
     c.addEventListener('pointerdown', () => { if (!basGiroOk && window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission === 'function') DeviceOrientationEvent.requestPermission().then((r) => { if (r === 'granted' && !basGiroOk) { basGiroOk = true; window.addEventListener('deviceorientation', basGiroCartoes, { passive: true }); } }).catch(() => {}); }, { passive: true });
     c.addEventListener('pointermove', (e) => { if (e.pointerType === 'mouse') mover(e); }); c.addEventListener('pointerleave', soltar); c.addEventListener('pointerup', soltar); c.addEventListener('pointercancel', soltar); });
 }
+// uma vez por sessão, no Início: a retrospectiva do mês que passou (até o dia 7, uma vez por mês) ou a conquista de um marco novo da sequência
+function basSurpresas() {
+  if (S.basSurpresa || (S.basPilha || []).length || basAba() !== 'inicio' || !S.profile || S.year !== NOW_Y) return; S.basSurpresa = true;
+  const chave = `${NOW_Y}-${NOW_M}`; const dia = new Date().getDate();
+  if (NOW_M > 0 && dia <= 7 && S.profile.retroVista !== chave) { S.profile.retroVista = chave; touch('profile'); setTimeout(() => basAbrir('retro', { id: NOW_M - 1 }), 900); return; }
+  const n = basSeqDados().Q.atual; const marco = BAS_SEQ_MARCOS.filter((x) => x[0] <= n).pop();
+  if (marco && marco[0] > (+S.profile.seqCelebrado || 0)) { S.profile.seqCelebrado = marco[0]; touch('profile'); setTimeout(() => basAbrir('conquista', { id: marco[0] }), 900); }
+}
 function basDesenhar() {
   const st = document.getElementById('bas-o3');
   if (st) { const falhou = () => st.classList.add('sem-3d'); if (typeof o3Ligar === 'function') o3Ligar(st, st.dataset.tipo, falhou); else falhou(); }
   basEvLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basContar(); basCartoes3d();
+  const wr = document.querySelector('.bas-wr'); if (wr && !wr.dataset.lig) { wr.dataset.lig = '1'; basWrIr(wr, 0); }
+  basSurpresas();
   const c = document.querySelector('.bas-membro');
   if (c && !c.dataset.tilt && !matchMedia('(prefers-reduced-motion: reduce)').matches) { c.dataset.tilt = '1';
     // inclina 1:1 com o dedo ou o mouse, a partir de onde tocou; ao soltar, volta com mola (transição em CSS)
@@ -623,11 +634,14 @@ function basTelaResumo() {
       ${g ? `<div class="bas-story-g"><span>${esc(objNomeDe(g))}</span>${basBarra(g.progresso)}<b>${pct(g.progresso)}</b></div>` : ''}</div>
     <button class="btn primary lg bas-cta bas-add" data-act="bas-partilhar">${I_PARTILHA}Compartilhar imagem</button><p class="bas-disc keep">${oculto() ? 'Com o olho fechado, a imagem vai sem os valores.' : 'A imagem leva os valores do mês. Feche o olho para mandar sem eles.'}</p>`);
 }
-async function basPartilhar() {
-  let blob; try { blob = await basStoryPng(S.mes); } catch (e) { blob = null; }
+async function basPartilhar(m) {
+  m = m == null ? S.mes : m; let blob; try { blob = await basStoryPng(m); } catch (e) { blob = null; }
+  return basEnviaPng(blob, `${(CFG.marca || 'aven').toLowerCase()}-resumo-${MES[m].toLowerCase()}-${S.year}.png`, `Resumo de ${MES_LONGO[m]}`);
+}
+async function basEnviaPng(blob, nome, titulo) {
   if (!blob) { toast('Não foi possível montar a imagem neste aparelho.'); return; }
-  const nome = `${(CFG.marca || 'aven').toLowerCase()}-resumo-${MES[S.mes].toLowerCase()}-${S.year}.png`; const file = new File([blob], nome, { type: 'image/png' });
-  try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: `Resumo de ${MES_LONGO[S.mes]}` }); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
+  const file = new File([blob], nome, { type: 'image/png' });
+  try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: titulo }); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nome; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000); toast('Imagem salva. É só enviar de onde quiser.');
 }
 // carteira recomendada pelo assessor (Assessoria): a lista, a nota e aplicar com dois toques (mesma regra do SaaS)
@@ -821,6 +835,53 @@ function basConstelacao(n) {
 }
 // marcos da sequência, como conquistas que acendem
 const BAS_SEQ_MARCOS = [[3, 'Constância', '3 meses seguidos'], [6, 'Meio ano', '6 meses seguidos'], [12, 'Um ano inteiro', '12 meses seguidos'], [24, 'Dois anos', '24 meses seguidos']];
+// abertura do mês: no começo de um mês novo, uma retrospectiva do mês que passou, em 4 telas que passam sozinhas
+function basTelaRetro(o) {
+  const m = o.id != null ? +o.id : NOW_M - 1; if (!(m >= 0) || !S.C) return basSumiu(); const C = S.C; const carry = E.carryItems(S.plans, S.year);
+  const sob = C.investAlocado[m]; const ent = C.receita[m]; const ar = E.gastosAreaMes(S.plan, carry, m); const top = Object.keys(ar).map((k) => [k, ar[k]]).filter((x) => x[1] > 0).sort((a, b) => b[1] - a[1]).slice(0, 3); const mxA = top.length ? top[0][1] : 1;
+  const D = E.disponivelAporte({ C, mes: m, metaMes: C.metaAporteMes }); const n = basSeqDados().Q.atual; const pAnt = m > 0 ? C.patrimonio[m - 1] : C.patrimonioBase; const dp = C.patrimonio[m] - pAnt;
+  const sl = [
+    `<small>Sua retrospectiva</small><b class="bas-wr-g">${cap(MES_LONGO[m])}<br>acabou.</b><p>Vamos ver como foi?</p>`,
+    `<small>Sobrou no mês</small><b class="bas-wr-v">${basCent(sob)}</b><p>${ent > 0 ? `Você guardou <em>${pct(Math.max(0, sob / ent))}</em> do que entrou.` : 'Anote as entradas para ver quanto guardou.'}</p>`,
+    `<small>Para onde foi o dinheiro</small>${top.length ? `<ul class="bas-wr-l">${top.map(([a, v], i) => `<li><span>${i + 1}. ${esc(a)}</span><i style="--w:${((v / mxA) * 100).toFixed(0)}%"></i><b>${brl0(v)}</b></li>`).join('')}</ul>` : '<p>Nenhum gasto anotado.</p>'}`,
+    `<small>Investido</small><b class="bas-wr-v">${basCent(D.aportado)}</b><p>${n > 0 ? `Sua sequência está em <em>${n} ${n === 1 ? 'mês' : 'meses'}</em>.` : 'Um aporte este mês começa uma sequência.'}${C.faturamento[m] > 0 ? ` E os proventos somaram ${brl0(C.faturamento[m])}.` : ''}</p>`,
+    `<small>Seu patrimônio</small><b class="bas-wr-v">${basCent(C.patrimonio[m])}</b><p>${Math.abs(dp) >= 1 ? `${dp > 0 ? 'Cresceu' : 'Caiu'} <em>${brl0(Math.abs(dp))}</em> no mês.` : 'Ficou estável no mês.'}</p><button class="bas-dp-bt" data-act="bas-retro-share" data-m="${m}">Compartilhar o mês</button>`,
+  ];
+  return `<section class="bas-wr" data-n="${sl.length}" style="--n:${sl.length}"><div class="bas-wr-bar">${sl.map((_, i) => `<span><i style="--i:${i}"></i></span>`).join('')}</div>
+    <button class="bas-wr-x" data-act="bas-voltar" aria-label="Fechar">${I.x}</button>${sl.map((h, i) => `<div class="bas-wr-s${i ? '' : ' on'}" data-s="${i}">${h}</div>`).join('')}
+    <button class="bas-wr-z e" data-act="bas-wr" data-d="-1" aria-label="Anterior"></button><button class="bas-wr-z d" data-act="bas-wr" data-d="1" aria-label="Próxima"></button></section>`;
+}
+// telas da retrospectiva: troca a cada 5 s ou num toque nas metades da tela (sem render)
+function basWrIr(w, i) {
+  const n = +w.dataset.n; if (i >= n) { basFechar(); return; } i = Math.max(0, i); w.dataset.i = i;
+  w.querySelectorAll('.bas-wr-s').forEach((x, k) => x.classList.toggle('on', k === i)); w.querySelectorAll('.bas-wr-bar i').forEach((b, k) => { b.className = k < i ? 'cheia' : k === i ? 'anda' : ''; });
+  clearTimeout(w._t); if (i < n - 1) w._t = setTimeout(() => { if (w.isConnected) basWrIr(w, i + 1); }, 5000);
+}
+// cartão de conquista: aparece quando a sequência alcança um marco pela primeira vez; pronto para compartilhar
+function basTelaConquista(o) {
+  const q = +o.id; const M = BAS_SEQ_MARCOS.find((x) => x[0] === q); if (!M) return basSumiu();
+  return basDet('Conquista', `<section class="bas-cq"><span class="bas-cq-luz" aria-hidden="true"></span><div class="bas-sx-ceu">${basConstelacao(q)}</div>
+      <span class="bas-cq-medalha" aria-hidden="true">${q}</span><b class="bas-cq-t">${esc(M[1])}</b><span class="bas-cq-s">${q} meses seguidos investindo</span>
+      <p class="bas-cq-p">Cada estrela é um mês em que você escolheu o seu futuro. Continue acendendo.</p></section>
+    <button class="btn primary lg bas-cta bas-add" data-act="bas-cq-share" data-q="${q}">Compartilhar conquista</button>`);
+}
+function basConquistaPng(q) {
+  const M = BAS_SEQ_MARCOS.find((x) => x[0] === q) || [q, '', '']; const cs = getComputedStyle(document.documentElement); const acc = cs.getPropertyValue('--accent').trim() || '#0A84FF';
+  const fonte = getComputedStyle(document.body).fontFamily; const W = 1080; const H = 1350; const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const x = cv.getContext('2d');
+  x.fillStyle = '#0B0C12'; x.fillRect(0, 0, W, H);
+  const brilho = (cx, cy, r, cor, a) => { const gr = x.createRadialGradient(cx, cy, 0, cx, cy, r); gr.addColorStop(0, cor); gr.addColorStop(1, 'rgba(0,0,0,0)'); x.globalAlpha = a; x.fillStyle = gr; x.fillRect(0, 0, W, H); x.globalAlpha = 1; };
+  brilho(W * 0.8, 80, 760, acc, 0.6); brilho(W * 0.1, H, 760, '#7c5cff', 0.45);
+  x.fillStyle = 'rgba(255,255,255,0.12)'; for (let yy = 24; yy < H; yy += 36) for (let xx = 24; xx < W; xx += 36) x.fillRect(xx, yy, 2.5, 2.5);
+  const P = [[8, 72], [21, 60], [33, 67], [45, 51], [57, 57], [66, 41], [79, 45], [88, 29], [100, 35], [108, 19], [120, 23], [126, 8]].map(([a, b]) => [140 + a * 6.2, 230 + b * 6.2]); const k = Math.min(q, 12);
+  x.strokeStyle = 'rgba(255,255,255,0.25)'; x.setLineDash([6, 12]); x.lineWidth = 3; x.beginPath(); P.forEach((p, i) => (i ? x.lineTo(p[0], p[1]) : x.moveTo(p[0], p[1]))); x.stroke(); x.setLineDash([]);
+  x.strokeStyle = acc; x.lineWidth = 6; x.shadowColor = acc; x.shadowBlur = 24; x.beginPath(); P.slice(0, k).forEach((p, i) => (i ? x.lineTo(p[0], p[1]) : x.moveTo(p[0], p[1]))); x.stroke();
+  P.forEach((p, i) => { x.beginPath(); x.fillStyle = i < k ? '#fff' : 'rgba(255,255,255,0.3)'; x.arc(p[0], p[1], i < k ? 13 : 7, 0, Math.PI * 2); x.fill(); }); x.shadowBlur = 0;
+  const gr = x.createLinearGradient(W / 2 - 110, 0, W / 2 + 110, 0); gr.addColorStop(0, '#e3b445'); gr.addColorStop(0.5, '#fff1c4'); gr.addColorStop(1, '#e3b445'); x.fillStyle = gr; x.beginPath(); x.arc(W / 2, 860, 110, 0, Math.PI * 2); x.fill();
+  const txt = (t, px, peso, cor, y) => { x.font = `${peso} ${px}px ${fonte}`; x.fillStyle = cor; x.textAlign = 'center'; x.fillText(t, W / 2, y); };
+  txt(String(q), 110, 800, '#2b2006', 900); txt(M[1], 76, 800, '#ffffff', 1080); txt(`${q} meses seguidos investindo`, 40, 500, 'rgba(245,245,247,0.75)', 1145);
+  txt(`Feito com ${CFG.marca || 'AVEN'}`, 30, 500, 'rgba(245,245,247,0.5)', H - 70);
+  return new Promise((ok) => cv.toBlob((b) => ok(b), 'image/png'));
+}
 function basTelaSequencia() {
   const { ult, meses, Q } = basSeqDados(); const n = Q.atual; const hoje = new Date(); const fimMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).getDate(); const faltam = fimMes - hoje.getDate();
   const corrente = S.year === NOW_Y; const comAporte = meses.filter((x) => x.v > 0).length; const prox = BAS_SEQ_MARCOS.find((m) => m[0] > Q.maior);
@@ -832,7 +893,7 @@ function basTelaSequencia() {
     <div class="bas-sx-st"><span><small>Atual</small><b>${n}</b></span><span><small>Recorde</small><b>${Q.maior}</b></span><span><small>Meses com aporte</small><b>${comAporte}</b></span></div>
     ${basSecao(`${S.year - 1} e ${S.year}`, '', `<div class="card bas-sx-cal"><div class="bas-sx-ano"><small>${S.year - 1}</small><div class="bas-sx-g">${grade.split('</span>').slice(0, 12).join('</span>')}</span></div></div>
       <div class="bas-sx-ano"><small>${S.year}</small><div class="bas-sx-g">${grade.split('</span>').slice(12).join('</span>')}</div></div></div>`)}
-    ${basSecao('Marcos', prox ? `<small class="bas-raio-t">Próximo: ${prox[0]} meses</small>` : '', `<div class="bas-sx-mc">${BAS_SEQ_MARCOS.map(([q, nm, d]) => `<span class="bas-sx-b${Q.maior >= q ? ' on' : ''}"><i aria-hidden="true">${q}</i><b>${nm}</b><small>${Q.maior >= q ? 'Desbloqueado' : `${Math.max(0, q - n)} ${q - n === 1 ? 'mês' : 'meses'} para chegar`}</small></span>`).join('')}</div>`)}
+    ${basSecao('Marcos', prox ? `<small class="bas-raio-t">Próximo: ${prox[0]} meses</small>` : '', `<div class="bas-sx-mc">${BAS_SEQ_MARCOS.map(([q, nm, d]) => (Q.maior >= q ? `<button class="bas-sx-b on" ${basIr('conquista', { id: q })}><i aria-hidden="true">${q}</i><b>${nm}</b><small>Desbloqueado · ver cartão</small></button>` : `<span class="bas-sx-b"><i aria-hidden="true">${q}</i><b>${nm}</b><small>${Math.max(0, q - n)} ${q - n === 1 ? 'mês' : 'meses'} para chegar</small></span>`)).join('')}</div>`)}
     ${basSecao('Como funciona', '', `<div class="card bas-sx-como"><p class="bas-p bas-p0">Cada mês em que você investe qualquer valor acende uma estrela. A sequência conta os meses seguidos; o mês atual só apaga se terminar sem aporte. Dividendos reinvestidos também contam.</p></div>`)}`);
 }
 function basSequenciaHtml() {
@@ -876,7 +937,7 @@ function basWidgetsInicio(secs) {
   // Resumo do mês: um story em miniatura, inclinado e brilhando, pronto para compartilhar
   const mR = S.mes; const Dr = E.disponivelAporte({ C, mes: mR, metaMes: C.metaAporteMes }); const topR = Math.max(1, C.receita[mR], C.despesas[mR], Dr.aportado);
   secs.resumo = `<div class="card bas-w-res"><div class="bas-w-res-t"><small>Resumo de ${MES_LONGO[mR]}</small><b>Seu mês num story</b><span>Uma imagem com o que entrou, saiu e foi investido.</span>
-      <span class="bas-w-res-bts"><button class="bas-sn-bt prim" data-act="bas-partilhar">${I_PARTILHA}Compartilhar</button><button class="bas-sn-bt" ${basIr('resumo')}>Ver</button></span></div>
+      <span class="bas-w-res-bts"><button class="bas-sn-bt prim" data-act="bas-partilhar">${I_PARTILHA}Compartilhar</button><button class="bas-sn-bt" ${basIr('resumo')}>Ver</button>${S.year === NOW_Y && NOW_M > 0 ? `<button class="bas-sn-bt" ${basIr('retro', { id: NOW_M - 1 })}>Retrospectiva</button>` : ''}</span></div>
     <button class="bas-w-res-s" ${basIr('resumo')} aria-label="Ver o resumo de ${MES_LONGO[mR]}"><span class="bas-w-res-m" aria-hidden="true">${LOGO}</span><small>${cap(MES_LONGO[mR])}</small><b>${brl0(C.investAlocado[mR])}</b><em>sobraram</em>
       <span class="bas-w-res-l" aria-hidden="true">${[['pos', C.receita[mR]], ['', C.despesas[mR]], ['acc', Dr.aportado]].map(([c, v]) => `<i class="${c}" style="--w:${Math.max(6, (v / topR) * 100).toFixed(0)}%"></i>`).join('')}</span></button></div>`;
   // o que o assistente notou: o aviso mais importante ainda não lido
@@ -1132,7 +1193,7 @@ const basTelaClientes = () => basDet('Clientes', `<div class="bas-clientes">${vi
 document.addEventListener('change', (e) => { const t = e.target; if (!t.matches || !t.matches('input[data-bas-inst]')) return; instMinhaAlternar(t.dataset.basInst, t.checked); basSom('toque');
   const n = instMinhas().length; const c = document.querySelector('.bas-pj-n'); if (c) c.textContent = n ? `${n} ${n === 1 ? 'marcada' : 'marcadas'}` : 'Nenhuma'; });
 const BAS_TELAS = { gasto: basTelaGasto, conta: basTelaConta, 'conta-f': basTelaContaF, entrada: basTelaEntrada, aporte: basTelaAporte, meta: basTelaMeta,
-  objetivos: basTelaObjetivos, objetivo: basTelaObjetivo, categoria: basTelaCategoria, perfil: basTelaPerfil, contato: basTelaContato, ano: basTelaAno, ia: basTelaIa, saude: basTelaSaude, periodo: basTelaPeriodo, organizar: basTelaOrganizar, entradas: basTelaEntradas, sonhos: basTelaSonhos, 'sonho-det': basTelaSonhoDet, cartao: basTelaCartao, sequencia: basTelaSequencia, 'ano-hist': basTelaAnoHist, 'cartao-estilo': basTelaCartaoEstilo, 'ano-resumo': basTelaAnoResumo, historico: basTelaHistorico, raiox: basTelaRaioX, resumo: basTelaResumo, limite: basTelaLimite, avisos: basTelaAvisos, simular: basTelaSimular, alvos: basTelaAlvos, proventos: basTelaProventos, provento: basTelaProvento, carteira: basTelaCarteira, planejamento: basTelaPlanejamento, privacidade: () => basDet('Privacidade e termos', `<div class="card bas-pol">${politicaHtml(CFG, Store.mode === 'cloud')}</div>`), excluir: basTelaExcluir, ponto: basTelaPonto, clientes: basTelaClientes };
+  objetivos: basTelaObjetivos, objetivo: basTelaObjetivo, categoria: basTelaCategoria, perfil: basTelaPerfil, contato: basTelaContato, ano: basTelaAno, ia: basTelaIa, saude: basTelaSaude, periodo: basTelaPeriodo, organizar: basTelaOrganizar, entradas: basTelaEntradas, sonhos: basTelaSonhos, 'sonho-det': basTelaSonhoDet, cartao: basTelaCartao, retro: basTelaRetro, conquista: basTelaConquista, sequencia: basTelaSequencia, 'ano-hist': basTelaAnoHist, 'cartao-estilo': basTelaCartaoEstilo, 'ano-resumo': basTelaAnoResumo, historico: basTelaHistorico, raiox: basTelaRaioX, resumo: basTelaResumo, limite: basTelaLimite, avisos: basTelaAvisos, simular: basTelaSimular, alvos: basTelaAlvos, proventos: basTelaProventos, provento: basTelaProvento, carteira: basTelaCarteira, planejamento: basTelaPlanejamento, privacidade: () => basDet('Privacidade e termos', `<div class="card bas-pol">${politicaHtml(CFG, Store.mode === 'cloud')}</div>`), excluir: basTelaExcluir, ponto: basTelaPonto, clientes: basTelaClientes };
 
 /* ================= gravação (no mesmo formato do Completo) ================= */
 function basErro(f, msg) { const e = f.querySelector('.bas-err'); e.textContent = msg; e.hidden = false; return false; }
@@ -1256,6 +1317,9 @@ function basAcao(act, ds, el) {
     case 'bas-rolar': { const a = document.getElementById(ds.alvo); if (a) a.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }); return true; }
     case 'bas-tema-ciclo': { const ord = ['auto', 'light', 'oled']; const v = ord[(ord.indexOf(S.profile.prefs.tema) + 1) % 3]; if (v !== 'auto') S.profile.prefs.tema = v; definirTema(v === 'auto' ? 'auto-on' : v); render(); toast(`Tema: ${{ auto: 'automático', light: 'claro', oled: 'escuro' }[v]}.`); return true; }
     case 'bas-voltar': basFechar(); return true;
+    case 'bas-wr': { const w = el.closest('.bas-wr'); if (w) { basWrIr(w, (+w.dataset.i || 0) + (+ds.d || 1)); basSom('toque'); } return true; }
+    case 'bas-retro-share': basPartilhar(+ds.m); return true;
+    case 'bas-cq-share': basConquistaPng(+ds.q).then((b) => basEnviaPng(b, `${(CFG.marca || 'aven').toLowerCase()}-conquista-${ds.q}-meses.png`, 'Minha conquista')); return true;
     case 'bas-ah-ano': { const t = basTopoPilha(); if (t && t.t === 'ano-hist') { t.id = String(ds.y); basSom('toque'); render(); } return true; }
     case 'bas-cc-mod': if (instDe(ds.id) && CC_MODELOS.some((x) => x[0] === ds.m)) basCcGrava(ds.id, 'm', ds.m); return true;
     case 'bas-cc-cor': if (instDe(ds.id) && /^#[0-9a-f]{6}$/i.test(ds.v || '')) basCcGrava(ds.id, 'c', ds.v); return true;

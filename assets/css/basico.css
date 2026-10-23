@@ -1201,10 +1201,9 @@ button.bas-cc-c:active { transform: perspective(900px) rotateX(var(--rx, 0deg)) 
 }
 
 /* fundo do Início: os pontinhos da própria textura flutuam devagar e cintilam (sem camada nova) */
-/* duas camadas dos mesmos pontinhos andando em sentidos opostos (parallax) e um cintilar visível; o desenho se repete a cada quadro, sem salto */
-.bas-noite::before { background: radial-gradient(rgba(255, 255, 255, .13) 1px, transparent 1.4px) 0 0 / 18px 18px, radial-gradient(rgba(255, 255, 255, .34) 1.1px, transparent 1.7px) 9px 9px / 54px 54px;
-  animation: bas-pts-move 9s linear infinite, bas-pts-luz 3.6s ease-in-out infinite; }
-@keyframes bas-pts-move { to { background-position: 18px -18px, -45px 63px; } }
+/* os pontinhos da textura andam devagar na diagonal e cintilam; o passo é o tamanho do desenho, sem salto */
+.bas-noite::before { animation: bas-pts-move 9s linear infinite, bas-pts-luz 3.6s ease-in-out infinite; }
+@keyframes bas-pts-move { to { background-position: 18px -18px; } }
 @keyframes bas-pts-luz { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
 /* recorde discreto: uma nota na linha da variação */
 .bas-rec-t { font-size: 12.5px; font-weight: 650; background: linear-gradient(90deg, #f6d77a, #fff1c4, #f6d77a); -webkit-background-clip: text; background-clip: text; color: transparent; }
@@ -1247,3 +1246,46 @@ button.bas-cc-c:active { transform: perspective(900px) rotateX(var(--rx, 0deg)) 
 .bas-sx-b.on { opacity: 1; } .bas-sx-b.on i { color: #2b2006; background: linear-gradient(135deg, #f6d77a, #fff1c4 45%, #e3b445); box-shadow: 0 8px 18px -8px rgba(242, 201, 76, .8); }
 .card.bas-sx-como { padding: 16px; border-radius: 22px; }
 @media (prefers-reduced-motion: reduce) { .bas-sx-hero::before { animation: none; } }
+
+/* ---------- rodada 13: retrospectiva do mês, cartão de conquista e humor do assistente ---------- */
+/* retrospectiva: tela cheia, barras de progresso no topo, cada tela com a sua cor e o texto grande */
+.bas-wr { position: fixed; inset: 0; z-index: 90; overflow: hidden; color: #fff; background: var(--bas-noite); }
+.bas-wr::before { content: ''; position: absolute; inset: -20%; background: radial-gradient(60% 50% at 80% 10%, color-mix(in srgb, var(--accent) 70%, transparent), transparent 70%), radial-gradient(60% 50% at 10% 90%, color-mix(in srgb, #7c5cff 60%, transparent), transparent 70%); animation: bas-wr-fundo 12s ease-in-out infinite alternate; }
+@keyframes bas-wr-fundo { to { transform: translate(6%, -4%) rotate(8deg); } }
+.bas-wr-bar { position: absolute; z-index: 3; top: calc(12px + env(safe-area-inset-top, 0px)); left: 16px; right: 16px; display: grid; grid-template-columns: repeat(var(--n), 1fr); gap: 5px; }
+.bas-wr-bar span { height: 3px; border-radius: 3px; background: rgba(255, 255, 255, .28); overflow: hidden; } .bas-wr-bar i { display: block; height: 100%; width: 0; background: #fff; }
+.bas-wr-bar i.cheia { width: 100%; } .bas-wr-bar i.anda { animation: bas-wr-anda 5s linear forwards; } @keyframes bas-wr-anda { to { width: 100%; } }
+.bas-wr-x { position: absolute; z-index: 4; top: calc(26px + env(safe-area-inset-top, 0px)); right: 12px; width: 40px; height: 40px; display: grid; place-items: center; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .14); color: #fff; } .bas-wr-x svg { width: 20px; height: 20px; }
+.bas-wr-s { position: absolute; inset: 0; z-index: 1; display: flex; flex-direction: column; justify-content: center; gap: 10px; padding: 90px 28px 60px; opacity: 0; transform: translateY(18px) scale(.98); transition: opacity 500ms ease, transform 600ms var(--ease-out); pointer-events: none; }
+.bas-wr-s.on { opacity: 1; transform: none; pointer-events: auto; }
+.bas-wr-s small { font-size: 15px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: rgba(255, 255, 255, .7); }
+.bas-wr-g { font-size: clamp(46px, 14vw, 64px); font-weight: 800; line-height: 1.02; letter-spacing: -.04em; }
+.bas-wr-v { font-size: clamp(40px, 12vw, 56px); font-weight: 800; letter-spacing: -.035em; font-variant-numeric: tabular-nums; } .bas-wr-v .bas-cent { opacity: .55; }
+.bas-wr-s p { margin: 0; max-width: 28ch; font-size: 19px; line-height: 1.4; color: rgba(255, 255, 255, .85); } .bas-wr-s em { font-style: normal; font-weight: 800; color: #ffd98a; }
+.bas-wr-l { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 16px; } .bas-wr-l li { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; font-size: 19px; font-weight: 700; }
+.bas-wr-l i { grid-column: 1 / -1; height: 10px; width: var(--w); border-radius: 10px; background: linear-gradient(90deg, #fff, color-mix(in srgb, var(--accent) 60%, #fff)); }
+.bas-wr-l b { font-variant-numeric: tabular-nums; }
+.bas-wr-s .bas-dp-bt { align-self: flex-start; margin-top: 18px; min-height: 48px; padding: 0 22px; font-size: 16px; position: relative; z-index: 5; }
+.bas-wr-z { position: absolute; z-index: 2; top: 0; bottom: 0; width: 35%; border: 0; background: transparent; } .bas-wr-z.e { left: 0; } .bas-wr-z.d { right: 0; width: 65%; }
+/* cartão de conquista */
+.bas-cq { position: relative; isolation: isolate; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 26px 20px 24px; border-radius: 30px; color: #fff;
+  background: radial-gradient(90% 70% at 80% 0%, color-mix(in srgb, var(--accent) 50%, transparent), transparent 62%), radial-gradient(80% 60% at 0% 100%, color-mix(in srgb, #7c5cff 40%, transparent), transparent 60%), #0b0c12; box-shadow: var(--shadow-lg); }
+.bas-cq::before { content: ''; position: absolute; inset: 0; z-index: -1; background: radial-gradient(rgba(255, 255, 255, .14) 1px, transparent 1.4px) 0 0 / 18px 18px; }
+.bas-cq-luz { position: absolute; z-index: -1; top: 40%; left: 50%; width: 260px; height: 260px; margin: -130px 0 0 -130px; border-radius: 50%; background: conic-gradient(from 0deg, transparent, rgba(255, 225, 140, .35), transparent 30%, rgba(255, 225, 140, .25), transparent 60%); filter: blur(10px); animation: bas-giro 9s linear infinite; }
+.bas-cq .bas-ct-p { stroke: rgba(255, 255, 255, .22); } .bas-cq .bas-ct-e:not(.on) { fill: rgba(255, 255, 255, .3); }
+.bas-cq-medalha { width: 96px; height: 96px; margin-top: 12px; display: grid; place-items: center; border-radius: 50%; font-size: 40px; font-weight: 800; color: #2b2006; background: radial-gradient(circle at 35% 30%, #fff6d6, #f1cf6b 45%, #c8932b); box-shadow: 0 0 0 6px rgba(255, 225, 140, .18), 0 0 40px rgba(242, 201, 76, .7); animation: bas-cq-entra 900ms cubic-bezier(.2, 1.4, .4, 1) both; }
+@keyframes bas-cq-entra { from { transform: scale(.4) rotate(-20deg); opacity: 0; } }
+.bas-cq-t { margin-top: 14px; font-size: 28px; font-weight: 800; letter-spacing: -.02em; } .bas-cq-s { font-size: 15px; font-weight: 600; color: rgba(255, 255, 255, .75); }
+.bas-cq-p { margin: 12px 0 0; max-width: 30ch; font-size: 14.5px; line-height: 1.45; color: rgba(255, 255, 255, .85); }
+button.bas-sx-b { border: 0; font: inherit; color: inherit; text-align: left; cursor: pointer; transition: transform 120ms var(--ease-out); } button.bas-sx-b:active { transform: scale(.97); }
+/* humor do assistente: calmo (devagar), atento (anel âmbar, ondas rápidas e de pé) e comemorando (anel dourado e colorido, girando rápido, com brilhos) */
+.bell.ia-btn.humor-calmo::before { animation-duration: 12s; } .bell.ia-btn.humor-calmo .ia-mini > span { animation-duration: 5.5s, 16s; }
+.bell.ia-btn.humor-atento::before { background: conic-gradient(from var(--ia-ang), #ffb340, #ff6b7a, #ffd27a, #ff6b7a, #ffb340); animation-duration: 3s; }
+.bell.ia-btn.humor-atento .ia-mini { transform: rotate(0deg) scaleY(1.12); } .bell.ia-btn.humor-atento .ia-mini > span { animation-duration: 1.4s, 6s; }
+.bell.ia-btn.humor-festa::before { background: conic-gradient(from var(--ia-ang), #f6d77a, #ff7ad9, #7ad7ff, #a7ff7a, #f6d77a); animation-duration: 2.4s; }
+.bell.ia-btn.humor-festa .ia-mini { animation: bas-ia-pula 1.6s ease-in-out infinite; }
+.bell.ia-btn.humor-festa::after { content: ''; position: absolute; inset: -6px; border-radius: 50%; pointer-events: none; background: radial-gradient(circle, #fff 0 1.4px, transparent 2px) 6px 4px / 14px 14px, radial-gradient(circle, #ffe69a 0 1.2px, transparent 1.8px) 0 9px / 19px 19px; -webkit-mask: radial-gradient(closest-side, transparent 70%, #000 72%); mask: radial-gradient(closest-side, transparent 70%, #000 72%); animation: bas-giro 6s linear infinite, bas-pts-luz 1.8s ease-in-out infinite; }
+@keyframes bas-ia-pula { 0%, 100% { transform: rotate(-12deg) translateY(0); } 50% { transform: rotate(-12deg) translateY(-2px) scale(1.08); } }
+@media (prefers-reduced-motion: reduce) {
+  .bas-wr::before, .bas-wr-bar i.anda, .bas-cq-luz, .bas-cq-medalha, .bell.ia-btn.humor-festa .ia-mini, .bell.ia-btn.humor-festa::after { animation: none; } .bas-wr-bar i.anda { width: 100%; } .bas-wr-s { transition: opacity 200ms ease; transform: none; }
+}
