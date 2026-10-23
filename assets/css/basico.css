@@ -1390,3 +1390,50 @@ button.bas-esc-c { cursor: pointer; transition: transform 140ms var(--ease-out);
 }
 .bas-sq-ks b { font-size: 14px; line-height: 1.25; } .bas-sq-ks span { padding: 12px 10px 10px; }
 .bas-esc-c:not(.on) .bas-esc-e { opacity: 0; } .bas-esc-c:not(.on) .bas-esc-l { transform: translateY(-14px); }
+
+/* ---------- sequência v2: joia lapidada, trilha de joias e brasões por nível ---------- */
+.bas-gm polygon { stroke: rgba(255, 255, 255, .28); stroke-width: .6; stroke-linejoin: round; }
+.bas-gm-ar { fill: none; stroke: rgba(255, 255, 255, .55); stroke-width: .8; } .bas-gm-borda { fill: none; stroke: rgba(255, 255, 255, .5); stroke-width: 1.2; }
+.bas-gm-rf { fill: rgba(255, 255, 255, .55); animation: bas-gm-reflexo 4.5s ease-in-out infinite; }
+@keyframes bas-gm-reflexo { 0%, 55% { transform: rotate(25deg) translateX(0); } 100% { transform: rotate(25deg) translateX(190px); } }
+/* a joia do topo: flutua, raios de luz girando atrás e brilhos em volta */
+.bas-jx { width: 190px; height: 190px; display: grid; place-items: center; }
+.bas .bas-jx-g { position: relative; z-index: 1; width: 128px; height: 128px; overflow: visible; filter: drop-shadow(0 18px 24px rgba(0, 0, 0, .45)) drop-shadow(0 0 22px var(--jx-c)); animation: bas-jx-flutua 4s ease-in-out infinite; }
+@keyframes bas-jx-flutua { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-8px) rotate(2deg); } }
+.bas-jx-raios { position: absolute; inset: -20px; border-radius: 50%; background: repeating-conic-gradient(from 0deg, color-mix(in srgb, var(--jx-c) 55%, transparent) 0 6deg, transparent 6deg 24deg); -webkit-mask: radial-gradient(closest-side, #000 20%, transparent 72%); mask: radial-gradient(closest-side, #000 20%, transparent 72%); opacity: .55; animation: bas-giro 24s linear infinite; }
+.bas-jx-sp { position: absolute; width: 14px; height: 14px; background: #fff; clip-path: polygon(50% 0, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0 50%, 40% 40%); filter: drop-shadow(0 0 4px var(--jx-c)); animation: bas-jx-pisca 2.4s ease-in-out infinite; animation-delay: calc(var(--i) * .6s); }
+.bas-jx-sp:nth-of-type(1) { top: 14%; left: 18%; } .bas-jx-sp:nth-of-type(2) { top: 20%; right: 14%; width: 10px; height: 10px; } .bas-jx-sp:nth-of-type(3) { bottom: 18%; left: 12%; width: 9px; height: 9px; } .bas-jx-sp:nth-of-type(4) { bottom: 12%; right: 20%; }
+@keyframes bas-jx-pisca { 0%, 100% { transform: scale(.3) rotate(0); opacity: 0; } 50% { transform: scale(1) rotate(45deg); opacity: 1; } }
+.bas-jx.base { --jx-c: var(--accent); } .bas-jx.bronze { --jx-c: #e0894a; } .bas-jx.prata { --jx-c: #c9d4e2; } .bas-jx.ouro { --jx-c: #ffc94a; } .bas-jx.platina { --jx-c: #7fd6ff; } .bas-jx.diamante { --jx-c: #a487ff; }
+.bas-jx:not(.aceso) .bas-jx-g { filter: grayscale(.8) brightness(.7); } .bas-jx:not(.aceso) .bas-jx-raios, .bas-jx:not(.aceso) .bas-jx-sp { display: none; }
+.bas-jx.festa .bas-jx-g { animation: bas-sqx-festa 700ms cubic-bezier(.2, 1.6, .4, 1); }
+.bas-jx-n { margin-top: 2px; font-size: 64px; font-weight: 900; line-height: 1; letter-spacing: -.05em; background: linear-gradient(180deg, #fff 30%, color-mix(in srgb, var(--jx-c, #ffd27a) 70%, #fff)); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 4px 18px rgba(0, 0, 0, .4)); font-variant-numeric: tabular-nums; }
+.bas-sqx:has(.bas-jx.bronze) { --jx-c: #e0894a; } .bas-sqx:has(.bas-jx.prata) { --jx-c: #c9d4e2; } .bas-sqx:has(.bas-jx.ouro) { --jx-c: #ffc94a; } .bas-sqx:has(.bas-jx.platina) { --jx-c: #7fd6ff; } .bas-sqx:has(.bas-jx.diamante) { --jx-c: #a487ff; }
+.bas-sqx .bas-sqx-t { margin-top: 4px; } .bas-jx-nv { margin-top: 4px; padding: 3px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--jx-c, #ffd27a); background: rgba(255, 255, 255, .08); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--jx-c, #ffd27a) 40%, transparent); }
+/* trilha de joias: encaixes ligados por uma corrente de luz; as joias acesas e o mês atual esperando */
+.bas-tj-t { display: block; margin: 0 2px 10px; font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); }
+.bas-tj-l { position: relative; } .bas-tj-l::before { content: ''; position: absolute; left: 8%; right: 8%; top: 21px; height: 3px; border-radius: 3px; background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 60%, transparent), color-mix(in srgb, #ffc94a 70%, transparent)); box-shadow: 0 0 10px color-mix(in srgb, var(--accent) 50%, transparent); }
+.bas-tj { position: relative; z-index: 1; } .bas-tj svg { width: 44px; height: 44px; overflow: visible; transition: transform 160ms var(--ease-out); }
+.bas-tj.on svg { filter: drop-shadow(0 6px 8px rgba(0, 0, 0, .35)); animation: bas-tj-entra 500ms cubic-bezier(.2, 1.5, .4, 1) both; animation-delay: calc(var(--i) * 90ms); }
+@keyframes bas-tj-entra { from { transform: scale(.3) rotate(-30deg); opacity: 0; } }
+.bas-tj-enc { fill: var(--surface); stroke: color-mix(in srgb, var(--ink) 25%, transparent); stroke-width: 3; stroke-dasharray: 6 5; }
+.bas-tj.agora:not(.on) .bas-tj-enc { stroke: #ffc94a; stroke-dasharray: none; animation: bas-tj-espera 1.6s ease-in-out infinite; }
+@keyframes bas-tj-espera { 0%, 100% { filter: drop-shadow(0 0 0 rgba(255, 201, 74, 0)); } 50% { filter: drop-shadow(0 0 8px rgba(255, 201, 74, .9)); } }
+.bas-tj.sel svg { transform: scale(1.18); } .bas-tj span { display: none; }
+/* brasões */
+.bas-br .bas-br-svg { width: 88px; height: 103px; overflow: visible; }
+.bas-br-ex { stroke: rgba(255, 255, 255, .6); stroke-width: 1.4; } .bas-br-in { stroke: rgba(255, 255, 255, .25); stroke-width: 1; }
+.bas-br-gr { fill: none; stroke: rgba(255, 255, 255, .14); stroke-width: 1.4; }
+.bas-br-lo { fill: var(--bm); stroke: rgba(255, 255, 255, .45); stroke-width: .6; } .bas-br-as { fill: var(--bl); stroke: var(--be); stroke-width: 1; opacity: .95; }
+.bas-br-co { fill: var(--bl); stroke: var(--be); stroke-width: 1.2; stroke-linejoin: round; } .bas-br-cj { fill: #fff; }
+.bas-br-fi { stroke: rgba(255, 255, 255, .5); stroke-width: 1; } .bas-br-n { font: 800 9px system-ui, sans-serif; letter-spacing: .06em; fill: rgba(0, 0, 0, .62); }
+.bas-br-sp { fill: #fff; animation: bas-jx-pisca 2.4s ease-in-out infinite; animation-delay: calc(var(--i) * .5s); transform-box: fill-box; transform-origin: center; }
+.bas-br.on .bas-br-svg { filter: drop-shadow(0 10px 14px rgba(0, 0, 0, .35)) drop-shadow(0 0 10px var(--esc-g)); }
+.bas-br:not(.on) .bas-br-svg { filter: grayscale(1) brightness(.75); opacity: .5; }
+.bas-br-ca rect { fill: rgba(20, 20, 26, .85); stroke: rgba(255, 255, 255, .7); stroke-width: 1.5; } .bas-br-ca path { fill: none; stroke: rgba(255, 255, 255, .8); stroke-width: 2.4; }
+.bas-br .bas-gm-rf { animation-duration: 6s; }
+@media (prefers-reduced-motion: reduce) {
+  .bas-gm-rf, .bas-jx-g, .bas-jx-raios, .bas-jx-sp, .bas-tj.on svg, .bas-tj.agora:not(.on) .bas-tj-enc, .bas-br-sp { animation: none; } .bas-jx-sp { opacity: .8; transform: none; } .bas-tj svg { transition: none; }
+}
+.bas-br-ha { fill: none; stroke: var(--be); stroke-width: 1.6; stroke-linecap: round; }
+.bas-br .bas-br-svg { width: 96px; height: 112px; }
