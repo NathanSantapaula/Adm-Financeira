@@ -20,11 +20,17 @@ function tourTalvez() {
   if (TOUR || (typeof AB !== 'undefined' && AB) || S.screen !== 'app' || !S.profile || !S.profile.tourPendente || document.querySelector('dialog[open]')) return;
   S.profile.tourPendente = false; touch('profile'); // marcado já no início: não repete mesmo se fechar a aba no meio
   const passos = TOUR_PASSOS.filter((p) => !p.s || tourAlvo(p.s)); if (passos.length < 2) return;
+  tourIniciar(passos, 'Começar');
+}
+// motor do passo a passo, também usado pelos guias do assistente (basico.js): passo com "ir" leva antes à tela certa,
+// e a luz espera o alvo aparecer (até 2 s); sem alvo, o cartão fica no meio da tela
+function tourIniciar(passos, fim) {
+  if (TOUR) tourFim();
   const el = document.createElement('div'); el.className = 'tour'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-labelledby', 'tour-t');
   el.innerHTML = '<div class="tour-luz" aria-hidden="true"></div><div class="tour-card"><small class="tour-n"></small><h3 id="tour-t"></h3><p></p><div class="tour-b"><button class="btn tour-pular" type="button">Pular</button><span></span><button class="btn tour-volta" type="button">Voltar</button><button class="btn primary tour-ir" type="button"></button></div></div>';
   document.body.appendChild(el); window.scrollTo(0, 0);
   const pos = () => tourPos(); const tecla = (e) => { if (e.key === 'Escape') { e.preventDefault(); tourFim(); } };
-  TOUR = { el, passos, i: 0, pos, tecla };
+  TOUR = { el, passos, i: 0, pos, tecla, fim };
   el.querySelector('.tour-pular').addEventListener('click', tourFim);
   el.querySelector('.tour-volta').addEventListener('click', () => tourIr(TOUR.i - 1));
   el.querySelector('.tour-ir').addEventListener('click', () => (TOUR.i >= TOUR.passos.length - 1 ? tourFim() : tourIr(TOUR.i + 1)));
@@ -32,11 +38,15 @@ function tourTalvez() {
   tourIr(0);
 }
 function tourIr(i) {
-  const T = TOUR; if (!T) return; T.i = Math.max(0, Math.min(T.passos.length - 1, i)); const p = T.passos[T.i]; const q = (s) => T.el.querySelector(s);
+  const T = TOUR; if (!T) return; const volta = i < T.i; T.i = Math.max(0, Math.min(T.passos.length - 1, i)); const p = T.passos[T.i]; const q = (s) => T.el.querySelector(s);
   q('.tour-n').textContent = `${T.i + 1} de ${T.passos.length}`; q('h3').textContent = p.t; q('p').textContent = p.d;
-  q('.tour-volta').hidden = T.i === 0; q('.tour-ir').textContent = T.i === T.passos.length - 1 ? 'Começar' : 'Próximo';
-  const a = tourAlvo(p.s); if (a) a.scrollIntoView({ block: 'nearest', behavior: 'instant' });
-  tourPos(); q('.tour-ir').focus({ preventScroll: true });
+  q('.tour-volta').hidden = T.i === 0; q('.tour-ir').textContent = T.i === T.passos.length - 1 ? T.fim : 'Próximo';
+  T.el.classList.add('sem-alvo'); q('.tour-ir').focus({ preventScroll: true });
+  // voltando, refaz o caminho até a tela deste passo
+  const ir = p.ir || (volta && (T.passos.slice(0, T.i + 1).reverse().find((x) => x.ir) || {}).ir); if (ir) ir(); const t0 = performance.now();
+  const achar = () => { if (TOUR !== T || T.passos[T.i] !== p) return; const a = tourAlvo(p.s); if (!a && p.s && performance.now() - t0 < 2000) { setTimeout(achar, 90); return; }
+    if (a) a.scrollIntoView({ block: ir ? 'center' : 'nearest', behavior: 'instant' }); tourPos(); };
+  setTimeout(achar, ir ? 120 : 0);
 }
 // luz no alvo (a sombra enorme escurece o resto) e o cartão ao lado: à direita do menu lateral, senão embaixo ou em cima
 function tourPos() {

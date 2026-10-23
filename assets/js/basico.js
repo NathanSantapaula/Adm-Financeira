@@ -370,10 +370,111 @@ function basAvisosLista() {
   return `${novos ? `<button class="btn bas-cta bas-add" data-act="bas-avisos-lidos">${I.check}Marcar todos como lidos</button>` : ''}
     ${L.length ? `<ul class="bas-avisos">${L.map((n) => `<li class="${n.lida ? 'lida' : ''} ${esc(n.nivel || '')}"><button data-act="bas-aviso" data-id="${esc(n.id)}"><span class="bas-ini" aria-hidden="true">${I_SINO}</span><span class="bas-n"><b>${esc(n.titulo || '')}</b><small>${esc(n.texto || '')}</small></span>${n.cta ? I.chev : ''}</button></li>`).join('')}</ul>` : basCard(basVazio('Nenhum aviso agora. Tudo em dia.'))}`;
 }
+/* ---------- Dúvidas: guias passo a passo pela tela (motor em tour.js, tourIniciar) ---------- */
+// leva à aba e, se preciso, abre uma tela; espera o voltar do histórico de basLimpar antes de empilhar a tela nova
+function basGuiaIr(aba, tela, o) {
+  return () => { const tinha = basPilha().length; basLimpar(); S.basAba = aba; if (!tela) { render(); window.scrollTo(0, 0); return; }
+    const abre = () => basAbrir(tela, o || {}); if (tinha) { render(); setTimeout(abre, 260); } else abre(); };
+}
+const BAS_SALVAR = '.bas-salvar .bas-cta';
+// k: começos de palavra que, numa pergunta de ajuda, apontam para o guia ("escond" vale para esconder e escondo)
+const BAS_GUIAS = [
+  { id: 'gasto', t: 'Como registro um gasto?', k: ['gasto', 'gastei', 'despesa', 'compra', 'comprei', 'lancar', 'anotar', 'paguei', 'conta fixa', 'parcel'], passos: [
+    { ir: basGuiaIr('gastos'), s: '.bas-inv-pl[data-t="gasto"]', t: 'Novo gasto', d: 'Em Gastos, toque em "+ Gasto" no topo. No Início também tem o botão Novo gasto.' },
+    { ir: basGuiaIr('gastos', 'gasto'), s: '.bas-fs:has([name="tipo"])', t: 'Como é o gasto', d: 'Uma vez, todo mês ou parcelado. Todo mês vira uma conta fixa; parcelado divide o total pelos meses.' },
+    { s: '[name="valor"]', t: 'Valor', d: 'Quanto saiu.' },
+    { s: '[name="desc"]', t: 'O que foi', d: 'Um nome curto. Se o nome já foi usado, o app lembra a categoria e o banco da última vez.' },
+    { s: '.bas-fs:has([name="area"])', t: 'Categoria', d: 'Escolha onde o gasto entra ou crie uma categoria nova.' },
+    { s: '.bas-fs:has([name="inst"])', t: 'Pago com', d: 'O banco ou cartão usado. Ele aparece em Seus cartões, na aba Gastos.' },
+    { s: BAS_SALVAR, t: 'Salvar', d: 'Pronto: o gasto entra no mês, no limite e nos seus números.' }] },
+  { id: 'entrada', t: 'Como registro uma entrada, como o salário?', k: ['entrada', 'salario', 'receita', 'renda', 'recebi', 'ganhei', 'freela', 'bonus'], passos: [
+    { ir: basGuiaIr('inicio'), s: '.bas-noite [data-t="entradas"]', t: 'Entrou', d: 'No Início, toque em Entrou para ver todas as entradas do período.' },
+    { ir: basGuiaIr('inicio', 'entradas'), s: '.bas-inv-pl[data-t="entrada"]', t: 'Nova entrada', d: 'Aqui você registra salário, freela, aluguel recebido ou qualquer dinheiro que entrou.' },
+    { ir: basGuiaIr('inicio', 'entrada'), s: '[name="valor"]', t: 'Valor e tipo', d: 'Diga quanto entrou e se é renda fixa (todo mês) ou extra.' },
+    { s: BAS_SALVAR, t: 'Salvar', d: 'A entrada soma no que sobrou do mês e no quanto dá para investir.' }] },
+  { id: 'investimento', t: 'Como registro um investimento?', k: ['investimento', 'investi', 'aporte', 'aportar', 'aplicar', 'apliquei', 'resgat', 'tesouro', 'cdb', 'acao', 'acoes'], passos: [
+    { ir: basGuiaIr('inicio'), s: '.bas-bt.prim[data-t="aporte"]', t: 'Investimento', d: 'No Início (ou no topo de Investir), toque em Investimento.' },
+    { ir: basGuiaIr('inicio', 'aporte'), s: '.bas-fs:has([name="modo"])', t: 'Aplicar ou resgatar', d: 'Aplicar quando colocou dinheiro; resgatar quando tirou.' },
+    { s: '.bas-fs:has([name="ativo"])', t: 'Ativo', d: 'Escolha um que você já tem ou cadastre um novo, com nome e tipo.' },
+    { s: '.bas-fs:has([name="mes"])', t: 'Mês', d: 'O mês em que o dinheiro foi aplicado.' },
+    { s: BAS_SALVAR, t: 'Salvar', d: 'O aporte conta na sua meta, no patrimônio e na sequência.' }] },
+  { id: 'periodo', t: 'Como vejo outro mês ou período?', k: ['mes passado', 'outro mes', 'periodo', 'ano passado', 'trimestre', 'semestre', 'meses', 'calendario', 'trocar o mes'], passos: [
+    { ir: basGuiaIr('inicio'), s: '.bas-per', t: 'Período', d: 'Toque aqui para escolher o mês, vários meses ou o ano. Vale para Início, Gastos e Investir.' },
+    { ir: basGuiaIr('inicio', 'periodo'), s: '[data-act="bas-per-at"]', t: 'Atalhos', d: 'Este mês, 3 meses, 6 meses ou o ano todo, num toque.' },
+    { s: '.bas-per-m', t: 'Calendário', d: 'Toque no mês de início e depois no de fim.' },
+    { s: '[data-act="bas-ano"]', t: 'Ano', d: 'Troque de ano ou abra o próximo.' }] },
+  { id: 'olho', t: 'Como escondo os valores?', k: ['escond', 'ocult', 'olho', 'em publico', 'mostrar os valores', 'mostrar valores'], passos: [
+    { ir: basGuiaIr('inicio'), s: '.bas-noite .olho', t: 'Olho', d: 'Toque no olho e os valores em reais ficam ocultos em todas as telas. Toque de novo para mostrar.' }] },
+  { id: 'limite', t: 'Como defino um limite de gastos?', k: ['limite', 'orcamento', 'teto', 'gastar menos', 'controlar gastos'], passos: [
+    { ir: basGuiaIr('gastos'), s: '.bas-roda-lim', t: 'Limite do mês', d: 'Em Gastos, toque em Definir limite. O anel de fora mostra quanto já usou.' },
+    { s: '.bas-onde-a', t: 'Por categoria', d: 'Toque numa categoria para ver os gastos dela e definir um limite só para ela.' },
+    { ir: basGuiaIr('perfil'), s: '.bas-pj-bt', t: 'Planejamento', d: 'Todos os limites, a meta de investimento e os bancos também ficam em Perfil › Planejamento.' }] },
+  { id: 'sonho', t: 'Como crio um sonho?', k: ['sonho', 'objetivo', 'meta de', 'viagem', 'casa propria', 'carro', 'juntar', 'guardar para'], passos: [
+    { ir: basGuiaIr('investir'), s: '.bas-sn.novo', t: 'Novo sonho', d: 'Em Investir, no carrossel Seus sonhos, toque em Novo sonho.' },
+    { ir: basGuiaIr('investir', 'objetivo'), s: '.bas-fs:has([name="tipo"])', t: 'Qual é o sonho', d: 'Escolha o tipo: viagem, casa, carro, aposentadoria e outros.' },
+    { s: '[name="valor"]', t: 'Quanto custa', d: 'O valor que você quer juntar.' },
+    { s: '[name="ano"]', t: 'Até quando', d: 'O ano em que quer chegar lá. O app mostra se o ritmo de hoje chega.' },
+    { s: BAS_SALVAR, t: 'Salvar', d: 'O sonho aparece no Início e em Investir, com o quanto falta.' }] },
+  { id: 'importar', t: 'Como importo o extrato do banco?', k: ['importar', 'extrato', 'ofx', 'csv', 'planilha', 'arquivo do banco', 'b3'], passos: [
+    { ir: basGuiaIr('gastos'), s: '[data-act="bas-importar"]', t: 'Importar', d: 'Envie o arquivo do extrato (OFX ou CSV) ou o relatório da B3. Você confere tudo antes de gravar, e nada entra repetido.' }] },
+  { id: 'ondefoi', t: 'Como vejo para onde foi o meu dinheiro?', k: ['para onde', 'onde gasto', 'onde gastei', 'categoria', 'raio', 'gastando muito', 'maior gasto'], passos: [
+    { ir: basGuiaIr('gastos'), s: '.bas-roda, [data-act="bas-arco"]', t: 'O anel', d: 'Cada cor é uma categoria. Toque para ver o valor no centro; toque de novo para abrir.' },
+    { s: '.bas-rx', t: 'Raio-X', d: 'A análise do ano: categorias que mais pesam, gastos que se repetem e o ritmo.' },
+    { s: '.bas-cc-c', t: 'Seus cartões', d: 'Os gastos separados por banco. Toque num cartão para ver só os dele.' }] },
+  { id: 'sequencia', t: 'O que é a sequência e as medalhas?', k: ['sequencia', 'constelacao', 'medalha', 'estrela', 'ofensiva', 'galaxia', 'escudo'], passos: [
+    { ir: basGuiaIr('inicio'), s: '.bas-sq', t: 'Sequência', d: 'Meses seguidos em que você investiu qualquer valor. Toque para abrir.' },
+    { ir: basGuiaIr('inicio', 'sequencia'), s: '.bas-sqx', t: 'Sua estrela', d: 'A cor muda com o nível: bronze, prata, ouro, platina e diamante.' },
+    { s: '.bas-gx-h', t: 'Sua galáxia', d: 'Cada mês acende uma estrela de uma constelação real. Completa, ela entra na galáxia.' },
+    { s: '.bas-esc', t: 'Medalhas', d: 'Uma a cada marco. Toque numa conquistada para ver de perto, girar e virar.' }] },
+  { id: 'organizar', t: 'Como organizo a tela inicial?', k: ['organizar', 'widget', 'ordem', 'tirar bloco', 'personalizar', 'mudar o inicio', 'adicionar bloco'], passos: [
+    { ir: basGuiaIr('inicio'), s: '.bas-org', t: 'Organizar esta tela', d: 'No fim de cada aba. Arraste pela alça para mudar a ordem, tire o que não usa e coloque blocos novos.' }] },
+  { id: 'cor', t: 'Como mudo a cor, o tema ou o jeito de falar?', k: ['cor', 'tema', 'modo escuro', 'modo claro', 'aparencia', 'jeito de falar', 'voz'], passos: [
+    { ir: basGuiaIr('perfil'), s: '[data-act="bas-cores"]', t: 'Sua cor', d: 'Escolha a cor de destaque do app.' },
+    { s: '.bas-voz', t: 'Jeito de falar', d: 'Consultivo, Direto ou Acolhedor. Muda os textos; os números são sempre os mesmos.' }] },
+  { id: 'saude', t: 'O que é a saúde financeira?', k: ['saude', 'nota', 'rostinho', 'reserva de emergencia', 'estou bem'], passos: [
+    { ir: basGuiaIr('perfil'), s: '.bas-sd-r', t: 'Saúde financeira', d: 'Uma nota de 0 a 100 pela reserva, pela sobra do ano, pelas contas fixas e pelo seu sonho. Toque para ver cada ponto e o que fazer.' }] },
+  { id: 'globo', t: 'O que é o globo?', k: ['globo', 'universo', 'patrimonio total'], passos: [
+    { ir: basGuiaIr('inicio'), s: '.bas-globo-btn', t: 'Seu universo', d: 'O seu patrimônio em forma de globo: classes da carteira, aportes e dividendos. Ele abre sozinho ao entrar e por este botão.' }] },
+  { id: 'assistente', t: 'O que o assistente faz?', k: ['assistente', 'aviso', 'notificacao', 'sino', 'inteligencia'], passos: [
+    { ir: basGuiaIr('inicio'), s: '.bas-noite .ia-btn', t: 'Assistente', d: 'Pergunte sobre o seu dinheiro, veja os avisos do mês e, em Dúvidas, peça o caminho de qualquer coisa no app.' }] },
+  { id: 'carteira', t: 'Como vejo a carteira e os proventos?', k: ['carteira', 'provento', 'dividendo', 'alvo', 'divisao', 'rebalance'], pago: true, passos: [
+    { ir: basGuiaIr('investir'), s: '.bas-circ[data-t="proventos"]', t: 'Proventos', d: 'Os dividendos e juros recebidos, mês a mês.' },
+    { s: '.bas-circ[data-t="carteira"]', t: 'Minha carteira', d: 'Como os investimentos estão divididos e onde aportar para chegar nos seus alvos.' }] },
+  { id: 'cartao', t: 'Como personalizo o cartão do banco?', k: ['cartao', 'modelo do cartao', 'personalizar cartao', 'cor do cartao'], passos: [
+    { ir: basGuiaIr('gastos'), s: '.bas-cc-c', t: 'Seus cartões', d: 'Toque num cartão para ver os gastos dele. Lá, a engrenagem ao lado do olho escolhe o modelo e a cor.' }] },
+  { id: 'dados', t: 'Como baixo ou apago os meus dados?', k: ['baixar', 'backup', 'excluir', 'apagar', 'meus dados', 'lgpd', 'privacidade', 'cancelar conta'], passos: [
+    { ir: basGuiaIr('perfil'), s: '[data-act="backup"]', t: 'Baixar meus dados', d: 'Uma cópia de tudo, num arquivo.' },
+    { s: '[data-t="privacidade"]', t: 'Privacidade e termos', d: 'O que fazemos com os seus dados.' },
+    { s: '[data-t="excluir"]', t: 'Excluir minha conta', d: 'Apaga a conta e todos os dados, depois de confirmar.' }] },
+];
+const basGuias = () => BAS_GUIAS.filter((g) => !g.pago || basPago());
+const basSemAcento = (t) => String(t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+// pergunta de ajuda sobre o app ("como", "onde", "o que é"...) vira o guia de mais palavras em comum
+function basGuiaAchar(q) {
+  const t = basSemAcento(q); if (!/\b(como|onde|cade|o que e|pra que|para que|nao (sei|acho|consigo)|ajuda|consigo|da pra|tem como|mostra)\b/.test(t)) return null;
+  let melhor = null; let max = 0; basGuias().forEach((g) => { const n = g.k.filter((k) => new RegExp(`\\b${k}`).test(t)).length; if (n > max) { max = n; melhor = g; } });
+  return melhor;
+}
+function basGuiaIniciar(id) {
+  const g = basGuias().find((x) => x.id === id); if (!g || typeof tourIniciar !== 'function') return; basSom('toque');
+  tourIniciar(g.passos.map((p) => Object.assign({}, p)), 'Entendi');
+}
+function basDuvidasHtml() {
+  return `<div class="card bas-dv"><label class="bas-dv-b">${typeof I_LUPA !== 'undefined' ? I_LUPA : ''}<input type="search" placeholder="Qual é a sua dúvida?" aria-label="Procurar uma dúvida" data-bas-dv></label>
+    <p class="bas-p bas-dv-p">Escolha uma e eu mostro o caminho na tela, passo a passo.</p>
+    <ul class="bas-ativ bas-dv-l">${basGuias().map((g) => `<li data-k="${esc(basSemAcento(g.t + ' ' + g.k.join(' ')))}"><button data-act="bas-guia" data-id="${g.id}"><span class="bas-ini" aria-hidden="true">${g.passos.length}</span><span class="bas-n"><b>${esc(g.t)}</b><small>${g.passos.length === 1 ? '1 passo' : `${g.passos.length} passos`}</small></span>${I.chev}</button></li>`).join('')}</ul>
+    <p class="bas-p bas-dv-nada" hidden>Nada com esse nome. Tente outra palavra ou pergunte na Conversa.</p></div>`;
+}
+// filtra a lista de dúvidas enquanto digita (sem render)
+function basDvLigar() {
+  const i = document.querySelector('[data-bas-dv]'); if (!i || i.dataset.lig) return; i.dataset.lig = '1';
+  i.addEventListener('input', () => { const ws = basSemAcento(i.value).trim().split(/\s+/).filter(Boolean); let n = 0;
+    document.querySelectorAll('.bas-dv-l li').forEach((li) => { const ok = ws.every((w) => li.dataset.k.includes(w)); li.hidden = !ok; if (ok) n++; }); document.querySelector('.bas-dv-nada').hidden = !!n; });
+}
 function basTelaIa() {
-  const aba = S.basIaAba === 'avisos' ? 'avisos' : 'conversa'; const av = basAvisosNovos();
-  const abas = `<div class="seg bas-ia-abas" role="tablist">${[['conversa', 'Conversa'], ['avisos', `Avisos${av ? ` <em>${av}</em>` : ''}`]].map(([v, l]) => `<button role="tab" class="${aba === v ? 'on' : ''}" data-act="bas-ia-aba" data-v="${v}" aria-selected="${aba === v}">${l}</button>`).join('')}</div>`;
-  return basDet(`Assistente ${esc(CFG.marca || '')}`, `${abas}${aba === 'avisos' ? basAvisosLista() : `<section class="card ia-card bas-ia">${S.iaComecou ? `${iaConversaHtml('b')}<p class="ia-disc disc">Respostas automáticas a partir do seu planejamento, sem indicação de investimentos.</p>` : iaIntroHtml()}</section>`}`);
+  const aba = ['avisos', 'duvidas'].includes(S.basIaAba) ? S.basIaAba : 'conversa'; const av = basAvisosNovos();
+  const abas = `<div class="seg bas-ia-abas" role="tablist">${[['conversa', 'Conversa'], ['duvidas', 'Dúvidas'], ['avisos', `Avisos${av ? ` <em>${av}</em>` : ''}`]].map(([v, l]) => `<button role="tab" class="${aba === v ? 'on' : ''}" data-act="bas-ia-aba" data-v="${v}" aria-selected="${aba === v}">${l}</button>`).join('')}</div>`;
+  return basDet(`Assistente ${esc(CFG.marca || '')}`, `${abas}${aba === 'avisos' ? basAvisosLista() : aba === 'duvidas' ? basDuvidasHtml() : `<section class="card ia-card bas-ia">${S.iaComecou ? `${iaConversaHtml('b')}<p class="ia-disc disc">Respostas automáticas a partir do seu planejamento, sem indicação de investimentos.</p>` : iaIntroHtml()}</section>`}`);
 }
 
 // depois de cada desenho do App (chamado no drawAll): objeto 3D, gráfico que segue o dedo e o cartão que inclina
@@ -417,7 +518,7 @@ function basSurpresas() {
 function basDesenhar() {
   const st = document.getElementById('bas-o3');
   if (st) { const falhou = () => st.classList.add('sem-3d'); if (typeof o3Ligar === 'function') o3Ligar(st, st.dataset.tipo, falhou); else falhou(); }
-  basEvLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basContar(); basCartoes3d(); basMedalhaLigar();
+  basEvLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
   const wr = document.querySelector('.bas-wr'); if (wr && !wr.dataset.lig) { wr.dataset.lig = '1'; basWrIr(wr, 0); }
   const sq = document.querySelector('[data-sq-conta]'); if (sq && !sq.dataset.lig && !matchMedia('(prefers-reduced-motion: reduce)').matches) { sq.dataset.lig = '1'; const alvo = +sq.dataset.sqConta; const t0 = performance.now();
     const passo = (t) => { const k = Math.min(1, (t - t0) / 900); sq.textContent = Math.round(alvo * (1 - Math.pow(1 - k, 3))); if (k < 1 && sq.isConnected) requestAnimationFrame(passo); }; if (alvo > 0) requestAnimationFrame(passo); }
@@ -1551,7 +1652,8 @@ function basAcao(act, ds, el) {
     case 'bas-ord': case 'bas-ord-vis': case 'bas-ord-pad': basOrdAcao(act, ds); return true;
     case 'bas-arco': basArco(el); return true;
     case 'bas-arco-abrir': { const b = document.querySelector('.bas-roda'); if (b && b.dataset.sel) basAbrir('categoria', { area: b.dataset.sel }); return true; }
-    case 'bas-ia-aba': S.basIaAba = ds.v === 'avisos' ? 'avisos' : 'conversa'; basSom('toque'); render(); return true;
+    case 'bas-ia-aba': S.basIaAba = ['avisos', 'duvidas'].includes(ds.v) ? ds.v : 'conversa'; basSom('toque'); render(); return true;
+    case 'bas-guia': basGuiaIniciar(ds.id); return true;
     case 'bas-virar': S.basVirado = !S.basVirado; el.classList.toggle('virado', S.basVirado); basSom('toque'); return true;
     case 'bas-partilhar': basSom('toque'); basPartilhar(); return true;
     case 'bas-rec-aplicar': basRecAplicar(el); return true;

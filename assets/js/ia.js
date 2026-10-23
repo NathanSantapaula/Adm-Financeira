@@ -364,6 +364,8 @@ function iaEnviar(q) {
   const st = iaEstado(); q = String(q || '').trim().slice(0, 300); if (!q || st.pend) return;
   st.msgs.push({ de: 'eu', txt: q }); st.pend = true; iaRefresh();
   setTimeout(() => {
+    const g = modoBasico() && typeof basGuiaAchar === 'function' && basGuiaAchar(q);
+    if (g) { st.pend = false; st.msgs.push({ de: 'ia', guia: g.id, t: g.t }); iaRefresh(); return; }
     const id = E.iaIntencao(q); const r = E.iaResponder(id, Object.assign(iaDados(), { texto: q })); r.v = Math.random();
     if (id === 'avisos') r.avisos = (S.notifs || []).filter((n) => !n.lida).slice(0, 3).map((n) => n.id);
     st.pend = false; st.msgs.push({ de: 'ia', r }); if (st.msgs.length > 40) st.msgs.splice(0, st.msgs.length - 40);
@@ -379,6 +381,7 @@ function iaCta(c, i) {
 }
 function iaMsgHtml(m, i) {
   if (m.de === 'eu') return `<div class="ia-m eu"><p>${esc(m.txt)}</p></div>`;
+  if (m.guia) return `<div class="ia-m ia"><p><b>${esc(m.t)}</b><br>Eu mostro o caminho na tela, passo a passo.</p><button class="btn sm" data-act="bas-guia" data-id="${esc(m.guia)}">Me mostre</button></div>`;
   const r = m.r; const avs = (r.avisos || []).map((id) => (S.notifs || []).find((n) => n.id === id)).filter(Boolean);
   const vs = [r.chave, r.chave + '_2', r.chave + '_3'].filter((k) => VOZ[tomAtual()][k] != null); const ch = vs.length ? vs[Math.floor((r.v || 0) * vs.length)] : r.chave;
   return `<div class="ia-m ia"><p>${esc(voz(ch, iaVars(r.vars)))}</p>${avs.length ? `<ul class="ia-av">${avs.map((n) => `<li class="${n.nivel}"><b>${esc(n.titulo)}</b><span>${esc(n.texto)}</span></li>`).join('')}</ul>` : ''}${iaCta(r.cta, i)}</div>`;
@@ -391,7 +394,7 @@ function iaLogHtml(onde) {
   return (st.msgs.length <= lim ? iaBoasHtml(onde === 'w') : '') + msgs + (st.pend ? '<div class="ia-m ia dig" aria-label="Digitando"><p><i></i><i></i><i></i></p></div>' : '');
 }
 function iaFichasHtml() {
-  const st = iaEstado(); const ult = st.msgs.slice().reverse().find((m) => m.de === 'ia'); const rec = { investimentos: temRecurso('investimentos'), carteira: temRecurso('carteira') };
+  const st = iaEstado(); const ult = st.msgs.slice().reverse().find((m) => m.de === 'ia' && m.r); const rec = { investimentos: temRecurso('investimentos'), carteira: temRecurso('carteira') };
   const pode = (id) => (!['aporte', 'meta', 'proventos', 'patrimonio'].includes(id) || rec.investimentos) && (id !== 'carteira' || rec.carteira);
   const ficha = (id) => `<button class="np-chip ia-ficha" data-act="ia-perg" data-q="${esc(E.IA_FICHAS[id])}">${esc(E.IA_FICHAS[id])}</button>`;
   if (S.iaMais) return Object.keys(E.IA_FICHAS).filter(pode).map(ficha).join('') + '<button class="np-chip ia-ficha ia-mais" data-act="ia-mais" aria-expanded="true">Menos</button>';
