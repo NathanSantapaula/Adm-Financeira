@@ -238,6 +238,8 @@ function onChange(e) {
   if (t.id === 'av-file') { const f = t.files && t.files[0]; t.value = ''; if (f) enviarFoto(f); return; }
   if (t.matches('[data-ing]')) { ingCampo(+t.dataset.i, t.dataset.ing, t.value, t.checked); return; }
   if (t.matches('[data-ing-conta]')) { ingConta(t.value); return; }
+  if (t.matches('[data-ing-todos]')) { ingMassa('todos', '', t.checked); return; }
+  if (t.matches('[data-ing-massa]')) { ingMassa(t.dataset.ingMassa, t.value); return; }
   if (t.matches('[data-ing-col]')) { ingMapa(t.dataset.ingCol, t.value); return; }
   if (t.closest && t.closest('#admin') && onAdminChange(t)) return;
   if (t.matches('[data-cat-name]')) { catAction('cat-rename', t.dataset.catName, t.value); return; }

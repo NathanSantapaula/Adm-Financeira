@@ -79,7 +79,8 @@ function linhaIng(t) {
   return `<div class="ing-row${t.incluir ? '' : ' off'}"><input type="checkbox" data-ing="incluir" data-i="${t.idx}" ${t.incluir ? 'checked' : ''} ${t.duplicado || t.bloqueado ? 'disabled' : ''} aria-label="Incluir lançamento">
     <span class="ing-desc" title="${esc(t.descricao)}">${esc(t.descricao)}</span><span class="ing-val${t.valor > 0 ? ' in' : ''}">${t.valor > 0 ? '+' : '−'}${brl(Math.abs(t.valor))}</span>
     <span class="ing-sub"><span>${dataBR(t.data)}</span><i class="conf ${conf}" title="${esc(t.motivo)}"></i>
-      <select data-ing="destino" data-i="${t.idx}" aria-label="Destino" ${t.duplicado ? 'disabled' : ''}>${ING_DEST.map(([v, l]) => `<option value="${v}" ${t.destino === v ? 'selected' : ''}>${l}</option>`).join('')}</select><span>${alvo}</span>${badges}
+      <select data-ing="destino" data-i="${t.idx}" aria-label="Destino" ${t.duplicado ? 'disabled' : ''}>${ING_DEST.map(([v, l]) => `<option value="${v}" ${t.destino === v ? 'selected' : ''}>${l}</option>`).join('')}</select><span>${alvo}</span>
+      ${t.destino === 'despesa' && !t.duplicado ? `<select data-ing="inst" data-i="${t.idx}" aria-label="Cartão ou banco">${ingInstOpts(t.inst)}</select>` : ''}${badges}
       ${t.duplicado ? '' : `<button class="lnk strong" data-act="ing-edit" data-i="${t.idx}">${abre ? 'Fechar' : 'Editar'}</button>`}</span>${edit}</div>`;
 }
 
@@ -97,7 +98,7 @@ function renderIng() {
   else if (g.estado === 'mapear') h = `<div class="notice">${esc(g.msg)}</div>${mapaHtml(g)}${drop}`;
   else {
     const R = g.resumo; const rows = g.rows; const f = g.filtro;
-    const mostra = rows.filter((t) => (f === 'revisar' ? t.confianca < 0.6 && !t.duplicado && t.destino !== 'ignorar' : f === 'dup' ? t.duplicado : true));
+    const mostra = ingMostra(g);
     const novos = R.anos.filter((y) => !S.plans[y]);
     h = `<div class="ing-opts"><b>${esc(g.nome)}</b>${g.formato === 'csv' ? `<select data-ing-conta aria-label="Tipo de arquivo"><option value="extrato" ${g.tipoConta === 'extrato' ? 'selected' : ''}>Extrato bancário</option><option value="cartao" ${g.tipoConta === 'cartao' ? 'selected' : ''}>Fatura de cartão</option></select>` : `<span class="badge">${g.formato === 'ofx' ? 'OFX' : g.formato === 'b3' ? (g.parsed.relatorio === 'negociacao' ? 'B3 · Negociação' : 'B3 · Movimentação') : 'PDF com IA'}</span>`}<label class="lnk strong" for="ing-file">Trocar arquivo</label><input id="ing-file" type="file" accept=".csv,.ofx,.qfx,.txt,.xlsx,.xls${temRecurso('ia_pdf') ? ',.pdf' : ''}" hidden></div>
       <div class="ing-head"><p class="ing-big"><b>${R.total}</b> ${R.total === 1 ? 'lançamento encontrado' : 'lançamentos encontrados'}</p><p class="ing-ok">${R.revisar ? `<span class="pill warn">${R.revisar} para revisar</span>` : '<span class="pill ok">Tudo categorizado</span>'}${R.duplicadas ? `<span class="pill">${R.duplicadas} já importados</span>` : ''}</p>
@@ -107,11 +108,35 @@ function renderIng() {
       ${(g.parsed.avisos || []).slice(0, 3).map((a) => `<p class="ing-warn">${esc(a)}</p>`).join('')}
       <div class="chips" role="tablist">${[['todos', 'Todos'], ['revisar', 'Revisar'], ['dup', 'Já importados']].map(([k, l]) => `<button class="chip-m${f === k ? ' on' : ''}" data-act="ing-filtro" data-f="${k}">${l}</button>`).join('')}${podeIA() && R.revisar ? `<button class="btn sm" data-act="ing-ia" ${g.refinando ? 'disabled' : ''}>${g.refinando ? 'Consultando IA…' : 'Refinar com IA'}</button>` : ''}</div>
       ${g.formato === 'csv' ? `<details class="how"><summary>Conferir colunas reconhecidas</summary>${mapaHtml(g)}</details>` : ''}
+      ${ingMassaHtml(mostra)}
       <div class="ing-list">${mostra.length ? mostra.map(linhaIng).join('') : '<p class="empty-s">Nada nesta lista.</p>'}</div>
       <p class="cap">Marque o que entra, ajuste o destino e a categoria se precisar. O ponto colorido mostra a confiança do reconhecimento (verde alta, vermelho baixa). Reimportar o mesmo arquivo não duplica nada.</p>`;
   }
   root.innerHTML = h; if ($('.ing-list', root)) $('.ing-list', root).scrollTop = sc;
   const ok = $('#mform button[type=submit]'); if (ok) { const n = g.estado === 'pronto' && g.resumo ? g.resumo.incluidas : 0; ok.textContent = n ? `Importar ${n} ${n === 1 ? 'lançamento' : 'lançamentos'}` : 'Importar'; ok.disabled = !n; }
+}
+const ingMostra = (g) => g.rows.filter((t) => (g.filtro === 'revisar' ? t.confianca < 0.6 && !t.duplicado && t.destino !== 'ignorar' : g.filtro === 'dup' ? t.duplicado : true));
+// cartão de cada gasto: as Minhas instituições (ou todas, se ainda não marcou nenhuma)
+const ingInstOpts = (v) => `<option value="">Cartão: não informar</option>${(instMinhas().length ? instMinhas() : INSTITUICOES.map((x) => x[0])).concat(v && !instMinhas().includes(v) ? [v] : []).filter(instDe).map((id) => `<option value="${id}" ${v === id ? 'selected' : ''}>${esc(instDe(id)[1])}</option>`).join('')}`;
+// todos de uma vez: marcar ou desmarcar a lista e dar o mesmo destino, a mesma categoria ou o mesmo cartão aos marcados
+function ingMassaHtml(mostra) {
+  const pode = mostra.filter((t) => !t.duplicado && !t.bloqueado); if (pode.length < 2) return '';
+  const marc = pode.filter((t) => t.incluir).length; const areas = [...new Set((S.plan.despesas || []).map((x) => x.area).concat((S.plan.lancamentos || []).map((x) => x.area), S.ing.rows.map((x) => x.area)).filter(Boolean))].sort();
+  return `<div class="ing-massa"><label class="chk"><input type="checkbox" data-ing-todos ${marc === pode.length ? 'checked' : ''}><span>${marc === pode.length ? 'Todos marcados' : `${marc} de ${pode.length} marcados`}</span></label>
+    <div class="ing-massa-c"><small>Nos marcados:</small><select data-ing-massa="destino" aria-label="Destino de todos os marcados"><option value="">Tipo…</option>${ING_DEST.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select>
+      <input data-ing-massa="area" list="ing-areas" placeholder="Categoria…" aria-label="Categoria de todos os gastos marcados"><datalist id="ing-areas">${areas.map((a) => `<option value="${esc(a)}">`).join('')}</datalist>
+      <select data-ing-massa="inst" aria-label="Cartão de todos os gastos marcados"><option value="">Cartão…</option>${ingInstOpts('').replace('<option value="">Cartão: não informar</option>', '')}</select></div></div>`;
+}
+function ingMassa(campo, valor, marcado) {
+  const g = S.ing; const alvo = ingMostra(g).filter((t) => !t.duplicado && !t.bloqueado);
+  if (campo === 'todos') alvo.forEach((t) => { t.incluir = marcado && t.destino !== 'ignorar'; });
+  else {
+    valor = String(valor || '').trim(); if (!valor) return; const marc = alvo.filter((t) => t.incluir || campo === 'destino');
+    const nos = campo === 'destino' ? marc.filter((t) => t.incluir) : marc.filter((t) => t.destino === 'despesa'); if (!nos.length) { toast('Marque os lançamentos de gasto primeiro.'); renderIng(); return; }
+    nos.forEach((t) => { if (campo === 'destino') ingDefinir(t, 'destino', valor); else { t[campo] = valor; if (campo === 'area') { t.confianca = 1; t.motivo = 'Ajustado por você'; } } });
+    toast(`${campo === 'destino' ? 'Tipo' : campo === 'area' ? 'Categoria' : 'Cartão'} aplicado a ${nos.length} ${nos.length === 1 ? 'lançamento' : 'lançamentos'}.`);
+  }
+  g.resumo = FPIngest.resumir(g.rows); renderIng();
 }
 function mapaHtml(g) {
   const cab = (g.parsed && g.parsed.cabecalho) || (g.parsed && g.parsed.lido && g.parsed.lido.linhas[0]) || []; const m = (g.parsed && g.parsed.mapeamento) || { data: -1, descricao: -1, valor: -1 };
@@ -130,6 +155,10 @@ function ingConta(tipo) {
 }
 function ingCampo(i, campo, valor, marcado) {
   const t = S.ing.rows[i]; if (!t) return;
+  if (campo === 'inst') t.inst = valor; else ingDefinir(t, campo, valor, marcado);
+  S.ing.resumo = FPIngest.resumir(S.ing.rows); renderIng();
+}
+function ingDefinir(t, campo, valor, marcado) {
   if (campo === 'incluir') t.incluir = marcado;
   else if (campo === 'destino') {
     t.destino = valor; t.motivo = 'Ajustado por você'; t.confianca = 1;
@@ -141,7 +170,6 @@ function ingCampo(i, campo, valor, marcado) {
   } else if (campo === 'ativoNome' || campo === 'ativoTipo' || campo === 'ativoClasse') { t.ativo = Object.assign({ nome: '', tipo: 'RENDA FIXA', classe: 'Aplicações' }, t.ativo); t.ativo[campo === 'ativoNome' ? 'nome' : campo === 'ativoTipo' ? 'tipo' : 'classe'] = valor; t.lembrar = true; }
   else if (campo === 'conciliarAceito' || campo === 'lembrar') t[campo] = marcado;
   else { t[campo] = valor; t.confianca = 1; t.motivo = 'Ajustado por você'; t.lembrar = true; }
-  S.ing.resumo = FPIngest.resumir(S.ing.rows); renderIng();
 }
 
 function aplicarIngestao() {

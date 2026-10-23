@@ -56,8 +56,10 @@ const ctxP = { planos, ativos: [], permiteInvest: true, regrasUsuario: [] };
 p = I.parseCSV(csvBanco, { anoPadrao: 2026 }); r = I.processar(p, ctxP);
 const alu = r.transacoes.find((t) => /ALUGUEL/.test(t.descricao)); ok(alu.conciliar && alu.conciliar.itemId === 'alu', 'conciliação sugere casar o PIX do aluguel com o gasto previsto');
 ok(r.resumo.incluidas === 4 && r.resumo.porDestino.renda.valor === 8000, 'resumo da prévia');
+r.transacoes.filter((t) => t.destino === 'despesa').forEach((t) => { t.inst = 'ifood'; }); // cartão escolhido na prévia
 let res = I.aplicar(r.transacoes, { ensurePlan: (y) => planos[y], newId, nomeArquivo: 'extrato.csv' });
 ok(res.despesas === 3 && res.rendas === 1 && res.conciliados === 1, `aplicado: ${JSON.stringify({ d: res.despesas, r: res.rendas, c: res.conciliados })}`);
+ok(plano.lancamentos.filter((l) => l.origem !== 'manual').every((l) => l.inst === 'ifood'), 'importação: o cartão escolhido na prévia fica gravado no gasto');
 let C = E.compute(plano, {});
 ok(Math.abs(C.despesas[2] - (2500 + 210.45 + 23.9)) < 0.01, 'conciliado: março soma 2.500 uma vez só (não conta o previsto e o real)');
 ok(Math.abs(C.rendas[2] - 8000) < 0.01, 'salário importado entra em Rendas no mês certo');

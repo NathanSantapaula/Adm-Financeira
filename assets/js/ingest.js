@@ -424,7 +424,7 @@
       if (t.destino === 'despesa') {
         let cat = catDespId(plan, t.catTipo); let area = t.area || 'Outros'; let sub = t.sub || ''; let itemId;
         if (t.conciliar && t.conciliarAceito) { const it = (plan.despesas || []).find((x) => x.id === t.conciliar.itemId); if (it) { it.baixas = it.baixas || {}; it.baixas[t.ano + '-' + t.mes] = true; cat = it.cat; area = it.area; sub = it.sub || ''; itemId = it.id; res.conciliados++; } }
-        plan.lancamentos = plan.lancamentos || []; plan.lancamentos.push({ id: ctx.newId(), data: t.data, desc: t.descricao, valor: r2(-t.valor), cat, area, sub, origem: t.origem || 'import', chave: t.chave, itemId });
+        plan.lancamentos = plan.lancamentos || []; plan.lancamentos.push({ id: ctx.newId(), data: t.data, desc: t.descricao, valor: r2(-t.valor), cat, area, sub, origem: t.origem || 'import', chave: t.chave, itemId, inst: t.inst || '' });
         res.despesas++; res.valores.despesas = r2(res.valores.despesas - t.valor);
       } else if (t.destino === 'renda') {
         const cat = catRendaId(plan, t.catTipo === 'fixa' ? 'fixa' : 'extra'); const nome = t.itemRenda || nomeRenda(t.descricao, t.area); plan.rendas = plan.rendas || [];
