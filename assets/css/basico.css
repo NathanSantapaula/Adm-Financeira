@@ -1457,3 +1457,15 @@ button.bas-esc-c { cursor: pointer; transition: transform 140ms var(--ease-out);
 @media (prefers-reduced-motion: reduce) { .bas-tc-l { animation: none; stroke-dashoffset: 0; } .bas-tc-e.on svg, .bas-tc-e.agora:not(.on) .bas-tc-vazio { animation: none; } .bas-tc-e svg { transition: none; } }
 .bas-es circle { stroke: none; }
 .bas-sqx { --jx-c: var(--accent); background: radial-gradient(70% 55% at 50% 30%, color-mix(in srgb, var(--jx-c) 34%, transparent), transparent 70%), radial-gradient(90% 70% at 100% 0%, color-mix(in srgb, var(--accent) 45%, transparent), transparent 60%), radial-gradient(90% 70% at 0% 100%, color-mix(in srgb, #7c5cff 45%, transparent), transparent 60%), #0b0c14; }
+/* estrelas como pontos de luz do céu */
+.bas-es circle, .bas-es rect { stroke: none; } .bas-es-raio { opacity: .55; }
+.bas-jx .bas-es { transform-box: fill-box; transform-origin: center; animation: bas-es-cintila 3.4s ease-in-out infinite; }
+@keyframes bas-es-cintila { 0%, 100% { transform: scale(1); opacity: 1; } 40% { transform: scale(.9); opacity: .85; } 60% { transform: scale(1.06); opacity: 1; } }
+.bas .bas-jx-g { width: 150px; height: 150px; filter: none; } .bas-jx-raios { opacity: .3; }
+.bas-jx-sp { clip-path: none; border-radius: 50%; width: 4px !important; height: 4px !important; box-shadow: 0 0 6px 2px var(--jx-c); }
+.bas .bas-tc-e svg { width: 46px; height: 46px; } .bas-tc-e.on svg { filter: none; animation: bas-tc-acende 600ms cubic-bezier(.2, 1.5, .4, 1) both; animation-delay: calc(var(--i) * 120ms); }
+.bas-tc-e.on .bas-es { transform-box: fill-box; transform-origin: center; animation: bas-es-cintila 3s ease-in-out infinite; animation-delay: calc(var(--i) * -.55s); }
+.bas-tc-vazio { fill: none; stroke: color-mix(in srgb, var(--ink) 25%, transparent); stroke-width: 2.5; stroke-dasharray: 4 5; } .bas-tc-apag { fill: color-mix(in srgb, var(--ink) 30%, transparent); }
+.bas-tc-e.agora:not(.on) .bas-tc-vazio { stroke: var(--jx-c, #ffc94a); stroke-dasharray: none; }
+@media (prefers-reduced-motion: reduce) { .bas-jx .bas-es, .bas-tc-e.on .bas-es { animation: none; } }
+.bas-tc-e { transform: translate(-50%, -23px); } /* o centro da estrela (46 px) fica no ponto da linha; o nome do mês vai embaixo */
