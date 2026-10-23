@@ -437,4 +437,13 @@ ok(E.interfaceDe('gratis', 'completo') === 'basico' && E.interfaceDe('qualquer')
     while ((m = re.exec(txt))) { const n = m[1]; if (dono[n] && dono[n] !== f) rep.push(`${n} (${dono[n]} e ${f})`); else dono[n] = f; } });
   ok(!rep.length, 'nomes de topo únicos entre os scripts da interface' + (rep.length ? ': ' + rep.join(', ') : '')); }
 
+// --- calculadora de juros compostos (App: E se eu investir mais?)
+{ const J = E.jurosCompostos({ inicial: 1000, aporte: 100, taxa: 0, meses: 12, metas: [{ nome: 'a', valor: 2000 }, { nome: 'b', valor: 0 }] });
+  ok(J.final === 2200 && J.aportado === 2200 && J.juros === 0 && J.serie.length === 12, 'juros compostos: sem taxa, só soma os aportes');
+  ok(J.metas.length === 1 && J.metas[0].meses === 10, 'juros compostos: meta de 2.000 chega no 10º mês');
+  const K = E.jurosCompostos({ inicial: 1000, aporte: 0, taxa: 12, meses: 12 });
+  ok(Math.abs(K.final - 1120) < 0.01 && Math.abs(K.juros - 120) < 0.01, 'juros compostos: 12% ao ano em 12 meses');
+  const L = E.jurosCompostos({ inicial: 0, aporte: 0, taxa: 10, meses: 0, metas: [{ valor: 100 }] });
+  ok(L.serie.length === 1 && L.metas[0].meses === null, 'juros compostos: prazo mínimo de 1 mês e meta impossível sem dinheiro');
+}
 process.exit(bad ? 1 : 0);

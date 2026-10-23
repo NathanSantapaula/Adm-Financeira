@@ -25,7 +25,7 @@ const OBJ_STATUS = {
 };
 const objNomeDe = (g) => g.nome || objNome(g.tipo);
 const objCor = (i) => OBJ_CORES[i % OBJ_CORES.length];
-const objIcone = (g, i) => `<span class="obj-ic" style="--cor:${objCor(i)}" aria-hidden="true">${OBJ_ICONES[g.tipo] || OBJ_ICONES.outro}</span>`;
+const objIcone = (g, i) => `<span class="obj-ic" style="--cor:${objCor(i)}" aria-hidden="true">${OBJ_ICONES[g.tipo === 'outro' && g.icone && OBJ_ICONES[g.icone] ? g.icone : g.tipo] || OBJ_ICONES.outro}</span>`;
 const mesAno = (p) => (p ? MES[p.mes].toLowerCase() + '/' + p.ano : '');
 
 /* ---------- dados ---------- */

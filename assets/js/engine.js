@@ -167,6 +167,14 @@
     for (let i = 1; i <= meses; i++) { v = v * (1 + r) + (+aporte || 0); out.push(v); }
     return out;
   }
+  // calculadora de juros compostos: valor inicial, aporte mensal, taxa ao ano (%) e prazo em meses; série mês a mês
+  // (total e quanto saiu do bolso) e, para cada meta, em quantos meses ela é alcançada (null se passar de 100 anos)
+  function jurosCompostos(o) {
+    const ini = Math.max(0, +o.inicial || 0); const ap = Math.max(0, +o.aporte || 0); const tx = +o.taxa || 0; const n = Math.max(1, Math.min(1200, Math.round(+o.meses || 0)));
+    const tot = projetar(ini, ap, tx, n); const serie = tot.map((v, i) => ({ total: r2(v), aportado: r2(ini + ap * (i + 1)) }));
+    const fim = serie[serie.length - 1];
+    return { serie, final: fim.total, aportado: fim.aportado, juros: r2(fim.total - fim.aportado), metas: (o.metas || []).filter((m) => +m.valor > 0).map((m) => Object.assign({}, m, { meses: mesesAteMeta(ini, ap, tx, +m.valor, 1200) })) };
+  }
   function mesesAteMeta(patr, aporte, retornoAnual, alvo, limite) {
     if (!(alvo > 0)) return null;
     if (patr >= alvo) return 0;
@@ -1176,7 +1184,7 @@
   const diaUtilBR = (y, m, d) => { const s = new Date(Date.UTC(y, m, d)).getUTCDay(); return s !== 0 && s !== 6 && !feriadoBR(y, m, d); };
   const api = { PLANOS, RECURSOS, ABA_RECURSO, planoPermite, planoMinimo, planoNorm, interfaceDe, parseDataISO, MES, MES_LONGO, TAXONOMIA, ASSET_LEVELS, QUIZ, PERFIS, RETORNO_PADRAO, CATS_DESP, CATS_RENDA, FORMATO_BACKUP,
     z, add, sub, sum, r2, norm, monthIndex, parseValor, distribuir, parcelaMeses, parcelaFim, parcelaIndice, itemValores, carryItems,
-    ativoKey, buildAssetTree, rebalance, contasMes, gastosPorInst, variacao, janelaAnterior, analiseInvest, disponivelAporte, analiseRenda, analiseGastos, analiseCarteira, nomeEstab, historico, ctxAno, OBJ_TIPOS, normObjetivos, analiseObjetivos, sugerirDivisao, aporteNecessario, notificacoes, scorePerfil, projetar, mesesAteMeta, simularObjetivo, migratePlan, compute, makeBackup, parseBackup,
+    ativoKey, buildAssetTree, rebalance, contasMes, gastosPorInst, variacao, janelaAnterior, analiseInvest, jurosCompostos, disponivelAporte, analiseRenda, analiseGastos, analiseCarteira, nomeEstab, historico, ctxAno, OBJ_TIPOS, normObjetivos, analiseObjetivos, sugerirDivisao, aporteNecessario, notificacoes, scorePerfil, projetar, mesesAteMeta, simularObjetivo, migratePlan, compute, makeBackup, parseBackup,
     templateSheets, parseImport, applyImport, gastosAreaMes, gastosAreaPeriodo, saudeFinanceira, analiseLimites, repetirValores, acharFixo, feriadoBR, diaUtilBR, IA_INTENCOES, IA_FICHAS, IA_PRODUTOS, iaIntencao, iaProduto, iaValor, iaParcelas, iaResponder };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.FPEngine = api;
 })(typeof window !== 'undefined' ? window : globalThis);

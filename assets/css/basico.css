@@ -993,3 +993,119 @@ button.bas-cc-c { border: 0; font: inherit; text-align: left; cursor: pointer; t
 .bas-w-hl-anos b { font-size: 12px; font-weight: 650; color: var(--ink-3); } .bas-w-hl-anos b small { font-weight: 500; }
 .bas-w-hl-anos em { font-style: normal; font-size: 13px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bas-w-hl-anos .on b, .bas-w-hl-anos .on em { color: var(--accent); }
+
+/* ---------- rodada 10 ---------- */
+/* Novo gasto e Investimento: título e subtítulo alinhados à esquerda, colados */
+.bas-bt-t { align-items: flex-start; text-align: left; gap: 2px; line-height: 1.2; } .bas-bt-t small { font-size: 12.5px; }
+/* gasto inteligente: recentes, dica do que lembra e o banco em fichas com o ícone */
+.bas-rec small { display: block; margin: 0 2px 8px; font-size: 13px; font-weight: 600; color: var(--ink-2); }
+.bas-rec-l { display: flex; gap: 8px; overflow-x: auto; margin: 0 -16px; padding: 2px 16px 6px; scrollbar-width: none; } .bas-rec-l::-webkit-scrollbar { display: none; }
+.bas-rec-l button { flex: none; display: inline-flex; align-items: center; gap: 8px; max-width: 180px; min-height: 44px; padding: 0 14px 0 6px; border: 0; border-radius: var(--r-pill); font: inherit; font-size: 14px; font-weight: 600; color: var(--ink);
+  background: var(--surface); box-shadow: inset 0 0 0 1px var(--line), 0 6px 14px -10px rgba(0, 0, 0, .4); transition: transform 120ms var(--ease-out); }
+.bas-rec-l button:active { transform: scale(.95); } .bas-rec-l span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .bas-rec-l .inst-ic { width: 30px; height: 30px; border-radius: 50%; }
+.bas-rec-i { width: 30px; height: 30px; flex: none; display: grid; place-items: center; border-radius: 50%; font-style: normal; font-size: 11px; font-weight: 700; color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.bas-lembra { margin: -6px 2px 0; font-size: 13px; color: var(--accent); }
+.bas-inst .bas-chip span { gap: 8px; padding-left: 6px; } .bas-inst .inst-ic { width: 28px; height: 28px; border-radius: 50%; }
+.bas-chip-add { display: inline-flex; align-items: center; gap: 4px; min-height: 44px; padding: 0 14px; border: 1px dashed color-mix(in srgb, var(--accent) 45%, transparent); border-radius: var(--r-pill); background: transparent; color: var(--accent); font: inherit; font-size: 14px; font-weight: 600; } .bas-chip-add svg { width: 16px; height: 16px; }
+@media (prefers-reduced-motion: reduce) { .bas-rec-l button { transition: none; } }
+/* gráfico do patrimônio (Investir) com versão própria no tema claro: superfície clara com a aurora da cor de destaque */
+:root[data-theme="light"] .bas-ev:not(.bas-pv-card) { --bas-noite-ink: var(--ink); --bas-noite-2: var(--ink-2); --bas-noite-pos: var(--pos); --bas-noite-neg: var(--neg);
+  background: radial-gradient(110% 70% at 90% -10%, color-mix(in srgb, var(--accent) 24%, transparent), transparent 62%), radial-gradient(90% 60% at -5% 110%, color-mix(in srgb, var(--accent-2) 14%, transparent), transparent 60%), var(--surface);
+  box-shadow: var(--shadow-lg), inset 0 0 0 1px color-mix(in srgb, var(--accent) 14%, transparent); }
+:root[data-theme="light"] .bas-ev:not(.bas-pv-card)::before { background: radial-gradient(color-mix(in srgb, var(--ink) 9%, transparent) 1px, transparent 1.4px) 0 0 / 18px 18px; }
+:root[data-theme="light"] .bas-ev:not(.bas-pv-card) .bas-ev-faixa { fill: color-mix(in srgb, var(--accent) 9%, transparent); }
+:root[data-theme="light"] .bas-ev:not(.bas-pv-card) .bas-ev-l { filter: drop-shadow(0 4px 6px color-mix(in srgb, var(--accent) 45%, transparent)); }
+:root[data-theme="light"] .bas-ev:not(.bas-pv-card) .bas-ev-p { background: var(--surface); }
+:root[data-theme="light"] .bas-ev:not(.bas-pv-card) .bas-ev-guia { background: linear-gradient(transparent, color-mix(in srgb, var(--ink) 35%, transparent), transparent); }
+:root[data-theme="light"] .bas-ev:not(.bas-pv-card) .bas-noite-par > * { background: color-mix(in srgb, var(--ink) 5%, transparent); }
+/* calculadora de juros compostos */
+.card.bas-jc-c { display: grid; gap: 10px; padding: 16px; border-radius: 24px; }
+.bas-jc-f { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.bas-jc-f > span:first-child { font-size: 15px; font-weight: 600; color: var(--ink-2); }
+.bas-jc-in { display: flex; align-items: center; gap: 6px; width: 54%; max-width: 210px; padding: 0 14px; min-height: 48px; border-radius: 16px; background: color-mix(in srgb, var(--ink) 6%, transparent); box-shadow: inset 0 0 0 1px var(--line); transition: box-shadow 160ms ease; }
+.bas-jc-in:focus-within { box-shadow: inset 0 0 0 2px var(--accent), 0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent); }
+.bas-jc-in i { font-style: normal; font-size: 14px; font-weight: 600; color: var(--ink-3); white-space: nowrap; }
+.bas-jc-in input { flex: 1; min-width: 0; border: 0; background: transparent; color: var(--ink); font: inherit; font-size: 17px; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+.bas-jc-in input:focus { outline: none; }
+.bas-jc-p { margin-top: 4px; } .bas-jc-p .bas-chips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; } .bas-jc-p .bas-chip span { width: 100%; justify-content: center; padding: 0 6px; }
+.card.bas-jc-res { margin-top: 14px; padding: 18px; border-radius: 26px; overflow: hidden;
+  background: radial-gradient(120% 80% at 100% 0%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 60%), var(--surface); }
+.bas-jc-v { display: block; font-size: clamp(32px, 9.5vw, 42px); font-weight: 750; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.bas-jc-leg { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 6px; font-size: 13.5px; color: var(--ink-2); }
+.bas-jc-leg i { display: inline-block; width: 10px; height: 10px; margin-right: 6px; border-radius: 3px; vertical-align: -1px; }
+.bas-jc-leg i.ap { background: color-mix(in srgb, var(--ink) 30%, transparent); } .bas-jc-leg i.jr { background: var(--accent); }
+.bas-jc-leg b { color: var(--ink); } .bas-jc-leg em { font-style: normal; font-weight: 700; color: var(--pos); }
+.bas .bas-jc-g { display: block; width: 100%; height: 150px; margin-top: 14px; overflow: visible; }
+.bas-jc-at { fill: color-mix(in srgb, var(--accent) 30%, transparent); stroke: none; } .bas-jc-aa { fill: color-mix(in srgb, var(--ink) 16%, transparent); stroke: none; }
+.bas-jc-lt { fill: none; stroke: var(--accent); stroke-width: 2.6; vector-effect: non-scaling-stroke; stroke-linejoin: round; filter: drop-shadow(0 0 5px color-mix(in srgb, var(--accent) 60%, transparent)); }
+.bas-jc-m { stroke: var(--pos); stroke-width: 1.2; stroke-dasharray: 3 4; vector-effect: non-scaling-stroke; } .bas-jc-mp { fill: var(--pos); stroke: var(--surface); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.bas-jc-x { display: flex; justify-content: space-between; margin-top: 6px; font-size: 11.5px; font-weight: 600; color: var(--ink-3); }
+.bas-jc-sn li > .bas-row { display: flex; align-items: center; gap: 12px; padding: 12px 14px; }
+.bas-jc-sn .bas-n { flex: 1; min-width: 0; } .bas-jc-sn li b:last-child { font-size: 14px; text-align: right; white-space: nowrap; }
+/* novo sonho: cartões com foto e ícone, e a grade de ícones para o "Outro" */
+.bas-tipos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.bas-tipo { position: relative; overflow: hidden; aspect-ratio: 1 / 1.05; display: flex; flex-direction: column; justify-content: flex-end; gap: 4px; padding: 10px; border-radius: 20px; color: #fff; cursor: pointer;
+  background: linear-gradient(180deg, transparent 25%, rgba(0, 0, 0, .72)), var(--foto) center / cover, var(--bas-noite); box-shadow: 0 10px 22px -16px rgba(0, 0, 0, .6); transition: transform 140ms var(--ease-out), box-shadow 200ms ease; }
+.bas-tipo input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
+.bas-tipo b { font-size: 13px; font-weight: 700; line-height: 1.15; text-shadow: 0 1px 6px rgba(0, 0, 0, .6); }
+.bas-tipo-ic { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 10px; background: rgba(255, 255, 255, .2); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); } .bas-tipo-ic svg { width: 17px; height: 17px; }
+.bas-tipo:active { transform: scale(.96); }
+.bas-tipo:has(input:checked) { box-shadow: 0 0 0 3px var(--surface), 0 0 0 5px var(--accent), 0 14px 26px -12px var(--accent); }
+.bas-tipo:has(input:checked) .bas-tipo-ic { background: var(--accent); color: var(--on-accent); }
+.bas-tipo:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 4px; }
+.bas-form:has(input[name="tipo"]:not([value="outro"]):checked) .bas-blk[data-blk="icone"] { display: none; }
+.bas-icones { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; }
+.bas-icone { position: relative; aspect-ratio: 1; display: grid; place-items: center; border-radius: 14px; background: color-mix(in srgb, var(--ink) 6%, transparent); color: var(--ink-2); cursor: pointer; }
+.bas-icone input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; } .bas-icone svg { width: 22px; height: 22px; }
+.bas-icone:has(input:checked) { background: var(--accent); color: var(--on-accent); box-shadow: 0 8px 18px -10px var(--accent); }
+/* meta de cada mês */
+.bas-fs legend small { font-weight: 500; color: var(--ink-3); }
+.bas-metas { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.bas-meta-m { display: flex; flex-direction: column; gap: 4px; padding: 8px 10px; border-radius: 14px; background: color-mix(in srgb, var(--ink) 5%, transparent); box-shadow: inset 0 0 0 1px var(--line); }
+.bas-meta-m.on { box-shadow: inset 0 0 0 2px var(--accent); } .bas-meta-m span { font-size: 12px; font-weight: 700; color: var(--ink-3); text-transform: uppercase; letter-spacing: .04em; }
+.bas-meta-m input { width: 100%; min-width: 0; border: 0; padding: 0; background: transparent; color: var(--ink); font: inherit; font-size: 15px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.bas-meta-m input:focus { outline: none; } .bas-meta-m:focus-within { box-shadow: inset 0 0 0 2px var(--accent); }
+/* Disponível compacto */
+.card.bas-dp2 { padding: 16px; border-radius: 22px; }
+.bas-dp2-t { display: flex; align-items: center; justify-content: space-between; gap: 12px; } .bas-dp2-t .bas-n small { font-size: 13px; color: var(--ink-2); }
+.bas-dp2 .bas-dp-v { font-size: 26px; letter-spacing: -.02em; }
+.bas-dp-bt { flex: none; min-height: 40px; padding: 0 18px; border: 0; border-radius: var(--r-pill); font: inherit; font-size: 14.5px; font-weight: 700; color: var(--on-accent);
+  background: linear-gradient(170deg, color-mix(in srgb, var(--accent) 80%, #fff), var(--accent)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35), 0 10px 20px -10px var(--accent); transition: transform 120ms var(--ease-out); }
+.bas-dp-bt:active { transform: scale(.95); }
+.bas-dp2 .bas-dp-b { height: 6px; margin-top: 12px; } .bas-dp2-s { margin: 8px 0 0; font-size: 13px; color: var(--ink-2); } .bas-dp2-s b { color: var(--ink); font-variant-numeric: tabular-nums; } .bas-dp2-s b.neg { color: var(--neg); }
+/* Patrimônio ano a ano: seções por ano, linha ponto a ponto, dedo que mostra cada mês e o detalhe do ano */
+.card.bas-w-hl2 { padding: 16px; border-radius: 26px; }
+.bas-w-hl2 .bas-w-hist-h { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.bas-hl-g { position: relative; height: 170px; margin: 12px -4px 0; touch-action: pan-y; cursor: crosshair; }
+.bas .bas-hl-g svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; overflow: visible; stroke: none; }
+.bas-hl-sec { fill: color-mix(in srgb, var(--ink) 3.5%, transparent); } .bas-hl-sec.on { fill: color-mix(in srgb, var(--accent) 9%, transparent); }
+.bas-hl-div { stroke: color-mix(in srgb, var(--ink) 22%, transparent); stroke-width: 1; stroke-dasharray: 3 4; vector-effect: non-scaling-stroke; }
+.bas-w-hl2 .h0 { stop-color: color-mix(in srgb, var(--accent) 34%, transparent); } .bas-w-hl2 .h1 { stop-color: color-mix(in srgb, var(--accent) 0%, transparent); }
+.bas-hl-a { opacity: 0; animation: bas-fade 900ms 400ms var(--ease-out) forwards; }
+.bas-hl-l { fill: none; stroke: var(--accent); stroke-width: 2.4; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; stroke-dasharray: 1; stroke-dashoffset: 1;
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 55%, transparent)); animation: bas-traco 1.4s var(--ease-out) forwards; }
+.bas-hl-d { position: absolute; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: var(--surface); box-shadow: 0 0 0 1.6px var(--accent); pointer-events: none; transition: transform 120ms var(--ease-out); }
+.bas-hl-d.fim { width: 10px; height: 10px; margin: -5px 0 0 -5px; background: var(--accent); box-shadow: 0 0 0 3px var(--surface), 0 0 14px var(--accent); }
+.bas-hl-d.on { transform: scale(1.9); background: var(--accent); }
+.bas-hl-guia { position: absolute; top: 0; bottom: 0; width: 1px; margin-left: -.5px; background: linear-gradient(transparent, color-mix(in srgb, var(--accent) 70%, transparent), transparent); opacity: 0; pointer-events: none; }
+.bas-hl-g.ativo .bas-hl-guia { opacity: 1; }
+.bas-hl-tip { position: absolute; z-index: 2; transform: translate(-50%, -100%); display: grid; gap: 1px; min-width: 128px; padding: 8px 12px; border-radius: 14px; text-align: center; pointer-events: none;
+  background: var(--glass-strong, var(--surface)); -webkit-backdrop-filter: blur(16px) saturate(160%); backdrop-filter: blur(16px) saturate(160%); box-shadow: var(--shadow-lg), inset 0 0 0 1px var(--line); }
+.bas-hl-tip b { font-size: 12px; font-weight: 600; color: var(--ink-2); } .bas-hl-tip span { font-size: 16px; font-weight: 750; font-variant-numeric: tabular-nums; } .bas-hl-tip em { font-style: normal; font-size: 12px; font-weight: 650; }
+.bas-hl-tip em.pos { color: var(--pos); } .bas-hl-tip em.neg { color: var(--neg); }
+.bas-hl-anos { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 6px; margin-top: 10px; }
+.bas-hl-anos button { display: flex; flex-direction: column; align-items: center; gap: 1px; min-width: 0; padding: 8px 4px; border: 0; border-radius: 14px; background: color-mix(in srgb, var(--ink) 5%, transparent); color: inherit; font: inherit; transition: transform 120ms var(--ease-out), background-color 160ms ease; }
+.bas-hl-anos button:active { transform: scale(.96); }
+.bas-hl-anos b { font-size: 12px; font-weight: 650; color: var(--ink-3); } .bas-hl-anos span { max-width: 100%; font-size: 13.5px; font-weight: 750; font-variant-numeric: tabular-nums; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bas-hl-anos em { font-style: normal; font-size: 11.5px; font-weight: 700; color: var(--ink-3); } .bas-hl-anos em.pos { color: var(--pos); } .bas-hl-anos em.neg { color: var(--neg); }
+.bas-hl-anos button.on { background: color-mix(in srgb, var(--accent) 14%, transparent); box-shadow: inset 0 0 0 1.5px var(--accent); } .bas-hl-anos button.on b { color: var(--accent); }
+.bas-hl-det-g { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin-top: 10px; }
+.bas-hl-det-g span { display: flex; flex-direction: column; padding: 8px 10px; border-radius: 12px; background: color-mix(in srgb, var(--ink) 4%, transparent); min-width: 0; }
+.bas-hl-det-g small { font-size: 11.5px; color: var(--ink-3); } .bas-hl-det-g b { font-size: 13.5px; font-variant-numeric: tabular-nums; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bas-hl-det-g b.pos { color: var(--pos); } .bas-hl-det-g b.neg { color: var(--neg); } .bas-hl-det .bas-p { margin-top: 8px; font-size: 12.5px; color: var(--ink-3); }
+/* acabamento: cartões do App com luz na borda de cima e sombra com a cor de destaque */
+.bas .card { box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 9%, transparent), var(--shadow); }
+:root[data-theme="light"] .bas .card { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), 0 1px 2px rgba(15, 20, 40, .05), 0 14px 32px -20px color-mix(in srgb, var(--accent) 45%, rgba(15, 20, 40, .35)); }
+@media (prefers-reduced-motion: reduce) {
+  .bas-hl-a { animation: none; opacity: 1; } .bas-hl-l { animation: none; stroke-dashoffset: 0; } .bas-hl-d, .bas-hl-anos button, .bas-tipo, .bas-dp-bt, .bas-jc-in { transition: none; }
+}

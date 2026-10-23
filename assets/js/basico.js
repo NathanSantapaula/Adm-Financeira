@@ -324,8 +324,9 @@ function basPerfil() {
   const st = S.plan.settings; const plano = `<button class="card bas-pj-bt" ${basIr('planejamento')}><span class="bas-pj-bic" aria-hidden="true">${I_PLANO}</span><span class="bas-n"><b>Planejamento</b><small>Metas, limites, minhas instituições e anos</small></span>${I.chev}
     <span class="bas-pj-res"><span><small>Investir</small><b>${+st.metaAporte > 0 ? brl0(st.metaAporte) : '–'}</b></span><span><small>Gastar até</small><b>${+st.orcPadrao > 0 ? brl0(st.orcPadrao) : '–'}</b></span><span><small>Instituições</small><b>${instMinhas().length}</b></span></span></button>`;
   const cli = S.isAdmin && Store.mode === 'cloud' ? basSecao('Consultor', '', `<ul class="bas-ativ">${basRow(basIr('clientes'), I.clientes, 'Clientes', 'Cadastros e planos', I.chev)}</ul>`) : '';
-  return `<div class="bas-pg bas-pg-p">${basCab('Perfil')}${membro}${plano}${conq}
+  return `<div class="bas-pg bas-pg-p">${basCab('Perfil')}${membro}
     ${basSecao('Sua cor', `<button class="bas-tg" data-act="bas-cores" aria-expanded="${!!S.basCores}" aria-label="${S.basCores ? 'Recolher' : 'Abrir'} as cores">${I.down}</button>`, !S.basCores ? '' : `<div class="card bas-aparencia">${cores}<div class="seg bas-temas" role="group" aria-label="Tema">${temas}</div><label class="bas-op bas-sw">${basNome('Sons', 'Um toque curto ao salvar, pagar e trocar de tela.')}<span class="wg-sw"><input type="checkbox" data-act="bas-sons" ${basSomLigado() ? 'checked' : ''} aria-label="Sons"><span></span></span></label></div>`)}
+    ${plano}${conq}
     ${basSecao('Jeito de falar', '', `<div class="bas-vozes">${vozes}</div>`)}${modo ? basSecao('Versão', '', modo) : ''}
     ${cli}${basSecao('Seus dados', '', `<ul class="bas-ativ">${basRow('data-act="backup"', I_IMPORTAR, 'Baixar meus dados', 'Uma cópia de tudo, em arquivo', I.chev)}${basRow(basIr('privacidade'), I.lock, 'Privacidade e termos', 'O que fazemos com os seus dados', I.chev)}${basRow(basIr('excluir'), I.x, 'Excluir minha conta', 'Apaga a conta e todos os dados', I.chev)}</ul>`)}<ul class="bas-ativ bas-sair"><li><button data-act="bas-sair">${basNome('Sair')}</button></li></ul></div>`;
 }
@@ -346,7 +347,7 @@ function basTelaIa() {
 function basDesenhar() {
   const st = document.getElementById('bas-o3');
   if (st) { const falhou = () => st.classList.add('sem-3d'); if (typeof o3Ligar === 'function') o3Ligar(st, st.dataset.tipo, falhou); else falhou(); }
-  basEvLigar(); basOrgLigar(); basAlSoma();
+  basEvLigar(); basOrgLigar(); basAlSoma(); basHlLigar();
   const c = document.querySelector('.bas-membro');
   if (c && !c.dataset.tilt && !matchMedia('(prefers-reduced-motion: reduce)').matches) { c.dataset.tilt = '1';
     // inclina 1:1 com o dedo ou o mouse, a partir de onde tocou; ao soltar, volta com mola (transição em CSS)
@@ -358,17 +359,37 @@ function basDesenhar() {
 
 /* ================= telas empilhadas ================= */
 // gasto do dia (novo ou editar)
+// memória do lançamento: por nome (normalizado), a última categoria, banco, valor e data, e quantas vezes apareceu
+function basMemGastos() {
+  const ls = [].concat(((S.plans[S.year - 1] || {}).lancamentos) || [], S.plan.lancamentos || []).filter((l) => l && l.desc && +l.valor > 0);
+  const mem = new Map(); ls.sort((a, b) => String(a.data).localeCompare(String(b.data))).forEach((l) => { const k = E.norm(l.desc); const x = mem.get(k) || { n: 0 }; mem.set(k, { desc: l.desc, area: l.area || '', inst: l.inst || '', valor: +l.valor, data: l.data, n: x.n + 1 }); });
+  return mem;
+}
+// preenche o formulário com o que lembra daquele nome (categoria, banco e, se vazio, o valor) e mostra a dica
+function basGastoLembra(f, x, valor) {
+  if (!f || !x) return; const pick = (nome, v) => { const r = v && [...f.querySelectorAll(`input[name="${nome}"]`)].find((i) => i.value === v); if (r) r.checked = true; return !!r; };
+  if (!pick('area', x.area) && x.area) f.querySelector('[name="areaNova"]').value = x.area; pick('inst', x.inst);
+  const v = f.querySelector('[name="valor"]'); if (valor && v && !v.value) v.value = nf.format(x.valor);
+  const d = f.querySelector('.bas-lembra'); if (d) { d.hidden = false; d.textContent = `Da última vez: ${brl(x.valor)} em ${x.area || 'Outros'}${x.inst && instDe(x.inst) ? ' · ' + instDe(x.inst)[1] : ''}.`; }
+}
+document.addEventListener('input', (e) => { const t = e.target; if (!t.matches || !t.matches('form[data-t="gasto"] input[name="desc"]')) return; const x = basMemGastos().get(E.norm(t.value)); if (x) basGastoLembra(t.form, x, false); });
 function basTelaGasto(o) {
   const p = S.plan; const l = o.id ? p.lancamentos.find((x) => x.id === o.id) : null; if (o.id && !l) return basSumiu();
   const a0 = l ? l.area : o.area || ''; const usadas = p.despesas.map((x) => x.area).concat(p.lancamentos.map((x) => x.area));
   const areas = [...new Set(BAS_AREAS.concat(usadas, a0 ? [a0] : []).filter(Boolean))].slice(0, 16);
   // um gasto só: uma vez (com data), todo mês (até dezembro) ou parcelado; os dois últimos são gravados como no SaaS (previsto em plan.despesas)
   const tipo = o.modo === 'parc' || o.modo === 'mes' ? o.modo : 'uma';
+  // inteligente: os gastos que mais se repetem viram atalhos e o último banco usado já vem marcado
+  const mem = basMemGastos(); const rec = l ? [] : [...mem.values()].sort((a, b) => b.n - a.n || String(b.data).localeCompare(String(a.data))).slice(0, 6);
+  const i0 = l ? l.inst || '' : ([...(p.lancamentos || [])].reverse().find((x) => x.inst && instMinhas().includes(x.inst)) || {}).inst || '';
   return basForm('gasto', l ? 'Editar gasto' : 'Novo gasto', `${l ? '' : basChips('tipo', [['uma', 'Uma vez'], ['mes', 'Todo mês'], ['parc', 'Parcelado']], tipo, 'Como é o gasto')}
     <div class="bas-blk" data-blk="val">${basValor('valor', l ? Math.abs(l.valor) : 0, 'Quanto foi?')}</div>
     ${l ? '' : `<div class="bas-blk" data-blk="parc">${basValor('total', 0, 'Valor total da compra')}${basCampo('n', 'Em quantas vezes?', 10, 'inputmode="numeric" maxlength="3"')}<p class="bas-p">A primeira parcela cai em ${MES_LONGO[S.mes]} de ${S.year}.</p></div>`}
-    ${basCampo('desc', 'Com o quê?', l ? l.desc : '', 'placeholder="Ex.: Mercado, Aluguel, Celular"')}
+    ${rec.length ? `<div class="bas-rec"><small>Recentes</small><div class="bas-rec-l">${rec.map((x) => `<button type="button" data-act="bas-gasto-rec" data-k="${esc(E.norm(x.desc))}">${x.inst && instDe(x.inst) ? instIcone(x.inst) : `<i class="bas-rec-i" aria-hidden="true">${esc(basIniciais(x.desc))}</i>`}<span>${esc(x.desc)}</span></button>`).join('')}</div></div>` : ''}
+    ${basCampo('desc', 'Com o quê?', l ? l.desc : '', 'placeholder="Ex.: Mercado, Aluguel, Celular" list="bas-dl-desc" autocomplete="off"')}<datalist id="bas-dl-desc">${[...mem.values()].map((x) => `<option value="${esc(x.desc)}">`).join('')}</datalist>
+    <p class="bas-p bas-lembra" aria-live="polite" hidden></p>
     ${basChips('area', areas.map((a) => [a, a]), a0, 'Categoria')}${basCampo('areaNova', 'Ou escreva outra categoria', '', 'placeholder="Ex.: Pets"')}
+    <fieldset class="bas-fs"><legend>Pago com</legend><div class="bas-chips bas-inst">${['', ...new Set(instMinhas().concat(i0 ? [i0] : []))].filter((v) => !v || instDe(v)).map((v) => `<label class="bas-chip"><input type="radio" name="inst" value="${v}" ${v === i0 ? 'checked' : ''}><span>${v ? instIcone(v) + esc(instDe(v)[1]) : 'Não informar'}</span></label>`).join('')}<button type="button" class="bas-chip-add" ${basIr('planejamento')}>${I.plus}${instMinhas().length ? 'Bancos' : 'Escolher bancos'}</button></div></fieldset>
     <label class="bas-fl bas-blk" data-blk="data"><span>Quando</span><input type="date" name="data" value="${esc(l ? l.data : basDataMes(S.mes))}" min="${S.year}-01-01" max="${S.year}-12-31"></label>
     ${l ? '' : `<p class="bas-p bas-blk" data-blk="mesp">Vale de ${MES_LONGO[S.mes]} até dezembro. Quando você anotar o pagamento, ele é marcado como pago, sem contar duas vezes.</p>`}`, { excluir: l ? 'Excluir gasto' : '' });
 }
@@ -402,8 +423,11 @@ function basTelaAporte(o) {
   if (a) return basForm('aporte', esc(a.nome), `${basValor('valor', Math.abs(+a.ap[m] || 0), `Quanto em ${MES_LONGO[m]}?`)}${basChips('op', [['1', 'Aplicar'], ['-1', 'Resgatar']], a.ap[m] < 0 ? '-1' : '1', 'O que foi')}`, { excluir: `Apagar o registro de ${MES_LONGO[m]}` });
   return basTelaInvest(o);
 }
+// meta de investimento: a padrão vale para todos os meses; cada mês pode ter a sua (plan.metasAporte, vazio = a padrão), como no SaaS
 function basTelaMeta() {
-  return basForm('meta', 'Meta de investimento', `${basValor('valor', +S.plan.settings.metaAporte || 0, 'Quanto quer investir por mês?')}<p class="bas-p">Comece com um valor que caiba no bolso. Vale para todos os meses.</p>`);
+  const st = S.plan.settings; const mm = S.plan.metasAporte || []; const pad = +st.metaAporte || 0;
+  return basForm('meta', 'Meta de investimento', `${basValor('valor', pad, 'Quanto quer investir por mês?')}<p class="bas-p">Essa é a meta padrão do ano. Comece com um valor que caiba no bolso.</p>
+    <fieldset class="bas-fs"><legend>Meta de cada mês <small>(vazio = a padrão)</small></legend><div class="bas-metas">${MES_LONGO.map((n, m) => `<label class="bas-meta-m${m === S.mes ? ' on' : ''}"><span>${cap(n).slice(0, 3)}</span><input name="m${m}" inputmode="decimal" placeholder="${pad ? esc(nf.format(pad)) : '0,00'}" value="${mm[m] != null ? esc(nf.format(mm[m])) : ''}" aria-label="Meta de ${n}"></label>`).join('')}</div></fieldset>`);
 }
 function basTelaObjetivos() {
   const A = objAnalise(); const foco = S.profile.objetivoFoco;
@@ -412,7 +436,11 @@ function basTelaObjetivos() {
 }
 function basTelaObjetivo(o) {
   const g = o.id ? objLista().find((x) => x.id === o.id) : null; if (o.id && !g) return basSumiu();
-  return basForm('objetivo', g ? 'Editar objetivo' : 'Novo objetivo', `${basChips('tipo', OBJETIVOS.map((x) => [x[0], x[1]]), g ? g.tipo : 'viagem', 'Qual é o sonho?')}
+  // escolha visual: cada sonho é um cartão com a foto e o ícone; em "Outro", o cliente escolhe o ícone
+  const t0 = g ? g.tipo : 'viagem'; const ic0 = g && g.icone ? g.icone : 'outro';
+  const tipos = `<fieldset class="bas-fs"><legend>Qual é o sonho?</legend><div class="bas-tipos">${OBJETIVOS.map(([k, n]) => `<label class="bas-tipo" style="--foto:url('${new URL(objFoto(k), document.baseURI).href}')"><input type="radio" name="tipo" value="${k}" ${k === t0 ? 'checked' : ''}><span class="bas-tipo-ic" aria-hidden="true">${OBJ_ICONES[k] || OBJ_ICONES.outro}</span><b>${esc(n)}</b></label>`).join('')}</div></fieldset>
+    <fieldset class="bas-fs bas-blk" data-blk="icone"><legend>Escolha o ícone</legend><div class="bas-icones">${OBJ_3D_ESCOLHA.filter(([k]) => OBJ_ICONES[k]).map(([k, n]) => `<label class="bas-icone" title="${esc(n)}"><input type="radio" name="icone" value="${k}" ${k === ic0 ? 'checked' : ''} aria-label="${esc(n)}"><span aria-hidden="true">${OBJ_ICONES[k]}</span></label>`).join('')}</div></fieldset>`;
+  return basForm('objetivo', g ? 'Editar objetivo' : 'Novo objetivo', `${tipos}
     ${basCampo('nome', 'Nome (opcional)', g ? g.nome : '', 'placeholder="Ex.: Viagem ao Japão"')}${basValor('valor', g ? g.valor : 0, 'Quanto custa?')}
     ${basCampo('ano', 'Até quando? (ano)', g && g.ano ? g.ano : '', `inputmode="numeric" maxlength="4" placeholder="Ex.: ${NOW_Y + 3}"`)}
     ${basSw('foco', 'Meu objetivo principal', 'Aparece na aba Investir.', !g || g.id === S.profile.objetivoFoco)}`, { excluir: g ? 'Excluir objetivo' : '' });
@@ -472,20 +500,42 @@ function basTelaAvisos() {
 }
 // simulador "E se eu investir mais?" do sonho em foco (E.simularObjetivo); o controle atualiza só os textos, sem render()
 const basMesAno = (meses) => { if (meses == null) return 'fora do alcance'; const h = new Date(); const t = h.getMonth() + meses; return `${MES[t % 12].toLowerCase()}/${h.getFullYear() + Math.floor(t / 12)}`; };
-function basSimCalc(g, extra) { return E.simularObjetivo({ patrimonio: g.saldo, aporte: g.aporte, extra, retornoBase: +S.profile.retornoAnual || 10, retorno: +S.profile.retornoAnual || 10, alvo: g.valor }); }
-function basTelaSimular(o) {
-  const g = objAnalise().itens.find((x) => x.id === o.id); if (!g) return basSumiu(); const R = basSimCalc(g, 0);
-  return basDet('E se eu investir mais?', `${basCard(`<small class="bas-k">${esc(objNomeDe(g))} · ${brl0(g.valor)}</small><b class="bas-big md">Chega em <span data-bas-sim-o="quando">${basMesAno(R.base.meses)}</span></b>
-      <p class="bas-p">Hoje: ${brl0(g.aporte)} por mês para este sonho.</p>`, 'bas-hero')}
-    ${basCard(`<label class="bas-sim"><span>Investir a mais por mês</span><b data-bas-sim-o="extra">${brl0(0)}</b><input type="range" min="0" max="5000" step="50" value="0" data-bas-sim="${esc(g.id)}" aria-label="Valor a mais por mês"></label>
-      <div class="bas-sim-r"><span><small>Antes</small><b>${basMesAno(R.base.meses)}</b></span><span><small>Com o extra</small><b class="pos" data-bas-sim-o="novo">${basMesAno(R.sim.meses)}</b></span><span><small>Ganha</small><b data-bas-sim-o="ganho">–</b></span></div>`)}
-    <p class="bas-disc keep">Simulação com retorno hipotético de ${esc(String(+S.profile.retornoAnual || 10))}% ao ano. Não é promessa de rentabilidade.</p>`);
+// E se eu investir mais? Calculadora de juros compostos (E.jurosCompostos, testada): valor inicial, aporte por mês, taxa ao ano e prazo,
+// com o gráfico do que você põe e do que os juros somam, e quando cada sonho é alcançado. Atualiza na hora, sem render().
+const BAS_JC_PRAZOS = [1, 3, 5, 10, 20, 30];
+const basPrazoTxt = (m) => (m == null ? 'fora do alcance' : m === 0 ? 'já alcançado' : `${m >= 12 ? `${Math.floor(m / 12)} ano${m >= 24 ? 's' : ''}` : ''}${m >= 12 && m % 12 ? ' e ' : ''}${m % 12 ? `${m % 12} ${m % 12 === 1 ? 'mês' : 'meses'}` : ''}`);
+function basJcVals(f) {
+  const n = (k) => { const el = f && f.querySelector(`[data-jc="${k}"]`); return el ? parseReais(el.value) : NaN; };
+  const anos = +((f && f.querySelector('input[name="jc-prazo"]:checked')) || {}).value || 10;
+  return { inicial: Math.max(0, n('ini') || 0), aporte: Math.max(0, n('ap') || 0), taxa: Math.min(100, Math.max(0, Number.isFinite(n('tx')) ? n('tx') : 0)), anos };
 }
-document.addEventListener('input', (e) => { const t = e.target; if (!t.matches || !t.matches('[data-bas-sim]')) return;
-  const g = objAnalise().itens.find((x) => x.id === t.dataset.basSim); if (!g) return; const extra = +t.value || 0; const R = basSimCalc(g, extra);
-  const out = (k, v) => { const el = document.querySelector(`[data-bas-sim-o="${k}"]`); if (el) el.textContent = v; };
-  const ganho = R.base.meses != null && R.sim.meses != null ? R.base.meses - R.sim.meses : null;
-  out('extra', brl0(extra)); out('novo', basMesAno(R.sim.meses)); out('ganho', ganho == null ? '–' : ganho >= 12 ? `${Math.floor(ganho / 12)} ano${ganho >= 24 ? 's' : ''}${ganho % 12 ? ` e ${ganho % 12} m` : ''}` : `${ganho} ${ganho === 1 ? 'mês' : 'meses'}`); });
+function basJcOut(v) {
+  const sonhos = objAnalise().itens; const J = E.jurosCompostos({ inicial: v.inicial, aporte: v.aporte, taxa: v.taxa, meses: v.anos * 12, metas: sonhos.map((g) => ({ id: g.id, nome: objNomeDe(g), valor: g.valor, g })) });
+  const W = 300; const H = 140; const mx = Math.max(1, J.final); const nS = J.serie.length; const x = (i) => (nS > 1 ? (i / (nS - 1)) * W : W / 2); const y = (val) => H - 4 - (val / mx) * (H - 12);
+  const linha = (k) => J.serie.map((p0, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(p0[k]).toFixed(1)}`).join(' ');
+  const area = (k) => `${linha(k)} L${W} ${H} L0 ${H} Z`;
+  const marcas = J.metas.filter((m) => m.meses != null && m.meses > 0 && m.meses <= nS).map((m) => `<line class="bas-jc-m" x1="${x(m.meses - 1).toFixed(1)}" x2="${x(m.meses - 1).toFixed(1)}" y1="0" y2="${H}"/><circle class="bas-jc-mp" cx="${x(m.meses - 1).toFixed(1)}" cy="${y(J.serie[m.meses - 1].total).toFixed(1)}" r="4"/>`).join('');
+  const pJ = J.final > 0 ? J.juros / J.final : 0;
+  return `<div class="card bas-jc-res"><small class="bas-k">Em ${v.anos} ${v.anos === 1 ? 'ano' : 'anos'} você teria</small><b class="bas-jc-v">${basCent(J.final)}</b>
+      <div class="bas-jc-leg"><span><i class="ap"></i>Você investe <b>${brl0(J.aportado)}</b></span><span><i class="jr"></i>Juros somam <b>${brl0(J.juros)}</b>${pJ > 0 ? ` <em>${pct(pJ)}</em>` : ''}</span></div>
+      <svg class="bas-jc-g" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><path class="bas-jc-at" d="${area('total')}"/><path class="bas-jc-aa" d="${area('aportado')}"/><path class="bas-jc-lt" d="${linha('total')}"/>${marcas}</svg>
+      <span class="bas-jc-x" aria-hidden="true"><b>hoje</b><b>${Math.round(v.anos / 2) || ''}${v.anos > 1 ? ' anos' : ''}</b><b>${v.anos} ${v.anos === 1 ? 'ano' : 'anos'}</b></span></div>
+    ${J.metas.length ? basSecao('Quando chega em cada sonho', '', `<ul class="bas-ativ bas-jc-sn">${J.metas.map((m, i) => `<li><span class="bas-row">${objIcone(m.g, i)}${basNome(esc(m.nome), brl0(m.valor))}<b class="${m.meses != null && m.meses <= nS ? 'pos' : ''}">${basPrazoTxt(m.meses)}</b></span></li>`).join('')}</ul>`) : ''}`;
+}
+function basTelaSimular(o) {
+  const g = o.id ? objAnalise().itens.find((x) => x.id === o.id) : objFoco(objAnalise()); const C = S.C; const ult = S.year === NOW_Y ? NOW_M : 11;
+  const v0 = { inicial: Math.round(g ? g.saldo : C.patrimonio[ult]) || 0, aporte: Math.round(g ? g.aporte : +S.plan.settings.metaAporte || 0) || 0, taxa: +S.profile.retornoAnual || 10, anos: 10 };
+  const campo = (k, rot, val, suf) => `<label class="bas-jc-f"><span>${rot}</span><span class="bas-jc-in">${suf ? '' : '<i>R$</i>'}<input data-jc="${k}" inputmode="decimal" value="${esc(nf.format(val))}">${suf ? `<i>${suf}</i>` : ''}</span></label>`;
+  return basDet('E se eu investir mais?', `<form class="bas-jc" onsubmit="return false">
+      <div class="card bas-jc-c">${campo('ini', 'Valor inicial', v0.inicial)}${campo('ap', 'Aporte por mês', v0.aporte)}${campo('tx', 'Taxa ao ano', v0.taxa, '% a.a.')}
+        <fieldset class="bas-fs bas-jc-p"><legend>Prazo</legend><div class="bas-chips">${BAS_JC_PRAZOS.map((a) => `<label class="bas-chip"><input type="radio" name="jc-prazo" value="${a}" ${a === v0.anos ? 'checked' : ''}><span>${a} ${a === 1 ? 'ano' : 'anos'}</span></label>`).join('')}</div></fieldset></div>
+      <div class="bas-jc-out" aria-live="polite">${basJcOut(v0)}</div></form>
+    <p class="bas-disc keep">Simulação com juros compostos e taxa constante, só para comparar cenários. Não é promessa de rentabilidade: investimentos podem render menos ou ter perdas.</p>`);
+}
+// digitar ou trocar o prazo refaz só o resultado (um quadro por vez)
+let basJcQ = 0;
+document.addEventListener('input', (e) => { const f = e.target.closest && e.target.closest('form.bas-jc'); if (!f || basJcQ) return;
+  basJcQ = requestAnimationFrame(() => { basJcQ = 0; const out = f.querySelector('.bas-jc-out'); if (out) out.innerHTML = basJcOut(basJcVals(f)); }); });
 // alvos da carteira: quanto de cada investimento (em %), gravado em S.profile.carteira como no SaaS
 
 /* ---- App pago: vitrine "Para você", Seu ano, Histórico, Raio-X dos gastos, Resumo do mês, calendário de proventos e recomendação ---- */
@@ -667,26 +717,52 @@ function basAnalise(m, de, ate) {
 // curva suave (Catmull-Rom para Bézier) por uma lista de pontos [x, y]
 const basCurva = (pts) => pts.map((p0, i) => { if (!i) return `M${p0[0].toFixed(1)} ${p0[1].toFixed(1)}`; const a = pts[i - 2] || pts[i - 1]; const b = pts[i - 1]; const d = pts[i + 1] || p0;
   return `C${(b[0] + (p0[0] - a[0]) / 6).toFixed(1)} ${(b[1] + (p0[1] - a[1]) / 6).toFixed(1)} ${(p0[0] - (d[0] - b[0]) / 6).toFixed(1)} ${(p0[1] - (d[1] - b[1]) / 6).toFixed(1)} ${p0[0].toFixed(1)} ${p0[1].toFixed(1)}`; }).join(' ');
+function basHlDet(ano) {
+  const l = (histDados().anos || []).find((x) => x.ano === ano); if (!l) return '';
+  const c = (n, v, k) => `<span><small>${n}</small><b class="${k || ''}">${v}</b></span>`;
+  return `<div class="bas-hl-det-g">${c('Entradas', brl0(l.entradas), 'pos')}${c('Gastos', brl0(l.gastos))}${c('Sobra', brl0(l.sobra), l.sobra >= 0 ? '' : 'neg')}${c('Guardou', l.poupanca != null ? pct(l.poupanca) : '–')}${c('Aportes', brl0(l.aplicado != null ? l.aplicado : l.aportes))}${c('Proventos', brl0(l.proventos), 'pos')}</div>${l.parcial ? `<p class="bas-p bas-p0">${ano} em andamento: até ${MES_LONGO[l.meses - 1]}.</p>` : ''}`;
+}
+function basHlLigar() {
+  document.querySelectorAll('.bas-hl-g').forEach((g) => { if (g.dataset.lig) return; g.dataset.lig = '1';
+    const pts = JSON.parse(g.dataset.pts || '[]'); const W = +g.dataset.w; const H = +g.dataset.h; const tips = [...g.querySelector('.bas-hl-tips').content.children].map((d) => d.innerHTML);
+    const tip = g.querySelector('.bas-hl-tip'); const guia = g.querySelector('.bas-hl-guia'); const dots = g.querySelectorAll('.bas-hl-d'); let ultI = -1;
+    const mostra = (e) => { const r = g.getBoundingClientRect(); const xv = ((e.clientX - r.left) / r.width) * W; let i = 0; pts.forEach((q, k) => { if (Math.abs(q[0] - xv) < Math.abs(pts[i][0] - xv)) i = k; });
+      if (i === ultI) return; ultI = i; const xp = (pts[i][0] / W) * 100; const yp = (pts[i][1] / H) * 100;
+      guia.style.left = xp + '%'; g.classList.add('ativo'); dots.forEach((d, k) => d.classList.toggle('on', k === i));
+      tip.innerHTML = tips[i]; tip.hidden = false; tip.style.left = Math.min(78, Math.max(22, xp)) + '%'; tip.style.top = Math.max(0, yp - 6) + '%'; if (navigator.vibrate && e.pointerType === 'touch') try { navigator.vibrate(4); } catch (er) { /* sem vibração */ } };
+    g.addEventListener('pointerdown', (e) => { try { g.setPointerCapture(e.pointerId); } catch (er) { /* sintético */ } ultI = -1; mostra(e); });
+    g.addEventListener('pointermove', (e) => { if (e.pointerType === 'mouse' || g.hasPointerCapture && g.hasPointerCapture(e.pointerId)) mostra(e); });
+    g.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') { g.classList.remove('ativo'); tip.hidden = true; ultI = -1; } });
+  });
+}
 function basWidgetsInicio(secs) {
   const C = S.C; const j = basJan();
-  // Patrimônio ano a ano: a linha mês a mês atravessa os anos, cada ano numa seção (faixa, divisória e, embaixo, o ano e o valor que fechou)
+  // Patrimônio ano a ano: linha de verdade, ponto a ponto, com cada mês de cada ano (H.serie, a mesma da linha do tempo do SaaS);
+  // cada ano numa seção separada por divisória; o dedo mostra o mês exato; tocar num ano abre os números dele
   const H = histDados(); const t = H.totais || {}; const ult = S.year === NOW_Y ? NOW_M : 11;
-  const anosH = (H.anos || []).filter((l) => l.preenchido).slice(-5); const nH = Math.max(1, anosH.length);
-  const WH = 300; const HH = 120; const PH = 8; const SW = (WH - 2 * PH) / nH;
-  // vários anos: começa no patrimônio do início do primeiro e cada seção termina no fim do ano (o ano em curso, na fração do ano já vivida); um ano só: os meses dele
-  const fimX = (l, k) => PH + k * SW + (l.parcial ? (l.meses / 12) : 1) * SW;
-  const serieH = anosH.length > 1 ? [[PH, anosH[0].patrimonioInicio]].concat(anosH.map((l, k) => [fimX(l, k), l.patrimonioFim])) : C.patrimonio.slice(0, ult + 1).map((v, m) => [PH + ((m + 0.5) / 12) * SW, v]);
-  const vsH = serieH.map((x) => x[1]); const mnH = Math.min(...vsH); const mxH = Math.max(...vsH); const yH = (v) => (mxH > mnH ? HH - 12 - ((v - mnH) / (mxH - mnH)) * (HH - 30) : HH / 2);
-  const ptsH = serieH.map(([x, v]) => [x, yH(v)]); const cH = basCurva(ptsH); const fimH = ptsH[ptsH.length - 1];
-  const fins = anosH.length > 1 ? anosH.map((l, k) => [l.ano, l.patrimonioFim, fimX(l, k), yH(l.patrimonioFim), l.parcial]) : [[S.year, C.patrimonio[ult], fimH[0], fimH[1], ult < 11]];
-  const curto = (v) => `R$ ${tickFmt(v)}`;
-  secs.historico = `<button class="card bas-w-hist bas-w-hl" ${basIr('historico')}><span class="bas-w-hist-h">${basNome('Patrimônio ano a ano', anosH.length > 1 && t.crescimento ? `${t.crescimento >= 0 ? '+' : '−'}${brl0(Math.abs(t.crescimento))} desde ${anosH[0].ano}` : `${brl0(C.patrimonio[ult])} agora`)}${t.crescimentoPct != null && anosH.length > 1 ? `<em class="${t.crescimento >= 0 ? 'pos' : 'neg'}">${t.crescimento >= 0 ? '↗' : '↘'} ${pct(Math.abs(t.crescimentoPct))}</em>` : ''}</span>
-    <svg class="bas-w-hl-svg" viewBox="0 0 ${WH} ${HH}" aria-hidden="true"><defs><linearGradient id="bas-hg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="h0"/><stop offset="1" class="h1"/></linearGradient></defs>
-      ${fins.map((f0, k) => `<rect class="bas-w-hl-sec${k % 2 ? ' par' : ''}${k === fins.length - 1 ? ' on' : ''}" x="${(PH + k * SW + 1).toFixed(1)}" y="0" width="${(SW - 2).toFixed(1)}" height="${HH}" rx="10"/>`).join('')}
-      ${ptsH.length > 1 ? `<path class="bas-w-hl-a" d="${cH} L${fimH[0].toFixed(1)} ${HH} L${ptsH[0][0].toFixed(1)} ${HH} Z" fill="url(#bas-hg)"/><path class="bas-w-hl-g" d="${cH}"/><path class="bas-w-hl-v" d="${cH}" pathLength="1"/>` : ''}
-      ${fins.slice(0, -1).map((f0, k) => `<circle class="bas-w-hl-d" cx="${f0[2].toFixed(1)}" cy="${f0[3].toFixed(1)}" r="3" style="--i:${k}"/>`).join('')}
-      <circle class="bas-w-hl-pp" cx="${fimH[0].toFixed(1)}" cy="${fimH[1].toFixed(1)}" r="5"/><circle class="bas-w-hl-p" cx="${fimH[0].toFixed(1)}" cy="${fimH[1].toFixed(1)}" r="4.6"/></svg>
-    <span class="bas-w-hl-anos" style="--n:${fins.length}">${fins.map(([a, v, , , parcial], k) => `<span class="${k === fins.length - 1 ? 'on' : ''}"><b>${a}${parcial ? '<small> até agora</small>' : ''}</b><em>${curto(v)}</em></span>`).join('')}</span></button>`;
+  const anosH = (H.anos || []).filter((l) => l.preenchido).slice(-4); const anosK = anosH.map((l) => l.ano);
+  const serieH = (H.serie || []).filter((p0) => anosK.includes(p0.ano)); const usaS = anosH.length > 1 && serieH.length > 1;
+  const pts0 = usaS ? serieH.map((p0) => ({ ano: p0.ano, mes: p0.mes, v: p0.patrimonio, e: p0.entradas, g: p0.gastos })) : C.patrimonio.slice(0, ult + 1).map((v, m) => ({ ano: S.year, mes: m, v }));
+  const anosV = usaS ? anosK : [S.year]; const nA = anosV.length; const WH = 320; const HH = 150; const SW = WH / nA;
+  const vs = pts0.map((p0) => p0.v); const mn = Math.min(...vs); const mx = Math.max(...vs); const folga = (mx - mn) * 0.12 || mx * 0.05 || 1;
+  const xH = (p0) => anosV.indexOf(p0.ano) * SW + ((p0.mes + 0.5) / 12) * SW; const yH = (v) => HH - 10 - ((v - (mn - folga)) / ((mx + folga) - (mn - folga))) * (HH - 26);
+  const P = pts0.map((p0) => [xH(p0), yH(p0.v)]); const linhaH = P.map((q, i) => `${i ? 'L' : 'M'}${q[0].toFixed(1)} ${q[1].toFixed(1)}`).join(' ');
+  const tips = pts0.map((p0, i) => { const ant = i ? pts0[i - 1].v : null; const dv = ant != null ? p0.v - ant : null;
+    return `<b>${cap(MES_LONGO[p0.mes])} de ${p0.ano}</b><span>${brl0(p0.v)}</span>${dv != null ? `<em class="${dv >= 0 ? 'pos' : 'neg'}">${dv >= 0 ? '+' : '−'}${brl0(Math.abs(dv))} no mês</em>` : ''}`; });
+  const fimDe = (a) => { const l = anosH.find((x) => x.ano === a); return l ? l.patrimonioFim : C.patrimonio[ult]; };
+  const varDe = (a) => { const l = anosH.find((x) => x.ano === a); return l && l.variacaoPct != null ? l.variacaoPct : null; };
+  const ult0 = P[P.length - 1];
+  secs.historico = `<section class="card bas-w-hist bas-w-hl2"><div class="bas-w-hist-h">${basNome('Patrimônio ano a ano', anosH.length > 1 && t.crescimento ? `${t.crescimento >= 0 ? '+' : '−'}${brl0(Math.abs(t.crescimento))} desde ${anosH[0].ano}` : `${brl0(C.patrimonio[ult])} agora`)}<button class="lnk strong" ${basIr('historico')}>Detalhes</button></div>
+    <div class="bas-hl-g" data-pts='${esc(JSON.stringify(P.map((q) => [+q[0].toFixed(1), +q[1].toFixed(1)])))}' data-w="${WH}" data-h="${HH}" role="img" aria-label="Patrimônio mês a mês. Arraste o dedo para ver cada mês.">
+      <svg viewBox="0 0 ${WH} ${HH}" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="bas-hg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="h0"/><stop offset="1" class="h1"/></linearGradient></defs>
+        ${anosV.map((a, k) => `<rect class="bas-hl-sec${a === S.year ? ' on' : ''}" x="${(k * SW + 2).toFixed(1)}" y="0" width="${(SW - 4).toFixed(1)}" height="${HH}" rx="12"/>`).join('')}
+        ${anosV.slice(1).map((a, k) => `<line class="bas-hl-div" x1="${((k + 1) * SW).toFixed(1)}" x2="${((k + 1) * SW).toFixed(1)}" y1="6" y2="${HH - 6}"/>`).join('')}
+        ${P.length > 1 ? `<path class="bas-hl-a" d="${linhaH} L${ult0[0].toFixed(1)} ${HH} L${P[0][0].toFixed(1)} ${HH} Z" fill="url(#bas-hg2)"/><path class="bas-hl-l" d="${linhaH}" pathLength="1"/>` : ''}</svg>
+      ${P.map((q, i) => `<i class="bas-hl-d${i === P.length - 1 ? ' fim' : ''}" style="left:${((q[0] / WH) * 100).toFixed(2)}%;top:${((q[1] / HH) * 100).toFixed(2)}%"></i>`).join('')}
+      <span class="bas-hl-guia" aria-hidden="true"></span><span class="bas-hl-tip" aria-live="polite" hidden></span>
+      <template class="bas-hl-tips">${tips.map((x) => `<div>${x}</div>`).join('')}</template></div>
+    <div class="bas-hl-anos" role="group" aria-label="Escolha um ano" style="--n:${nA}">${anosV.map((a) => { const vp = varDe(a); return `<button class="${a === S.year ? 'on' : ''}" data-act="bas-hl-ano" data-y="${a}" aria-pressed="${a === S.year}"><b>${a}</b><span>${brl0(fimDe(a))}</span>${vp != null ? `<em class="${vp >= 0 ? 'pos' : 'neg'}">${vp >= 0 ? '+' : '−'}${pct(Math.abs(vp))}</em>` : '<em>&nbsp;</em>'}</button>`; }).join('')}</div>
+    <div class="bas-hl-det" aria-live="polite">${basHlDet(S.year)}</div></section>`;
   // Seu ano: a sobra de cada mês numa fileira de 12 cápsulas de luz (verde quando sobra, vermelho quando falta; os meses que vêm, apagados)
   const sobA = C.investAlocado; const mxA = Math.max(1, ...sobA.slice(0, ult + 1).map((v) => Math.abs(v)));
   secs.seuano = `<button class="card bas-w-ano" ${basIr('ano-resumo')}><span class="bas-w-ano-luz" aria-hidden="true"></span><span class="bas-w-ano-h"><small>Seu ${S.year}</small><b>${basCent(C.T.investAlocado)}</b><span>sobraram no ano${C.T.poupanca != null ? `, <em>${pct(C.T.poupanca)}</em> do que entrou` : ''}</span></span>
@@ -782,11 +858,11 @@ function basMetaDispHtml() {
     <div class="bas-qa-o"><span><i class="bolso"></i><small>Do seu bolso</small><b>${brl(A.doBolso)}</b></span><span><i class="div"></i><small>De dividendos</small><b>${brl(A.deDividendos)}</b></span></div>
     ${D.aportado > 0 ? `<span class="bas-qa-b" aria-hidden="true"><i class="bolso" style="flex:${Math.max(0, A.doBolso).toFixed(2)}"></i><i class="div" style="flex:${Math.max(0, A.deDividendos).toFixed(2)}"></i></span>` : ''}</section>`;
   const exc = D.excedente > 0.005; const tudo = !exc && D.disponivel < 0.005 && D.sobra > 0.005; const tot = Math.max(D.sobra, D.aportado, 1);
-  const disp = `<section class="card bas-dp${tudo ? ' ok' : ''}${exc ? ' exc' : ''}"><div class="bas-ch"><h2 class="bas-h2">Disponível para aportar</h2>${tudo ? '<em class="bas-dp-tag ok">Tudo investido</em>' : exc ? '<em class="bas-dp-tag neg">Investiu além da sobra</em>' : ''}</div>
-    <b class="bas-dp-v">${basCent(D.disponivel)}</b>
-    <div class="bas-dp-eq"><span><small>Sobrou</small><b>${brl(D.sobra)}</b></span><span><small>− Já investido</small><b>${brl(D.aportado)}</b></span><span class="r"><small>= Disponível</small><b>${brl(D.disponivel)}</b></span></div>
+  // Disponível compacto: o valor, uma ação ou o estado ao lado, a barra e a conta numa linha só
+  const acaoD = exc ? '<em class="bas-dp-tag neg">Além da sobra</em>' : tudo ? '<em class="bas-dp-tag ok">Tudo investido</em>' : D.disponivel > 0.005 ? `<button class="bas-dp-bt" ${basIrInv()}>Investir</button>` : '';
+  const disp = `<section class="card bas-dp bas-dp2${tudo ? ' ok' : ''}${exc ? ' exc' : ''}"><div class="bas-dp2-t"><span class="bas-n"><small>Disponível para aportar</small><b class="bas-dp-v">${basCent(D.disponivel)}</b></span>${acaoD}</div>
     <span class="bas-dp-b" aria-hidden="true"><i class="inv" style="width:${(Math.min(D.aportado, D.sobra > 0 ? D.sobra : D.aportado) / tot * 100).toFixed(1)}%"></i><i class="liv" style="width:${(D.disponivel / tot * 100).toFixed(1)}%"></i>${exc ? `<i class="exc" style="width:${(D.excedente / tot * 100).toFixed(1)}%"></i>` : ''}</span>
-    ${exc ? `<p class="bas-p">Você aplicou ${brl(D.excedente)} além do que sobrou ${esc(basJanFrase())}.</p>` : D.disponivel > 0.005 ? `<button class="btn primary lg bas-cta bas-add" ${basIrInv()}>Investir ${brl0(D.disponivel)}</button>` : ''}</section>`;
+    <p class="bas-dp2-s">Sobrou <b>${brl(D.sobra)}</b> · investido <b>${brl(D.aportado)}</b>${exc ? ` · <b class="neg">${brl(D.excedente)}</b> além` : ''}</p></section>`;
   return meta + disp;
 }
 // proventos: o ano (fichas), importar e o gráfico mês a mês em que tocar num mês mostra quem pagou
@@ -947,8 +1023,8 @@ function basSalvar(f) {
       const l = t.id ? p.lancamentos.find((x) => x.id === t.id) : null; const v = val('valor'); if (!(v > 0)) return basErro(f, 'Informe quanto foi, como 25,90.');
       const dt = E.parseDataISO(d.data); if (!dt || dt.ano !== S.year) return basErro(f, `Escolha uma data de ${S.year}.`);
       const area = (d.areaNova || '').trim() || d.area || 'Outros'; const desc = (d.desc || '').trim() || area;
-      if (l) { if (l.itemId && basMesDe(l.data) !== dt.mes) { desfazerBaixa(l); delete l.itemId; } Object.assign(l, { data: d.data, desc, area, valor: E.r2(l.valor < 0 ? -v : v) }); S.mes = dt.mes; ok('Gasto atualizado.'); return; }
-      const nl = { id: uid(), origem: 'manual', data: d.data, desc, valor: E.r2(v), cat: basCat(false), area, sub: '', inst: '' }; p.lancamentos.push(nl); let msg = 'Gasto anotado.';
+      if (l) { if (l.itemId && basMesDe(l.data) !== dt.mes) { desfazerBaixa(l); delete l.itemId; } Object.assign(l, { data: d.data, desc, area, inst: d.inst || '', valor: E.r2(l.valor < 0 ? -v : v) }); S.mes = dt.mes; ok('Gasto atualizado.'); return; }
+      const nl = { id: uid(), origem: 'manual', data: d.data, desc, valor: E.r2(v), cat: basCat(false), area, sub: '', inst: d.inst || '' }; p.lancamentos.push(nl); let msg = 'Gasto anotado.';
       // o mesmo cuidado do Completo: cumpre a conta fixa do mês (não conta duas vezes) ou vira conta até dezembro
       const fx = E.acharFixo(p.despesas, desc, dt.ano, dt.mes); if (fx) { nl.itemId = fx.id; nl.cat = fx.cat; fx.baixas = Object.assign({}, fx.baixas, { [dt.ano + '-' + dt.mes]: nl.id }); msg = `Conta “${fx.nome}” marcada como paga.`; }
       S.mes = dt.mes; ok(msg); return;
@@ -957,10 +1033,10 @@ function basSalvar(f) {
       const it = t.id ? p.despesas.find((x) => x.id === t.id) : null; const nome = (d.nome || '').trim(); if (!nome) return basErro(f, 'Diga com o quê, como Aluguel.');
       const area = d.area || 'Contas';
       if (!it && d.modo === 'parc') { const total = val('total'); const n = parseInt(d.n, 10); if (!(total > 0)) return basErro(f, 'Informe o valor total da compra.'); if (!(n >= 1 && n <= 120)) return basErro(f, 'Informe de 1 a 120 parcelas.');
-        p.despesas.push({ id: uid(), cat: basCat(false), area, sub: '', nome, inst: '', valores: z12(), parcel: { total: E.r2(total), n, ano: S.year, mes: m } }); ok('Compra parcelada anotada.'); return; }
+        p.despesas.push({ id: uid(), cat: basCat(false), area, sub: '', nome, inst: d.inst || '', valores: z12(), parcel: { total: E.r2(total), n, ano: S.year, mes: m } }); ok('Compra parcelada anotada.'); return; }
       // gasto de todo mês
       const v = val('valor'); if (!(v > 0)) return basErro(f, 'Informe o valor por mês.');
-      const alvo = it || { id: uid(), cat: basCat(true), sub: '', inst: '', valores: z12() }; Object.assign(alvo, { nome, area }); fillFrom(alvo.valores, E.r2(v), m); if (!it) p.despesas.push(alvo);
+      const alvo = it || { id: uid(), cat: basCat(true), sub: '', inst: d.inst || '', valores: z12() }; Object.assign(alvo, { nome, area }); fillFrom(alvo.valores, E.r2(v), m); if (!it) p.despesas.push(alvo);
       ok(it ? 'Gasto atualizado.' : 'Gasto anotado todo mês até dezembro.'); return;
     }
     case 'entrada': {
@@ -1004,11 +1080,13 @@ function basSalvar(f) {
     case 'ponto': { const vp = d.patr && d.patr.trim() ? val('patr') : null; const va = d.anual && d.anual.trim() ? val('anual') : 0;
       if ((vp != null && (Number.isNaN(vp) || vp < 0)) || Number.isNaN(va) || va < 0) return basErro(f, 'Informe valores como 50.000,00.');
       p.settings.patrimonioInicial = vp == null ? null : E.r2(vp); p.settings.metaInvAno = E.r2(va); ok('Ponto de partida salvo.'); return; }
-    case 'meta': { const v = d.valor && d.valor.trim() ? val('valor') : 0; if (Number.isNaN(v) || v < 0) return basErro(f, 'Informe um valor, como 500,00.'); p.settings.metaAporte = E.r2(v); ok('Meta salva.'); return; }
+    case 'meta': { const v = d.valor && d.valor.trim() ? val('valor') : 0; if (Number.isNaN(v) || v < 0) return basErro(f, 'Informe um valor, como 500,00.');
+      const ms = []; for (let m = 0; m < 12; m++) { const raw = String(d['m' + m] || '').trim(); const x = raw ? parseReais(raw) : null; if (x != null && (Number.isNaN(x) || x < 0)) return basErro(f, `Confira a meta de ${MES_LONGO[m]}.`); ms.push(x == null ? null : E.r2(x)); }
+      p.settings.metaAporte = E.r2(v); p.metasAporte = ms; ok('Metas salvas.'); return; }
     case 'objetivo': {
       const L = objLista(); const g = t.id ? L.find((x) => x.id === t.id) : null; const v = val('valor'); if (!(v > 0)) return basErro(f, 'Informe quanto custa o objetivo.');
       const ano = d.ano && d.ano.trim() ? parseInt(d.ano, 10) : null; if (ano != null && !(ano >= NOW_Y && ano <= 2100)) return basErro(f, `Informe um ano a partir de ${NOW_Y}.`);
-      const dados = { tipo: d.tipo || 'outro', nome: (d.nome || '').trim(), valor: E.r2(v), ano };
+      const dados = { tipo: d.tipo || 'outro', nome: (d.nome || '').trim(), valor: E.r2(v), ano }; if (dados.tipo === 'outro' && d.icone) dados.icone = d.icone;
       // o primeiro separa todo o patrimônio (fatia de 100%); os seguintes só pedem que o patrimônio chegue ao valor (marco)
       const alvo = g || Object.assign({ id: uid() }, L.length ? { modo: 'marco', pct: 0 } : { modo: 'fatia', pct: 100 }); Object.assign(alvo, dados); if (!g) L.push(alvo);
       if (d.foco || L.length === 1) S.profile.objetivoFoco = alvo.id; objSalvar(); ok(g ? 'Objetivo atualizado.' : 'Objetivo criado.'); return;
@@ -1056,6 +1134,9 @@ function basAcao(act, ds, el) {
     case 'bas-rolar': { const a = document.getElementById(ds.alvo); if (a) a.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }); return true; }
     case 'bas-tema-ciclo': { const ord = ['auto', 'light', 'oled']; const v = ord[(ord.indexOf(S.profile.prefs.tema) + 1) % 3]; if (v !== 'auto') S.profile.prefs.tema = v; definirTema(v === 'auto' ? 'auto-on' : v); render(); toast(`Tema: ${{ auto: 'automático', light: 'claro', oled: 'escuro' }[v]}.`); return true; }
     case 'bas-voltar': basFechar(); return true;
+    case 'bas-hl-ano': { const w = el.closest('.bas-w-hl2'); if (!w) return true; w.querySelectorAll('.bas-hl-anos button').forEach((b) => { const on = b === el; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); });
+      w.querySelectorAll('.bas-hl-sec').forEach((r, k) => r.classList.toggle('on', k === [...el.parentNode.children].indexOf(el))); w.querySelector('.bas-hl-det').innerHTML = basHlDet(+ds.y); basSom('toque'); return true; }
+    case 'bas-gasto-rec': { const f = el.closest('form'); const x = basMemGastos().get(ds.k); if (f && x) { f.querySelector('[name="desc"]').value = x.desc; basGastoLembra(f, x, true); basSom('toque'); } return true; }
     case 'bas-prov-mes': S.basProvMes = +ds.m; basSom('toque'); render(); return true;
     case 'bas-prov-ano': if (+ds.y !== S.year && S.plans[+ds.y]) { S.basProvMes = null; switchYear(+ds.y); } return true;
     case 'bas-al-passo': case 'bas-al-igual': case 'bas-al-100': case 'bas-al-zero': basAlAcao(act, el); return true;
