@@ -919,16 +919,16 @@ const BAS_GEMAS = { base: ['color-mix(in srgb, var(--accent) 35%, #fff)', 'var(-
   bronze: ['#ffd2a3', '#cd7f3e', '#6e3a12', '#e0894a'], prata: ['#ffffff', '#b9c4d1', '#5b6674', '#c9d4e2'], ouro: ['#fff3c2', '#f2b632', '#8a5606', '#ffc94a'],
   platina: ['#effcff', '#86d0f0', '#2f7096', '#7fd6ff'], diamante: ['#f6efff', '#a487ff', '#3a2a9e', '#7cdcff'] };
 const basNivel = (meses) => { const m = [...BAS_SEQ_MARCOS].reverse().find((x) => meses >= x[0]); return m ? m[3] : 'base'; };
-// joia lapidada (hexágono com mesa e seis facetas em tons do nível) e um reflexo que corre por dentro
-function basGema(nivel, id) {
+// estrela lapidada: cinco pontas, cada uma em duas facetas (luz e sombra), núcleo de luz e um reflexo que corre
+function basEstrela(nivel, id) {
   const [cl, md, es] = BAS_GEMAS[nivel] || BAS_GEMAS.base; const mix = (a, b, p) => `color-mix(in srgb, ${a} ${p}%, ${b})`;
-  const O = [[50, 4], [90, 27], [90, 73], [50, 96], [10, 73], [10, 27]]; const T = [[50, 26], [71, 38], [71, 62], [50, 74], [29, 62], [29, 38]];
-  const cores = [cl, mix(cl, md, 55), md, es, mix(md, es, 45), mix(cl, md, 25)];
-  const fac = O.map((p, k) => { const q = O[(k + 1) % 6]; const t1 = T[(k + 1) % 6]; const t0 = T[k]; return `<polygon points="${p} ${q} ${t1} ${t0}" style="fill:${cores[k]}"/>`; }).join('');
-  return `<defs><linearGradient id="gm-${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:${cl}"/><stop offset=".55" style="stop-color:${md}"/><stop offset="1" style="stop-color:${mix(md, es, 60)}"/></linearGradient>
-    <clipPath id="gc-${id}"><polygon points="${O.map((p) => p.join(',')).join(' ')}"/></clipPath></defs>
-    <g class="bas-gm">${fac}<polygon points="${T.map((p) => p.join(',')).join(' ')}" fill="url(#gm-${id})"/><polyline class="bas-gm-ar" points="${T.map((p) => p.join(',')).join(' ')} ${T[0].join(',')}"/>
-    <g clip-path="url(#gc-${id})"><rect class="bas-gm-rf" x="-60" y="-20" width="26" height="160" transform="rotate(25 50 50)"/></g><polygon class="bas-gm-borda" points="${O.map((p) => p.join(',')).join(' ')}"/></g>`;
+  const pt = (r, k) => { const a = (-90 + k * 36) * Math.PI / 180; return [(50 + r * Math.cos(a)).toFixed(2), (52 + r * Math.sin(a)).toFixed(2)]; };
+  const V = Array.from({ length: 10 }, (_, k) => pt(k % 2 ? 19 : 47, k)); const c = [50, 52];
+  const tons = [cl, mix(md, es, 35), mix(cl, md, 40), es, mix(cl, md, 20), mix(md, es, 55), cl, mix(md, es, 45), mix(cl, md, 55), mix(md, es, 25)];
+  const fac = V.map((p, k) => `<polygon points="${c} ${p} ${V[(k + 1) % 10]}" style="fill:${tons[k]}"/>`).join('');
+  return `<defs><radialGradient id="en-${id}"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient><clipPath id="ec-${id}"><polygon points="${V.map((p) => p.join(',')).join(' ')}"/></clipPath></defs>
+    <g class="bas-gm bas-es">${fac}<circle cx="50" cy="52" r="10" fill="url(#en-${id})"/><g clip-path="url(#ec-${id})"><rect class="bas-gm-rf" x="-60" y="-20" width="22" height="160" transform="rotate(25 50 50)"/></g>
+    <polygon class="bas-gm-borda" points="${V.map((p) => p.join(',')).join(' ')}"/></g>`;
 }
 // brasão de um marco: escudo de metal do nível com a joia no centro e ornamentos que crescem com o nível
 // (bronze: brasão; prata: + louros; ouro: + coroa; platina: + asas; diamante: tudo e brilhos), e a fita com os meses
@@ -944,7 +944,7 @@ function basBrasao(q, nivel, on) {
       <path class="bas-br-ex" d="M60 16 L98 28 V70 C98 98 80 116 60 126 C40 116 22 98 22 70 V28 Z" fill="url(#br-${q})"/>
       <path class="bas-br-in" d="M60 24 L90 34 V70 C90 93 76 108 60 117 C44 108 30 93 30 70 V34 Z" fill="url(#bf-${q})"/>
       <path class="bas-br-gr" d="M36 48 L60 40 L84 48 M36 60 L60 52 L84 60"/>
-      <g transform="translate(41 58) scale(.38)">${basGema(nivel, 'b' + q)}</g>${coroa}
+      <g transform="translate(39 55) scale(.42)">${basEstrela(nivel, 'b' + q)}</g>${coroa}
       <path class="bas-br-fi" d="M24 112 H96 L90 122 L96 132 H24 L30 122 Z" fill="url(#br-${q})"/><text class="bas-br-n" x="60" y="126" text-anchor="middle">${q} MESES</text>${brilhos}
       ${on ? '' : '<g class="bas-br-ca"><rect x="50" y="76" width="20" height="16" rx="3"/><path d="M54 76 v-5 a6 6 0 0 1 12 0 v5"/></g>'}</g></svg>`;
 }
@@ -956,18 +956,21 @@ function basTelaSequencia() {
     : corrente ? `Faltam <b>${faltam} ${faltam === 1 ? 'dia' : 'dias'}</b> para o aporte de ${MES_LONGO[ult]}. Não deixe o astro apagar!` : `Falta o aporte de ${MES_LONGO[ult]}.`;
   const nv = basNivel(n);
   const parts = Array.from({ length: 16 }, (_, k) => `<i style="--x:${(k * 37) % 100}%;--d:${(k * 0.43) % 4}s;--t:${3 + (k % 5) * 0.6}s"></i>`).join('');
-  const fila = meses.slice(-6).map((x, k, a) => { const agora = k === a.length - 1; return `<button class="bas-sq-dia bas-tj${x.v > 0 ? ' on' : ''}${agora ? ' agora' : ''}" data-act="bas-sq-dia" data-r="${esc(`${cap(MES_LONGO[x.mes])} de ${x.ano}: ${x.v > 0 ? brl0(x.v) + ' investidos' : agora ? 'ainda sem aporte' : 'sem aporte'}`)}" style="--i:${k}">
-      <svg viewBox="0 0 100 100" aria-hidden="true">${x.v > 0 ? basGema(nv, 'f' + k) : '<polygon class="bas-tj-enc" points="50,6 88,28 88,72 50,94 12,72 12,28"/>'}</svg><b>${MES[x.mes].slice(0, 3)}</b></button>`; }).join('');
+  // trilha em constelação: os últimos 6 meses como estrelas em alturas diferentes, ligadas por linhas de luz entre as acesas
+  const ult6 = meses.slice(-6); const ys = [62, 34, 54, 26, 46, 18]; const xs = ult6.map((_, k) => 8 + k * (84 / Math.max(1, ult6.length - 1)));
+  const linhas = ult6.map((x, k) => (k && x.v > 0 && ult6[k - 1].v > 0 ? `<line class="bas-tc-l" x1="${xs[k - 1]}" y1="${ys[k - 1]}" x2="${xs[k]}" y2="${ys[k]}" style="--i:${k}"/>` : k ? `<line class="bas-tc-l off" x1="${xs[k - 1]}" y1="${ys[k - 1]}" x2="${xs[k]}" y2="${ys[k]}"/>` : '')).join('');
+  const fila = `<div class="bas-tc"><svg class="bas-tc-svg" viewBox="0 0 100 80" preserveAspectRatio="none" aria-hidden="true">${linhas}</svg>${ult6.map((x, k, a) => { const agora = k === a.length - 1; return `<button class="bas-sq-dia bas-tc-e${x.v > 0 ? ' on' : ''}${agora ? ' agora' : ''}" style="left:${xs[k]}%;top:${(ys[k] / 80) * 100}%;--i:${k}" data-act="bas-sq-dia" data-r="${esc(`${cap(MES_LONGO[x.mes])} de ${x.ano}: ${x.v > 0 ? brl0(x.v) + ' investidos' : agora ? 'ainda sem aporte' : 'sem aporte'}`)}">
+      <svg viewBox="0 0 100 100" aria-hidden="true">${x.v > 0 ? basEstrela(nv, 'f' + k) : `<polygon class="bas-tc-vazio" points="${Array.from({ length: 10 }, (_, q) => { const ang = (-90 + q * 36) * Math.PI / 180; const r = q % 2 ? 19 : 47; return `${(50 + r * Math.cos(ang)).toFixed(1)},${(52 + r * Math.sin(ang)).toFixed(1)}`; }).join(' ')}"/>`}</svg><b>${MES[x.mes].slice(0, 3)}</b></button>`; }).join('')}</div>`;
   const desde = `${cap(MES_LONGO[ini.mes])} de ${ini.ano}`; const temp = tot >= 12 ? `${Math.floor(tot / 12)} ${tot >= 24 ? 'anos' : 'ano'}${tot % 12 ? ` e ${tot % 12} ${tot % 12 === 1 ? 'mês' : 'meses'}` : ''}` : `${tot} ${tot === 1 ? 'mês' : 'meses'}`;
   const anos = [...new Set(meses.map((x) => x.ano))];
   const cal = anos.map((y) => `<div class="bas-sq-ano"><small>${y}</small><div class="bas-sq-cal">${MES.map((nm, m) => { const x = meses.find((z) => z.ano === y && z.mes === m); return `<i class="${!x ? 'fora' : x.v > 0 ? 'on' : ''}" title="${cap(MES_LONGO[m])} de ${y}"></i>`; }).join('')}</div></div>`).join('');
   return basDet('Sua sequência', `<section class="bas-sqx" data-act="bas-sq-astro"><span class="bas-sqx-parts" aria-hidden="true">${parts}</span>
-      <div class="bas-sqx-astro bas-jx ${nv}${n > 0 ? ' aceso' : ''}"><span class="bas-jx-raios" aria-hidden="true"></span><svg class="bas-jx-g" viewBox="0 0 100 100" aria-hidden="true">${basGema(nv, 'hero')}</svg>
+      <div class="bas-sqx-astro bas-jx ${nv}${n > 0 ? ' aceso' : ''}"><span class="bas-jx-raios" aria-hidden="true"></span><svg class="bas-jx-g" viewBox="0 0 100 100" aria-hidden="true">${basEstrela(nv, 'hero')}</svg>
         ${[0, 1, 2, 3].map((k) => `<i class="bas-jx-sp" style="--i:${k}" aria-hidden="true"></i>`).join('')}</div>
-      <b class="bas-jx-n" data-sq-conta="${n}">${n}</b><b class="bas-sqx-t">${n === 1 ? 'mês de sequência' : 'meses de sequência'}</b><small class="bas-jx-nv">${nv === 'base' ? 'Joia inicial' : `Joia ${({ bronze: 'de bronze', prata: 'de prata', ouro: 'de ouro', platina: 'de platina', diamante: 'de diamante' })[nv]}`}</small><p class="bas-sqx-s">${status}</p>
-      ${prox ? `<div class="bas-sqx-prox"><span>Próximo escudo: <b>${esc(prox[1])}</b></span><span class="bas-sqx-pb"><i style="width:${(prog * 100).toFixed(1)}%"></i></span><small>${prox[0] - n} ${prox[0] - n === 1 ? 'mês' : 'meses'} para chegar</small></div>` : '<div class="bas-sqx-prox"><span>Você conquistou todos os escudos. Lenda!</span></div>'}
+      <b class="bas-jx-n" data-sq-conta="${n}">${n}</b><b class="bas-sqx-t">${n === 1 ? 'mês de sequência' : 'meses de sequência'}</b><small class="bas-jx-nv">${nv === 'base' ? 'Estrela inicial' : `Estrela ${({ bronze: 'de bronze', prata: 'de prata', ouro: 'de ouro', platina: 'de platina', diamante: 'de diamante' })[nv]}`}</small><p class="bas-sqx-s">${status}</p>
+      ${prox ? `<div class="bas-sqx-prox"><span>Próximo brasão: <b>${esc(prox[1])}</b></span><span class="bas-sqx-pb"><i style="width:${(prog * 100).toFixed(1)}%"></i></span><small>${prox[0] - n} ${prox[0] - n === 1 ? 'mês' : 'meses'} para chegar</small></div>` : '<div class="bas-sqx-prox"><span>Você conquistou todos os brasões. Lenda!</span></div>'}
       ${!Q.contaHoje && corrente && temRecurso('aporte_simples') ? `<button class="bas-dp-bt bas-sqx-bt" ${basIrInv()}>Investir agora</button>` : ''}</section>
-    <div class="card bas-sq-fila"><small class="bas-tj-t">Sua trilha de joias</small><div class="bas-sq-fila-l bas-tj-l">${fila}</div><p class="bas-sq-fila-r" aria-live="polite">Toque num mês</p></div>
+    <div class="card bas-sq-fila" style="--jx-c:${(BAS_GEMAS[nv] || BAS_GEMAS.base)[3]}"><small class="bas-tj-t">Sua constelação</small>${fila}<p class="bas-sq-fila-r" aria-live="polite">Toque num mês</p></div>
     <div class="bas-sq-ks"><span><small>No ${esc(CFG.marca || 'app')} há</small><b>${temp}</b><em>desde ${desde}</em></span><span><small>Meses com aporte</small><b>${com} de ${tot}</b><em>${pct(com / tot)} de constância</em></span>
       <span><small>Recorde</small><b>${Q.maior} ${Q.maior === 1 ? 'mês' : 'meses'}</b><em>${Q.maior > n ? `faltam ${Q.maior - n} para igualar` : n > 0 ? 'é a sequência de agora' : 'comece hoje'}</em></span></div>
     ${basSecao('Escudos', `<small class="bas-raio-t">${BAS_SEQ_MARCOS.filter((m) => Q.maior >= m[0]).length} de ${BAS_SEQ_MARCOS.length}</small>`, `<div class="bas-esc">${BAS_SEQ_MARCOS.map(([q, nm, , nvM], k) => { const on = Q.maior >= q; const nv = nvM;

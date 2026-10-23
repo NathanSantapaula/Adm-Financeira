@@ -1437,3 +1437,23 @@ button.bas-esc-c { cursor: pointer; transition: transform 140ms var(--ease-out);
 }
 .bas-br-ha { fill: none; stroke: var(--be); stroke-width: 1.6; stroke-linecap: round; }
 .bas-br .bas-br-svg { width: 96px; height: 112px; }
+
+/* ---------- sequência v3: estrelas e constelação ---------- */
+.bas-es polygon { stroke: rgba(255, 255, 255, .35); stroke-width: .5; stroke-linejoin: round; }
+.bas-tc { position: relative; height: 150px; margin: 0 4px; }
+.bas .bas-tc-svg { position: absolute; inset: 0 0 26px; width: 100%; height: calc(100% - 26px); overflow: visible; }
+.bas-tc-l { stroke: var(--jx-c, #ffc94a); stroke-width: 1.8; vector-effect: non-scaling-stroke; stroke-linecap: round; filter: drop-shadow(0 0 4px var(--jx-c, #ffc94a)); stroke-dasharray: 200; stroke-dashoffset: 200; animation: bas-tc-liga 900ms var(--ease-out) forwards; animation-delay: calc(var(--i) * 120ms); }
+.bas-tc-l.off { stroke: color-mix(in srgb, var(--ink) 20%, transparent); stroke-dasharray: 3 5; stroke-dashoffset: 0; filter: none; animation: none; }
+@keyframes bas-tc-liga { to { stroke-dashoffset: 0; } }
+.bas-tc-e { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 0; border: 0; background: none; color: inherit; font: inherit; }
+.bas .bas-tc-e svg { width: 40px; height: 40px; overflow: visible; transition: transform 160ms var(--ease-out); }
+.bas-tc-e.on svg { filter: drop-shadow(0 0 8px var(--jx-c, #ffc94a)); animation: bas-tc-acende 600ms cubic-bezier(.2, 1.5, .4, 1) both, bas-tc-cintila 3s ease-in-out infinite; animation-delay: calc(var(--i) * 120ms), calc(var(--i) * -.5s); }
+@keyframes bas-tc-acende { from { transform: scale(.2) rotate(-72deg); opacity: 0; } }
+@keyframes bas-tc-cintila { 0%, 100% { filter: drop-shadow(0 0 6px var(--jx-c, #ffc94a)); } 50% { filter: drop-shadow(0 0 14px var(--jx-c, #ffc94a)); } }
+.bas-tc-vazio { fill: transparent; stroke: color-mix(in srgb, var(--ink) 30%, transparent); stroke-width: 3; stroke-dasharray: 5 5; stroke-linejoin: round; }
+.bas-tc-e.agora:not(.on) .bas-tc-vazio { stroke: var(--jx-c, #ffc94a); stroke-dasharray: none; animation: bas-tj-espera 1.6s ease-in-out infinite; }
+.bas-tc-e b { font-size: 11px; font-weight: 700; color: var(--ink-3); } .bas-tc-e.agora b { color: var(--jx-c, #ffb347); } .bas-tc-e.sel svg { transform: scale(1.22); }
+.bas-sq-fila { --jx-c: #ffc94a; }
+@media (prefers-reduced-motion: reduce) { .bas-tc-l { animation: none; stroke-dashoffset: 0; } .bas-tc-e.on svg, .bas-tc-e.agora:not(.on) .bas-tc-vazio { animation: none; } .bas-tc-e svg { transition: none; } }
+.bas-es circle { stroke: none; }
+.bas-sqx { --jx-c: var(--accent); background: radial-gradient(70% 55% at 50% 30%, color-mix(in srgb, var(--jx-c) 34%, transparent), transparent 70%), radial-gradient(90% 70% at 100% 0%, color-mix(in srgb, var(--accent) 45%, transparent), transparent 60%), radial-gradient(90% 70% at 0% 100%, color-mix(in srgb, #7c5cff 45%, transparent), transparent 60%), #0b0c14; }
