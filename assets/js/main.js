@@ -71,7 +71,7 @@ function render(opts) {
   const tw2 = $('.tablewrap'); if (tw2 && tws && same) { tw2.scrollLeft = tws[0]; tw2.scrollTop = tws[1]; }
   window.scrollTo(window.scrollX, same ? y : 0); S.lastKey = key;
   drawAll();
-  if (scr === 'app' && !modoBasico() && typeof aberturaTalvez === 'function') aberturaTalvez();
+  if (scr === 'app' && typeof aberturaTalvez === 'function') aberturaTalvez();
   if (scr === 'app' && !modoBasico() && typeof tourTalvez === 'function') tourTalvez(); // não abre com o globo aberto; o abFechar chama de novo
   if (scr === 'app' && S.lastCount !== key + ':' + S.year) { S.lastCount = key + ':' + S.year; contarNumeros($('#view')); }
   if (scr === 'landing') initReveal();

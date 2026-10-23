@@ -66,7 +66,8 @@ function abAnos() {
 
 // chamada a cada desenho do app: abre só uma vez por sessão, para quem tem patrimônio
 function aberturaTalvez() {
-  if (AB || S.screen !== 'app' || S.view !== 'geral' || !aberturaPode()) return;
+  // no App (celular), entra no Início sem tela empilhada; no SaaS, na Visão geral
+  if (AB || S.screen !== 'app' || (modoBasico() ? basAba() !== 'inicio' || (S.basPilha || []).length : S.view !== 'geral') || !aberturaPode()) return;
   const op = abOpcoes(); if (!op.ligada) return;
   // "sessao": uma vez cada vez que o site é aberto; "dia": só na primeira entrada do dia
   const hoje = new Date().toDateString();
@@ -161,7 +162,7 @@ function abFechar() {
   if (!AB) return; const A = AB; AB = null; cancelAnimationFrame(A.raf); clearTimeout(A.tT); clearInterval(A.tV); if (A.ro) A.ro.disconnect(); if (A.mo) A.mo.disconnect();
   document.removeEventListener('keydown', A.tecla, true);
   A.el.classList.add('saindo'); document.documentElement.classList.remove('sem-rolagem');
-  setTimeout(() => { A.el.remove(); if (typeof tourTalvez === 'function') tourTalvez(); }, abCalmo() ? 0 : 520);
+  setTimeout(() => { A.el.remove(); if (typeof tourTalvez === 'function') tourTalvez(); if (modoBasico() && typeof basSurpresas === 'function') basSurpresas(); }, abCalmo() ? 0 : 520);
 }
 /* ---------- outros anos e o olhinho do globo ---------- */
 const AB_SETA_E = ic('<path d="M14.5 6l-6 6 6 6"/>'); const AB_SETA_D = ic('<path d="M9.5 6l6 6-6 6"/>');
