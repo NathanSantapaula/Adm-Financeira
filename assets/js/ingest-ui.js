@@ -79,8 +79,7 @@ function linhaIng(t) {
   return `<div class="ing-row${t.incluir ? '' : ' off'}"><input type="checkbox" data-ing="incluir" data-i="${t.idx}" ${t.incluir ? 'checked' : ''} ${t.duplicado || t.bloqueado ? 'disabled' : ''} aria-label="Incluir lançamento">
     <span class="ing-desc" title="${esc(t.descricao)}">${esc(t.descricao)}</span><span class="ing-val${t.valor > 0 ? ' in' : ''}">${t.valor > 0 ? '+' : '−'}${brl(Math.abs(t.valor))}</span>
     <span class="ing-sub"><span>${dataBR(t.data)}</span><i class="conf ${conf}" title="${esc(t.motivo)}"></i>
-      <select data-ing="destino" data-i="${t.idx}" aria-label="Destino" ${t.duplicado ? 'disabled' : ''}>${ING_DEST.map(([v, l]) => `<option value="${v}" ${t.destino === v ? 'selected' : ''}>${l}</option>`).join('')}</select><span>${alvo}</span>
-      ${t.destino === 'despesa' && !t.duplicado ? `<select data-ing="inst" data-i="${t.idx}" aria-label="Cartão ou banco">${ingInstOpts(t.inst)}</select>` : ''}${badges}
+      <select data-ing="destino" data-i="${t.idx}" aria-label="Destino" ${t.duplicado ? 'disabled' : ''}>${ING_DEST.map(([v, l]) => `<option value="${v}" ${t.destino === v ? 'selected' : ''}>${l}</option>`).join('')}</select>${t.destino === 'despesa' && !t.duplicado ? `<input class="ing-cat" data-ing="area" data-i="${t.idx}" value="${esc(t.area || '')}" list="ing-areas" placeholder="Categoria" aria-label="Categoria do gasto"><select data-ing="inst" data-i="${t.idx}" aria-label="Cartão ou banco">${ingInstOpts(t.inst)}</select>` : `<span>${alvo}</span>`}${badges}
       ${t.duplicado ? '' : `<button class="lnk strong" data-act="ing-edit" data-i="${t.idx}">${abre ? 'Fechar' : 'Editar'}</button>`}</span>${edit}</div>`;
 }
 
@@ -108,7 +107,7 @@ function renderIng() {
       ${(g.parsed.avisos || []).slice(0, 3).map((a) => `<p class="ing-warn">${esc(a)}</p>`).join('')}
       <div class="chips" role="tablist">${[['todos', 'Todos'], ['revisar', 'Revisar'], ['dup', 'Já importados']].map(([k, l]) => `<button class="chip-m${f === k ? ' on' : ''}" data-act="ing-filtro" data-f="${k}">${l}</button>`).join('')}${podeIA() && R.revisar ? `<button class="btn sm" data-act="ing-ia" ${g.refinando ? 'disabled' : ''}>${g.refinando ? 'Consultando IA…' : 'Refinar com IA'}</button>` : ''}</div>
       ${g.formato === 'csv' ? `<details class="how"><summary>Conferir colunas reconhecidas</summary>${mapaHtml(g)}</details>` : ''}
-      ${ingMassaHtml(mostra)}
+      ${ingMassaHtml(mostra)}<datalist id="ing-areas">${[...new Set((S.plan.despesas || []).map((x) => x.area).concat((S.plan.lancamentos || []).map((x) => x.area), rows.map((x) => x.area)).filter(Boolean))].sort().map((a) => `<option value="${esc(a)}">`).join('')}</datalist>
       <div class="ing-list">${mostra.length ? mostra.map(linhaIng).join('') : '<p class="empty-s">Nada nesta lista.</p>'}</div>
       <p class="cap">Marque o que entra, ajuste o destino e a categoria se precisar. O ponto colorido mostra a confiança do reconhecimento (verde alta, vermelho baixa). Reimportar o mesmo arquivo não duplica nada.</p>`;
   }
@@ -121,10 +120,10 @@ const ingInstOpts = (v) => `<option value="">Cartão: não informar</option>${(i
 // todos de uma vez: marcar ou desmarcar a lista e dar o mesmo destino, a mesma categoria ou o mesmo cartão aos marcados
 function ingMassaHtml(mostra) {
   const pode = mostra.filter((t) => !t.duplicado && !t.bloqueado); if (pode.length < 2) return '';
-  const marc = pode.filter((t) => t.incluir).length; const areas = [...new Set((S.plan.despesas || []).map((x) => x.area).concat((S.plan.lancamentos || []).map((x) => x.area), S.ing.rows.map((x) => x.area)).filter(Boolean))].sort();
+  const marc = pode.filter((t) => t.incluir).length;
   return `<div class="ing-massa"><label class="chk"><input type="checkbox" data-ing-todos ${marc === pode.length ? 'checked' : ''}><span>${marc === pode.length ? 'Todos marcados' : `${marc} de ${pode.length} marcados`}</span></label>
     <div class="ing-massa-c"><small>Nos marcados:</small><select data-ing-massa="destino" aria-label="Destino de todos os marcados"><option value="">Tipo…</option>${ING_DEST.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select>
-      <input data-ing-massa="area" list="ing-areas" placeholder="Categoria…" aria-label="Categoria de todos os gastos marcados"><datalist id="ing-areas">${areas.map((a) => `<option value="${esc(a)}">`).join('')}</datalist>
+      <input data-ing-massa="area" list="ing-areas" placeholder="Categoria…" aria-label="Categoria de todos os gastos marcados">
       <select data-ing-massa="inst" aria-label="Cartão de todos os gastos marcados"><option value="">Cartão…</option>${ingInstOpts('').replace('<option value="">Cartão: não informar</option>', '')}</select></div></div>`;
 }
 function ingMassa(campo, valor, marcado) {
