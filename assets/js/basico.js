@@ -212,10 +212,34 @@ function basInicio() {
   return `${hero.replace('class="bas-noite"', `class="bas-noite${sobe ? ' sobe' : ''}"`)}<div class="bas-secs${sobe ? ' sobe' : ''}">${basOrdenar('inicio', secs)}</div>${basOrganizarBtn('inicio')}`;
 }
 // entradas do período: lista e a nova entrada (o botão Entrou do Início abre aqui)
+// Entradas: o total do período, o mês a mês, o que é previsível, a renda passiva, cada fonte com a sua parte e leituras automáticas
+// (E.analiseRenda, a mesma análise da aba Rendas do SaaS); tocar numa fonte edita, e o + cria
 function basTelaEntradas() {
-  const j = basJan(); const L = S.plan.rendas.map((r) => [r, (r.valores || []).slice(j.de, j.ate + 1).reduce((s, v) => s + (+v || 0), 0)]).filter((x) => x[1] > 0.005).sort((a, b) => b[1] - a[1]);
-  return basDet('Entradas', `${basCard(`<small class="bas-k">Entrou ${basJanFrase()}</small><b class="bas-big">${basCent(basSomaJ(S.C.receita))}</b><button class="btn primary lg bas-cta bas-add" ${basIr('entrada')}>${I.plus}Nova entrada</button>`, 'bas-hero')}
-    ${L.length ? basSecao('De onde veio', '', `<ul class="bas-ativ">${L.map(([r, v]) => basRow(basIr('entrada', { id: r.id }), I_ENTRADA, esc(r.nome), r.fonte ? esc(r.fonte) : '', `<b class="pos">+${basCent(v)}</b>`)).join('')}</ul>`) : basCard(basVazio('Nenhuma entrada neste período.'))}`);
+  const j = basJan(); const C = S.C; const p = S.plan; const R = E.analiseRenda({ C, de: j.de, ate: j.ate, meses: Math.max(j.ate + 1, 1), rendas: p.rendas, rendaCats: p.rendaCats });
+  const tot = basSomaJ(C.receita); const mx = Math.max(1, ...C.receita); const ult = S.year === NOW_Y ? NOW_M : 11;
+  const fontes = p.rendas.map((r) => [r, (r.valores || []).slice(j.de, j.ate + 1).reduce((a, v) => a + (+v || 0), 0)]).filter((x) => x[1] > 0.005).sort((a, b) => b[1] - a[1]);
+  const totF = fontes.reduce((a, x) => a + x[1], 0) || 1;
+  // recorrente pelo ano até agora (não só pelo período escolhido): entrou em pelo menos 60% dos meses e em 3 ou mais
+  const recDe = (id) => { const r = p.rendas.find((x) => x.id === id); const nM = ((r && r.valores) || []).slice(0, ult + 1).filter((v) => +v > 0).length; return nM >= Math.min(3, ult + 1) && nM / (ult + 1) >= 0.6; };
+  const prev = fontes.reduce((a, [r, v]) => a + (recDe(r.id) ? v : 0), 0) / totF; const prevMes = fontes.reduce((a, [r]) => a + (recDe(r.id) ? +((r.valores || [])[ult]) || 0 : 0), 0);
+  const prov = basSomaJ(C.faturamento); const futuro = S.year === NOW_Y ? p.rendas.reduce((a, r) => a + (r.valores || []).slice(NOW_M + 1).reduce((b, v) => b + (+v || 0), 0), 0) : 0;
+  // leituras: só as que fazem sentido com os números
+  const fr = [];
+  if (R.pesoMaior != null && R.pesoMaior >= 0.7 && R.maior && fontes.length) fr.push(['info', `<b>${pct(R.pesoMaior)}</b> do que entra vem de ${esc(R.maior.nome)}. Uma segunda fonte deixa o mês mais seguro.`]);
+  if (fontes.length) fr.push([prev >= 0.8 ? 'pos' : 'info', `<b>${pct(prev)}</b> das suas entradas se repetem todo mês${prev >= 0.8 ? ': dá para planejar com calma.' : '. Conte com a parte fixa para as contas.'}`]);
+  if (prov > 0 && R.coberturaPassiva != null && R.coberturaPassiva >= 0.01) fr.push(['pos', `Os proventos (${brl0(prov)}) já cobrem <b>${pct(Math.min(1, R.coberturaPassiva))}</b> dos seus gastos.`]);
+  if (R.comprometimento != null && R.comprometimento >= 0.05) fr.push([R.comprometimento > 0.6 ? 'neg' : 'pos', `As contas fixas levam <b>${pct(R.comprometimento)}</b> da renda que se repete.`]);
+  if (futuro > 0) fr.push(['inv', `Até dezembro ainda estão previstos <b>${brl0(futuro)}</b> em entradas.`]);
+  const barras = C.receita.map((v, m) => `<span class="${m >= j.de && m <= j.ate ? 'on' : ''}${m > ult ? ' fut' : ''}"><i style="--h:${Math.max(3, (v / mx) * 100).toFixed(1)}%"></i><b>${MES[m][0]}</b></span>`).join('');
+  const tile = (n, v, sub) => `<span class="bas-en-k"><small>${n}</small><b>${v}</b>${sub ? `<em>${sub}</em>` : ''}</span>`;
+  return basDet('Entradas', `<section class="bas-en-hero"><div class="bas-en-h"><span><small>Entrou ${esc(basJanFrase())}</small><b>${basCent(tot)}</b></span><button class="bas-inv-pl" ${basIr('entrada')} aria-label="Nova entrada">${I.plus}<span>Entrada</span></button></div>
+      <div class="bas-en-g" aria-hidden="true">${barras}</div></section>
+    <div class="bas-en-ks">${tile('Média por mês', brl0(R.mediaMes))}${tile('Previsível', fontes.length ? pct(prev) : '–', `${brl0(prevMes)} por mês`)}
+      ${tile('Renda passiva', R.passiva != null ? pct(R.passiva) : '–', prov > 0 ? `${brl0(prov)} em proventos` : 'Ainda sem proventos')}${tile('Guardou', R.poupanca != null ? pct(R.poupanca) : '–', `${brl0(R.sobraMes)} por mês`)}</div>
+    ${fontes.length ? basSecao('De onde vem', `<small class="bas-raio-t">${fontes.length} ${fontes.length === 1 ? 'fonte' : 'fontes'}</small>`, `<div class="card bas-en-f">${fontes.map(([r, v], i) => `<button class="bas-en-fo" ${basIr('entrada', { id: r.id })}>
+        <span class="bas-en-av" style="--bc:${PAL[i % 6]}" aria-hidden="true">${esc(basIniciais(r.nome))}</span><span class="bas-n"><b>${esc(r.nome)}</b><small>${esc(((p.rendaCats || []).find((c) => c.id === r.cat) || {}).nome || 'Renda')} · ${recDe(r.id) ? 'todo mês' : 'pontual'}</small><span class="bas-en-b"><i style="width:${((v / totF) * 100).toFixed(1)}%;--bc:${PAL[i % 6]}"></i></span></span>
+        <span class="bas-v"><b class="pos">+${brl0(v)}</b><em>${pct(v / totF)}</em></span></button>`).join('')}</div>`) : basCard(basVazio('Nenhuma entrada neste período. Toque em + Entrada para anotar.'))}
+    ${fr.length ? basSecao('O que os números dizem', '', `<ul class="bas-ah-fr">${fr.map(([t, x]) => `<li class="${t}">${x}</li>`).join('')}</ul>`) : ''}`);
 }
 
 /* ---- peças compartilhadas pelas listas ---- */
@@ -244,7 +268,7 @@ function basGastos() {
   secs.onde = basOndeHtml(); secs.limites = basLimitesHtml();
   const lanc = basLancJan().slice(0, 8);
   secs.ultimos = lanc.length ? basSecao('Últimos gastos', '', `<ul class="bas-ativ">${lanc.map(basLancLinha).join('')}</ul>`) : '';
-  return `<div class="bas-pg bas-pg-g">${basCab('Gastos', `<button class="bell" data-act="bas-importar" aria-label="Importar extrato do banco" title="Importar extrato">${I_IMPORTAR}</button><button class="bas-inv-pl" ${basIr('gasto')} aria-label="Novo gasto">${I.plus}<span>Gasto</span></button>`)}<div class="bas-pg-per">${basPerPill()}<button class="bas-rx" ${basPago() ? basIr('raiox') : 'data-act="upgrade" data-plano="investidor"'}><span class="bas-rx-ic" aria-hidden="true">${I_RAIOX}</span>Raio-X${basPago() ? '' : I.lock}</button></div>
+  return `<div class="bas-pg bas-pg-g">${basCab('Gastos', `<button class="bell" data-act="bas-importar" aria-label="Importar extrato do banco" title="Importar extrato">${I_IMPORTAR}</button><button class="bas-inv-pl" ${basIr('gasto')} aria-label="Novo gasto">${I.plus}<span>Gasto</span></button>`)}<div class="bas-pg-per">${basPerPill()}<button class="bas-rx" ${basPago() ? basIr('raiox') : 'data-act="upgrade" data-plano="investidor"'}><span class="bas-rx-ic" aria-hidden="true">${I_RAIOX}</span>Raio-X${basPago() ? '' : I.lock}</button><button class="bas-circ" ${basIr('entradas')} aria-label="Entradas" title="Entradas">${I_ENTRADA}</button></div>
     ${basOrdenar('gastos', secs)}${basOrganizarBtn('gastos')}</div>`;
 }
 // toque num arco ou na legenda: destaca a categoria e mostra o valor no centro, sem redesenhar; o segundo toque abre
@@ -456,6 +480,7 @@ function basTelaEntrada(o) {
   const r = o.id ? S.plan.rendas.find((x) => x.id === o.id) : null; if (o.id && !r) return basSumiu();
   return basForm('entrada', r ? 'Editar entrada' : 'Nova entrada', `${basValor('valor', r ? +r.valores[S.mes] || 0 : 0, `Quanto entrou em ${MES_LONGO[S.mes]}?`)}
     ${basCampo('nome', 'De onde veio?', r ? r.nome : '', 'placeholder="Ex.: Salário, Freela"')}
+    ${basChips('cat', (S.plan.rendaCats && S.plan.rendaCats.length ? S.plan.rendaCats : E.CATS_RENDA()).map((c) => [c.id, c.nome]), r ? r.cat : 'fixa', 'Tipo de renda')}
     ${basSw('todo', r ? 'Usar este valor até dezembro' : 'Entra todo mês', r ? `Troca o valor de ${MES_LONGO[S.mes]} em diante.` : `De ${MES_LONGO[S.mes]} até dezembro.`, !r)}`, { excluir: r ? 'Excluir entrada' : '' });
 }
 // registrar investimento (ou corrigir o valor de um ativo no mês)
@@ -1226,7 +1251,7 @@ function basSalvar(f) {
       const r = t.id ? p.rendas.find((x) => x.id === t.id) : null; const v = val('valor'); const nome = (d.nome || '').trim();
       if (Number.isNaN(v) || v < 0 || (!r && !(v > 0))) return basErro(f, 'Informe quanto entrou, como 2.500,00.'); if (!nome) return basErro(f, 'Diga de onde veio, como Salário.');
       if (!p.rendaCats.length) p.rendaCats.push(...E.CATS_RENDA());
-      const alvo = r || { id: uid(), cat: p.rendaCats[0].id, fonte: '', valores: z12() }; alvo.nome = nome; if (d.todo) fillFrom(alvo.valores, E.r2(v), m); else alvo.valores[m] = E.r2(v); if (!r) p.rendas.push(alvo);
+      const alvo = r || { id: uid(), cat: p.rendaCats[0].id, fonte: '', valores: z12() }; alvo.nome = nome; if (d.cat && p.rendaCats.some((c) => c.id === d.cat)) alvo.cat = d.cat; if (d.todo) fillFrom(alvo.valores, E.r2(v), m); else alvo.valores[m] = E.r2(v); if (!r) p.rendas.push(alvo);
       ok(r ? 'Entrada atualizada.' : 'Entrada anotada.'); return;
     }
     case 'aporte': {

@@ -1289,3 +1289,27 @@ button.bas-sx-b { border: 0; font: inherit; color: inherit; text-align: left; cu
 @media (prefers-reduced-motion: reduce) {
   .bas-wr::before, .bas-wr-bar i.anda, .bas-cq-luz, .bas-cq-medalha, .bell.ia-btn.humor-festa .ia-mini, .bell.ia-btn.humor-festa::after { animation: none; } .bas-wr-bar i.anda { width: 100%; } .bas-wr-s { transition: opacity 200ms ease; transform: none; }
 }
+
+/* ---------- Entradas: painel escuro com o mês a mês, indicadores, fontes com a sua parte ---------- */
+.bas-en-hero { position: relative; isolation: isolate; overflow: hidden; padding: 18px; border-radius: 28px; color: var(--bas-noite-ink);
+  background: radial-gradient(110% 80% at 90% -10%, color-mix(in srgb, var(--pos) 40%, transparent), transparent 62%), radial-gradient(90% 70% at -5% 110%, color-mix(in srgb, var(--accent) 30%, transparent), transparent 60%), var(--bas-noite); box-shadow: var(--shadow-lg); }
+.bas-en-hero::before { content: ""; position: absolute; inset: 0; z-index: -1; background: radial-gradient(rgba(255, 255, 255, .12) 1px, transparent 1.4px) 0 0 / 18px 18px; -webkit-mask: linear-gradient(#000, transparent 80%); mask: linear-gradient(#000, transparent 80%); }
+.bas-en-h { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.bas-en-h > span { display: flex; flex-direction: column; min-width: 0; } .bas-en-h small { font-size: 13.5px; color: var(--bas-noite-2); }
+.bas-en-h b { font-size: clamp(32px, 9.5vw, 42px); font-weight: 750; letter-spacing: -.03em; font-variant-numeric: tabular-nums; } .bas-en-h .bas-cent { opacity: .5; }
+.bas-en-g { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); align-items: end; gap: 5px; height: 96px; margin-top: 16px; }
+.bas-en-g > span { height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 5px; }
+.bas-en-g i { width: 100%; max-width: 18px; height: var(--h); border-radius: 6px; background: rgba(255, 255, 255, .16); transform-origin: bottom; animation: bas-barra 700ms var(--ease-out) both; }
+.bas-en-g .on i { background: linear-gradient(180deg, color-mix(in srgb, var(--bas-noite-pos) 80%, #fff), var(--bas-noite-pos)); box-shadow: 0 0 14px -3px var(--bas-noite-pos); }
+.bas-en-g .fut i { opacity: .45; } .bas-en-g b { font-size: 10.5px; font-weight: 600; color: var(--bas-noite-2); } .bas-en-g .on b { color: var(--bas-noite-ink); }
+.bas-en-ks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+.bas-en-k { display: flex; flex-direction: column; gap: 2px; padding: 14px; border-radius: 20px; background: var(--surface); box-shadow: var(--shadow); min-width: 0; }
+.bas-en-k small { font-size: 12.5px; color: var(--ink-2); } .bas-en-k b { font-size: 20px; font-weight: 750; font-variant-numeric: tabular-nums; } .bas-en-k em { font-style: normal; font-size: 12px; color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.card.bas-en-f { padding: 6px; border-radius: 24px; }
+.bas-en-fo { width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 10px; border: 0; border-radius: 18px; background: transparent; color: inherit; font: inherit; text-align: left; transition: background-color 160ms ease, transform 120ms var(--ease-out); }
+.bas-en-fo + .bas-en-fo { border-top: 1px solid var(--line); border-radius: 0; } .bas-en-fo:active { transform: scale(.98); background: color-mix(in srgb, var(--ink) 5%, transparent); }
+.bas-en-av { width: 42px; height: 42px; flex: none; display: grid; place-items: center; border-radius: 14px; font-size: 14px; font-weight: 800; color: #fff; background: linear-gradient(150deg, color-mix(in srgb, var(--bc) 80%, #fff), var(--bc)); box-shadow: 0 8px 16px -10px var(--bc); }
+.bas-en-fo .bas-n { flex: 1; min-width: 0; } .bas-en-fo .bas-n small { font-size: 12.5px; }
+.bas-en-b { display: block; height: 5px; margin-top: 7px; border-radius: 5px; background: color-mix(in srgb, var(--ink) 8%, transparent); overflow: hidden; } .bas-en-b i { display: block; height: 100%; border-radius: inherit; background: var(--bc); }
+.bas-en-fo .bas-v { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; } .bas-en-fo .bas-v b { font-variant-numeric: tabular-nums; } .bas-en-fo .bas-v em { font-style: normal; font-size: 12px; color: var(--ink-3); }
+@media (prefers-reduced-motion: reduce) { .bas-en-g i { animation: none; } .bas-en-fo { transition: none; } }
