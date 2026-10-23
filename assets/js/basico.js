@@ -866,7 +866,7 @@ function basConstelacao(n) {
     ${P.map((q, i) => `<circle class="bas-ct-e${i < k ? ' on' : ''}${i === k - 1 ? ' nova' : ''}" cx="${q[0]}" cy="${q[1]}" r="${i < k ? (i === k - 1 ? 3.6 : 2.6) : 1.6}" style="--i:${i}"/>`).join('')}</svg>`;
 }
 // marcos da sequência, como conquistas que acendem
-const BAS_SEQ_MARCOS = [[3, 'Constância', '3 meses seguidos', 'bronze'], [6, 'Meio ano', '6 meses seguidos', 'prata'], [12, 'Um ano inteiro', '12 meses seguidos', 'ouro'], [24, 'Dois anos', '24 meses seguidos', 'platina'], [36, 'Lenda', '36 meses seguidos', 'diamante']];
+const BAS_SEQ_MARCOS = [[3, 'Lua crescente', '3 meses seguidos', 'bronze'], [6, 'Lua cheia', '6 meses seguidos', 'prata'], [12, 'Planeta de anéis', '12 meses seguidos', 'ouro'], [24, 'Supernova', '24 meses seguidos', 'platina'], [36, 'Buraco negro', '36 meses seguidos', 'diamante']];
 // abertura do mês: no começo de um mês novo, uma retrospectiva do mês que passou, em 4 telas que passam sozinhas
 function basTelaRetro(o) {
   const m = o.id != null ? +o.id : NOW_M - 1; if (!(m >= 0) || !S.C) return basSumiu(); const C = S.C; const carry = E.carryItems(S.plans, S.year);
@@ -928,23 +928,63 @@ function basEstrela(nivel, id) {
     <linearGradient id="eo-${id}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".9"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
     <g class="bas-es"><circle class="bas-es-halo" cx="50" cy="50" r="48" fill="url(#eh-${id})"/><rect class="bas-es-raio" x="49.3" y="6" width="1.4" height="88" fill="url(#ev-${id})"/><rect class="bas-es-raio" x="6" y="49.3" width="88" height="1.4" fill="url(#eo-${id})"/><circle cx="50" cy="50" r="5.5" fill="#fff"/></g>`;
 }
-// brasão de um marco: escudo de metal do nível com a joia no centro e ornamentos que crescem com o nível
-// (bronze: brasão; prata: + louros; ouro: + coroa; platina: + asas; diamante: tudo e brilhos), e a fita com os meses
+// medalha cósmica de um marco: aro de metal do nível, céu escuro por dentro e um objeto do espaço que cresce com o nível
+// (lua crescente, lua cheia, planeta de anéis, supernova e buraco negro), com a fita dos meses
 function basBrasao(q, nivel, on) {
-  const [cl, md, es] = BAS_GEMAS[nivel] || BAS_GEMAS.base; const k = ['bronze', 'prata', 'ouro', 'platina', 'diamante'].indexOf(nivel);
-  const louros = k >= 1 ? [-1, 1].map((sd) => `<g transform="translate(60 0) scale(${sd} 1) translate(-60 0)">${[0, 1, 2, 3, 4].map((i) => `<ellipse cx="${18 - i * 1.6}" cy="${110 - i * 15}" rx="4.6" ry="9.5" transform="rotate(${-40 + i * 10} ${18 - i * 1.6} ${110 - i * 15})" class="bas-br-lo"/>`).join('')}<path class="bas-br-ha" d="M30 118 C16 108 10 88 12 50" />}</g>`).join('') : '';
-  const asas = k >= 3 ? [-1, 1].map((sd) => `<g transform="translate(60 0) scale(${sd} 1) translate(-60 0)">${[0, 1, 2].map((i) => `<path class="bas-br-as" d="M24 ${58 - i * 12} C${12 - i * 3} ${52 - i * 13} ${4 - i * 2} ${40 - i * 12} ${2 - i} ${26 - i * 11} C${12 - i * 2} ${34 - i * 12} ${20 - i} ${40 - i * 12} 26 ${44 - i * 12} Z" style="opacity:${1 - i * 0.15}"/>`).join('')}</g>`).join('') : '';
-  const coroa = k === 2 || k >= 4 ? `<path class="bas-br-co" d="M42 14 L46 2 L53 10 L60 0 L67 10 L74 2 L78 14 Z"/><circle cx="60" cy="1.5" r="2.4" class="bas-br-cj"/>` : '';
-  const brilhos = k >= 4 ? [[16, 20], [104, 24], [22, 96], [98, 92]].map(([x, y], i) => `<path class="bas-br-sp" style="--i:${i}" d="M${x} ${y - 6} L${x + 1.6} ${y - 1.6} L${x + 6} ${y} L${x + 1.6} ${y + 1.6} L${x} ${y + 6} L${x - 1.6} ${y + 1.6} L${x - 6} ${y} L${x - 1.6} ${y - 1.6} Z"/>`).join('') : '';
-  return `<svg class="bas-br-svg" viewBox="0 0 120 140" aria-hidden="true"><defs><linearGradient id="br-${q}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:${cl}"/><stop offset=".45" style="stop-color:${md}"/><stop offset="1" style="stop-color:${es}"/></linearGradient>
-      <linearGradient id="bf-${q}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:${es}"/><stop offset="1" style="stop-color:color-mix(in srgb, ${es} 60%, #000)"/></linearGradient></defs>
-    <g style="--bl:${cl};--bm:${md};--be:${es}">${asas}${louros}
-      <path class="bas-br-ex" d="M60 16 L98 28 V70 C98 98 80 116 60 126 C40 116 22 98 22 70 V28 Z" fill="url(#br-${q})"/>
-      <path class="bas-br-in" d="M60 24 L90 34 V70 C90 93 76 108 60 117 C44 108 30 93 30 70 V34 Z" fill="url(#bf-${q})"/>
-      <path class="bas-br-gr" d="M36 48 L60 40 L84 48 M36 60 L60 52 L84 60"/>
-      <g transform="translate(39 55) scale(.42)">${basEstrela(nivel, 'b' + q)}</g>${coroa}
-      <path class="bas-br-fi" d="M24 112 H96 L90 122 L96 132 H24 L30 122 Z" fill="url(#br-${q})"/><text class="bas-br-n" x="60" y="126" text-anchor="middle">${q} MESES</text>${brilhos}
-      ${on ? '' : '<g class="bas-br-ca"><rect x="50" y="76" width="20" height="16" rx="3"/><path d="M54 76 v-5 a6 6 0 0 1 12 0 v5"/></g>'}</g></svg>`;
+  const [cl, md, es] = BAS_GEMAS[nivel] || BAS_GEMAS.base; const id = `md${q}`;
+  const ceuP = [[34, 30], [86, 36], [28, 78], [90, 76], [60, 22], [42, 92], [78, 92], [24, 52]].map(([x, y], k) => `<circle cx="${x}" cy="${y}" r="${k % 3 ? .7 : 1.1}" class="bas-md-st" style="--i:${k}"/>`).join('');
+  const lua = (cheia) => `<defs><radialGradient id="${id}l" cx=".38" cy=".35" r=".75"><stop offset="0" stop-color="#fffaf0"/><stop offset=".6" stop-color="#dcd2bb"/><stop offset="1" stop-color="#8f8670"/></radialGradient>
+      <mask id="${id}m"><rect width="120" height="120" fill="#fff"/>${cheia ? '' : '<circle cx="70" cy="52" r="19" fill="#000"/>'}</mask></defs>
+    <g class="bas-md-obj" mask="url(#${id}m)"><circle cx="60" cy="58" r="21" fill="url(#${id}l)"/>${cheia ? '<circle cx="52" cy="52" r="4.5" class="bas-md-cr"/><circle cx="67" cy="64" r="6" class="bas-md-cr"/><circle cx="58" cy="70" r="2.8" class="bas-md-cr"/><circle cx="69" cy="48" r="2.4" class="bas-md-cr"/>' : ''}</g>`;
+  const obj = {
+    bronze: lua(false), prata: lua(true),
+    ouro: `<defs><radialGradient id="${id}p" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#ffe9b0"/><stop offset=".55" stop-color="#e3a248"/><stop offset="1" stop-color="#7a4612"/></radialGradient><clipPath id="${id}f"><rect x="0" y="58" width="120" height="62"/></clipPath></defs>
+      <g class="bas-md-obj" transform="rotate(-16 60 58)"><ellipse cx="60" cy="58" rx="36" ry="9" class="bas-md-an"/><circle cx="60" cy="58" r="16" fill="url(#${id}p)"/><path d="M45 54 h30 M44 60 h32" class="bas-md-fx"/><ellipse cx="60" cy="58" rx="36" ry="9" class="bas-md-an" clip-path="url(#${id}f)"/></g>`,
+    platina: `<defs><radialGradient id="${id}n"><stop offset="0" stop-color="#fff"/><stop offset=".18" stop-color="#bdf3ff"/><stop offset=".45" stop-color="#5fb6ff" stop-opacity=".5"/><stop offset="1" stop-color="#7a5cff" stop-opacity="0"/></radialGradient>
+      <radialGradient id="${id}r"><stop offset="0" stop-color="#ff7ad9" stop-opacity=".55"/><stop offset="1" stop-color="#ff7ad9" stop-opacity="0"/></radialGradient></defs>
+      <g class="bas-md-obj"><ellipse cx="50" cy="66" rx="26" ry="16" fill="url(#${id}r)"/><ellipse cx="72" cy="50" rx="20" ry="14" fill="url(#${id}r)"/><circle cx="60" cy="58" r="30" fill="url(#${id}n)"/>
+      <path d="M60 22 V94 M24 58 H96 M36 34 L84 82 M84 34 L36 82" class="bas-md-raio"/><circle cx="60" cy="58" r="4" fill="#fff"/></g>`,
+    diamante: `<defs><linearGradient id="${id}d" x1="0" x2="1"><stop offset="0" stop-color="#7a5cff" stop-opacity="0"/><stop offset=".3" stop-color="#ff9d4d"/><stop offset=".5" stop-color="#fff2c4"/><stop offset=".7" stop-color="#ff9d4d"/><stop offset="1" stop-color="#7a5cff" stop-opacity="0"/></linearGradient>
+      <clipPath id="${id}b"><rect x="0" y="0" width="120" height="58"/></clipPath></defs>
+      <g class="bas-md-obj"><ellipse cx="60" cy="58" rx="40" ry="9" fill="none" stroke="url(#${id}d)" stroke-width="5" class="bas-md-disco"/>
+      <ellipse cx="60" cy="52" rx="18" ry="16" fill="none" stroke="url(#${id}d)" stroke-width="3.2" clip-path="url(#${id}b)" class="bas-md-lente"/>
+      <circle cx="60" cy="58" r="14.5" class="bas-md-foton"/><circle cx="60" cy="58" r="12.5" fill="#000"/>
+      <path d="M22 60 Q60 66 98 60" fill="none" stroke="url(#${id}d)" stroke-width="2.6" class="bas-md-disco"/></g>`,
+  }[nivel] || lua(false);
+  return `<svg class="bas-br-svg bas-md" viewBox="0 0 120 140" aria-hidden="true"><defs><linearGradient id="${id}a" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:${cl}"/><stop offset=".45" style="stop-color:${md}"/><stop offset="1" style="stop-color:${es}"/></linearGradient>
+      <radialGradient id="${id}c" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#141a3a"/><stop offset="1" stop-color="#03040b"/></radialGradient></defs>
+    <circle cx="60" cy="58" r="55" fill="url(#${id}a)" class="bas-md-aro"/><circle cx="60" cy="58" r="49" fill="none" class="bas-md-gr"/><circle cx="60" cy="58" r="45" fill="url(#${id}c)" class="bas-md-ceu"/>
+    <g>${ceuP}</g>${obj}
+    <path class="bas-br-fi" d="M22 108 H98 L92 119 L98 130 H22 L28 119 Z" fill="url(#${id}a)"/><text class="bas-br-n" x="60" y="123" text-anchor="middle">${q} MESES</text>
+    ${on ? '' : '<g class="bas-br-ca"><rect x="50" y="52" width="20" height="16" rx="3"/><path d="M54 52 v-5 a6 6 0 0 1 12 0 v5"/></g>'}</svg>`;
+}
+const BAS_CEU = [
+  { n: 'Cruzeiro do Sul', e: [[54, 92, 3], [50, 8, 2.6], [16, 44, 2.6], [84, 38, 2], [66, 62, 1.4]], l: [[0, 1], [2, 3]] },
+  { n: 'Cassiopeia', e: [[6, 36, 2.2], [27, 70, 2.6], [48, 44, 2.4], [70, 74, 2.2], [93, 28, 2]], l: [[0, 1], [1, 2], [2, 3], [3, 4]] },
+  { n: 'Órion', e: [[24, 12, 3], [72, 18, 2.4], [58, 50, 2], [49, 55, 2.2], [40, 60, 2], [30, 92, 2.2], [80, 88, 3]], l: [[0, 1], [0, 4], [1, 2], [2, 3], [3, 4], [4, 5], [2, 6]] },
+  { n: 'Ursa Maior', e: [[6, 30, 2.2], [22, 20, 2.4], [40, 26, 2.4], [58, 30, 1.8], [62, 52, 2.2], [86, 46, 2.4], [88, 18, 2.8]], l: [[0, 1], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 3]] },
+  { n: 'Escorpião', e: [[14, 14, 2], [22, 6, 2], [24, 24, 2], [32, 30, 2], [40, 40, 3.2], [47, 51, 2], [52, 63, 2], [56, 76, 2.2], [64, 87, 2.2], [76, 92, 2.2], [86, 86, 2.4], [90, 74, 2.6]], l: [[0, 2], [1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 8], [8, 9], [9, 10], [10, 11]] },
+  { n: 'Leão', e: [[18, 70, 3], [22, 48, 2.2], [30, 30, 2.4], [42, 22, 2], [52, 30, 2], [48, 48, 2.2], [76, 46, 2.2], [88, 66, 2.6], [70, 70, 2]], l: [[0, 1], [1, 2], [2, 3], [3, 4], [1, 5], [5, 6], [6, 7], [7, 8], [8, 0]] },
+  { n: 'Lira', e: [[50, 10, 3.2], [40, 36, 2], [60, 36, 2], [38, 74, 2.2], [62, 72, 2.2]], l: [[0, 1], [0, 2], [1, 2], [1, 3], [2, 4], [3, 4]] },
+  { n: 'Cisne', e: [[50, 8, 3], [50, 34, 2.4], [50, 60, 2], [50, 92, 2.4], [18, 40, 2.2], [82, 30, 2.2]], l: [[0, 1], [1, 2], [2, 3], [4, 1], [1, 5]] },
+];
+// em que estrela de que constelação está cada mês com aporte (as constelações se repetem depois da última)
+function basCeuDe(meses) {
+  const com = meses.filter((x) => x.v > 0); const cons = []; let k = 0; let i = 0;
+  while (k < com.length || !cons.length || cons[cons.length - 1].acesas === cons[cons.length - 1].c.e.length) {
+    const c = BAS_CEU[i % BAS_CEU.length]; const meus = com.slice(k, k + c.e.length); cons.push({ c, meus, acesas: meus.length }); k += meus.length; i++; if (meus.length < c.e.length) break;
+  }
+  return { completas: cons.filter((x) => x.acesas === x.c.e.length), atual: cons[cons.length - 1] };
+}
+// um céu: fundo com Via Láctea e estrelinhas, as ligações entre as estrelas acesas e as estrelas da constelação
+function basCeuSvg(cs, nv, id, mini) {
+  const c = cs.c; const H = 70; const yy = (y) => 6 + (y / 100) * (H - 12); const xx = (x) => 6 + (x / 100) * 88;
+  const lig = c.l.map(([a, b]) => { const on = a < cs.acesas && b < cs.acesas; return `<line class="bas-cl${on ? ' on' : ''}" x1="${xx(c.e[a][0])}" y1="${yy(c.e[a][1])}" x2="${xx(c.e[b][0])}" y2="${yy(c.e[b][1])}" style="--i:${Math.max(a, b)}"/>`; }).join('');
+  const est = mini ? c.e.map(([x, y, m], k) => `<circle class="bas-cm${k < cs.acesas ? ' on' : ''}" cx="${xx(x)}" cy="${yy(y)}" r="${(m * 0.55).toFixed(2)}"/>`).join('') : '';
+  // campo de estrelas espalhado (sempre o mesmo para cada constelação), com tamanhos e brilhos diferentes
+  let sd = c.n.length * 97 + 13; const rnd = () => (sd = (sd * 16807) % 2147483647) / 2147483647;
+  const fundo = Array.from({ length: mini ? 26 : 70 }, (_, k) => `<circle class="bas-cf" cx="${(rnd() * 100).toFixed(1)}" cy="${(rnd() * H).toFixed(1)}" r="${(0.08 + rnd() * rnd() * (mini ? 0.32 : 0.38)).toFixed(2)}" style="--o:${(0.25 + rnd() * 0.65).toFixed(2)};--d:${(rnd() * 4).toFixed(1)}s"/>`).join('');
+  return `<svg class="bas-ceu-svg" viewBox="0 0 100 ${H}" preserveAspectRatio="xMidYMid meet" aria-hidden="true">${fundo}${lig}${est}</svg>`;
 }
 function basTelaSequencia() {
   const { ult, meses, ini, Q } = basSeqDados(); const n = Q.atual; const hoje = new Date(); const fimMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).getDate(); const faltam = fimMes - hoje.getDate();
@@ -954,11 +994,15 @@ function basTelaSequencia() {
     : corrente ? `Faltam <b>${faltam} ${faltam === 1 ? 'dia' : 'dias'}</b> para o aporte de ${MES_LONGO[ult]}. Não deixe o astro apagar!` : `Falta o aporte de ${MES_LONGO[ult]}.`;
   const nv = basNivel(n);
   const parts = Array.from({ length: 16 }, (_, k) => `<i style="--x:${(k * 37) % 100}%;--d:${(k * 0.43) % 4}s;--t:${3 + (k % 5) * 0.6}s"></i>`).join('');
-  // trilha em constelação: os últimos 6 meses como estrelas em alturas diferentes, ligadas por linhas de luz entre as acesas
-  const ult6 = meses.slice(-6); const ys = [62, 34, 54, 26, 46, 18]; const xs = ult6.map((_, k) => 8 + k * (84 / Math.max(1, ult6.length - 1)));
-  const linhas = ult6.map((x, k) => (k && x.v > 0 && ult6[k - 1].v > 0 ? `<line class="bas-tc-l" x1="${xs[k - 1]}" y1="${ys[k - 1]}" x2="${xs[k]}" y2="${ys[k]}" style="--i:${k}"/>` : k ? `<line class="bas-tc-l off" x1="${xs[k - 1]}" y1="${ys[k - 1]}" x2="${xs[k]}" y2="${ys[k]}"/>` : '')).join('');
-  const fila = `<div class="bas-tc"><svg class="bas-tc-svg" viewBox="0 0 100 80" preserveAspectRatio="none" aria-hidden="true">${linhas}</svg>${ult6.map((x, k, a) => { const agora = k === a.length - 1; return `<button class="bas-sq-dia bas-tc-e${x.v > 0 ? ' on' : ''}${agora ? ' agora' : ''}" style="left:${xs[k]}%;top:${(ys[k] / 80) * 100}%;--i:${k}" data-act="bas-sq-dia" data-r="${esc(`${cap(MES_LONGO[x.mes])} de ${x.ano}: ${x.v > 0 ? brl0(x.v) + ' investidos' : agora ? 'ainda sem aporte' : 'sem aporte'}`)}">
-      <svg viewBox="0 0 100 100" aria-hidden="true">${x.v > 0 ? basEstrela(nv, 'f' + k) : '<circle class="bas-tc-vazio" cx="50" cy="50" r="16"/><circle class="bas-tc-apag" cx="50" cy="50" r="5"/>'}</svg><b>${MES[x.mes].slice(0, 3)}</b></button>`; }).join('')}</div>`;
+  // céu: cada mês com aporte acende uma estrela de uma constelação real; completa, ela vai para a galáxia e começa a próxima
+  const ceu = basCeuDe(meses); const A = ceu.atual; const H = 70; const yy = (y) => 6 + (y / 100) * (H - 12); const xx = (x) => 6 + (x / 100) * 88;
+  const agoraSem = !Q.contaHoje && corrente;
+  const estrelas = A.c.e.map(([x, y, m], k) => { const mm = A.meus[k]; const prox = k === A.acesas && agoraSem;
+    return `<button class="bas-sq-dia bas-ce${mm ? ' on' : ''}${prox ? ' agora' : ''}" style="left:${xx(x)}%;top:${(yy(y) / H) * 100}%;--m:${m};--i:${k}" data-act="bas-sq-dia" data-r="${esc(mm ? `${cap(MES_LONGO[mm.mes])} de ${mm.ano}: ${brl0(mm.v)} investidos` : prox ? `${cap(MES_LONGO[ult])}: esta estrela acende com o aporte do mês` : 'Uma estrela ainda apagada. Cada mês com aporte acende uma.')}" aria-label="Estrela ${k + 1} de ${A.c.e.length}">
+      ${mm ? `<svg viewBox="0 0 100 100" aria-hidden="true">${basEstrela(nv, 'c' + k)}</svg>` : '<i aria-hidden="true"></i>'}</button>`; }).join('');
+  const fila = `<div class="bas-ceu"><span class="bas-ceu-via" aria-hidden="true"></span><span class="bas-ceu-fundo" aria-hidden="true"></span>${basCeuSvg(A, nv, 'atual')}${estrelas}</div>
+    <div class="bas-ceu-r"><b>${esc(A.c.n)}</b><span>${A.acesas} de ${A.c.e.length} estrelas</span></div>`;
+  const galaxia = ceu.completas;
   const desde = `${cap(MES_LONGO[ini.mes])} de ${ini.ano}`; const temp = tot >= 12 ? `${Math.floor(tot / 12)} ${tot >= 24 ? 'anos' : 'ano'}${tot % 12 ? ` e ${tot % 12} ${tot % 12 === 1 ? 'mês' : 'meses'}` : ''}` : `${tot} ${tot === 1 ? 'mês' : 'meses'}`;
   const anos = [...new Set(meses.map((x) => x.ano))];
   const cal = anos.map((y) => `<div class="bas-sq-ano"><small>${y}</small><div class="bas-sq-cal">${MES.map((nm, m) => { const x = meses.find((z) => z.ano === y && z.mes === m); return `<i class="${!x ? 'fora' : x.v > 0 ? 'on' : ''}" title="${cap(MES_LONGO[m])} de ${y}"></i>`; }).join('')}</div></div>`).join('');
@@ -968,7 +1012,9 @@ function basTelaSequencia() {
       <b class="bas-jx-n" data-sq-conta="${n}">${n}</b><b class="bas-sqx-t">${n === 1 ? 'mês de sequência' : 'meses de sequência'}</b><small class="bas-jx-nv">${nv === 'base' ? 'Estrela inicial' : `Estrela ${({ bronze: 'de bronze', prata: 'de prata', ouro: 'de ouro', platina: 'de platina', diamante: 'de diamante' })[nv]}`}</small><p class="bas-sqx-s">${status}</p>
       ${prox ? `<div class="bas-sqx-prox"><span>Próximo brasão: <b>${esc(prox[1])}</b></span><span class="bas-sqx-pb"><i style="width:${(prog * 100).toFixed(1)}%"></i></span><small>${prox[0] - n} ${prox[0] - n === 1 ? 'mês' : 'meses'} para chegar</small></div>` : '<div class="bas-sqx-prox"><span>Você conquistou todos os brasões. Lenda!</span></div>'}
       ${!Q.contaHoje && corrente && temRecurso('aporte_simples') ? `<button class="bas-dp-bt bas-sqx-bt" ${basIrInv()}>Investir agora</button>` : ''}</section>
-    <div class="card bas-sq-fila" style="--jx-c:${(BAS_GEMAS[nv] || BAS_GEMAS.base)[3]}"><small class="bas-tj-t">Sua constelação</small>${fila}<p class="bas-sq-fila-r" aria-live="polite">Toque num mês</p></div>
+    <div class="card bas-sq-fila" style="--jx-c:${(BAS_GEMAS[nv] || BAS_GEMAS.base)[3]}"><small class="bas-tj-t">Sua constelação</small>${fila}<p class="bas-sq-fila-r" aria-live="polite">Toque numa estrela</p></div>
+    ${basSecao('Sua galáxia', `<small class="bas-raio-t">${galaxia.length} ${galaxia.length === 1 ? 'constelação' : 'constelações'}</small>`, `<div class="bas-gx">${galaxia.map((g, k) => `<span class="bas-gx-c on" style="--i:${k}">${basCeuSvg(g, nv, 'g' + k, true)}<b>${esc(g.c.n)}</b><small>${g.meus[0] ? `${MES[g.meus[0].mes].slice(0, 3)}/${String(g.meus[0].ano).slice(2)} a ${MES[g.meus[g.meus.length - 1].mes].slice(0, 3)}/${String(g.meus[g.meus.length - 1].ano).slice(2)}` : ''}</small></span>`).join('')}
+      <span class="bas-gx-c prox">${basCeuSvg({ c: A.c, acesas: A.acesas }, nv, 'gp', true)}<b>${esc(A.c.n)}</b><small>${A.c.e.length - A.acesas} ${A.c.e.length - A.acesas === 1 ? 'estrela' : 'estrelas'} para completar</small></span></div>`)}
     <div class="bas-sq-ks"><span><small>No ${esc(CFG.marca || 'app')} há</small><b>${temp}</b><em>desde ${desde}</em></span><span><small>Meses com aporte</small><b>${com} de ${tot}</b><em>${pct(com / tot)} de constância</em></span>
       <span><small>Recorde</small><b>${Q.maior} ${Q.maior === 1 ? 'mês' : 'meses'}</b><em>${Q.maior > n ? `faltam ${Q.maior - n} para igualar` : n > 0 ? 'é a sequência de agora' : 'comece hoje'}</em></span></div>
     ${basSecao('Escudos', `<small class="bas-raio-t">${BAS_SEQ_MARCOS.filter((m) => Q.maior >= m[0]).length} de ${BAS_SEQ_MARCOS.length}</small>`, `<div class="bas-esc">${BAS_SEQ_MARCOS.map(([q, nm, , nvM], k) => { const on = Q.maior >= q; const nv = nvM;

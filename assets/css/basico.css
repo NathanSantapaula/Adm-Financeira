@@ -1469,3 +1469,47 @@ button.bas-esc-c { cursor: pointer; transition: transform 140ms var(--ease-out);
 .bas-tc-e.agora:not(.on) .bas-tc-vazio { stroke: var(--jx-c, #ffc94a); stroke-dasharray: none; }
 @media (prefers-reduced-motion: reduce) { .bas-jx .bas-es, .bas-tc-e.on .bas-es { animation: none; } }
 .bas-tc-e { transform: translate(-50%, -23px); } /* o centro da estrela (46 px) fica no ponto da linha; o nome do mês vai embaixo */
+
+/* ---------- céu de verdade: constelação atual e a galáxia ---------- */
+.bas-ceu { position: relative; aspect-ratio: 100 / 70; margin: 0 -4px; border-radius: 20px; overflow: hidden; isolation: isolate;
+  background: radial-gradient(120% 90% at 30% 20%, #16204a, transparent 60%), radial-gradient(90% 80% at 90% 100%, #2a1650, transparent 60%), #05060f; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .06), inset 0 -30px 60px rgba(0, 0, 0, .5); }
+.bas-ceu-via { position: absolute; inset: -30%; z-index: -2; background: linear-gradient(115deg, transparent 38%, rgba(160, 170, 255, .1) 45%, rgba(255, 230, 255, .16) 50%, rgba(160, 200, 255, .1) 55%, transparent 62%); filter: blur(6px); }
+.bas-ceu-fundo { position: absolute; inset: 0; z-index: -1; background: radial-gradient(rgba(255, 255, 255, .7) .6px, transparent 1.1px) 0 0 / 23px 19px, radial-gradient(rgba(255, 255, 255, .45) .5px, transparent 1px) 11px 7px / 31px 27px, radial-gradient(rgba(200, 220, 255, .55) .7px, transparent 1.2px) 5px 13px / 47px 41px; animation: bas-pts-luz 4s ease-in-out infinite; }
+.bas .bas-ceu-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.bas-cl { stroke: rgba(255, 255, 255, .14); stroke-width: .35; stroke-dasharray: 1 1.2; vector-effect: none; }
+.bas-cl.on { stroke: var(--jx-c, #9fc4ff); stroke-width: .5; stroke-dasharray: none; filter: drop-shadow(0 0 1.2px var(--jx-c, #9fc4ff)); opacity: .9; animation: bas-cl-acende 900ms var(--ease-out) both; animation-delay: calc(var(--i) * 110ms); }
+@keyframes bas-cl-acende { from { opacity: 0; } }
+.bas-ce { position: absolute; transform: translate(-50%, -50%); width: calc(var(--m) * 11px); height: calc(var(--m) * 11px); padding: 0; border: 0; background: none; display: grid; place-items: center; }
+.bas .bas-ce svg { width: 100%; height: 100%; overflow: visible; }
+.bas-ce.on svg { animation: bas-tc-acende 700ms cubic-bezier(.2, 1.5, .4, 1) both; animation-delay: calc(var(--i) * 110ms); }
+.bas-ce.on .bas-es { transform-box: fill-box; transform-origin: center; animation: bas-es-cintila 3s ease-in-out infinite; animation-delay: calc(var(--i) * -.45s); }
+.bas-ce i { width: 5px; height: 5px; border-radius: 50%; background: rgba(255, 255, 255, .22); box-shadow: 0 0 0 4px rgba(255, 255, 255, .04); }
+.bas-ce.agora i { width: 9px; height: 9px; background: var(--jx-c, #ffc94a); box-shadow: 0 0 0 6px color-mix(in srgb, var(--jx-c, #ffc94a) 25%, transparent), 0 0 16px var(--jx-c, #ffc94a); animation: bas-sqx-pulsa 1.6s ease-in-out infinite; }
+.bas-ce.sel svg, .bas-ce.sel i { transform: scale(1.3); }
+.bas-ceu-r { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-top: 10px; } .bas-ceu-r b { font-size: 17px; font-weight: 800; } .bas-ceu-r span { font-size: 13px; color: var(--ink-2); }
+/* galáxia: constelações completas em céus pequenos, e a próxima apagada */
+.bas-gx { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.bas-gx-c { display: flex; flex-direction: column; gap: 3px; padding: 8px 8px 10px; border-radius: 20px; background: var(--surface); box-shadow: var(--shadow); animation: bas-passo 500ms var(--ease-out) both; animation-delay: calc(var(--i, 0) * 80ms); }
+.bas-gx-c .bas-ceu-svg { position: static; display: block; width: 100%; height: auto; aspect-ratio: 100 / 70; border-radius: 14px; background: radial-gradient(rgba(255, 255, 255, .5) .5px, transparent 1px) 0 0 / 13px 11px, radial-gradient(110% 90% at 30% 20%, #16204a, transparent 60%), #05060f; }
+.bas-gx-c b { margin-top: 4px; font-size: 13.5px; font-weight: 800; padding: 0 4px; } .bas-gx-c small { font-size: 11.5px; color: var(--ink-3); padding: 0 4px; }
+.bas-cm { fill: rgba(255, 255, 255, .25); } .bas-cm.on { fill: #fff; filter: drop-shadow(0 0 1.5px var(--jx-c, #9fc4ff)); }
+.bas-gx-c.prox { opacity: .75; } .bas-gx-c.prox .bas-cl:not(.on) { stroke: rgba(255, 255, 255, .1); }
+@media (prefers-reduced-motion: reduce) { .bas-ceu-fundo, .bas-cl.on, .bas-ce.on svg, .bas-ce.on .bas-es, .bas-ce.agora i, .bas-gx-c { animation: none; } }
+/* medalhas cósmicas */
+.bas-md .bas-md-aro { stroke: rgba(255, 255, 255, .55); stroke-width: 1.2; } .bas-md-gr { stroke: rgba(255, 255, 255, .25); stroke-width: 1; stroke-dasharray: 2 3; }
+.bas-md-ceu { stroke: rgba(0, 0, 0, .5); stroke-width: 2; } .bas-md-st { fill: #fff; opacity: .7; animation: bas-pts-luz 2.6s ease-in-out infinite; animation-delay: calc(var(--i) * .3s); }
+.bas-md-cr { fill: rgba(120, 110, 90, .35); stroke: rgba(255, 255, 255, .15); stroke-width: .5; }
+.bas-md-an { fill: none; stroke: #f6dc9c; stroke-width: 3.2; opacity: .95; } .bas-md-fx { stroke: rgba(122, 70, 18, .45); stroke-width: 2; }
+.bas-md-raio { stroke: rgba(255, 255, 255, .55); stroke-width: .8; }
+.bas-md-foton { fill: none; stroke: #ffe7b0; stroke-width: 1.4; filter: drop-shadow(0 0 3px #ffb35a); }
+.bas-br.on .bas-md-obj { transform-box: fill-box; transform-origin: center; animation: bas-md-vivo 5s ease-in-out infinite; }
+.bas-br.on.diamante .bas-md-disco, .bas-br.on.diamante .bas-md-lente { animation: bas-md-disco 2.4s ease-in-out infinite; }
+@keyframes bas-md-vivo { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+@keyframes bas-md-disco { 0%, 100% { opacity: 1; } 50% { opacity: .65; } }
+.bas-br.on.platina .bas-md-obj { animation: bas-md-vivo 2.2s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .bas-md-st, .bas-br.on .bas-md-obj, .bas-br.on.diamante .bas-md-disco, .bas-br.on.diamante .bas-md-lente { animation: none; } }
+.bas-ceu-fundo { display: none; } .bas-gx-c .bas-ceu-svg { background: radial-gradient(110% 90% at 30% 20%, #16204a, transparent 60%), #05060f; }
+.bas-cf { fill: #fff; opacity: var(--o); animation: bas-cf-pisca 4s ease-in-out infinite; animation-delay: var(--d); }
+@keyframes bas-cf-pisca { 0%, 100% { opacity: var(--o); } 50% { opacity: calc(var(--o) * .35); } }
+@media (prefers-reduced-motion: reduce) { .bas-cf { animation: none; } }
+.bas-cf, .bas-cm, .bas-cl { stroke-linecap: round; } .bas-cf, .bas-cm { stroke: none; }
