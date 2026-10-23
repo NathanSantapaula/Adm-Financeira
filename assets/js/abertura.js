@@ -190,8 +190,11 @@ function abGeo() { const A = AB; if (!A.gd) return; const k = A.kc * A.kc * (3 -
 // da capa para os detalhes: o globo sobe para o lugar dele e a tela de detalhes aparece
 function abDetalhes() { const A = AB; if (!A) return; A.kcA = 0; if (A.calmo || A.leve) { A.kc = 0; abGeo(); } A.el.classList.remove('ab-capa'); setTimeout(() => { const b = A.el.querySelector('.ab-entrar'); if (b) b.focus({ preventScroll: true }); }, 60); }
 // frase da capa: o patrimônio e quanto cresceu, respeitando o olho do globo
+// capa: uma linha só, o patrimônio em destaque e uma pílula com quanto cresceu no ano (os botões já dizem o que fazer)
 function abCapaTxt() { const A = AB; const s = A && A.el.querySelector('.ab-capa-s'); if (!s) return; const D = A.D; const c = D.cresc;
-  s.textContent = `${D.rotulo}: ${abR(D.patr)}${Math.abs(c) >= 1 ? `, ${c > 0 ? 'mais' : 'menos'} ${abR(Math.abs(c))} em ${D.ano}` : ''}. Entre direto no painel ou veja tudo o que gira em volta do seu dinheiro.`; }
+  const v = document.createElement('b'); v.className = 'ab-capa-v'; v.textContent = abR(D.patr); const kids = [v];
+  if (Math.abs(c) >= 1) { const p = document.createElement('span'); p.className = 'ab-capa-p ' + (c > 0 ? 'pos' : 'neg'); p.textContent = `${c > 0 ? '↗ +' : '↘ −'}${abR(Math.abs(c))} em ${D.ano}`; kids.push(p); }
+  s.replaceChildren(...kids); s.setAttribute('aria-label', `${D.rotulo}: ${v.textContent}${kids[1] ? ', ' + kids[1].textContent : ''}`); }
 function abTamanho() {
   if (!AB || AB.leve) return; const r = AB.el.getBoundingClientRect(); const dpr = Math.min(window.devicePixelRatio || 1, 2);
   AB.W = r.width; AB.H = r.height; AB.cv.width = AB.W * dpr; AB.cv.height = AB.H * dpr; AB.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
