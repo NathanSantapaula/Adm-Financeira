@@ -386,12 +386,19 @@ function basContar() {
 }
 // cartões 3D: inclinam com o dedo ou o mouse e com o movimento do celular (no iPhone, a permissão é pedida no primeiro toque num cartão)
 let basGiroOk = false;
-function basGiroCartoes(e) { const cs = document.querySelectorAll('.bas-cc-c:not(.bas-cc-mini), .bas-membro'); if (!cs.length || e.gamma == null) return;
+function basGiroCartoes(e) { const cs = document.querySelectorAll('.bas-cc-c:not(.bas-cc-mini), .bas-membro, .bas-mx.on'); if (!cs.length || e.gamma == null) return;
   const ry = Math.max(-1, Math.min(1, e.gamma / 30)) * 10; const rx = Math.max(-1, Math.min(1, ((e.beta || 45) - 45) / 30)) * -8;
   cs.forEach((c) => { if (c.classList.contains('mexe')) return; c.style.setProperty('--ry', ry.toFixed(2) + 'deg'); c.style.setProperty('--rx', rx.toFixed(2) + 'deg'); c.style.setProperty('--hx', (50 + ry * 4).toFixed(1) + '%'); }); }
 function basCartoes3d() {
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   if (!basGiroOk && window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission !== 'function') { basGiroOk = true; window.addEventListener('deviceorientation', basGiroCartoes, { passive: true }); }
+  // medalhas: inclinam com o dedo (também no toque), o mouse e o celular; o brilho segue a luz
+  document.querySelectorAll('.bas-mx.on').forEach((c) => { if (c.dataset.tilt) return; c.dataset.tilt = '1';
+    const mover = (e) => { const r = c.getBoundingClientRect(); const x = Math.max(-.5, Math.min(.5, (e.clientX - r.left) / r.width - 0.5)); const y = Math.max(-.5, Math.min(.5, (e.clientY - r.top) / r.height - 0.5));
+      c.style.setProperty('--ry', (x * 34).toFixed(2) + 'deg'); c.style.setProperty('--rx', (-y * 30).toFixed(2) + 'deg'); c.style.setProperty('--hx', ((x + 0.5) * 100).toFixed(1) + '%'); c.classList.add('mexe'); };
+    const soltar = () => { c.classList.remove('mexe'); ['--rx', '--ry'].forEach((k) => c.style.setProperty(k, '0deg')); };
+    c.addEventListener('pointerdown', mover); c.addEventListener('pointermove', (e) => { if (e.pointerType === 'mouse' || e.buttons) mover(e); });
+    c.addEventListener('pointerleave', soltar); c.addEventListener('pointerup', soltar); c.addEventListener('pointercancel', soltar); });
   document.querySelectorAll('.bas-cc-c:not(.bas-cc-mini)').forEach((c) => { if (c.dataset.tilt) return; c.dataset.tilt = '1';
     const mover = (e) => { const r = c.getBoundingClientRect(); const x = (e.clientX - r.left) / r.width - 0.5; const y = (e.clientY - r.top) / r.height - 0.5;
       c.style.setProperty('--ry', (x * 18).toFixed(2) + 'deg'); c.style.setProperty('--rx', (-y * 14).toFixed(2) + 'deg'); c.style.setProperty('--hx', ((x + 0.5) * 100).toFixed(1) + '%'); c.classList.add('mexe'); };
@@ -928,35 +935,28 @@ function basEstrela(nivel, id) {
     <linearGradient id="eo-${id}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity=".9"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
     <g class="bas-es"><circle class="bas-es-halo" cx="50" cy="50" r="48" fill="url(#eh-${id})"/><rect class="bas-es-raio" x="49.3" y="6" width="1.4" height="88" fill="url(#ev-${id})"/><rect class="bas-es-raio" x="6" y="49.3" width="88" height="1.4" fill="url(#eo-${id})"/><circle cx="50" cy="50" r="5.5" fill="#fff"/></g>`;
 }
-// medalha cósmica de um marco: aro de metal do nível, céu escuro por dentro e um objeto do espaço que cresce com o nível
-// (lua crescente, lua cheia, planeta de anéis, supernova e buraco negro), com a fita dos meses
+// medalha comemorativa de um marco: moeda de metal escovado do nível (obsidiana no máximo), borda em relevo com o texto gravado,
+// campo rebaixado com gravação fina e o emblema cunhado em alto relevo (luz e sombra reais por filtro de iluminação do SVG)
+const BAS_METAIS = { bronze: ['#f0c39a', '#a8683a', '#4e2a12'], prata: ['#ffffff', '#b8bfc8', '#5c636d'], ouro: ['#fff0c0', '#d9a43a', '#6e4a0c'],
+  platina: ['#f4f8fb', '#a9bccb', '#4f6272'], diamante: ['#8c95a8', '#252a35', '#07080b'] };
 function basBrasao(q, nivel, on) {
-  const [cl, md, es] = BAS_GEMAS[nivel] || BAS_GEMAS.base; const id = `md${q}`;
-  const ceuP = [[34, 30], [86, 36], [28, 78], [90, 76], [60, 22], [42, 92], [78, 92], [24, 52]].map(([x, y], k) => `<circle cx="${x}" cy="${y}" r="${k % 3 ? .7 : 1.1}" class="bas-md-st" style="--i:${k}"/>`).join('');
-  const lua = (cheia) => `<defs><radialGradient id="${id}l" cx=".38" cy=".35" r=".75"><stop offset="0" stop-color="#fffaf0"/><stop offset=".6" stop-color="#dcd2bb"/><stop offset="1" stop-color="#8f8670"/></radialGradient>
-      <mask id="${id}m"><rect width="120" height="120" fill="#fff"/>${cheia ? '' : '<circle cx="70" cy="52" r="19" fill="#000"/>'}</mask></defs>
-    <g class="bas-md-obj" mask="url(#${id}m)"><circle cx="60" cy="58" r="21" fill="url(#${id}l)"/>${cheia ? '<circle cx="52" cy="52" r="4.5" class="bas-md-cr"/><circle cx="67" cy="64" r="6" class="bas-md-cr"/><circle cx="58" cy="70" r="2.8" class="bas-md-cr"/><circle cx="69" cy="48" r="2.4" class="bas-md-cr"/>' : ''}</g>`;
-  const obj = {
-    bronze: lua(false), prata: lua(true),
-    ouro: `<defs><radialGradient id="${id}p" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#ffe9b0"/><stop offset=".55" stop-color="#e3a248"/><stop offset="1" stop-color="#7a4612"/></radialGradient><clipPath id="${id}f"><rect x="0" y="58" width="120" height="62"/></clipPath></defs>
-      <g class="bas-md-obj" transform="rotate(-16 60 58)"><ellipse cx="60" cy="58" rx="36" ry="9" class="bas-md-an"/><circle cx="60" cy="58" r="16" fill="url(#${id}p)"/><path d="M45 54 h30 M44 60 h32" class="bas-md-fx"/><ellipse cx="60" cy="58" rx="36" ry="9" class="bas-md-an" clip-path="url(#${id}f)"/></g>`,
-    platina: `<defs><radialGradient id="${id}n"><stop offset="0" stop-color="#fff"/><stop offset=".18" stop-color="#bdf3ff"/><stop offset=".45" stop-color="#5fb6ff" stop-opacity=".5"/><stop offset="1" stop-color="#7a5cff" stop-opacity="0"/></radialGradient>
-      <radialGradient id="${id}r"><stop offset="0" stop-color="#ff7ad9" stop-opacity=".55"/><stop offset="1" stop-color="#ff7ad9" stop-opacity="0"/></radialGradient></defs>
-      <g class="bas-md-obj"><ellipse cx="50" cy="66" rx="26" ry="16" fill="url(#${id}r)"/><ellipse cx="72" cy="50" rx="20" ry="14" fill="url(#${id}r)"/><circle cx="60" cy="58" r="30" fill="url(#${id}n)"/>
-      <path d="M60 22 V94 M24 58 H96 M36 34 L84 82 M84 34 L36 82" class="bas-md-raio"/><circle cx="60" cy="58" r="4" fill="#fff"/></g>`,
-    diamante: `<defs><linearGradient id="${id}d" x1="0" x2="1"><stop offset="0" stop-color="#7a5cff" stop-opacity="0"/><stop offset=".3" stop-color="#ff9d4d"/><stop offset=".5" stop-color="#fff2c4"/><stop offset=".7" stop-color="#ff9d4d"/><stop offset="1" stop-color="#7a5cff" stop-opacity="0"/></linearGradient>
-      <clipPath id="${id}b"><rect x="0" y="0" width="120" height="58"/></clipPath></defs>
-      <g class="bas-md-obj"><ellipse cx="60" cy="58" rx="40" ry="9" fill="none" stroke="url(#${id}d)" stroke-width="5" class="bas-md-disco"/>
-      <ellipse cx="60" cy="52" rx="18" ry="16" fill="none" stroke="url(#${id}d)" stroke-width="3.2" clip-path="url(#${id}b)" class="bas-md-lente"/>
-      <circle cx="60" cy="58" r="14.5" class="bas-md-foton"/><circle cx="60" cy="58" r="12.5" fill="#000"/>
-      <path d="M22 60 Q60 66 98 60" fill="none" stroke="url(#${id}d)" stroke-width="2.6" class="bas-md-disco"/></g>`,
-  }[nivel] || lua(false);
-  return `<svg class="bas-br-svg bas-md" viewBox="0 0 120 140" aria-hidden="true"><defs><linearGradient id="${id}a" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:${cl}"/><stop offset=".45" style="stop-color:${md}"/><stop offset="1" style="stop-color:${es}"/></linearGradient>
-      <radialGradient id="${id}c" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#141a3a"/><stop offset="1" stop-color="#03040b"/></radialGradient></defs>
-    <circle cx="60" cy="58" r="55" fill="url(#${id}a)" class="bas-md-aro"/><circle cx="60" cy="58" r="49" fill="none" class="bas-md-gr"/><circle cx="60" cy="58" r="45" fill="url(#${id}c)" class="bas-md-ceu"/>
-    <g>${ceuP}</g>${obj}
-    <path class="bas-br-fi" d="M22 108 H98 L92 119 L98 130 H22 L28 119 Z" fill="url(#${id}a)"/><text class="bas-br-n" x="60" y="123" text-anchor="middle">${q} MESES</text>
-    ${on ? '' : '<g class="bas-br-ca"><rect x="50" y="52" width="20" height="16" rx="3"/><path d="M54 52 v-5 a6 6 0 0 1 12 0 v5"/></g>'}</svg>`;
+  const [m1, m2, m3] = BAS_METAIS[nivel] || BAS_METAIS.prata; const id = `mx${q}`; const M = BAS_SEQ_MARCOS.find((x) => x[0] === q) || [q, ''];
+  const emb = {
+    bronze: `<mask id="${id}k"><rect width="100" height="100" fill="#fff"/><circle cx="58" cy="44" r="19" fill="#000"/></mask><g mask="url(#${id}k)"><circle cx="50" cy="50" r="22"/></g>`,
+    prata: `<mask id="${id}k"><rect width="100" height="100" fill="#fff"/><circle cx="42" cy="44" r="3.6" fill="#666"/><circle cx="57" cy="58" r="4.6" fill="#555"/><circle cx="46" cy="61" r="2" fill="#777"/><circle cx="60" cy="41" r="1.8" fill="#777"/><circle cx="38" cy="54" r="1.4" fill="#888"/><circle cx="63" cy="50" r="1.2" fill="#888"/><circle cx="52" cy="35" r="1.5" fill="#888"/></mask><circle cx="50" cy="50" r="22" mask="url(#${id}k)"/>`,
+    ouro: `<g transform="rotate(-18 50 50)"><circle cx="50" cy="50" r="13"/><ellipse cx="50" cy="50" rx="29" ry="7.5" fill="none" stroke="#000" stroke-width="3.6"/></g>`,
+    platina: `<polygon points="${Array.from({ length: 16 }, (_, k) => { const a = (k * 22.5 - 90) * Math.PI / 180; const r = k % 2 ? 7 : k % 4 ? 18 : 27; return `${(50 + r * Math.cos(a)).toFixed(1)},${(50 + r * Math.sin(a)).toFixed(1)}`; }).join(' ')}"/>`,
+    diamante: `<mask id="${id}k"><rect width="100" height="100" fill="#fff"/><circle cx="50" cy="50" r="11" fill="#000"/></mask><g mask="url(#${id}k)"><circle cx="50" cy="50" r="15"/><ellipse cx="50" cy="51" rx="31" ry="6" fill="none" stroke="#000" stroke-width="3.4"/></g>`,
+  }[nivel] || '';
+  const texto = `${cap(M[1] || '').toUpperCase()} · ${q} MESES · ${(CFG.marca || 'AVEN').toUpperCase()} ·`;
+  return `<span class="bas-mx${on ? ' on' : ''}" style="--m1:${m1};--m2:${m2};--m3:${m3}" aria-hidden="true"><svg viewBox="0 0 100 100">
+      <defs><filter id="${id}r" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur in="SourceAlpha" stdDeviation="1.4" result="b"/>
+        <feDiffuseLighting in="b" surfaceScale="3.2" diffuseConstant="1.05" lighting-color="${m2}" result="d"><feDistantLight azimuth="225" elevation="48"/></feDiffuseLighting><feComposite in="d" in2="SourceAlpha" operator="in" result="d2"/>
+        <feSpecularLighting in="b" surfaceScale="3.2" specularConstant="1.1" specularExponent="24" lighting-color="#fff" result="s"><feDistantLight azimuth="225" elevation="40"/></feSpecularLighting><feComposite in="s" in2="SourceAlpha" operator="in" result="s2"/>
+        <feMerge><feMergeNode in="d2"/><feMergeNode in="s2"/></feMerge></filter>
+        <path id="${id}t" d="M50 50 m-39 0 a39 39 0 1 1 78 0 a39 39 0 1 1 -78 0"/></defs>
+      <text class="bas-mx-tx l"><textPath href="#${id}t" startOffset="0">${esc(texto)}</textPath></text><text class="bas-mx-tx"><textPath href="#${id}t" startOffset="0">${esc(texto)}</textPath></text>
+      <g class="bas-mx-em" filter="url(#${id}r)">${emb}</g></svg>${on ? '' : '<i class="bas-mx-ca"></i>'}</span>`;
 }
 const BAS_CEU = [
   { n: 'Cruzeiro do Sul', e: [[54, 92, 3], [50, 8, 2.6], [16, 44, 2.6], [84, 38, 2], [66, 62, 1.4]], l: [[0, 1], [2, 3]] },
