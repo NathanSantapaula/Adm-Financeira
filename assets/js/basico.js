@@ -669,19 +669,24 @@ const basCurva = (pts) => pts.map((p0, i) => { if (!i) return `M${p0[0].toFixed(
   return `C${(b[0] + (p0[0] - a[0]) / 6).toFixed(1)} ${(b[1] + (p0[1] - a[1]) / 6).toFixed(1)} ${(p0[0] - (d[0] - b[0]) / 6).toFixed(1)} ${(p0[1] - (d[1] - b[1]) / 6).toFixed(1)} ${p0[0].toFixed(1)} ${p0[1].toFixed(1)}`; }).join(' ');
 function basWidgetsInicio(secs) {
   const C = S.C; const j = basJan();
-  // Patrimônio ano a ano: uma linha que sobe, com brilho, área em degradê e o ponto de agora pulsando; com um ano só, os meses dele
-  const H = histDados(); const anos = (H.anos || []).filter((l) => l.preenchido); const ult = S.year === NOW_Y ? NOW_M : 11; const t = H.totais || {};
-  const serieH = anos.length > 1 ? anos.slice(-8).map((l) => [String(l.ano), l.patrimonioFim]) : C.patrimonio.slice(0, ult + 1).map((v, i) => [MES[i][0], v]);
-  const vsH = serieH.map((x) => x[1]); const mnH = Math.min(...vsH); const mxH = Math.max(...vsH); const WH = 300; const HH = 120; const PH = 12;
-  const xH = (i) => (serieH.length > 1 ? PH + (i / (serieH.length - 1)) * (WH - 2 * PH) : WH / 2); const yH = (v) => (mxH > mnH ? HH - 12 - ((v - mnH) / (mxH - mnH)) * (HH - 36) : HH / 2);
-  const ptsH = serieH.map((x, i) => [xH(i), yH(x[1])]); const cH = basCurva(ptsH); const fimH = ptsH[ptsH.length - 1];
-  secs.historico = `<button class="card bas-w-hist bas-w-hl" ${basIr('historico')}><span class="bas-w-hist-h">${basNome(anos.length > 1 ? 'Patrimônio ano a ano' : `Seu patrimônio em ${S.year}`, anos.length > 1 && t.crescimento ? `${t.crescimento >= 0 ? '+' : '−'}${brl0(Math.abs(t.crescimento))} desde ${anos[0].ano}` : `${brl0(C.patrimonio[ult])} agora`)}${t.crescimentoPct != null && anos.length > 1 ? `<em class="${t.crescimento >= 0 ? 'pos' : 'neg'}">${t.crescimento >= 0 ? '↗' : '↘'} ${pct(Math.abs(t.crescimentoPct))}</em>` : ''}</span>
+  // Patrimônio ano a ano: a linha mês a mês atravessa os anos, cada ano numa seção (faixa, divisória e, embaixo, o ano e o valor que fechou)
+  const H = histDados(); const t = H.totais || {}; const ult = S.year === NOW_Y ? NOW_M : 11;
+  const anosH = (H.anos || []).filter((l) => l.preenchido).slice(-5); const nH = Math.max(1, anosH.length);
+  const WH = 300; const HH = 120; const PH = 8; const SW = (WH - 2 * PH) / nH;
+  // vários anos: começa no patrimônio do início do primeiro e cada seção termina no fim do ano (o ano em curso, na fração do ano já vivida); um ano só: os meses dele
+  const fimX = (l, k) => PH + k * SW + (l.parcial ? (l.meses / 12) : 1) * SW;
+  const serieH = anosH.length > 1 ? [[PH, anosH[0].patrimonioInicio]].concat(anosH.map((l, k) => [fimX(l, k), l.patrimonioFim])) : C.patrimonio.slice(0, ult + 1).map((v, m) => [PH + ((m + 0.5) / 12) * SW, v]);
+  const vsH = serieH.map((x) => x[1]); const mnH = Math.min(...vsH); const mxH = Math.max(...vsH); const yH = (v) => (mxH > mnH ? HH - 12 - ((v - mnH) / (mxH - mnH)) * (HH - 30) : HH / 2);
+  const ptsH = serieH.map(([x, v]) => [x, yH(v)]); const cH = basCurva(ptsH); const fimH = ptsH[ptsH.length - 1];
+  const fins = anosH.length > 1 ? anosH.map((l, k) => [l.ano, l.patrimonioFim, fimX(l, k), yH(l.patrimonioFim), l.parcial]) : [[S.year, C.patrimonio[ult], fimH[0], fimH[1], ult < 11]];
+  const curto = (v) => `R$ ${tickFmt(v)}`;
+  secs.historico = `<button class="card bas-w-hist bas-w-hl" ${basIr('historico')}><span class="bas-w-hist-h">${basNome('Patrimônio ano a ano', anosH.length > 1 && t.crescimento ? `${t.crescimento >= 0 ? '+' : '−'}${brl0(Math.abs(t.crescimento))} desde ${anosH[0].ano}` : `${brl0(C.patrimonio[ult])} agora`)}${t.crescimentoPct != null && anosH.length > 1 ? `<em class="${t.crescimento >= 0 ? 'pos' : 'neg'}">${t.crescimento >= 0 ? '↗' : '↘'} ${pct(Math.abs(t.crescimentoPct))}</em>` : ''}</span>
     <svg class="bas-w-hl-svg" viewBox="0 0 ${WH} ${HH}" aria-hidden="true"><defs><linearGradient id="bas-hg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="h0"/><stop offset="1" class="h1"/></linearGradient></defs>
-      ${[0.25, 0.5, 0.75].map((k) => `<line class="bas-w-hl-r" x1="0" x2="${WH}" y1="${(HH * k).toFixed(1)}" y2="${(HH * k).toFixed(1)}"/>`).join('')}
+      ${fins.map((f0, k) => `<rect class="bas-w-hl-sec${k % 2 ? ' par' : ''}${k === fins.length - 1 ? ' on' : ''}" x="${(PH + k * SW + 1).toFixed(1)}" y="0" width="${(SW - 2).toFixed(1)}" height="${HH}" rx="10"/>`).join('')}
       ${ptsH.length > 1 ? `<path class="bas-w-hl-a" d="${cH} L${fimH[0].toFixed(1)} ${HH} L${ptsH[0][0].toFixed(1)} ${HH} Z" fill="url(#bas-hg)"/><path class="bas-w-hl-g" d="${cH}"/><path class="bas-w-hl-v" d="${cH}" pathLength="1"/>` : ''}
-      ${ptsH.slice(0, -1).map((p0, i) => `<circle class="bas-w-hl-d" cx="${p0[0].toFixed(1)}" cy="${p0[1].toFixed(1)}" r="2.6" style="--i:${i}"/>`).join('')}
+      ${fins.slice(0, -1).map((f0, k) => `<circle class="bas-w-hl-d" cx="${f0[2].toFixed(1)}" cy="${f0[3].toFixed(1)}" r="3" style="--i:${k}"/>`).join('')}
       <circle class="bas-w-hl-pp" cx="${fimH[0].toFixed(1)}" cy="${fimH[1].toFixed(1)}" r="5"/><circle class="bas-w-hl-p" cx="${fimH[0].toFixed(1)}" cy="${fimH[1].toFixed(1)}" r="4.6"/></svg>
-    <span class="bas-w-hl-x" aria-hidden="true">${serieH.map((x, i) => `<b class="${i === serieH.length - 1 ? 'on' : ''}">${x[0]}</b>`).join('')}</span></button>`;
+    <span class="bas-w-hl-anos" style="--n:${fins.length}">${fins.map(([a, v, , , parcial], k) => `<span class="${k === fins.length - 1 ? 'on' : ''}"><b>${a}${parcial ? '<small> até agora</small>' : ''}</b><em>${curto(v)}</em></span>`).join('')}</span></button>`;
   // Seu ano: a sobra de cada mês numa fileira de 12 cápsulas de luz (verde quando sobra, vermelho quando falta; os meses que vêm, apagados)
   const sobA = C.investAlocado; const mxA = Math.max(1, ...sobA.slice(0, ult + 1).map((v) => Math.abs(v)));
   secs.seuano = `<button class="card bas-w-ano" ${basIr('ano-resumo')}><span class="bas-w-ano-luz" aria-hidden="true"></span><span class="bas-w-ano-h"><small>Seu ${S.year}</small><b>${basCent(C.T.investAlocado)}</b><span>sobraram no ano${C.T.poupanca != null ? `, <em>${pct(C.T.poupanca)}</em> do que entrou` : ''}</span></span>
