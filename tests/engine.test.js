@@ -446,4 +446,12 @@ ok(E.interfaceDe('gratis', 'completo') === 'basico' && E.interfaceDe('qualquer')
   const L = E.jurosCompostos({ inicial: 0, aporte: 0, taxa: 10, meses: 0, metas: [{ valor: 100 }] });
   ok(L.serie.length === 1 && L.metas[0].meses === null, 'juros compostos: prazo mínimo de 1 mês e meta impossível sem dinheiro');
 }
+// --- sequência de meses investindo (App: widget Sequência)
+{ const Q = E.sequenciaMeses([100, 0, 50, 80, 90, 0], 5);
+  ok(Q.atual === 3 && Q.maior === 3 && !Q.contaHoje, 'sequência: o mês atual sem aporte não quebra; conta os 3 anteriores');
+  const R = E.sequenciaMeses([100, 200, 0, 50, 60], 4);
+  ok(R.atual === 2 && R.maior === 2 && R.contaHoje, 'sequência: o mês atual com aporte já conta');
+  const T = E.sequenciaMeses([10, 20, 30, 0, 0, 5], 4);
+  ok(T.atual === 0 && T.maior === 3, 'sequência: dois meses sem aporte zeram, mas a maior fica guardada');
+}
 process.exit(bad ? 1 : 0);

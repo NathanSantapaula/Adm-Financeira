@@ -39,6 +39,8 @@ const basAbas = () => BAS_ABAS;
 const basAba = () => (basAbas().some((a) => a[0] === S.basAba) ? S.basAba : 'inicio');
 const basPilha = () => (S.basPilha = S.basPilha || []);
 const basTopoPilha = () => basPilha()[basPilha().length - 1] || null;
+// linha do tempo até o sonho: a trilha enche e os marcos de 25, 50, 75 e 100% acendem quando alcançados
+const basLinhaSonho = (f) => { const p = Math.max(0, Math.min(1, f)); return `<span class="bas-ls" aria-hidden="true"><span class="bas-ls-t"><i style="width:${(p * 100).toFixed(1)}%"></i></span>${[0.25, 0.5, 0.75, 1].map((m) => `<span class="bas-ls-m${p >= m - 1e-9 ? ' on' : ''}" style="left:${m * 100}%"><b>${m === 1 ? '★' : ''}</b><small>${m * 100}%</small></span>`).join('')}</span>`; };
 const basBarra = (f) => `<span class="bas-bar" aria-hidden="true"><i style="width:${(Math.max(0, Math.min(1, f)) * 100).toFixed(1)}%"></i></span>`;
 const basCard = (corpo, cls) => `<section class="card bas-card${cls ? ' ' + cls : ''}">${corpo}</section>`;
 const basVazio = (t) => `<p class="bas-vz">${t}</p>`;
@@ -146,7 +148,7 @@ function basTelaPeriodo() {
 
 /* ---- blocos que o cliente organiza (ordem e quais aparecem), salvos no perfil ---- */
 const BAS_SECS = {
-  inicio: [['sonho', 'Meu sonho'], ['disp', 'Dá para investir'], ['historico', 'Patrimônio ano a ano'], ['aviso', 'O que o assistente notou'], ['ritmo', 'Ritmo do mês'], ['seuano', 'Seu ano'], ['resumo', 'Resumo do mês'], ['atividade', 'Atividade'], ['calendario', 'Mês dia a dia', 0], ['semana', 'Dia que mais gasta', 0], ['maior', 'Maior gasto', 0], ['globo', 'Seu universo', 0], ['saude', 'Saúde financeira', 0], ['contas', 'Contas a pagar', 0], ['limite', 'Limite do mês', 0], ['meta', 'Meta de investimento', 0], ['cartoes', 'Seus cartões', 0], ['proventos', 'Proventos', 0]],
+  inicio: [['sonho', 'Meu sonho'], ['disp', 'Dá para investir'], ['sequencia', 'Sequência de meses'], ['historico', 'Patrimônio ano a ano'], ['aviso', 'O que o assistente notou'], ['ritmo', 'Ritmo do mês'], ['seuano', 'Seu ano'], ['resumo', 'Resumo do mês'], ['atividade', 'Atividade'], ['calendario', 'Mês dia a dia', 0], ['semana', 'Dia que mais gasta', 0], ['maior', 'Maior gasto', 0], ['globo', 'Seu universo', 0], ['saude', 'Saúde financeira', 0], ['contas', 'Contas a pagar', 0], ['limite', 'Limite do mês', 0], ['meta', 'Meta de investimento', 0], ['cartoes', 'Seus cartões', 0], ['proventos', 'Proventos', 0]],
   gastos: [['anel', 'Gastos por categoria'], ['onde', 'Para onde foi o dinheiro'], ['limites', 'Limites por área'], ['cartoes', 'Seus cartões'], ['ultimos', 'Últimos gastos']],
   investir: [['patr', 'Evolução do patrimônio'], ['meta', 'Meta e disponível'], ['sonhos', 'Seus sonhos'], ['comp', 'Como está dividido'], ['feitos', 'Investido no período']],
 };
@@ -177,30 +179,37 @@ function basOrdAcao(act, ds) {
 }
 
 /* ---- Início: o patrimônio total, o período, as ações do dia a dia e os blocos do cliente ---- */
+const basAvisoNivel = () => { const n = (typeof notifLista === 'function' ? notifLista() : []).filter((x) => !x.lida); return n.some((x) => x.nivel === 'critico') ? ' vivo-critico' : n.some((x) => x.nivel === 'alerta') ? ' vivo-alerta' : ''; };
 const basAvisosNovos = () => (typeof notifLista === 'function' ? notifLista().filter((n) => !n.lida).length : 0);
 function basInicio() {
   const C = S.C; const p = S.plan; const pr = S.profile; const j = basJan(); const ent = basSomaJ(C.receita); const sai = basSomaJ(C.despesas); const sob = basSomaJ(C.investAlocado);
   const D = E.disponivelAporte({ C, mes: j.de, ate: j.ate, metaMes: C.metaAporteMes }); const V = basVarPatr(C); const av = basAvisosNovos();
   const nome = (pr.apelido || pr.nome || '').split(/\s+/)[0];
   const secs = {};
-  const hero = `<section class="bas-noite">
+  // recorde: o patrimônio do fim do período é o maior já registrado (meses anteriores deste ano e o fim dos anos anteriores)
+  const antes = C.patrimonio.slice(0, j.ate).concat((histDados().anos || []).filter((l) => l.ano < S.year && l.preenchido).map((l) => l.patrimonioFim));
+  const rec = antes.length > 0 && C.patrimonio[j.ate] > Math.max(...antes) + 0.5;
+  // fundo do painel pela hora do dia: manhã, tarde ou noite
+  const hr = new Date().getHours(); const fase = hr >= 5 && hr < 12 ? 'manha' : hr >= 12 && hr < 18 ? 'tarde' : 'noite';
+  const hero = `<section class="bas-noite" data-fase="${fase}"><span class="bas-noite-pts" aria-hidden="true"></span>
     <header class="bas-noite-h"><button class="bas-eu-m" ${basIr('perfil')} aria-label="Meu perfil">${avatarHtml(pr)}<span class="bas-eu-t"><small>${esc(saudacaoHora())},</small><b>${esc(nome || 'você')}${basPago() ? `<em class="bas-plano-chip">${esc(nomePlano(planoAtual()))}</em>` : ''}</b></span></button>
-      <span class="bas-noite-r"><button class="bell ia-btn" ${basIr('ia')} aria-label="Assistente${av ? `: ${av} avisos novos` : ''}" title="Assistente">${IA_ICONE}${av ? `<span class="bell-n" aria-hidden="true">${av > 9 ? '9+' : av}</span>` : ''}</button>${typeof aberturaPode === 'function' && aberturaPode() ? `<button class="bell bas-globo-btn" data-act="bas-globo" aria-label="Abrir o globo do patrimônio" title="Seu universo">${I_GLOBO}</button>` : ''}${olhoHtml()}</span></header>
+      <span class="bas-noite-r"><button class="bell ia-btn${basAvisoNivel()}" ${basIr('ia')} aria-label="Assistente${av ? `: ${av} avisos novos` : ''}" title="Assistente">${IA_ICONE}${av ? `<span class="bell-n" aria-hidden="true">${av > 9 ? '9+' : av}</span>` : ''}</button>${typeof aberturaPode === 'function' && aberturaPode() ? `<button class="bell bas-globo-btn" data-act="bas-globo" aria-label="Abrir o globo do patrimônio" title="Seu universo">${I_GLOBO}</button>` : ''}${olhoHtml()}</span></header>
     <div class="bas-noite-p">${basPerPill(true)}</div>
-    <small class="bas-noite-k">Patrimônio total</small><b class="bas-noite-v brilha${brl(C.patrimonio[j.ate]).length > 13 ? ' longo' : ''}">${basCent(C.patrimonio[j.ate])}</b>
+    <small class="bas-noite-k">Patrimônio total${rec ? ' <span class="bas-recorde">✦ Recorde</span>' : ''}</small><b class="bas-noite-v brilha${rec ? ' recorde' : ''}${brl(C.patrimonio[j.ate]).length > 13 ? ' longo' : ''}" data-conta="${C.patrimonio[j.ate]}">${basCent(C.patrimonio[j.ate])}</b>
     ${V.va != null ? `<p class="bas-noite-s"><em class="${V.dif >= 0 ? 'pos' : 'neg'}">${V.dif >= 0 ? '↗ +' : '↘ −'}${brl0(Math.abs(V.dif))} (${pct(Math.abs(V.va), 1)})</em> ${basJanFrase()}</p>` : ''}
     <div class="bas-noite-par"><button ${basIr('entradas')}><small>Entrou</small><b>${basCent(ent)}</b></button><button data-act="bas-aba" data-v="gastos"><small>Saiu</small><b>${basCent(sai)}</b></button></div>
     <div class="bas-bts"><button class="bas-bt" ${basIr('gasto')}><span class="bas-bt-ic" aria-hidden="true">${I.despesas}</span><span class="bas-bt-t"><b>Novo gasto</b><small>O que saiu</small></span></button><button class="bas-bt prim" ${basIrInv()}><span class="bas-bt-ic" aria-hidden="true">${I.inv}</span><span class="bas-bt-t"><b>Investimento</b><small>Aplicar, resgatar</small></span></button></div></section>`;
   const g = objFoco(objAnalise());
-  secs.sonho = `<button class="card bas-sonho" ${basIr('sonhos')}>${g ? `<span class="bas-sonho-l">${objIcone(g, 0)}${basNome(esc(objNomeDe(g)), `${brl0(g.saldo)} de ${brl0(g.valor)}`)}<b class="bas-pct">${pct(g.progresso)}</b></span>${basBarra(g.progresso)}`
+  secs.sonho = `<button class="card bas-sonho" ${basIr('sonhos')}>${g ? `<span class="bas-sonho-l">${objIcone(g, 0)}${basNome(esc(objNomeDe(g)), `${brl0(g.saldo)} de ${brl0(g.valor)}`)}<b class="bas-pct">${pct(g.progresso)}</b></span>${basLinhaSonho(g.progresso)}`
     : `<span class="bas-sonho-l"><span class="obj-ic" aria-hidden="true">${I.plus}</span>${basNome('Qual é o seu sonho?', 'Dê um nome e acompanhe quanto falta')}${I.chev}</span>`}</button>`;
+  secs.sequencia = basSequenciaHtml();
   secs.disp = basCard(`<div class="bas-disp"><span class="bas-n"><small class="bas-k">Dá para investir ${j.n > 1 ? basJanFrase() : 'agora'}</small><b class="bas-big md">${basCent(D.disponivel)}</b></span>${D.disponivel > 0.005 ? `<button class="btn primary bas-cta" ${basIrInv()}>Aplicar</button>` : ''}</div>
     <p class="bas-p">${voz(D.disponivel > 0.005 ? 'bas_disp_sim' : D.sobra > 0.005 ? 'bas_disp_tudo' : !(ent > 0) && !(sai > 0) ? 'bas_vazio' : 'bas_disp_nao')}</p>`);
   const ents = j.n === 1 ? p.rendas.filter((r) => +r.valores[j.de] > 0.005).map((r) => basRow(basIr('entrada', { id: r.id }), I_ENTRADA, esc(r.nome), `Entrada · ${MES_LONGO[j.de]}`, `<b class="pos">+${basCent(r.valores[j.de])}</b>`)) : [];
   const ativ = ents.concat(basLancJan().slice(0, 6).map(basLancLinha)).slice(0, 7);
   secs.atividade = basSecao(j.n === 1 ? 'Atividade do mês' : 'Atividade do período', '<button class="lnk strong" data-act="bas-aba" data-v="gastos">Ver tudo</button>', ativ.length ? `<ul class="bas-ativ">${ativ.join('')}</ul>` : basCard(basVazio(voz('bas_vazio'))));
   basExtrasInicio(secs); basWidgetsInicio(secs);
-  const sobe = ['sonho', 'disp', 'saude', 'globo', 'limite', 'meta', 'historico', 'aviso', 'ritmo', 'maior', 'seuano', 'resumo'].includes(basOrdemDe('inicio').find((id) => !basOculto('inicio', id)));
+  const sobe = ['sonho', 'disp', 'sequencia', 'saude', 'globo', 'limite', 'meta', 'historico', 'aviso', 'ritmo', 'maior', 'seuano', 'resumo'].includes(basOrdemDe('inicio').find((id) => !basOculto('inicio', id)));
   return `${hero.replace('class="bas-noite"', `class="bas-noite${sobe ? ' sobe' : ''}"`)}<div class="bas-secs${sobe ? ' sobe' : ''}">${basOrdenar('inicio', secs)}</div>${basOrganizarBtn('inicio')}`;
 }
 // entradas do período: lista e a nova entrada (o botão Entrou do Início abre aqui)
@@ -290,10 +299,10 @@ function basEvLigar() {
   const ev = document.querySelector('.bas-ev'); if (!ev || ev.dataset.on) return; ev.dataset.on = '1';
   const g = ev.querySelector('.bas-ev-g'); const pts = JSON.parse(ev.dataset.pts); const dd = JSON.parse(ev.dataset.d); const W = +ev.dataset.w; const H = +ev.dataset.h;
   const ponto = ev.querySelector('.bas-ev-p'); const guia = ev.querySelector('.bas-ev-guia'); const k = ev.querySelector('[data-ev="k"]'); const v = ev.querySelector('[data-ev="v"]');
-  const k0 = k.textContent; const v0 = v.innerHTML; let ult = -1;
+  const k0 = k.textContent; const v0 = v.innerHTML; let ult = -1; const topo = pts.reduce((b, p, n) => (p[1] < pts[b][1] ? n : b), 0);
   const mover = (e) => { const r = g.getBoundingClientRect(); const x = ((e.clientX - r.left) / r.width) * W; let i = 0; pts.forEach((p, n) => { if (Math.abs(p[0] - x) < Math.abs(pts[i][0] - x)) i = n; });
     if (i === ult) return; ult = i; const L = (pts[i][0] / W) * 100; ponto.style.left = L + '%'; ponto.style.top = (pts[i][1] / H) * 100 + '%'; guia.style.left = L + '%'; ev.classList.add('arrasta');
-    k.textContent = `Patrimônio em ${dd[i][0]}`; v.textContent = dd[i][1]; basSom('toque'); };
+    k.textContent = `Patrimônio em ${dd[i][0]}`; v.textContent = dd[i][1]; basSom('toque'); ponto.classList.toggle('topo', i === topo); if (i === topo) basVibra(14); };
   const soltar = () => { ev.classList.remove('arrasta'); ult = -1; k.textContent = k0; v.innerHTML = v0; };
   g.addEventListener('pointerdown', (e) => { g.setPointerCapture(e.pointerId); mover(e); }); g.addEventListener('pointermove', (e) => { if (e.buttons || e.pointerType === 'mouse') mover(e); });
   g.addEventListener('pointerup', soltar); g.addEventListener('pointercancel', soltar); g.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') soltar(); });
@@ -345,10 +354,32 @@ function basTelaIa() {
 }
 
 // depois de cada desenho do App (chamado no drawAll): objeto 3D, gráfico que segue o dedo e o cartão que inclina
+// contagem: o patrimônio do Início sobe até o valor na primeira abertura da sessão (com o olho aberto) e, no recorde, ganha um brilho
+function basContar() {
+  const el = document.querySelector('.bas-noite-v[data-conta]'); if (!el || S.basContou || oculto() || matchMedia('(prefers-reduced-motion: reduce)').matches) return; S.basContou = true;
+  const alvo = +el.dataset.conta || 0; const de = alvo * 0.82; const t0 = performance.now(); const dur = 1100;
+  const passo = (t) => { const k = Math.min(1, (t - t0) / dur); const e = 1 - Math.pow(1 - k, 3); el.innerHTML = basCent(de + (alvo - de) * e); if (k < 1 && el.isConnected) requestAnimationFrame(passo); else if (el.classList.contains('recorde')) { el.classList.add('celebra'); basVibra([10, 40, 10]); } };
+  requestAnimationFrame(passo);
+}
+// cartões 3D: inclinam com o dedo ou o mouse e com o movimento do celular (no iPhone, a permissão é pedida no primeiro toque num cartão)
+let basGiroOk = false;
+function basGiroCartoes(e) { const cs = document.querySelectorAll('.bas-cc-c:not(.bas-cc-mini), .bas-membro'); if (!cs.length || e.gamma == null) return;
+  const ry = Math.max(-1, Math.min(1, e.gamma / 30)) * 10; const rx = Math.max(-1, Math.min(1, ((e.beta || 45) - 45) / 30)) * -8;
+  cs.forEach((c) => { if (c.classList.contains('mexe')) return; c.style.setProperty('--ry', ry.toFixed(2) + 'deg'); c.style.setProperty('--rx', rx.toFixed(2) + 'deg'); c.style.setProperty('--hx', (50 + ry * 4).toFixed(1) + '%'); }); }
+function basCartoes3d() {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (!basGiroOk && window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission !== 'function') { basGiroOk = true; window.addEventListener('deviceorientation', basGiroCartoes, { passive: true }); }
+  document.querySelectorAll('.bas-cc-c:not(.bas-cc-mini)').forEach((c) => { if (c.dataset.tilt) return; c.dataset.tilt = '1';
+    const mover = (e) => { const r = c.getBoundingClientRect(); const x = (e.clientX - r.left) / r.width - 0.5; const y = (e.clientY - r.top) / r.height - 0.5;
+      c.style.setProperty('--ry', (x * 18).toFixed(2) + 'deg'); c.style.setProperty('--rx', (-y * 14).toFixed(2) + 'deg'); c.style.setProperty('--hx', ((x + 0.5) * 100).toFixed(1) + '%'); c.classList.add('mexe'); };
+    const soltar = () => { c.classList.remove('mexe'); ['--rx', '--ry'].forEach((k) => c.style.setProperty(k, '0deg')); };
+    c.addEventListener('pointerdown', () => { if (!basGiroOk && window.DeviceOrientationEvent && typeof DeviceOrientationEvent.requestPermission === 'function') DeviceOrientationEvent.requestPermission().then((r) => { if (r === 'granted' && !basGiroOk) { basGiroOk = true; window.addEventListener('deviceorientation', basGiroCartoes, { passive: true }); } }).catch(() => {}); }, { passive: true });
+    c.addEventListener('pointermove', (e) => { if (e.pointerType === 'mouse') mover(e); }); c.addEventListener('pointerleave', soltar); c.addEventListener('pointerup', soltar); c.addEventListener('pointercancel', soltar); });
+}
 function basDesenhar() {
   const st = document.getElementById('bas-o3');
   if (st) { const falhou = () => st.classList.add('sem-3d'); if (typeof o3Ligar === 'function') o3Ligar(st, st.dataset.tipo, falhou); else falhou(); }
-  basEvLigar(); basOrgLigar(); basAlSoma(); basHlLigar();
+  basEvLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basContar(); basCartoes3d();
   const c = document.querySelector('.bas-membro');
   if (c && !c.dataset.tilt && !matchMedia('(prefers-reduced-motion: reduce)').matches) { c.dataset.tilt = '1';
     // inclina 1:1 com o dedo ou o mouse, a partir de onde tocou; ao soltar, volta com mola (transição em CSS)
@@ -727,14 +758,15 @@ function basAnalise(m, de, ate) {
 // curva suave (Catmull-Rom para Bézier) por uma lista de pontos [x, y]
 const basCurva = (pts) => pts.map((p0, i) => { if (!i) return `M${p0[0].toFixed(1)} ${p0[1].toFixed(1)}`; const a = pts[i - 2] || pts[i - 1]; const b = pts[i - 1]; const d = pts[i + 1] || p0;
   return `C${(b[0] + (p0[0] - a[0]) / 6).toFixed(1)} ${(b[1] + (p0[1] - a[1]) / 6).toFixed(1)} ${(p0[0] - (d[0] - b[0]) / 6).toFixed(1)} ${(p0[1] - (d[1] - b[1]) / 6).toFixed(1)} ${p0[0].toFixed(1)} ${p0[1].toFixed(1)}`; }).join(' ');
+const basVibra = (ms) => { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) { /* sem vibração */ } };
 function basHlLigar() {
   document.querySelectorAll('.bas-hl-g').forEach((g) => { if (g.dataset.lig) return; g.dataset.lig = '1';
     const pts = JSON.parse(g.dataset.pts || '[]'); const W = +g.dataset.w; const H = +g.dataset.h; const tips = [...g.querySelector('.bas-hl-tips').content.children].map((d) => d.innerHTML);
-    const tip = g.querySelector('.bas-hl-tip'); const guia = g.querySelector('.bas-hl-guia'); const dots = g.querySelectorAll('.bas-hl-d'); let ultI = -1;
+    const tip = g.querySelector('.bas-hl-tip'); const guia = g.querySelector('.bas-hl-guia'); const dots = g.querySelectorAll('.bas-hl-d'); let ultI = -1; const topo = pts.reduce((b, q, n) => (q[1] < pts[b][1] ? n : b), 0);
     const mostra = (e) => { const r = g.getBoundingClientRect(); const xv = ((e.clientX - r.left) / r.width) * W; let i = 0; pts.forEach((q, k) => { if (Math.abs(q[0] - xv) < Math.abs(pts[i][0] - xv)) i = k; });
       if (i === ultI) return; ultI = i; const xp = (pts[i][0] / W) * 100; const yp = (pts[i][1] / H) * 100;
       guia.style.left = xp + '%'; g.classList.add('ativo'); dots.forEach((d, k) => d.classList.toggle('on', k === i));
-      tip.innerHTML = tips[i]; tip.hidden = false; tip.style.left = Math.min(78, Math.max(22, xp)) + '%'; tip.style.top = Math.max(0, yp - 6) + '%'; if (navigator.vibrate && e.pointerType === 'touch') try { navigator.vibrate(4); } catch (er) { /* sem vibração */ } };
+      tip.innerHTML = tips[i]; tip.hidden = false; tip.style.left = Math.min(78, Math.max(22, xp)) + '%'; tip.style.top = Math.max(0, yp - 6) + '%'; tip.classList.toggle('topo', i === topo); if (i === topo) basVibra(14); };
     g.addEventListener('pointerdown', (e) => { try { g.setPointerCapture(e.pointerId); } catch (er) { /* sintético */ } ultI = -1; mostra(e); });
     g.addEventListener('pointermove', (e) => { if (e.pointerType === 'mouse' || g.hasPointerCapture && g.hasPointerCapture(e.pointerId)) mostra(e); });
     g.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') { g.classList.remove('ativo'); tip.hidden = true; ultI = -1; } });
@@ -774,6 +806,17 @@ function basTelaAnoHist(o) {
       ${kpi('Guardou', L.poupanca != null ? pct(L.poupanca) : '–', cmp(L.poupanca, A && A.poupanca, true, true))}${kpi('Investido', brl0(apl), cmp(apl, aplA, true))}${kpi('Proventos', brl0(L.proventos), cmp(L.proventos, A && A.proventos, true))}</div>`)}
     ${basSecao('O que os números dizem', '', `<ul class="bas-ah-fr">${fr.map(([t, x0]) => `<li class="${t}">${x0}</li>`).join('')}</ul>`)}
     ${L.parcial ? `<p class="bas-disc keep">${ano} em andamento: valores até ${MES_LONGO[L.meses - 1]}. As comparações com ${A ? A.ano : 'o ano anterior'} usam o ano dele inteiro.</p>` : ''}<p class="bas-disc keep">Patrimônio a custo: o que você informou ajustado pelos aportes, sem a variação de mercado.</p>`);
+}
+// sequência: meses seguidos com aporte (E.sequenciaMeses, testada), somando o ano anterior; anel de 12 segmentos que acendem
+function basSequenciaHtml() {
+  const apl = (pl) => { const v = new Array(12).fill(0); ((pl && pl.ativos) || []).forEach((a) => (a.ap || []).forEach((x, m) => { v[m] += +x || 0; })); return v; };
+  const ult = S.year === NOW_Y ? NOW_M : 11; const vals = apl(S.plans[S.year - 1]).concat(apl(S.plan).slice(0, ult + 1)); const Q = E.sequenciaMeses(vals, vals.length - 1);
+  const n = Q.atual; const R = 46; const C0 = 2 * Math.PI * R; const seg = C0 / 12;
+  const arcos = Array.from({ length: 12 }, (_, k) => `<circle class="bas-sq-s${k < n ? ' on' : ''}" cx="60" cy="60" r="${R}" stroke-dasharray="${(seg - 4).toFixed(2)} ${(C0 - seg + 4).toFixed(2)}" stroke-dashoffset="${(-k * seg).toFixed(2)}" style="--i:${k}"/>`).join('');
+  const txt = n === 0 ? (Q.maior > 0 ? `Sua maior sequência foi de ${Q.maior} ${Q.maior === 1 ? 'mês' : 'meses'}. Um aporte este mês recomeça a contagem.` : 'Faça um aporte este mês e comece a sua sequência.')
+    : `${Q.contaHoje ? 'Este mês já conta.' : `Falta o aporte de ${MES_LONGO[ult]} para manter.`}${Q.maior > n ? ` Seu recorde: ${Q.maior} meses.` : n > 1 ? ' É o seu recorde!' : ''}`;
+  return `<button class="card bas-sq${n >= 3 ? ' forte' : ''}" ${basIrInv()}><span class="bas-sq-anel" aria-hidden="true"><svg viewBox="0 0 120 120"><circle class="bas-sq-f" cx="60" cy="60" r="${R}"/>${arcos}</svg>${n > 0 ? '<i class="bas-sq-orb"></i>' : ''}<b>${n}</b></span>
+    <span class="bas-n"><small>Sequência</small><b>${n === 0 ? 'Comece hoje' : `${n} ${n === 1 ? 'mês' : 'meses'} seguidos investindo`}</b><small class="bas-sq-t">${txt}</small></span></button>`;
 }
 function basWidgetsInicio(secs) {
   const C = S.C; const j = basJan();

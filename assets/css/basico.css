@@ -1169,3 +1169,59 @@ button.bas-cc-c { border: 0; font: inherit; text-align: left; cursor: pointer; t
 .bas-ah-fr li.pos::before { background: var(--pos); box-shadow: 0 0 0 4px color-mix(in srgb, var(--pos) 20%, transparent); } .bas-ah-fr li.neg::before { background: var(--neg); box-shadow: 0 0 0 4px color-mix(in srgb, var(--neg) 20%, transparent); }
 .bas-ah-fr li.inv::before { background: var(--accent); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 20%, transparent); } .bas-ah-fr li.info::before { background: var(--warn); box-shadow: 0 0 0 4px color-mix(in srgb, var(--warn) 20%, transparent); }
 @media (prefers-reduced-motion: reduce) { .bas-cc-c[data-m="holo"] { animation: none; } .bas-cc-prev, .bas-cc-c.bas-cc-mini { transition: none; } }
+
+/* ---------- rodada 12: recorde, sequência, cartões 3D, assistente vivo, fundo pela hora, linha do sonho ---------- */
+/* recorde do patrimônio: selo dourado e um brilho que passa pelo número quando a contagem termina */
+.bas-recorde { display: inline-block; margin-left: 6px; padding: 2px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 700; color: #2b2006; background: linear-gradient(120deg, #e8c46a, #fff1b8 45%, #d8a93e); box-shadow: 0 0 14px -2px rgba(242, 201, 76, .7); vertical-align: 1px; }
+.bas-noite-v.recorde.celebra { background: linear-gradient(110deg, var(--bas-noite-ink) 40%, #ffe7a3 50%, var(--bas-noite-ink) 60%) 0 0 / 250% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: bas-rec 1.6s var(--ease-out) 2; }
+.bas-noite-v.recorde.celebra .bas-cent { color: transparent; }
+@keyframes bas-rec { from { background-position: 120% 0; } to { background-position: -20% 0; } }
+/* sequência: anel de 12 segmentos que acendem, um ponto de luz que orbita e o número no centro */
+.card.bas-sq { width: 100%; display: flex; align-items: center; gap: 16px; margin-top: 14px; padding: 16px; border-radius: 24px; color: inherit; font: inherit; text-align: left; }
+.bas-sq-anel { position: relative; width: 84px; height: 84px; flex: none; display: grid; place-items: center; }
+.bas .bas-sq-anel svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); overflow: visible; }
+.bas-sq-f { fill: none; stroke: color-mix(in srgb, var(--ink) 8%, transparent); stroke-width: 9; }
+.bas-sq-s { fill: none; stroke: color-mix(in srgb, var(--ink) 12%, transparent); stroke-width: 9; stroke-linecap: round; }
+.bas-sq-s.on { stroke: var(--accent); filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 70%, transparent)); animation: bas-sq-acende 600ms var(--ease-out) both; animation-delay: calc(var(--i) * 80ms); }
+.bas-sq.forte .bas-sq-s.on { animation: bas-sq-acende 600ms var(--ease-out) both, bas-sq-pulsa 2.4s ease-in-out infinite; animation-delay: calc(var(--i) * 80ms), calc(var(--i) * 120ms); }
+@keyframes bas-sq-acende { from { opacity: 0; } }
+@keyframes bas-sq-pulsa { 0%, 100% { filter: drop-shadow(0 0 3px color-mix(in srgb, var(--accent) 50%, transparent)); } 50% { filter: drop-shadow(0 0 9px var(--accent)); } }
+.bas-sq-orb { position: absolute; inset: 0; border-radius: 50%; animation: bas-giro 3.2s linear infinite; }
+.bas-sq-orb::before { content: ''; position: absolute; top: 3px; left: 50%; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%; background: #fff; box-shadow: 0 0 10px 3px var(--accent); }
+.bas-sq-anel b { font-size: 28px; font-weight: 800; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.bas-sq .bas-n > small:first-child { font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--accent); }
+.bas-sq .bas-n b { font-size: 17px; white-space: normal; } .bas-sq-t { font-size: 13px !important; line-height: 1.4; color: var(--ink-2) !important; white-space: normal !important; }
+/* cartões 3D: inclinam (dedo, mouse ou o movimento do celular) e o brilho acompanha */
+.bas-cc-c:not(.bas-cc-mini) { transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform 600ms cubic-bezier(.2, .8, .2, 1); will-change: transform; }
+.bas-cc-c.mexe { transition: transform 80ms linear; }
+button.bas-cc-c:active { transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) scale(.97); }
+.bas-cc-c:not(.bas-cc-mini)::after { background: radial-gradient(60% 80% at var(--hx, 30%) 20%, rgba(255, 255, 255, .22), transparent 60%), linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, .12) 45%, transparent 60%); }
+/* assistente vivo: com aviso importante, o selo ganha a cor do aviso e pulsa */
+.ia-btn.vivo-alerta, .ia-btn.vivo-critico { --vivo: var(--warn); animation: bas-ia-vivo 1.8s ease-in-out infinite; }
+.ia-btn.vivo-critico { --vivo: var(--neg); }
+.ia-btn.vivo-alerta::after, .ia-btn.vivo-critico::after { content: ''; position: absolute; inset: -3px; border-radius: 50%; box-shadow: 0 0 0 2px var(--vivo); pointer-events: none; }
+@keyframes bas-ia-vivo { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--vivo) 55%, transparent); } 50% { box-shadow: 0 0 0 7px color-mix(in srgb, var(--vivo) 0%, transparent), 0 0 18px -2px var(--vivo); } }
+/* fundo do Início: pontos que flutuam e brilham devagar e cores pela hora do dia */
+.bas-noite-pts { position: absolute; inset: -20px; z-index: -1; pointer-events: none; background: radial-gradient(rgba(255, 255, 255, .5) 1px, transparent 1.6px) 0 0 / 46px 46px, radial-gradient(rgba(255, 255, 255, .28) 1px, transparent 1.6px) 23px 17px / 64px 64px;
+  -webkit-mask: linear-gradient(#000, transparent 80%); mask: linear-gradient(#000, transparent 80%); animation: bas-pts 38s linear infinite, bas-pts-b 6s ease-in-out infinite; }
+@keyframes bas-pts { to { background-position: 46px -46px, 87px -47px; } }
+@keyframes bas-pts-b { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+.bas-noite[data-fase="manha"] { background: radial-gradient(110% 75% at 88% -12%, color-mix(in srgb, #ffb36b 52%, transparent), transparent 62%), radial-gradient(90% 70% at -5% 112%, color-mix(in srgb, #ff7aa8 30%, transparent), transparent 60%), radial-gradient(70% 50% at 50% 0%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%), var(--bas-noite); }
+.bas-noite[data-fase="tarde"] { background: radial-gradient(110% 75% at 88% -12%, color-mix(in srgb, #38bdf8 46%, transparent), transparent 62%), radial-gradient(90% 70% at -5% 112%, color-mix(in srgb, var(--accent) 30%, transparent), transparent 60%), var(--bas-noite); }
+.bas-noite[data-fase="noite"] { background: radial-gradient(110% 75% at 88% -12%, color-mix(in srgb, #7c5cff 44%, transparent), transparent 62%), radial-gradient(90% 70% at -5% 112%, color-mix(in srgb, var(--accent) 26%, transparent), transparent 60%), var(--bas-noite); }
+.bas-noite[data-fase] { background-size: 160% 160%, 160% 160%, auto; } .bas-noite[data-fase="manha"] { background-size: 160% 160%, 160% 160%, 120% 120%, auto; }
+/* linha do sonho: trilha que enche e marcos que acendem */
+.bas-ls { position: relative; display: block; height: 30px; margin: 12px 8px 2px; }
+.bas-ls-t { position: absolute; left: 0; right: 0; top: 6px; height: 6px; border-radius: 99px; background: color-mix(in srgb, var(--ink) 10%, transparent); overflow: hidden; }
+.bas-ls-t i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 70%, #fff), var(--accent)); box-shadow: 0 0 10px var(--accent); }
+.bas-ls-m { position: absolute; top: 0; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.bas-ls-m b { width: 18px; height: 18px; display: grid; place-items: center; border-radius: 50%; font-size: 10px; color: var(--ink-3); background: var(--surface); box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--ink) 18%, transparent); transition: background-color 300ms ease, box-shadow 300ms ease; }
+.bas-ls-m small { font-size: 10px; font-weight: 650; color: var(--ink-3); white-space: nowrap; }
+.bas-ls-m.on b { color: var(--on-accent); background: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent), 0 0 12px var(--accent); }
+.bas-ls-m.on small { color: var(--accent); } .bas-ls-m:last-child { transform: translateX(-90%); }
+/* vibração no topo: o ponto mais alto ganha destaque */
+.bas-ev-p.topo { box-shadow: 0 0 0 5px color-mix(in srgb, var(--pos) 55%, transparent), 0 0 22px var(--pos); } .bas-hl-tip.topo { box-shadow: var(--shadow-lg), inset 0 0 0 1.5px var(--pos); }
+@media (prefers-reduced-motion: reduce) {
+  .bas-noite-pts, .bas-sq-s.on, .bas-sq.forte .bas-sq-s.on, .bas-sq-orb, .ia-btn.vivo-alerta, .ia-btn.vivo-critico, .bas-noite-v.recorde.celebra { animation: none; }
+  .bas-cc-c:not(.bas-cc-mini), .bas-ls-m b { transition: none; }
+}
