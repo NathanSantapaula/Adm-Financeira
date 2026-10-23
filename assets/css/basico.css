@@ -1201,9 +1201,11 @@ button.bas-cc-c:active { transform: perspective(900px) rotateX(var(--rx, 0deg)) 
 }
 
 /* fundo do Início: os pontinhos da própria textura flutuam devagar e cintilam (sem camada nova) */
-.bas-noite::before { animation: bas-pts-move 40s linear infinite, bas-pts-luz 5s ease-in-out infinite; }
-@keyframes bas-pts-move { to { background-position: 18px -36px; } }
-@keyframes bas-pts-luz { 0%, 100% { opacity: .65; } 50% { opacity: 1; } }
+/* duas camadas dos mesmos pontinhos andando em sentidos opostos (parallax) e um cintilar visível; o desenho se repete a cada quadro, sem salto */
+.bas-noite::before { background: radial-gradient(rgba(255, 255, 255, .13) 1px, transparent 1.4px) 0 0 / 18px 18px, radial-gradient(rgba(255, 255, 255, .34) 1.1px, transparent 1.7px) 9px 9px / 54px 54px;
+  animation: bas-pts-move 9s linear infinite, bas-pts-luz 3.6s ease-in-out infinite; }
+@keyframes bas-pts-move { to { background-position: 18px -18px, -45px 63px; } }
+@keyframes bas-pts-luz { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
 /* recorde discreto: uma nota na linha da variação */
 .bas-rec-t { font-size: 12.5px; font-weight: 650; background: linear-gradient(90deg, #f6d77a, #fff1c4, #f6d77a); -webkit-background-clip: text; background-clip: text; color: transparent; }
 /* sequência em constelação: estrelas que acendem e se ligam; a mais nova pulsa */
