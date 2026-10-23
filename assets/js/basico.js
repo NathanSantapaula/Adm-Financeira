@@ -39,8 +39,6 @@ const basAbas = () => BAS_ABAS;
 const basAba = () => (basAbas().some((a) => a[0] === S.basAba) ? S.basAba : 'inicio');
 const basPilha = () => (S.basPilha = S.basPilha || []);
 const basTopoPilha = () => basPilha()[basPilha().length - 1] || null;
-// linha do tempo até o sonho: a trilha enche e os marcos de 25, 50, 75 e 100% acendem quando alcançados
-const basLinhaSonho = (f) => { const p = Math.max(0, Math.min(1, f)); return `<span class="bas-ls" aria-hidden="true"><span class="bas-ls-t"><i style="width:${(p * 100).toFixed(1)}%"></i></span>${[0.25, 0.5, 0.75, 1].map((m) => `<span class="bas-ls-m${p >= m - 1e-9 ? ' on' : ''}" style="left:${m * 100}%"><b>${m === 1 ? '★' : ''}</b><small>${m * 100}%</small></span>`).join('')}</span>`; };
 const basBarra = (f) => `<span class="bas-bar" aria-hidden="true"><i style="width:${(Math.max(0, Math.min(1, f)) * 100).toFixed(1)}%"></i></span>`;
 const basCard = (corpo, cls) => `<section class="card bas-card${cls ? ' ' + cls : ''}">${corpo}</section>`;
 const basVazio = (t) => `<p class="bas-vz">${t}</p>`;
@@ -191,16 +189,16 @@ function basInicio() {
   const rec = antes.length > 0 && C.patrimonio[j.ate] > Math.max(...antes) + 0.5;
   // fundo do painel pela hora do dia: manhã, tarde ou noite
   const hr = new Date().getHours(); const fase = hr >= 5 && hr < 12 ? 'manha' : hr >= 12 && hr < 18 ? 'tarde' : 'noite';
-  const hero = `<section class="bas-noite" data-fase="${fase}"><span class="bas-noite-pts" aria-hidden="true"></span>
+  const hero = `<section class="bas-noite" data-fase="${fase}">
     <header class="bas-noite-h"><button class="bas-eu-m" ${basIr('perfil')} aria-label="Meu perfil">${avatarHtml(pr)}<span class="bas-eu-t"><small>${esc(saudacaoHora())},</small><b>${esc(nome || 'você')}${basPago() ? `<em class="bas-plano-chip">${esc(nomePlano(planoAtual()))}</em>` : ''}</b></span></button>
       <span class="bas-noite-r"><button class="bell ia-btn${basAvisoNivel()}" ${basIr('ia')} aria-label="Assistente${av ? `: ${av} avisos novos` : ''}" title="Assistente">${IA_ICONE}${av ? `<span class="bell-n" aria-hidden="true">${av > 9 ? '9+' : av}</span>` : ''}</button>${typeof aberturaPode === 'function' && aberturaPode() ? `<button class="bell bas-globo-btn" data-act="bas-globo" aria-label="Abrir o globo do patrimônio" title="Seu universo">${I_GLOBO}</button>` : ''}${olhoHtml()}</span></header>
     <div class="bas-noite-p">${basPerPill(true)}</div>
-    <small class="bas-noite-k">Patrimônio total${rec ? ' <span class="bas-recorde">✦ Recorde</span>' : ''}</small><b class="bas-noite-v brilha${rec ? ' recorde' : ''}${brl(C.patrimonio[j.ate]).length > 13 ? ' longo' : ''}" data-conta="${C.patrimonio[j.ate]}">${basCent(C.patrimonio[j.ate])}</b>
-    ${V.va != null ? `<p class="bas-noite-s"><em class="${V.dif >= 0 ? 'pos' : 'neg'}">${V.dif >= 0 ? '↗ +' : '↘ −'}${brl0(Math.abs(V.dif))} (${pct(Math.abs(V.va), 1)})</em> ${basJanFrase()}</p>` : ''}
+    <small class="bas-noite-k">Patrimônio total</small><b class="bas-noite-v brilha${rec ? ' recorde' : ''}${brl(C.patrimonio[j.ate]).length > 13 ? ' longo' : ''}" data-conta="${C.patrimonio[j.ate]}">${basCent(C.patrimonio[j.ate])}</b>
+    ${V.va != null ? `<p class="bas-noite-s"><em class="${V.dif >= 0 ? 'pos' : 'neg'}">${V.dif >= 0 ? '↗ +' : '↘ −'}${brl0(Math.abs(V.dif))} (${pct(Math.abs(V.va), 1)})</em> ${basJanFrase()}${rec ? ' <span class="bas-rec-t">· seu maior patrimônio</span>' : ''}</p>` : ''}
     <div class="bas-noite-par"><button ${basIr('entradas')}><small>Entrou</small><b>${basCent(ent)}</b></button><button data-act="bas-aba" data-v="gastos"><small>Saiu</small><b>${basCent(sai)}</b></button></div>
     <div class="bas-bts"><button class="bas-bt" ${basIr('gasto')}><span class="bas-bt-ic" aria-hidden="true">${I.despesas}</span><span class="bas-bt-t"><b>Novo gasto</b><small>O que saiu</small></span></button><button class="bas-bt prim" ${basIrInv()}><span class="bas-bt-ic" aria-hidden="true">${I.inv}</span><span class="bas-bt-t"><b>Investimento</b><small>Aplicar, resgatar</small></span></button></div></section>`;
   const g = objFoco(objAnalise());
-  secs.sonho = `<button class="card bas-sonho" ${basIr('sonhos')}>${g ? `<span class="bas-sonho-l">${objIcone(g, 0)}${basNome(esc(objNomeDe(g)), `${brl0(g.saldo)} de ${brl0(g.valor)}`)}<b class="bas-pct">${pct(g.progresso)}</b></span>${basLinhaSonho(g.progresso)}`
+  secs.sonho = `<button class="card bas-sonho" ${basIr('sonhos')}>${g ? `<span class="bas-sonho-l">${objIcone(g, 0)}${basNome(esc(objNomeDe(g)), `${brl0(g.saldo)} de ${brl0(g.valor)}`)}<b class="bas-pct">${pct(g.progresso)}</b></span>${basBarra(g.progresso)}`
     : `<span class="bas-sonho-l"><span class="obj-ic" aria-hidden="true">${I.plus}</span>${basNome('Qual é o seu sonho?', 'Dê um nome e acompanhe quanto falta')}${I.chev}</span>`}</button>`;
   secs.sequencia = basSequenciaHtml();
   secs.disp = basCard(`<div class="bas-disp"><span class="bas-n"><small class="bas-k">Dá para investir ${j.n > 1 ? basJanFrase() : 'agora'}</small><b class="bas-big md">${basCent(D.disponivel)}</b></span>${D.disponivel > 0.005 ? `<button class="btn primary bas-cta" ${basIrInv()}>Aplicar</button>` : ''}</div>
@@ -811,11 +809,14 @@ function basTelaAnoHist(o) {
 function basSequenciaHtml() {
   const apl = (pl) => { const v = new Array(12).fill(0); ((pl && pl.ativos) || []).forEach((a) => (a.ap || []).forEach((x, m) => { v[m] += +x || 0; })); return v; };
   const ult = S.year === NOW_Y ? NOW_M : 11; const vals = apl(S.plans[S.year - 1]).concat(apl(S.plan).slice(0, ult + 1)); const Q = E.sequenciaMeses(vals, vals.length - 1);
-  const n = Q.atual; const R = 46; const C0 = 2 * Math.PI * R; const seg = C0 / 12;
-  const arcos = Array.from({ length: 12 }, (_, k) => `<circle class="bas-sq-s${k < n ? ' on' : ''}" cx="60" cy="60" r="${R}" stroke-dasharray="${(seg - 4).toFixed(2)} ${(C0 - seg + 4).toFixed(2)}" stroke-dashoffset="${(-k * seg).toFixed(2)}" style="--i:${k}"/>`).join('');
-  const txt = n === 0 ? (Q.maior > 0 ? `Sua maior sequência foi de ${Q.maior} ${Q.maior === 1 ? 'mês' : 'meses'}. Um aporte este mês recomeça a contagem.` : 'Faça um aporte este mês e comece a sua sequência.')
-    : `${Q.contaHoje ? 'Este mês já conta.' : `Falta o aporte de ${MES_LONGO[ult]} para manter.`}${Q.maior > n ? ` Seu recorde: ${Q.maior} meses.` : n > 1 ? ' É o seu recorde!' : ''}`;
-  return `<button class="card bas-sq${n >= 3 ? ' forte' : ''}" ${basIrInv()}><span class="bas-sq-anel" aria-hidden="true"><svg viewBox="0 0 120 120"><circle class="bas-sq-f" cx="60" cy="60" r="${R}"/>${arcos}</svg>${n > 0 ? '<i class="bas-sq-orb"></i>' : ''}<b>${n}</b></span>
+  // constelação: 12 estrelas num caminho que sobe; cada mês seguido acende uma, as acesas se ligam e a mais nova pulsa
+  const n = Q.atual; const k = Math.min(n, 12); const P = [[8, 72], [21, 60], [33, 67], [45, 51], [57, 57], [66, 41], [79, 45], [88, 29], [100, 35], [108, 19], [120, 23], [126, 8]];
+  const caminho = (a) => a.map((q, i) => `${i ? 'L' : 'M'}${q[0]} ${q[1]}`).join(' ');
+  const ceu = `<svg viewBox="0 0 134 80" aria-hidden="true"><path class="bas-ct-p" d="${caminho(P)}"/>${k > 1 ? `<path class="bas-ct-l" d="${caminho(P.slice(0, k))}" pathLength="1"/>` : ''}
+    ${P.map((q, i) => `<circle class="bas-ct-e${i < k ? ' on' : ''}${i === k - 1 ? ' nova' : ''}" cx="${q[0]}" cy="${q[1]}" r="${i < k ? (i === k - 1 ? 3.6 : 2.6) : 1.6}" style="--i:${i}"/>`).join('')}</svg>`;
+  const txt = n === 0 ? (Q.maior > 0 ? `Sua maior sequência foi de ${Q.maior} ${Q.maior === 1 ? 'mês' : 'meses'}. Um aporte este mês acende a primeira estrela.` : 'Cada mês com aporte acende uma estrela. Comece este mês.')
+    : `${Q.contaHoje ? 'Este mês já brilha.' : `Falta o aporte de ${MES_LONGO[ult]} para acender a próxima.`}${Q.maior > n ? ` Seu recorde: ${Q.maior} meses.` : n > 1 ? ' É o seu recorde!' : ''}`;
+  return `<button class="card bas-sq${n >= 3 ? ' forte' : ''}" ${basIrInv()}><span class="bas-ct">${ceu}</span>
     <span class="bas-n"><small>Sequência</small><b>${n === 0 ? 'Comece hoje' : `${n} ${n === 1 ? 'mês' : 'meses'} seguidos investindo`}</b><small class="bas-sq-t">${txt}</small></span></button>`;
 }
 function basWidgetsInicio(secs) {
