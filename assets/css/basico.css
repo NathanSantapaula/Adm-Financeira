@@ -1603,7 +1603,8 @@ button.bas-esc-c { cursor: pointer; transition: transform 140ms var(--ease-out);
 .bas-gx-bt { width: 30px; height: 30px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: color-mix(in srgb, var(--ink) 7%, transparent); color: var(--ink-2); cursor: pointer; }
 .bas .bas-gx-bt svg { width: 16px; height: 16px; transform: rotate(-90deg); transition: transform 320ms var(--ease-out); } .bas .bas-gx-bt[aria-expanded="false"] svg { transform: rotate(90deg); }
 .bas-gx-w { display: grid; grid-template-rows: 1fr; transition: grid-template-rows 380ms var(--ease-out), opacity 300ms ease; }
-.bas-gx-w > .bas-gx { min-height: 0; overflow: hidden; padding: 2px 4px 12px; margin: -2px -4px -12px; }
+.bas-gx-w > .bas-gx-in { min-height: 0; overflow: hidden; display: grid; gap: 12px; padding: 2px 4px 12px; margin: -2px -4px -12px; }
+.bas-gx-in > .bas-sq-fila { margin: 0; }
 .bas-gx-w.fechada { grid-template-rows: 0fr; opacity: 0; }
 button.bas-gx-c { width: 100%; border: 0; font: inherit; color: inherit; text-align: left; cursor: pointer; transition: transform 160ms ease; } button.bas-gx-c:active { transform: scale(.97); }
 .bas-cs-nav { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 14px; font-size: 13px; font-weight: 600; color: var(--ink-2); font-variant-numeric: tabular-nums; }
@@ -1621,25 +1622,16 @@ button.bas-gx-c { width: 100%; border: 0; font: inherit; color: inherit; text-al
 .bas-cs-v i::after { content: ''; position: absolute; inset: 0 auto 0 0; width: var(--w); border-radius: inherit; background: var(--accent); }
 @media (prefers-reduced-motion: reduce) { .bas-gx-w, .bas .bas-gx-bt svg { transition: none; } .bas-cs-l li { animation: none; } }
 
-/* ---------- todos os meses: um anel por ano, como os anéis de atividade ---------- */
-.bas-an { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding: 0 16px; margin: 0 -16px; padding: 4px 16px 14px; scrollbar-width: none; }
-.bas-an::-webkit-scrollbar { display: none; }
-.bas-an-c { position: relative; isolation: isolate; flex: 0 0 84%; display: flex; flex-direction: column; align-items: center; padding: 18px 16px 14px; border-radius: 28px; background: var(--surface); box-shadow: var(--shadow); scroll-snap-align: start; overflow: hidden; }
-.bas-an-c::before { content: ''; position: absolute; inset: 0; z-index: -1; background: radial-gradient(70% 55% at 50% 36%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 70%); }
-.bas-an.um .bas-an-c { flex-basis: 100%; }
-.bas .bas-an-svg { width: min(230px, 100%); height: auto; overflow: visible; fill: none; stroke: none; }
-.bas .bas-an-t { fill: none; stroke: color-mix(in srgb, var(--ink) 8%, transparent); stroke-width: 15; } .bas .bas-an-t.fora { opacity: .35; }
-.bas .bas-an-s { fill: none; stroke-width: 15; pointer-events: stroke; cursor: pointer; transition: stroke-width 220ms var(--ease-out); }
-.bas .bas-an-s:not(.on) { stroke: transparent; }
-.bas .bas-an-s.on { filter: drop-shadow(0 0 4px color-mix(in srgb, var(--accent) 55%, transparent)); stroke-dasharray: 1; stroke-dashoffset: 1; animation: bas-an-desenha 700ms var(--ease-out) forwards; animation-delay: calc(var(--i) * 45ms); }
-.bas .bas-an-s.agora { stroke: var(--accent); stroke-opacity: .3; animation: bas-an-pulsa 1.8s ease-in-out infinite; }
-.bas .bas-an-s.sel { stroke-width: 20; } .bas .bas-an-s.sel.off, .bas .bas-an-s.sel.fora { stroke: color-mix(in srgb, var(--ink) 22%, transparent); }
-.bas-an-l { font-size: 10px; font-weight: 700; fill: var(--ink-3); } .bas-an-l.on { fill: var(--ink); }
-.bas-an-y { font-size: 34px; font-weight: 800; letter-spacing: -.03em; fill: var(--ink); } .bas-an-q { font-size: 11.5px; font-weight: 600; fill: var(--ink-2); }
-.bas-an-ks { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; width: 100%; margin-top: 12px; }
-.bas-an-ks span { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border-radius: 16px; background: color-mix(in srgb, var(--ink) 5%, transparent); }
-.bas-an-ks small { font-size: 11.5px; color: var(--ink-3); } .bas-an-ks b { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
-.bas-an-r { min-height: 1.4em; margin: 10px 0 0; text-align: center; font-size: 12.5px; color: var(--ink-2); }
-@keyframes bas-an-desenha { to { stroke-dashoffset: 0; } }
-@keyframes bas-an-pulsa { 50% { stroke-opacity: .7; } }
-@media (prefers-reduced-motion: reduce) { .bas .bas-an-s.on { animation: none; stroke-dashoffset: 0; } .bas .bas-an-s.agora { animation: none; } }
+/* ---------- todos os meses: mapa de pontos num céu, uma linha por ano ---------- */
+.card.bas-pm { padding: 16px 14px 14px; border-radius: 26px; color: #fff; background: radial-gradient(120% 90% at 20% 0%, #16204a, transparent 60%), #05060f; box-shadow: var(--shadow); }
+.bas-pm-g { display: grid; grid-template-columns: 34px repeat(12, minmax(0, 1fr)); gap: 6px; align-items: center; }
+.bas-pm-g > span { font-size: 10px; font-weight: 700; text-align: center; color: rgba(255, 255, 255, .42); } .bas-pm-g > span.y { text-align: left; font-size: 12px; color: rgba(255, 255, 255, .7); font-variant-numeric: tabular-nums; }
+.bas-pm-g button { aspect-ratio: 1; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: rgba(255, 255, 255, .07); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.bas-pm-g button i { display: block; width: calc(30% + var(--k) * 45%); aspect-ratio: 1; border-radius: 50%; background: #fff; box-shadow: 0 0 calc(3px + var(--k) * 10px) calc(var(--k) * 2px) color-mix(in srgb, var(--accent) calc(40% + var(--k) * 50%), transparent); animation: bas-pm-acende 600ms var(--ease-out) both; }
+.bas-pm-g button.off { background: transparent; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14); } .bas-pm-g button.fora { opacity: .25; background: transparent; cursor: default; }
+.bas-pm-g button.sel { box-shadow: 0 0 0 1.5px var(--accent); }
+.bas-pm-leg { display: flex; justify-content: flex-end; align-items: center; gap: 6px; margin-top: 12px; font-size: 11px; color: rgba(255, 255, 255, .42); }
+.bas-pm-leg i { width: 8px; height: 8px; border-radius: 50%; background: #fff; opacity: .4; } .bas-pm-leg i + i { opacity: .7; } .bas-pm-leg i + i + i { opacity: 1; box-shadow: 0 0 6px var(--accent); }
+.bas-pm .bas-an-r { min-height: 1.4em; margin: 10px 0 0; text-align: center; font-size: 12.5px; color: rgba(255, 255, 255, .7); }
+@keyframes bas-pm-acende { from { opacity: 0; transform: scale(.3); } }
+@media (prefers-reduced-motion: reduce) { .bas-pm-g button i { animation: none; } }

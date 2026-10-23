@@ -1063,22 +1063,18 @@ function basTelaConstelacao(o) {
     ${ms.length ? `<div class="bas-sq-ks"><span><small>Período</small><b>${basMesCurto(ms[0])}${ms.length > 1 ? ` a ${basMesCurto(ms[ms.length - 1])}` : ''}</b><em>${ms.length} ${ms.length === 1 ? 'mês' : 'meses'} com aporte</em></span><span><small>Investido</small><b>${brl0(tot)}</b><em>nesta constelação</em></span><span><small>Média por estrela</small><b>${brl0(tot / ms.length)}</b><em>maior: ${brl0(mx)}</em></span></div>` : ''}
     ${basSecao('Estrela por estrela', '', `<div class="card bas-cs-c">${lista}</div>`)}`);
 }
-// todos os meses: um anel por ano, como os anéis de atividade; cada gomo é um mês, aceso quando teve aporte
-function basAnelAno(y, meses, nv, ult) {
-  const C = 100; const R = 70; const arco = (m) => { const g = 3.2; const a0 = (-90 + m * 30 + g / 2) * Math.PI / 180; const a1 = (-90 + (m + 1) * 30 - g / 2) * Math.PI / 180;
-    return `M${(C + R * Math.cos(a0)).toFixed(2)} ${(C + R * Math.sin(a0)).toFixed(2)} A${R} ${R} 0 0 1 ${(C + R * Math.cos(a1)).toFixed(2)} ${(C + R * Math.sin(a1)).toFixed(2)}`; };
-  const doAno = meses.filter((x) => x.ano === y); const com = doAno.filter((x) => x.v > 0); const tot = com.reduce((t, x) => t + x.v, 0);
-  let run = 0; let maior = 0; doAno.forEach((x) => { run = x.v > 0 ? run + 1 : 0; maior = Math.max(maior, run); });
-  const gomos = MES.map((nm, m) => { const x = doAno.find((z) => z.mes === m); const agora = y === NOW_Y && m === ult && x && !(x.v > 0);
-    const cls = !x ? 'fora' : x.v > 0 ? 'on' : agora ? 'agora' : 'off';
-    const r = !x ? `${cap(MES_LONGO[m])} de ${y}: ${y > NOW_Y || (y === NOW_Y && m > NOW_M) ? 'ainda vai chegar' : 'antes de você começar'}` : x.v > 0 ? `${cap(MES_LONGO[m])} de ${y}: ${brl0(x.v)} investidos` : agora ? `${cap(MES_LONGO[m])}: ainda dá tempo de investir` : `${cap(MES_LONGO[m])} de ${y}: sem aporte`;
-    const a = (-90 + m * 30 + 15) * Math.PI / 180;
-    return `<path class="bas-an-t ${cls}" d="${arco(m)}"/><path class="bas-an-s ${cls}" d="${arco(m)}" pathLength="1"${cls === 'on' ? ` stroke="url(#an-${y})"` : ''} style="--i:${m}" data-act="bas-an-mes" data-r="${esc(r)}"/><text class="bas-an-l${x && x.v > 0 ? ' on' : ''}" x="${(C + 90 * Math.cos(a)).toFixed(1)}" y="${(C + 90 * Math.sin(a) + 3).toFixed(1)}" text-anchor="middle">${nm.slice(0, 1)}</text>`; }).join('');
-  return `<div class="bas-an-c"><svg class="bas-an-svg" viewBox="0 0 200 200" role="img" aria-label="${y}: ${com.length} de ${doAno.length} meses com aporte"><defs><linearGradient id="an-${y}" gradientUnits="userSpaceOnUse" x1="40" y1="30" x2="160" y2="170"><stop offset="0" style="stop-color:${(BAS_GEMAS[nv] || BAS_GEMAS.base)[1]}"/><stop offset="1" style="stop-color:var(--accent)"/></linearGradient></defs>
-      <g>${gomos}</g><text class="bas-an-y" x="100" y="100" text-anchor="middle">${y}</text><text class="bas-an-q" x="100" y="120" text-anchor="middle">${com.length} de ${doAno.length} meses</text></svg>
-    <div class="bas-an-ks"><span><small>Investido</small><b>${brl0(tot)}</b></span><span><small>Maior sequência</small><b>${maior} ${maior === 1 ? 'mês' : 'meses'}</b></span></div>
-    <p class="bas-an-r" aria-live="polite">Toque num mês</p></div>`;
+// todos os meses: um mapa de pontos num céu, uma linha por ano; cada mês é uma estrela que brilha mais quanto maior o aporte
+function basMapaMeses(meses, ult) {
+  const anos = [...new Set(meses.map((x) => x.ano))].reverse(); const mx = meses.reduce((a, x) => Math.max(a, x.v), 0) || 1;
+  const linha = (y) => `<span class="y">${y}</span>${MES.map((nm, m) => { const x = meses.find((z) => z.ano === y && z.mes === m); const k = x && x.v > 0 ? Math.sqrt(x.v / mx) : 0;
+    const r = !x ? `${cap(MES_LONGO[m])} de ${y}: ${y > NOW_Y || (y === NOW_Y && m > NOW_M) ? 'ainda vai chegar' : 'antes de você começar'}` : x.v > 0 ? `${cap(MES_LONGO[m])} de ${y}: ${brl0(x.v)} investidos` : y === NOW_Y && m === ult ? `${cap(MES_LONGO[m])}: ainda dá tempo de investir` : `${cap(MES_LONGO[m])} de ${y}: sem aporte`;
+    return `<button class="${!x ? 'fora' : x.v > 0 ? 'on' : 'off'}" style="--k:${k.toFixed(2)}" data-act="bas-an-mes" data-r="${esc(r)}" aria-label="${esc(r)}"${x ? '' : ' tabindex="-1"'}>${k ? '<i></i>' : ''}</button>`; }).join('')}`;
+  return `<div class="card bas-pm"><div class="bas-pm-g"><span></span>${MES.map((nm) => `<span>${nm.slice(0, 1)}</span>`).join('')}${anos.map(linha).join('')}</div>
+    <div class="bas-pm-leg" aria-hidden="true">menos <i></i><i></i><i></i> mais</div><p class="bas-an-r" aria-live="polite">Toque num mês</p></div>`;
 }
+// seta que recolhe e expande uma seção (estado só da sessão)
+const basRecolhe = (id, nome) => `<button class="bas-gx-bt" data-act="bas-gx" data-nome="${nome}" aria-expanded="${S.basFech && S.basFech[id] ? 'false' : 'true'}" aria-controls="${id}" aria-label="${S.basFech && S.basFech[id] ? 'Expandir' : 'Recolher'} ${nome}">${I.chev}</button>`;
+const basRecolheW = (id, corpo) => `<div class="bas-gx-w${S.basFech && S.basFech[id] ? ' fechada' : ''}" id="${id}"><div class="bas-gx-in">${corpo}</div></div>`;
 function basTelaSequencia() {
   const { ult, meses, ini, Q } = basSeqDados(); const n = Q.atual; const hoje = new Date(); const fimMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0).getDate(); const faltam = fimMes - hoje.getDate();
   const corrente = S.year === NOW_Y; const com = meses.filter((x) => x.v > 0).length; const tot = meses.length; const prox = BAS_SEQ_MARCOS.find((m) => m[0] > n); const ant = [...BAS_SEQ_MARCOS].reverse().find((m) => m[0] <= n);
@@ -1092,23 +1088,20 @@ function basTelaSequencia() {
   const fila = `${basCeuGrande(A, nv, 'c', !Q.contaHoje && corrente, ult)}<div class="bas-ceu-r"><b>${esc(A.c.n)}</b><span>${A.acesas} de ${A.c.e.length} estrelas</span></div>`;
   const galaxia = ceu.completas;
   const desde = `${cap(MES_LONGO[ini.mes])} de ${ini.ano}`; const temp = tot >= 12 ? `${Math.floor(tot / 12)} ${tot >= 24 ? 'anos' : 'ano'}${tot % 12 ? ` e ${tot % 12} ${tot % 12 === 1 ? 'mês' : 'meses'}` : ''}` : `${tot} ${tot === 1 ? 'mês' : 'meses'}`;
-  const anos = [...new Set(meses.map((x) => x.ano))].reverse();
-  const cal = `<div class="bas-an${anos.length === 1 ? ' um' : ''}">${anos.map((y) => basAnelAno(y, meses, nv, ult)).join('')}</div>`;
   return basDet('Sua sequência', `<section class="bas-sqx" data-act="bas-sq-astro"><span class="bas-sqx-parts" aria-hidden="true">${parts}</span>
       <div class="bas-sqx-astro bas-jx ${nv}${n > 0 ? ' aceso' : ''}"><span class="bas-jx-raios" aria-hidden="true"></span><svg class="bas-jx-g" viewBox="0 0 100 100" aria-hidden="true">${basEstrela(nv, 'hero')}</svg>
         ${[0, 1, 2, 3].map((k) => `<i class="bas-jx-sp" style="--i:${k}" aria-hidden="true"></i>`).join('')}</div>
       <b class="bas-jx-n" data-sq-conta="${n}">${n}</b><b class="bas-sqx-t">${n === 1 ? 'mês de sequência' : 'meses de sequência'}</b><small class="bas-jx-nv">${nv === 'base' ? 'Estrela inicial' : `Estrela ${({ bronze: 'de bronze', prata: 'de prata', ouro: 'de ouro', platina: 'de platina', diamante: 'de diamante' })[nv]}`}</small><p class="bas-sqx-s">${status}</p>
       ${prox ? `<div class="bas-sqx-prox"><span>Próximo brasão: <b>${esc(prox[1])}</b></span><span class="bas-sqx-pb"><i style="width:${(prog * 100).toFixed(1)}%"></i></span><small>${prox[0] - n} ${prox[0] - n === 1 ? 'mês' : 'meses'} para chegar</small></div>` : '<div class="bas-sqx-prox"><span>Você conquistou todos os brasões. Lenda!</span></div>'}
       ${!Q.contaHoje && corrente && temRecurso('aporte_simples') ? `<button class="bas-dp-bt bas-sqx-bt" ${basIrInv()}>Investir agora</button>` : ''}</section>
-    <div class="card bas-sq-fila" style="--jx-c:${(BAS_GEMAS[nv] || BAS_GEMAS.base)[3]}"><small class="bas-tj-t">Sua constelação</small>${fila}<p class="bas-sq-fila-r" aria-live="polite">Toque numa estrela</p></div>
-    ${basSecao('Sua galáxia', `<span class="bas-gx-h"><small class="bas-raio-t">${galaxia.length} ${galaxia.length === 1 ? 'constelação' : 'constelações'}</small><button class="bas-gx-bt" data-act="bas-gx" aria-expanded="${S.basGxFechada ? 'false' : 'true'}" aria-controls="bas-gx" aria-label="${S.basGxFechada ? 'Expandir' : 'Recolher'} a galáxia">${I.chev}</button></span>`, `<div class="bas-gx-w${S.basGxFechada ? ' fechada' : ''}" id="bas-gx"><div class="bas-gx">${galaxia.map((g, k) => `<button class="bas-gx-c on" ${basIr('constelacao', { id: k })} style="--i:${k}">${basCeuSvg(g, nv, 'g' + k, true)}<b>${esc(g.c.n)}</b><small>${g.meus[0] ? `${MES[g.meus[0].mes].slice(0, 3)}/${String(g.meus[0].ano).slice(2)} a ${MES[g.meus[g.meus.length - 1].mes].slice(0, 3)}/${String(g.meus[g.meus.length - 1].ano).slice(2)}` : ''}</small></button>`).join('')}
-      <button class="bas-gx-c prox" ${basIr('constelacao', { id: galaxia.length })}>${basCeuSvg({ c: A.c, acesas: A.acesas }, nv, 'gp', true)}<b>${esc(A.c.n)}</b><small>${A.c.e.length - A.acesas} ${A.c.e.length - A.acesas === 1 ? 'estrela' : 'estrelas'} para completar</small></button></div></div>`)}
     <div class="bas-sq-ks"><span><small>No ${esc(CFG.marca || 'app')} há</small><b>${temp}</b><em>desde ${desde}</em></span><span><small>Meses com aporte</small><b>${com} de ${tot}</b><em>${pct(com / tot)} de constância</em></span>
       <span><small>Recorde</small><b>${Q.maior} ${Q.maior === 1 ? 'mês' : 'meses'}</b><em>${Q.maior > n ? `faltam ${Q.maior - n} para igualar` : n > 0 ? 'é a sequência de agora' : 'comece hoje'}</em></span></div>
+    ${basSecao('Sua galáxia', `<span class="bas-gx-h"><small class="bas-raio-t">${galaxia.length} ${galaxia.length === 1 ? 'constelação' : 'constelações'}</small>${basRecolhe('bas-gx', 'a galáxia')}</span>`, basRecolheW('bas-gx', `<div class="card bas-sq-fila" style="--jx-c:${(BAS_GEMAS[nv] || BAS_GEMAS.base)[3]}"><small class="bas-tj-t">Sua constelação</small>${fila}<p class="bas-sq-fila-r" aria-live="polite">Toque numa estrela</p></div><div class="bas-gx">${galaxia.map((g, k) => `<button class="bas-gx-c on" ${basIr('constelacao', { id: k })} style="--i:${k}">${basCeuSvg(g, nv, 'g' + k, true)}<b>${esc(g.c.n)}</b><small>${g.meus[0] ? `${MES[g.meus[0].mes].slice(0, 3)}/${String(g.meus[0].ano).slice(2)} a ${MES[g.meus[g.meus.length - 1].mes].slice(0, 3)}/${String(g.meus[g.meus.length - 1].ano).slice(2)}` : ''}</small></button>`).join('')}
+      <button class="bas-gx-c prox" ${basIr('constelacao', { id: galaxia.length })}>${basCeuSvg({ c: A.c, acesas: A.acesas }, nv, 'gp', true)}<b>${esc(A.c.n)}</b><small>${A.c.e.length - A.acesas} ${A.c.e.length - A.acesas === 1 ? 'estrela' : 'estrelas'} para completar</small></button></div>`))}
     ${basSecao('Escudos', `<small class="bas-raio-t">${BAS_SEQ_MARCOS.filter((m) => Q.maior >= m[0]).length} de ${BAS_SEQ_MARCOS.length}</small>`, `<div class="bas-esc">${BAS_SEQ_MARCOS.map(([q, nm, , nvM], k) => { const on = Q.maior >= q; const nv = nvM;
       return on ? `<button class="bas-esc-c bas-br on ${nv}" ${basIr('conquista', { id: q })} style="--i:${k}">${basBrasao(q, nv, true)}<b>${esc(nm)}</b><small>${cap(nv)}</small></button>`
         : `<span class="bas-esc-c bas-br ${nv}" style="--i:${k}">${basBrasao(q, nv, false)}<b>${esc(nm)}</b><small>${Math.max(0, q - n)} ${q - n === 1 ? 'mês' : 'meses'} para chegar</small></span>`; }).join('')}</div>`)}
-    ${basSecao('Todos os seus meses', `<small class="bas-raio-t">${com} de ${tot} com aporte</small>`, cal)}`);
+    ${basSecao('Todos os seus meses', `<span class="bas-gx-h"><small class="bas-raio-t">${com} de ${tot}</small>${basRecolhe('bas-meses', 'todos os meses')}</span>`, basRecolheW('bas-meses', basMapaMeses(meses, ult)))}`);
 }
 function basSequenciaHtml() {
   const { ult, Q } = basSeqDados(); const n = Q.atual; const ceu = basConstelacao(n);
@@ -1532,9 +1525,9 @@ function basAcao(act, ds, el) {
     case 'bas-tema-ciclo': { const ord = ['auto', 'light', 'oled']; const v = ord[(ord.indexOf(S.profile.prefs.tema) + 1) % 3]; if (v !== 'auto') S.profile.prefs.tema = v; definirTema(v === 'auto' ? 'auto-on' : v); render(); toast(`Tema: ${{ auto: 'automático', light: 'claro', oled: 'escuro' }[v]}.`); return true; }
     case 'bas-voltar': basFechar(); return true;
     case 'bas-sq-dia': { const w = el.closest('.bas-sq-fila'); if (w) { w.querySelectorAll('.bas-sq-dia').forEach((b) => b.classList.toggle('sel', b === el)); w.querySelector('.bas-sq-fila-r').textContent = el.dataset.r; basSom('toque'); } return true; }
-    case 'bas-gx': { const w = document.getElementById('bas-gx'); if (w) { S.basGxFechada = !S.basGxFechada; w.classList.toggle('fechada', S.basGxFechada); el.setAttribute('aria-expanded', String(!S.basGxFechada)); el.setAttribute('aria-label', `${S.basGxFechada ? 'Expandir' : 'Recolher'} a galáxia`); basSom('toque'); } return true; }
+    case 'bas-gx': { const id = el.getAttribute('aria-controls'); const w = document.getElementById(id); if (w) { S.basFech = S.basFech || {}; const f = S.basFech[id] = !S.basFech[id]; w.classList.toggle('fechada', f); el.setAttribute('aria-expanded', String(!f)); el.setAttribute('aria-label', `${f ? 'Expandir' : 'Recolher'} ${ds.nome}`); basSom('toque'); } return true; }
     case 'bas-cs-ir': { const t = basTopoPilha(); if (t && t.t === 'constelacao') { t.id = String((+t.id || 0) + +ds.d); basSom('toque'); render(); } return true; }
-    case 'bas-an-mes': { const w = el.closest('.bas-an-c'); if (w) { w.querySelectorAll('.bas-an-s').forEach((p) => p.classList.toggle('sel', p === el)); w.querySelector('.bas-an-r').textContent = el.dataset.r; basSom('toque'); } return true; }
+    case 'bas-an-mes': { const w = el.closest('.bas-pm'); if (w) { w.querySelectorAll('.bas-pm-g button').forEach((p) => p.classList.toggle('sel', p === el)); w.querySelector('.bas-an-r').textContent = el.dataset.r; basSom('toque'); } return true; }
     case 'bas-sq-astro': { const a = document.querySelector('.bas-sqx-astro'); if (a && !matchMedia('(prefers-reduced-motion: reduce)').matches) { a.classList.remove('festa'); void a.offsetWidth; a.classList.add('festa'); basVibra(12); basSom('ok'); } return true; }
     case 'bas-wr': { const w = el.closest('.bas-wr'); if (w) { basWrIr(w, (+w.dataset.i || 0) + (+ds.d || 1)); basSom('toque'); } return true; }
     case 'bas-retro-share': basPartilhar(+ds.m); return true;
