@@ -512,7 +512,7 @@ const INSTITUICOES = [
   ['santander', 'Santander', '#EC0000', '#fff', 'S', 0.58], ['bb', 'Banco do Brasil', '#FCFC30', '#465EFF', 'BB', 0.62], ['caixa', 'Caixa', '#005CA9', '#fff', 'CX', 0.8],
   ['xp', 'XP', '#121212', '#fff', 'xp', 'xp.png'], ['btg', 'BTG Pactual', '#0D2B5E', '#fff', 'btg', 0.7], ['inter', 'Inter', '#FF7A00', '#fff', 'in', 0.8],
   ['c6', 'C6 Bank', '#1A1A1A', '#fff', 'C6', 0.6], ['picpay', 'PicPay', '#21C25E', '#fff', 'pp', 0.54], ['mercadopago', 'Mercado Pago', '#00B1EA', '#fff', 'mp', 0.68],
-  ['sicoob', 'Sicoob', '#003641', '#C9D200', 'sc', 0.58], ['dinheiro', 'Dinheiro', '#2E7D32', '#fff', 'R$', 0], ['outra', 'Outra', '#6B7280', '#fff', '•', 0],
+  ['sicoob', 'Sicoob', '#003641', '#C9D200', 'sc', 0.58], ['ifood', 'iFood Benefícios', '#EA1D2C', '#fff', 'iF', 0], ['dinheiro', 'Dinheiro', '#2E7D32', '#fff', 'R$', 0], ['outra', 'Outra', '#6B7280', '#fff', '•', 0],
 ];
 const instDe = (id) => INSTITUICOES.find((x) => x[0] === id) || null;
 const instMinhas = () => (S.profile && S.profile.instituicoes) || [];

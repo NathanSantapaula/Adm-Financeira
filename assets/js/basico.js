@@ -237,7 +237,7 @@ function basTelaEntradas() {
     <div class="bas-en-ks">${tile('Média por mês', brl0(R.mediaMes))}${tile('Previsível', fontes.length ? pct(prev) : '–', `${brl0(prevMes)} por mês`)}
       ${tile('Renda passiva', R.passiva != null ? pct(R.passiva) : '–', prov > 0 ? `${brl0(prov)} em proventos` : 'Ainda sem proventos')}${tile('Guardou', R.poupanca != null ? pct(R.poupanca) : '–', `${brl0(R.sobraMes)} por mês`)}</div>
     ${fontes.length ? basSecao('De onde vem', `<small class="bas-raio-t">${fontes.length} ${fontes.length === 1 ? 'fonte' : 'fontes'}</small>`, `<div class="card bas-en-f">${fontes.map(([r, v], i) => `<button class="bas-en-fo" ${basIr('entrada', { id: r.id })}>
-        <span class="bas-en-av" style="--bc:${PAL[i % 6]}" aria-hidden="true">${esc(basIniciais(r.nome))}</span><span class="bas-n"><b>${esc(r.nome)}</b><small>${esc(((p.rendaCats || []).find((c) => c.id === r.cat) || {}).nome || 'Renda')} · ${recDe(r.id) ? 'todo mês' : 'pontual'}</small><span class="bas-en-b"><i style="width:${((v / totF) * 100).toFixed(1)}%;--bc:${PAL[i % 6]}"></i></span></span>
+        <span class="bas-en-av" style="--bc:${PAL[i % 6]}" aria-hidden="true">${esc(basIniciais(r.nome))}</span><span class="bas-n"><b>${esc(r.nome)}</b><small>${esc(((p.rendaCats || []).find((c) => c.id === r.cat) || {}).nome || 'Renda')} · ${recDe(r.id) ? 'todo mês' : 'pontual'}${r.soGasto ? ' · só para gastos' : ''}</small><span class="bas-en-b"><i style="width:${((v / totF) * 100).toFixed(1)}%;--bc:${PAL[i % 6]}"></i></span></span>
         <span class="bas-v"><b class="pos">+${brl0(v)}</b><em>${pct(v / totF)}</em></span></button>`).join('')}</div>`) : basCard(basVazio('Nenhuma entrada neste período. Toque em + Entrada para anotar.'))}
     ${fr.length ? basSecao('O que os números dizem', '', `<ul class="bas-ah-fr">${fr.map(([t, x]) => `<li class="${t}">${x}</li>`).join('')}</ul>`) : ''}`);
 }
@@ -588,6 +588,9 @@ function basTelaEntrada(o) {
   return basForm('entrada', r ? 'Editar entrada' : 'Nova entrada', `${basValor('valor', r ? +r.valores[S.mes] || 0 : 0, `Quanto entrou em ${MES_LONGO[S.mes]}?`)}
     ${basCampo('nome', 'De onde veio?', r ? r.nome : '', 'placeholder="Ex.: Salário, Freela"')}
     ${basChips('cat', (S.plan.rendaCats && S.plan.rendaCats.length ? S.plan.rendaCats : E.CATS_RENDA()).map((c) => [c.id, c.nome]), r ? r.cat : 'fixa', 'Tipo de renda')}
+    ${basChips('uso', [['livre', 'Pode investir'], ['gasto', 'Só para gastos']], r && r.soGasto ? 'gasto' : 'livre', 'Esse dinheiro pode ser investido?')}
+    <div class="bas-blk" data-blk="ben">${basChips('inst', [...new Set(['ifood', ...instMinhas(), ...(r && r.inst ? [r.inst] : [])])].filter((v) => instDe(v) && v !== 'dinheiro' && v !== 'outra').map((v) => [v, instDe(v)[1]]), (r && r.inst) || 'ifood', 'Em qual cartão ele cai?')}
+      <p class="bas-p">Vale-refeição, vale-alimentação e benefícios: os gastos pagos com este cartão usam esse saldo, e o que sobrar nele não entra no que dá para investir.</p></div>
     ${basSw('todo', r ? 'Usar este valor até dezembro' : 'Entra todo mês', r ? `Troca o valor de ${MES_LONGO[S.mes]} em diante.` : `De ${MES_LONGO[S.mes]} até dezembro.`, !r)}`, { excluir: r ? 'Excluir entrada' : '' });
 }
 // registrar investimento (ou corrigir o valor de um ativo no mês)
@@ -1545,6 +1548,8 @@ function basSalvar(f) {
       if (Number.isNaN(v) || v < 0 || (!r && !(v > 0))) return basErro(f, 'Informe quanto entrou, como 2.500,00.'); if (!nome) return basErro(f, 'Diga de onde veio, como Salário.');
       if (!p.rendaCats.length) p.rendaCats.push(...E.CATS_RENDA());
       const alvo = r || { id: uid(), cat: p.rendaCats[0].id, fonte: '', valores: z12() }; alvo.nome = nome; if (d.cat && p.rendaCats.some((c) => c.id === d.cat)) alvo.cat = d.cat; if (d.todo) fillFrom(alvo.valores, E.r2(v), m); else alvo.valores[m] = E.r2(v); if (!r) p.rendas.push(alvo);
+      // só para gastos (benefício): guarda o cartão e põe ele nas Minhas instituições, para aparecer em "Pago com"
+      if (d.uso === 'gasto') { alvo.soGasto = true; alvo.inst = instDe(d.inst) ? d.inst : 'ifood'; if (!instMinhas().includes(alvo.inst)) instMinhaAlternar(alvo.inst, true); } else { delete alvo.soGasto; delete alvo.inst; }
       ok(r ? 'Entrada atualizada.' : 'Entrada anotada.'); return;
     }
     case 'aporte': {

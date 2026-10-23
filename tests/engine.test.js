@@ -454,4 +454,17 @@ ok(E.interfaceDe('gratis', 'completo') === 'basico' && E.interfaceDe('qualquer')
   const T = E.sequenciaMeses([10, 20, 30, 0, 0, 5], 4);
   ok(T.atual === 0 && T.maior === 3, 'sequência: dois meses sem aporte zeram, mas a maior fica guardada');
 }
+// --- entrada só para gastos (vale-refeição): o saldo parado no cartão não vira sobra para investir
+{ const v = (j) => { const a = new Array(12).fill(0); Object.keys(j).forEach((k) => { a[k] = j[k]; }); return a; };
+  const pl = E.migratePlan({ v: 2, year: 2026, settings: {}, rendaCats: E.CATS_RENDA(), catsDesp: E.CATS_DESP(), orcamento: [], ativos: [], despesas: [],
+    rendas: [{ id: 's', cat: 'fixa', nome: 'Salário', valores: v({ 0: 5000, 1: 5000, 2: 5000 }) }, { id: 'vr', cat: 'fixa', nome: 'Vale-refeição', soGasto: true, inst: 'ifood', valores: v({ 0: 800, 1: 800, 2: 800 }) }],
+    lancamentos: [{ id: 'a', data: '2026-01-10', desc: 'Almoço', valor: 500, cat: 'variavel', area: 'Alimentação', inst: 'ifood' }, { id: 'b', data: '2026-01-11', desc: 'Mercado', valor: 1000, cat: 'variavel', area: 'Alimentação', inst: 'itau' },
+      { id: 'c', data: '2026-02-10', desc: 'Almoço', valor: 1000, cat: 'variavel', area: 'Alimentação', inst: 'ifood' }] }, id);
+  const CB = E.compute(pl, {});
+  ok(pl.rendas[1].soGasto === true && pl.rendas[1].inst === 'ifood', 'benefício: o plano guarda que a entrada é só para gastos e o cartão dela');
+  ok(Math.abs(CB.investAlocado[0] - 4000) < 0.01 && Math.abs(CB.beneficio[0] - 300) < 0.01, 'benefício: os R$ 300 que sobram no vale não entram na sobra para investir');
+  ok(Math.abs(CB.investAlocado[1] - 5000) < 0.01 && Math.abs(CB.beneficio[1] - 100) < 0.01, 'benefício: gastar o saldo do mês anterior no vale libera a sobra do salário');
+  ok(Math.abs(CB.investAlocado[2] - 5000) < 0.01 && Math.abs(CB.beneficio[2] - 900) < 0.01, 'benefício: mês sem gasto no vale guarda o saldo inteiro');
+  ok(Math.abs(CB.receita[0] - 5800) < 0.01, 'benefício: a entrada continua contando como renda');
+}
 process.exit(bad ? 1 : 0);

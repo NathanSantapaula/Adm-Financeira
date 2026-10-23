@@ -248,7 +248,17 @@
     const orcamento = z().map((_, m) => (plan.orcamento && plan.orcamento[m] != null ? +plan.orcamento[m] : orcPad));
     const restante = orcamento.map((o, m) => o - despesas[m]);
     const usoOrc = orcamento.map((o, m) => (o > 0 ? despesas[m] / o : null));
-    const investAlocado = sub(receita, despesas);
+    // entrada só para gastos (vale-refeição, benefício): o saldo que sobra no cartão dela não pode ser investido.
+    // Os gastos pagos com esse cartão (mesmo inst) usam o saldo; o que fica (ou volta a ser usado depois) sai (ou entra) na sobra do mês.
+    const benInst = new Set((plan.rendas || []).filter((r) => r.soGasto && r.inst).map((r) => r.inst)); let benEntra = z(); let benGasto = z();
+    (plan.rendas || []).forEach((r) => { if (r.soGasto) benEntra = add(benEntra, r.valores); });
+    if (benInst.size) {
+      (plan.despesas || []).concat(ctx.carry || []).forEach((it) => { if (benInst.has(it.inst)) benGasto = add(benGasto, itemValores(it, plan.year)); });
+      (plan.lancamentos || []).forEach((l) => { const d = parseDataISO(l.data); if (d && d.ano === plan.year && benInst.has(l.inst)) benGasto[d.mes] += +l.valor || 0; });
+    }
+    let benAnt = 0; const beneficio = z().map((_, m) => (benAnt = Math.max(0, benAnt + (+benEntra[m] || 0) - Math.max(0, +benGasto[m] || 0))));
+    const benParado = beneficio.map((b, m) => b - (m ? beneficio[m - 1] : 0));
+    const investAlocado = sub(sub(receita, despesas), benParado);
     const poupanca = receita.map((r, m) => (r > 0 ? investAlocado[m] / r : null));
     const aportes = sub(aplicado, dividendos);
     const diferenca = sub(investAlocado, aplicado); // sobra que ficou sem aplicar (o mesmo que o Disponível para aportar)
@@ -259,7 +269,7 @@
     const base = patrimonioAnoCustom !== null ? patrimonioAnoCustom : ((+ctx.patrimonioInicial || 0) + (+ctx.prevAplicado || 0));
 
     let acc = base; const patrimonio = aplicado.map((a) => (acc += a));
-    const out = { rendaCat, rendas, dividendos, rentab, receita, despCat, despesas, orcamento, restante, usoOrc, investAlocado, poupanca, aplicado, aportes, diferenca, meta, metaAporteMes, faturamento, patrimonio, patrimonioBase: base, lancQtd, despReais };
+    const out = { rendaCat, rendas, dividendos, rentab, receita, despCat, despesas, orcamento, restante, usoOrc, investAlocado, poupanca, aplicado, aportes, diferenca, meta, metaAporteMes, faturamento, patrimonio, patrimonioBase: base, lancQtd, despReais, beneficio };
     const T = {};
     ['rendas', 'dividendos', 'rentab', 'receita', 'despesas', 'orcamento', 'restante', 'investAlocado', 'aplicado', 'aportes', 'diferenca', 'meta', 'faturamento'].forEach((k) => { T[k] = sum(out[k]); });
     T.poupanca = T.receita > 0 ? T.investAlocado / T.receita : null;
