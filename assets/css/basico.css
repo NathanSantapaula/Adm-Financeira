@@ -978,3 +978,9 @@ button.bas-cc-c { border: 0; font: inherit; text-align: left; cursor: pointer; t
 
 /* privacidade e termos no App */
 .card.bas-pol { padding: 4px 18px 18px; border-radius: 22px; } .bas-pol .politica { font-size: 15px; } .bas-pol a { color: var(--accent); }
+
+/* Investir: atalhos de acompanhar em círculos ao lado do período */
+.bas-circ { width: 40px; height: 40px; flex: none; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; color: var(--accent);
+  background: var(--surface); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 28%, transparent), 0 8px 18px -12px var(--accent); transition: transform 140ms var(--ease-out); }
+.bas-circ:active { transform: scale(.92); } .bas-circ svg { width: 19px; height: 19px; } .bas-circ:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .bas-circ { transition: none; } }

@@ -148,7 +148,7 @@ function basTelaPeriodo() {
 const BAS_SECS = {
   inicio: [['sonho', 'Meu sonho'], ['disp', 'Dá para investir'], ['historico', 'Patrimônio ano a ano'], ['aviso', 'O que o assistente notou'], ['ritmo', 'Ritmo do mês'], ['seuano', 'Seu ano'], ['resumo', 'Resumo do mês'], ['atividade', 'Atividade'], ['calendario', 'Mês dia a dia', 0], ['semana', 'Dia que mais gasta', 0], ['maior', 'Maior gasto', 0], ['globo', 'Seu universo', 0], ['saude', 'Saúde financeira', 0], ['contas', 'Contas a pagar', 0], ['limite', 'Limite do mês', 0], ['meta', 'Meta de investimento', 0], ['cartoes', 'Seus cartões', 0], ['proventos', 'Proventos', 0]],
   gastos: [['anel', 'Gastos por categoria'], ['onde', 'Para onde foi o dinheiro'], ['limites', 'Limites por área'], ['cartoes', 'Seus cartões'], ['ultimos', 'Últimos gastos']],
-  investir: [['patr', 'Evolução do patrimônio'], ['meta', 'Meta e disponível'], ['sonhos', 'Seus sonhos'], ['comp', 'Como está dividido'], ['acompanhar', 'Proventos e carteira'], ['feitos', 'Investido no período']],
+  investir: [['patr', 'Evolução do patrimônio'], ['meta', 'Meta e disponível'], ['sonhos', 'Seus sonhos'], ['comp', 'Como está dividido'], ['feitos', 'Investido no período']],
 };
 function basOrdemDe(aba) {
   const ids = BAS_SECS[aba].map((x) => x[0]); const o = ((S.profile.basOrdem || {})[aba] || []).filter((id) => ids.includes(id));
@@ -275,14 +275,14 @@ function basInvestir() {
     if (tt > 0) { const cls = K.classes.slice().sort((a, b) => b.valor - a.valor);
       secs.comp = basSecao('Como está dividido', `<button class="lnk strong" ${basIr('carteira')}>Carteira</button>`, `<div class="card bas-comp"><div class="bas-comp-b" aria-hidden="true">${cls.map((c, i) => `<i style="flex:${c.valor.toFixed(2)};--bc:${PAL[i % 6]}"></i>`).join('')}</div>
         <ul class="bas-comp-l">${cls.map((c, i) => `<li><i style="--bc:${PAL[i % 6]}"></i><span>${esc(c.classe || 'Outros')}</span><b>${pct(c.valor / tt)}</b></li>`).join('')}</ul></div>`); } }
-  const extras = [temRecurso('proventos') ? basRow(basIr('proventos'), I_PROV, 'Proventos', `${brl(C.T.faturamento)} em ${S.year}`, `<b class="pos">${basCent(basSomaJ(C.faturamento))}</b>`) : '',
-    temRecurso('carteira') ? basRow(basIr('carteira'), I_CART, 'Minha carteira', 'Divisão e onde investir agora', I.chev) : '',
-    temRecurso('carteira_recomendada') && S.recomendacao && (S.recomendacao.carteira || []).length ? basRow(basIr('carteira'), I_REC, 'Recomendação', `Do ${esc(primeiroNome())}`, I.chev) : ''].filter(Boolean);
-  secs.acompanhar = extras.length ? basSecao('Acompanhar', '', `<ul class="bas-ativ">${extras.join('')}</ul>`) : '';
+  // acompanhar: botões redondos só com o ícone, ao lado do período (o nome fica no aria-label e no title)
+  const atalho = (attrs, ic0, nome) => `<button class="bas-circ" ${attrs} aria-label="${nome}" title="${nome}">${ic0}</button>`;
+  const extras = [temRecurso('proventos') ? atalho(basIr('proventos'), I_PROV, 'Proventos') : '', temRecurso('carteira') ? atalho(basIr('carteira'), I_CART, 'Minha carteira') : '',
+    temRecurso('carteira_recomendada') && S.recomendacao && (S.recomendacao.carteira || []).length ? atalho(basIr('carteira'), I_REC, `Recomendação do ${esc(primeiroNome())}`) : ''].filter(Boolean).join('');
   const ativos = S.plan.ativos.map((a) => [a, (a.ap || []).slice(j.de, j.ate + 1).reduce((s, v) => s + (+v || 0), 0)]).filter((x) => Math.abs(x[1]) > 0.005);
   secs.feitos = ativos.length ? basSecao(`Investido ${esc(basJanFrase())}`, '', `<ul class="bas-ativ">${ativos.map(([a, v], i) => basRow(pode && j.n === 1 ? basIr('aporte', { id: a.id }) : 'disabled', esc(basIniciais(a.nome)), esc(a.nome), v < 0 ? 'Resgate' : E.norm(a.classe) === E.norm(a.nome) ? '' : esc(a.classe || ''), `<b class="${v < 0 ? 'neg' : 'pos'}">${v < 0 ? '−' : '+'}${basCent(Math.abs(v))}</b>`, PAL[i % 6])).join('')}</ul>`) : '';
   const acoes = `<button class="bas-inv-bt" ${basIrInv()}><span class="bas-bt-ic" aria-hidden="true">${I.inv}</span><span class="bas-bt-t"><b>Investimento</b><small>Aportar, resgatar ou importar</small></span>${I.chev}</button>`;
-  return `<div class="bas-pg bas-pg-i">${basCab('Investir')}<div class="bas-pg-per">${basPerPill()}</div>${acoes}${basOrdenar('investir', secs)}${basOrganizarBtn('investir')}<p class="bas-disc keep">Valores a custo, sem cotação de mercado. Sem promessa de rentabilidade.</p></div>`;
+  return `<div class="bas-pg bas-pg-i">${basCab('Investir')}<div class="bas-pg-per">${basPerPill()}${extras}</div>${acoes}${basOrdenar('investir', secs)}${basOrganizarBtn('investir')}<p class="bas-disc keep">Valores a custo, sem cotação de mercado. Sem promessa de rentabilidade.</p></div>`;
 }
 // o gráfico do patrimônio segue o dedo (manipulação direta): o mês mais perto do toque aparece em cima, sem redesenhar
 function basEvLigar() {
