@@ -1537,3 +1537,38 @@ button.bas-esc-c { cursor: pointer; transition: transform 140ms var(--ease-out);
 .bas-esc:has(.bas-mx) > :last-child:nth-child(odd) { grid-column: 1 / -1; justify-self: center; width: calc(50% - 6px); }
 .bas-mx { width: 120px; height: 120px; margin: 4px auto 8px; } .bas-mx-tx { font-size: 6px; }
 .bas-esc-c.bas-br { padding: 16px 8px 14px; } .bas-esc-c.bas-br b { font-size: 14.5px; } .bas-esc-c.bas-br small { font-size: 12px; text-transform: capitalize; }
+
+/* ---------- medalhas: aura, reflexo e brilhos próprios de cada metal ---------- */
+.bas-mxw { position: relative; display: block; width: 120px; height: 120px; margin: 4px auto 8px; }
+.bas-mxw .bas-mx { position: relative; z-index: 1; margin: 0; }
+.bas-mx::after { animation: none; background: radial-gradient(60% 50% at var(--hx, 32%) 22%, rgba(255, 255, 255, .8), transparent 60%); }
+.bas-mx-aura { position: absolute; inset: -16px; z-index: 0; border-radius: 50%; pointer-events: none; opacity: 0; }
+.bas-mxw.on .bas-mx-aura { opacity: 1; }
+.bas-mx-rf { position: absolute; inset: 0; z-index: 2; border-radius: 50%; overflow: hidden; pointer-events: none; }
+.bas-mx-sp { position: absolute; z-index: 3; width: 12px; height: 12px; background: #fff; clip-path: polygon(50% 0, 58% 42%, 100% 50%, 58% 58%, 50% 100%, 42% 58%, 0 50%, 42% 42%); opacity: 0; animation: bas-jx-pisca 2.6s ease-in-out infinite; animation-delay: calc(var(--i) * .7s); pointer-events: none; }
+/* bronze: brasa morna que pulsa; reflexo largo e lento */
+.bas-mxw.bronze .bas-mx-aura { background: radial-gradient(circle, rgba(255, 140, 60, .6), rgba(255, 110, 40, .15) 45%, transparent 66%); filter: blur(4px); animation: bas-aura-brasa 3.8s ease-in-out infinite; }
+@keyframes bas-aura-brasa { 0%, 100% { transform: scale(.95); opacity: .7; } 50% { transform: scale(1.06); opacity: 1; } }
+.bas-mxw.bronze .bas-mx-rf { background: linear-gradient(120deg, transparent 30%, rgba(255, 220, 180, .45) 45%, transparent 62%) 0 0 / 260% 100%; mix-blend-mode: soft-light; animation: bas-rf-varre 6.5s ease-in-out infinite; }
+/* prata: luar frio que respira; risco fino e rápido */
+.bas-mxw.prata .bas-mx-aura { background: radial-gradient(circle, rgba(215, 232, 255, .55), rgba(180, 205, 255, .12) 50%, transparent 66%); box-shadow: 0 0 0 1px rgba(220, 235, 255, .18) inset; animation: bas-aura-luar 5s ease-in-out infinite; }
+@keyframes bas-aura-luar { 0%, 100% { opacity: .65; } 50% { opacity: 1; } }
+.bas-mxw.prata .bas-mx-rf { background: linear-gradient(118deg, transparent 47%, rgba(255, 255, 255, .95) 49.5%, transparent 52%) 0 0 / 300% 100%; mix-blend-mode: overlay; animation: bas-rf-varre 3.2s cubic-bezier(.6, 0, .2, 1) infinite; }
+/* ouro: raios dourados girando; reflexo duplo; faíscas na superfície */
+.bas-mxw.ouro .bas-mx-aura { inset: -16px; background: radial-gradient(circle, rgba(255, 205, 80, .55), transparent 55%), repeating-conic-gradient(from 0deg, rgba(255, 210, 110, .45) 0 4deg, transparent 4deg 18deg);
+  -webkit-mask: radial-gradient(closest-side, #000 45%, transparent 100%); mask: radial-gradient(closest-side, #000 45%, transparent 100%); animation: bas-giro 20s linear infinite; }
+.bas-mxw.ouro .bas-mx-rf { background: linear-gradient(115deg, transparent 32%, rgba(255, 250, 220, .55) 40%, transparent 46%, transparent 52%, rgba(255, 250, 220, .35) 57%, transparent 63%) 0 0 / 260% 100%; mix-blend-mode: overlay; animation: bas-rf-varre 4.5s ease-in-out infinite; }
+.bas-mxw.ouro .bas-mx-sp:nth-of-type(2) { top: 18%; left: 22%; } .bas-mxw.ouro .bas-mx-sp:nth-of-type(3) { top: 30%; right: 18%; width: 8px; height: 8px; } .bas-mxw.ouro .bas-mx-sp:nth-of-type(4) { bottom: 22%; left: 34%; width: 9px; height: 9px; }
+/* platina: prisma que muda de cor; reflexo holográfico */
+.bas-mxw.platina .bas-mx-aura { background: conic-gradient(from 0deg, rgba(120, 220, 255, .6), rgba(190, 150, 255, .6), rgba(255, 150, 220, .55), rgba(150, 255, 220, .55), rgba(120, 220, 255, .6)); filter: blur(10px); -webkit-mask: radial-gradient(closest-side, #000 55%, transparent 100%); mask: radial-gradient(closest-side, #000 55%, transparent 100%); animation: bas-giro 9s linear infinite, bas-aura-luar 4s ease-in-out infinite; }
+.bas-mxw.platina .bas-mx-rf { background: linear-gradient(115deg, transparent 28%, rgba(255, 0, 150, .35) 38%, rgba(0, 200, 255, .35) 46%, rgba(255, 240, 0, .3) 54%, transparent 64%) 0 0 / 260% 100%; mix-blend-mode: color-dodge; animation: bas-rf-varre 5s ease-in-out infinite; }
+.bas-mxw.platina .bas-mx-sp:nth-of-type(2) { top: 20%; right: 24%; } .bas-mxw.platina .bas-mx-sp:nth-of-type(3) { bottom: 26%; left: 22%; width: 8px; height: 8px; }
+/* obsidiana: horizonte de eventos, um anel de luz em órbita; borda iridescente; faíscas */
+.bas-mxw.diamante .bas-mx-aura { inset: -12px; background: conic-gradient(from 0deg, transparent, rgba(255, 157, 77, .9) 12%, transparent 26%, rgba(164, 135, 255, .9) 52%, transparent 66%, rgba(124, 220, 255, .8) 82%, transparent);
+  -webkit-mask: radial-gradient(closest-side, transparent 82%, #000 86%, transparent 100%); mask: radial-gradient(closest-side, transparent 82%, #000 86%, transparent 100%); filter: blur(1.5px) drop-shadow(0 0 6px rgba(164, 135, 255, .8)); animation: bas-giro 3.6s linear infinite; }
+.bas-mxw.diamante::before { content: ''; position: absolute; inset: -22px; border-radius: 50%; background: radial-gradient(circle, rgba(124, 92, 255, .35), transparent 62%); filter: blur(6px); pointer-events: none; }
+.bas-mxw.diamante .bas-mx-rf { background: conic-gradient(from var(--a, 0deg), rgba(255, 120, 200, .55), rgba(120, 220, 255, .55), rgba(255, 220, 120, .5), rgba(164, 135, 255, .55), rgba(255, 120, 200, .55));
+  -webkit-mask: radial-gradient(closest-side, transparent 86%, #000 90%); mask: radial-gradient(closest-side, transparent 86%, #000 90%); mix-blend-mode: screen; animation: bas-giro 7s linear infinite; }
+.bas-mxw.diamante .bas-mx-sp:nth-of-type(2) { top: 16%; left: 30%; } .bas-mxw.diamante .bas-mx-sp:nth-of-type(3) { top: 34%; right: 16%; width: 8px; height: 8px; } .bas-mxw.diamante .bas-mx-sp:nth-of-type(4) { bottom: 18%; right: 32%; width: 9px; height: 9px; } .bas-mxw.diamante .bas-mx-sp:nth-of-type(5) { bottom: 30%; left: 14%; width: 7px; height: 7px; }
+@keyframes bas-rf-varre { 0%, 45% { background-position: 140% 0; } 100% { background-position: -40% 0; } }
+@media (prefers-reduced-motion: reduce) { .bas-mx-aura, .bas-mx-rf, .bas-mx-sp { animation: none; } .bas-mx-sp { opacity: .7; } }

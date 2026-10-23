@@ -949,14 +949,16 @@ function basBrasao(q, nivel, on) {
     diamante: `<mask id="${id}k"><rect width="100" height="100" fill="#fff"/><circle cx="50" cy="50" r="11" fill="#000"/></mask><g mask="url(#${id}k)"><circle cx="50" cy="50" r="15"/><ellipse cx="50" cy="51" rx="31" ry="6" fill="none" stroke="#000" stroke-width="3.4"/></g>`,
   }[nivel] || '';
   const texto = `${cap(M[1] || '').toUpperCase()} · ${q} MESES · ${(CFG.marca || 'AVEN').toUpperCase()} ·`;
-  return `<span class="bas-mx${on ? ' on' : ''}" style="--m1:${m1};--m2:${m2};--m3:${m3}" aria-hidden="true"><svg viewBox="0 0 100 100">
+  // cada nível com a sua aura (atrás), o seu reflexo (sobre o metal) e os seus brilhos
+  const brilhos = on ? Array.from({ length: { ouro: 3, platina: 2, diamante: 4 }[nivel] || 0 }, (_, k) => `<i class="bas-mx-sp" style="--i:${k}"></i>`).join('') : '';
+  return `<span class="bas-mxw ${nivel}${on ? ' on' : ''}" aria-hidden="true"><i class="bas-mx-aura"></i><span class="bas-mx${on ? ' on' : ''}" style="--m1:${m1};--m2:${m2};--m3:${m3}"><svg viewBox="0 0 100 100">
       <defs><filter id="${id}r" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur in="SourceAlpha" stdDeviation="1.4" result="b"/>
         <feDiffuseLighting in="b" surfaceScale="3.2" diffuseConstant="1.05" lighting-color="${m2}" result="d"><feDistantLight azimuth="225" elevation="48"/></feDiffuseLighting><feComposite in="d" in2="SourceAlpha" operator="in" result="d2"/>
         <feSpecularLighting in="b" surfaceScale="3.2" specularConstant="1.1" specularExponent="24" lighting-color="#fff" result="s"><feDistantLight azimuth="225" elevation="40"/></feSpecularLighting><feComposite in="s" in2="SourceAlpha" operator="in" result="s2"/>
         <feMerge><feMergeNode in="d2"/><feMergeNode in="s2"/></feMerge></filter>
         <path id="${id}t" d="M50 50 m-39 0 a39 39 0 1 1 78 0 a39 39 0 1 1 -78 0"/></defs>
       <text class="bas-mx-tx l"><textPath href="#${id}t" startOffset="0">${esc(texto)}</textPath></text><text class="bas-mx-tx"><textPath href="#${id}t" startOffset="0">${esc(texto)}</textPath></text>
-      <g class="bas-mx-em" filter="url(#${id}r)">${emb}</g></svg>${on ? '' : '<i class="bas-mx-ca"></i>'}</span>`;
+      <g class="bas-mx-em" filter="url(#${id}r)">${emb}</g></svg>${on ? `<i class="bas-mx-rf"></i>${brilhos}` : '<i class="bas-mx-ca"></i>'}</span></span>`;
 }
 const BAS_CEU = [
   { n: 'Cruzeiro do Sul', e: [[54, 92, 3], [50, 8, 2.6], [16, 44, 2.6], [84, 38, 2], [66, 62, 1.4]], l: [[0, 1], [2, 3]] },
