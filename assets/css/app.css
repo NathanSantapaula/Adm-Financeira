@@ -2760,14 +2760,13 @@ html.side-mini .nav-g { height: 1px; margin: 10px 14px; font-size: 0; background
 .ab :is(.ab-esq, .ab-ferr, .ab-entrar) { transition: opacity 500ms var(--ease-out) 250ms, visibility 0s 250ms; }
 .ab-capa-k { margin: 0 0 12px; font-size: 15px; color: var(--ab-ink-2); }
 .ab-capa-t { margin: 0; font-size: clamp(44px, 7.4vw, 104px); line-height: .98; font-weight: 700; letter-spacing: -0.045em; color: var(--ab-ink); text-shadow: 0 0 46px color-mix(in srgb, var(--accent) 45%, transparent); }
-.ab-capa-s { margin: 20px auto 0; max-width: 540px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 12px; font-size: 16.5px; line-height: 1.3; color: var(--ab-ink-2); }
-.ab-capa-v { font-size: 22px; font-weight: 700; letter-spacing: -.01em; color: var(--ab-ink, var(--ink)); font-variant-numeric: tabular-nums; }
-.ab-capa-p { padding: 5px 12px; border-radius: 999px; font-size: 14px; font-weight: 650; font-variant-numeric: tabular-nums; background: color-mix(in srgb, currentColor 14%, transparent); }
-.ab-capa-p.pos { color: var(--pos); } .ab-capa-p.neg { color: var(--neg); }
+.ab-capa-s { margin: 18px auto 0; max-width: 540px; font-size: 18px; line-height: 1.4; color: var(--ab-ink-2); }
+.ab-capa-n { font-size: 1.35em; font-weight: 750; letter-spacing: -.02em; font-variant-numeric: tabular-nums; color: var(--pos); text-shadow: 0 0 22px color-mix(in srgb, var(--pos) 55%, transparent); }
+.ab-capa-n.neg { color: var(--neg); text-shadow: 0 0 22px color-mix(in srgb, var(--neg) 55%, transparent); }
 :root[data-theme="light"] .ab-capa-s { color: var(--on-accent); font-weight: 500; text-shadow: 0 1px 12px color-mix(in srgb, var(--accent) 55%, black); } /* no claro a frase fica sobre a esfera saturada */
 .ab-capa-b { margin-top: 28px; display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; }
 .ab-capa-b .hp-btn span { margin-left: 6px; }
-@media (max-width: 759px) { .ab-capa-c { top: max(13vh, 84px); } .ab-capa-s { font-size: 15px; } .ab-capa-b { flex-direction: column; align-items: stretch; } }
+@media (max-width: 759px) { .ab-capa-c { top: max(13vh, 84px); } .ab-capa-s { font-size: 17px; } .ab-capa-b { flex-direction: column; align-items: stretch; } }
 @media (prefers-reduced-motion: reduce) { .ab.ab-capa .ab-capa-c { animation: none; } .ab :is(.ab-esq, .ab-ferr, .ab-entrar) { transition: none; } }
 
 /* ---------- cadastro em cartão dividido (auth.js, S.authMode === 'signup'): a arte cobre o cartão inteiro e o formulário é sólido por cima ---------- */
@@ -3012,4 +3011,4 @@ html.side-mini .nav-g { height: 1px; margin: 10px 14px; font-size: 0; background
 
 /* política de privacidade (politica.js): títulos e listas legíveis no modal */
 .politica h4 { margin: 18px 0 4px; font-size: 16px; } .politica ul { margin: 6px 0; padding-left: 18px; } .politica li { margin: 5px 0; line-height: 1.5; } .politica .pol-v { color: var(--ink-3); font-size: 13px; }
-:root[data-theme="light"] .ab-capa-v, :root[data-theme="light"] .ab-capa-p { color: var(--on-accent); } :root[data-theme="light"] .ab-capa-p { background: rgba(255, 255, 255, .2); } /* no claro a linha fica sobre a esfera saturada */
+:root[data-theme="light"] .ab-capa-n { color: var(--on-accent); text-shadow: 0 1px 14px color-mix(in srgb, var(--accent) 60%, black); } /* no claro a frase fica sobre a esfera saturada */

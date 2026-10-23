@@ -190,11 +190,14 @@ function abGeo() { const A = AB; if (!A.gd) return; const k = A.kc * A.kc * (3 -
 // da capa para os detalhes: o globo sobe para o lugar dele e a tela de detalhes aparece
 function abDetalhes() { const A = AB; if (!A) return; A.kcA = 0; if (A.calmo || A.leve) { A.kc = 0; abGeo(); } A.el.classList.remove('ab-capa'); setTimeout(() => { const b = A.el.querySelector('.ab-entrar'); if (b) b.focus({ preventScroll: true }); }, 60); }
 // frase da capa: o patrimônio e quanto cresceu, respeitando o olho do globo
-// capa: uma linha só, o patrimônio em destaque e uma pílula com quanto cresceu no ano (os botões já dizem o que fazer)
-function abCapaTxt() { const A = AB; const s = A && A.el.querySelector('.ab-capa-s'); if (!s) return; const D = A.D; const c = D.cresc;
-  const v = document.createElement('b'); v.className = 'ab-capa-v'; v.textContent = abR(D.patr); const kids = [v];
-  if (Math.abs(c) >= 1) { const p = document.createElement('span'); p.className = 'ab-capa-p ' + (c > 0 ? 'pos' : 'neg'); p.textContent = `${c > 0 ? '↗ +' : '↘ −'}${abR(Math.abs(c))} em ${D.ano}`; kids.push(p); }
-  s.replaceChildren(...kids); s.setAttribute('aria-label', `${D.rotulo}: ${v.textContent}${kids[1] ? ', ' + kids[1].textContent : ''}`); }
+// capa: uma frase só, com o número que importa em destaque (o percentual do ano, que aparece mesmo com o olho fechado) e contando até ele
+function abCapaTxt() { const A = AB; const s = A && A.el.querySelector('.ab-capa-s'); if (!s) return; const D = A.D; const c = D.cresc; const base = D.patr - c;
+  const p = base > 0 && Math.abs(c) >= 1 ? Math.abs(c) / base : null; const b = document.createElement('b'); b.className = 'ab-capa-n' + (c < 0 ? ' neg' : '');
+  const fmt = (x) => `${x.toLocaleString('pt-BR', { maximumFractionDigits: x < 0.1 ? 1 : 0 })}%`;
+  if (p == null) { b.textContent = abR(D.patr); s.replaceChildren('Seu patrimônio hoje: ', b); return; }
+  b.textContent = fmt(p * 100); s.replaceChildren(`Seu patrimônio ${c > 0 ? 'cresceu' : 'recuou'} `, b, ` em ${D.ano}.`);
+  if (A.capaContou || matchMedia('(prefers-reduced-motion: reduce)').matches) return; A.capaContou = true;
+  const t0 = performance.now(); const passo = (t) => { const k = Math.min(1, (t - t0) / 1100); b.textContent = fmt(p * 100 * (1 - Math.pow(1 - k, 3))); if (k < 1 && b.isConnected) requestAnimationFrame(passo); }; requestAnimationFrame(passo); }
 function abTamanho() {
   if (!AB || AB.leve) return; const r = AB.el.getBoundingClientRect(); const dpr = Math.min(window.devicePixelRatio || 1, 2);
   AB.W = r.width; AB.H = r.height; AB.cv.width = AB.W * dpr; AB.cv.height = AB.H * dpr; AB.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
