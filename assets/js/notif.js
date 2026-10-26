@@ -219,7 +219,7 @@ async function notifIr(id) {
 // Atualiza só o sino e a lista, sem redesenhar a página (a tela não "pisca" a cada clique na central)
 function notifRefresh(foco) {
   document.querySelectorAll('.notif').forEach((el) => { el.outerHTML = sinoHtml(); });
-  notifTitulo(); S.notifAnim = false; iaRolar();
+  notifTitulo(); S.notifAnim = false; iaRolar(); if (typeof iaDvLigar === 'function') iaDvLigar();
   if (foco) { const el = document.querySelector(foco); if (el) el.focus(); }
 }
 function notifAcao(act, ds) {

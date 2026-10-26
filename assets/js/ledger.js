@@ -172,7 +172,8 @@ function gWidgets(G) {
       ${soma[''] ? '<p class="cap">Marque "Pago com" nos lançamentos para separar o que está sem instituição.</p>' : ''}` : gVazio('Sem gastos neste período.')));
         // meus cartões: um cartão por instituição usada no período, na cor dela, com o gasto e a fatia; tocar filtra a lista
     const C2 = L.filter((x) => x.k); const quando = G.mes >= 0 ? 'em ' + MES_LONGO[G.mes] : perFrase();
-    add('cartoes', gCard('cartoes', 'Meus cartões', C2.length ? `<div class="cc-cards" role="list">${C2.map((x) => { const i = instDe(x.k); return `<button class="cc-card" role="listitem" style="--cb:${i[2]};--cf:${i[3]}" data-act="g-busca" data-q="${esc(i[1])}" aria-label="${esc(i[1])}: ${esc(brl(x.v))} ${esc(quando)}"><span class="cc-tex" aria-hidden="true"></span><span class="cc-top"><span class="cc-nfc" aria-hidden="true">${CC_NFC}</span><span class="cc-nome">${esc(i[1])}</span>${instIcone(x.k)}</span><span class="cc-pe"><span><small>Gasto ${esc(quando)}</small><b class="cc-v">${brl(x.v)}</b></span><span><small>Do total</small><b>${pct(x.v / tot)}</b></span></span></button>`; }).join('')}</div>` : gVazio('Marque "Pago com" ao lançar um gasto para ver um cartão por banco ou carteira.'))); }
+    // o mesmo cartão do App (basCcEstilo: modelo e cor escolhidos pelo cliente); tocar abre a janela do cartão (ccAbrir)
+    add('cartoes', gCard('cartoes', 'Meus cartões', C2.length ? `<div class="cc-bas" role="list">${C2.map((x) => { const i = instDe(x.k); return `<button type="button" class="bas-cc-c" role="listitem" ${basCcEstilo(x.k).attr} data-act="cc-abrir" data-id="${esc(x.k)}" aria-label="${esc(i[1])}: ${esc(brl(x.v))} ${esc(quando)}"><span class="bas-cc-t"><span class="bas-cc-nfc" aria-hidden="true">${CC_NFC}</span>${instIcone(x.k)}</span><span class="bas-cc-n">${esc(i[1])}</span><span class="bas-cc-v"><small>Gasto ${esc(quando)}</small><b>${brl(x.v)}</b></span><span class="bas-cc-p">${pct(x.v / tot)}</span></button>`; }).join('')}</div>` : gVazio('Marque "Pago com" ao lançar um gasto para ver um cartão por banco ou carteira.'))); }
   // limites por área: sempre de um mês (o escolhido; na visão do ano, o mês atual)
   { const m = G.mes >= 0 ? G.mes : S.year === NOW_Y ? NOW_M : 11; const L = E.analiseLimites((S.plan.settings || {}).limites, E.gastosAreaMes(S.plan, planCtx().carry, m)); const cor = { ok: 'var(--pos)', perto: 'var(--warn)', passou: 'var(--neg)' };
     const segL = L.reduce((t, x) => t + x.limite, 0); const segG = L.reduce((t, x) => t + x.gasto, 0); // barra em segmentos: tamanho = limite, preenchido até o gasto
@@ -630,4 +631,20 @@ function openLanc(id, preset) {
     if (modo === 'parcelado') f.querySelector('[data-prev]').textContent = parcPreview(parseReais(f.elements.total.value) || 0, parseInt(f.elements.n.value, 10) || 0, +f.elements.pmes.value, parseInt(f.elements.pano.value, 10) || S.year); };
   f.addEventListener('input', sync); f.addEventListener('change', sync); sync();
   return f;
+}
+
+// janela de um cartão no SaaS: o cartão grande, os gastos dele no período por categoria e na lista, e o modelo e a cor (as mesmas ações do App, bas-cc-mod e bas-cc-cor)
+function ccAbrir(k) {
+  const i = instDe(k); if (!i) return; const meses = new Set(perIds()); const ents = gastosDados().ents.filter((e) => meses.has(e.m) && (e.inst || '') === k && e.valor > 0);
+  const tot = ents.reduce((t, e) => t + e.valor, 0); const areas = {}; ents.forEach((e) => { areas[e.area] = (areas[e.area] || 0) + e.valor; });
+  const la = Object.keys(areas).map((a) => [a, areas[a]]).sort((a, b) => b[1] - a[1]); const mx = la.length ? la[0][1] : 1; const E0 = basCcEstilo(k);
+  const lista = ents.slice().sort((a, b) => b.m - a.m || (b.dia || 0) - (a.dia || 0)).slice(0, 12).map((e) => `<li><span>${esc(e.nome || e.area)}<small>${esc(e.area)} · ${e.dia ? `${pad2(e.dia)}/${pad2(e.m + 1)}` : MES[e.m]}</small></span><b>${brl(e.valor)}</b></li>`).join('');
+  const mini = CC_MODELOS.map(([m, n]) => `<button type="button" class="bas-ccm${m === E0.m ? ' on' : ''}" data-act="bas-cc-mod" data-id="${esc(k)}" data-m="${m}" aria-pressed="${m === E0.m}"><span class="bas-cc-c bas-cc-mini" data-m="${m}" style="--cb:${E0.c};--cf:${i[3]}" aria-hidden="true"><span class="bas-cc-nfc">${CC_NFC}</span></span><small>${n}</small></button>`).join('');
+  const cores = [[i[2], `Cor do ${i[1]}`]].concat(CORES_DESTAQUE).map(([c, n]) => `<button type="button" class="cc-cor" style="--c:${c}" data-act="bas-cc-cor" data-id="${esc(k)}" data-v="${c}" aria-label="${esc(n)}" title="${esc(n)}" aria-pressed="${c.toLowerCase() === E0.c.toLowerCase()}"></button>`).join('');
+  $('#modal').addEventListener('close', () => render(), { once: true }); // ao fechar (Pronto ou Esc), o widget mostra o modelo novo
+  openModal({ title: i[1], wide: true, ok: 'Pronto', noCancel: true, noFocus: true, onOk: () => true, body: `<div class="cc-jan">
+    <div class="cc-jan-l"><div class="bas-cc-c bas-cc-big bas-cc-prev" ${E0.attr}><span class="bas-cc-t"><span class="bas-cc-nfc" aria-hidden="true">${CC_NFC}</span>${instIcone(k)}</span><span class="bas-cc-n">${esc(i[1])}</span><span class="bas-cc-v"><small>Gasto ${esc(perFrase())}</small><b>${brl(tot)}</b></span></div>
+      ${la.length ? `<h4 class="cc-jan-t">Por categoria</h4><ul class="g-areas">${la.map(([n, v], x) => `<li><div class="g-area"><span class="g-area-n"><b>${esc(n)}</b></span><span class="g-area-t"><i style="width:${((v / mx) * 100).toFixed(1)}%;--bc:${PAL[x % 6]}"></i></span><span class="g-area-v"><b>${brl0(v)}</b><small>${pct(v / (tot || 1))}</small></span></div></li>`).join('')}</ul>` : ''}
+      ${lista ? `<h4 class="cc-jan-t">Últimos gastos</h4><ul class="cc-jan-l2">${lista}</ul>` : '<p class="cap keep">Nenhum gasto neste cartão no período.</p>'}</div>
+    <div class="cc-jan-r"><h4 class="cc-jan-t">Modelo</h4><div class="bas-ccms">${mini}</div><h4 class="cc-jan-t">Cor</h4><div class="cc-cores" role="group" aria-label="Cor do cartão">${cores}</div><p class="cap keep">A cor vale nos modelos Do banco, Vidro e Grafite aurora.</p></div></div>` });
 }

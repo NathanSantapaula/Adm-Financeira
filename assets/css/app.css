@@ -3024,21 +3024,17 @@ html.side-mini .nav-g { height: 1px; margin: 10px 14px; font-size: 0; background
 /* ---------- v6: vidro em quadro (SaaS no computador) ----------
    barra do topo de ponta a ponta, um quadro de vidro (.app::before) que engloba o menu e a página,
    menu em pílula com a logo no alto e, se o cliente escolher em Aparência, uma foto desfocada atrás de tudo (data-fundo) */
-html[data-fundo="imovel"] { --fundo-img: url("../img/objetivos/imovel.jpg"); }
-html[data-fundo="viagem"] { --fundo-img: url("../img/objetivos/viagem.jpg"); }
-html[data-fundo="natureza"] { --fundo-img: url("../img/objetivos/independencia.jpg"); }
-:root { --palco: rgba(255, 255, 255, .30); --fundo-veu: rgba(245, 246, 249, .28); }
-:root[data-theme="oled"] { --palco: rgba(16, 16, 20, .34); --fundo-veu: rgba(0, 0, 0, .22); }
-@media (prefers-reduced-transparency: reduce) { :root, :root[data-theme="oled"] { --palco: transparent; --fundo-veu: var(--bg); } }
+:root { --palco: rgba(255, 255, 255, .30); }
+:root[data-theme="oled"] { --palco: rgba(16, 16, 20, .34); }
+@media (prefers-reduced-transparency: reduce) { :root, :root[data-theme="oled"] { --palco: transparent; } }
 .ia-cmd { display: none; }
 @media (min-width: 901px) {
   html body[data-ui="completo"][data-screen="app"] .app { grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); padding: 12px 16px 16px; row-gap: 14px; }
-  body[data-ui="completo"][data-screen="app"] .app::before { content: ""; grid-column: 1 / -1; grid-row: 2; border-radius: 34px; pointer-events: none;
+  body[data-ui="completo"][data-screen="app"] .app::before { content: ""; grid-column: 1 / -1; grid-row: 2; z-index: -1; border-radius: 34px; pointer-events: none;
     background: var(--reflexo), var(--palco); -webkit-backdrop-filter: blur(14px) saturate(1.4); backdrop-filter: blur(14px) saturate(1.4); border: 1px solid var(--glass-border); box-shadow: var(--shadow); }
-  html[data-fundo] body[data-ui="completo"][data-screen="app"]::before { inset: -24px; background: linear-gradient(var(--fundo-veu), var(--fundo-veu)), var(--fundo-img) center / cover no-repeat; filter: blur(6px) saturate(1.1); }
 
   /* topo: o vidro mora num ::before (backdrop-filter no próprio elemento prenderia os painéis fixos) */
-  body[data-ui="completo"][data-screen="app"] .topo { position: sticky; top: 12px; right: auto; grid-column: 1 / -1; grid-row: 1; z-index: 40; isolation: isolate; display: flex; align-items: center; gap: 12px; padding: 7px 8px 7px 7px; border-radius: 999px; }
+  body[data-ui="completo"][data-screen="app"] .topo { position: sticky; top: 12px; right: auto; grid-column: 1 / -1; grid-row: 1; z-index: 40; isolation: isolate; display: flex; align-items: center; gap: 12px; padding: 7px 8px 7px 16px; border-radius: 999px; }
   body[data-ui="completo"][data-screen="app"] .topo::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none;
     background: var(--reflexo), var(--glass); -webkit-backdrop-filter: blur(24px) saturate(1.6); backdrop-filter: blur(24px) saturate(1.6); border: 1px solid var(--glass-border); box-shadow: var(--shadow); }
   body[data-ui="completo"][data-screen="app"] .topo-eu { flex: none; background: none; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; padding: 0 10px 0 0; }
@@ -3055,7 +3051,7 @@ html[data-fundo="natureza"] { --fundo-img: url("../img/objetivos/independencia.j
   body[data-ui="completo"][data-screen="app"] .topo-r .olho, body[data-ui="completo"][data-screen="app"] .topo-r > .htools > .ab-ir { order: 3; }
 
   /* menu em pílula de vidro, dentro do quadro */
-  html body[data-ui="completo"][data-screen="app"] .side { grid-column: 1; grid-row: 2; position: sticky; top: 92px; align-self: start; z-index: 30; width: 236px; height: auto; max-height: calc(100dvh - 112px); margin: 16px 0 16px 14px; padding: 12px 10px; overflow: visible;
+  html body[data-ui="completo"][data-screen="app"] .side { grid-column: 1; grid-row: 2; position: sticky; top: 92px; align-self: start; z-index: 30; width: 236px; height: calc(100vh - 124px); height: calc(100dvh - 124px); margin: 16px 0 16px 14px; padding: 12px 10px; overflow: visible;
     border-radius: 28px; background: var(--reflexo), var(--glass); -webkit-backdrop-filter: blur(24px) saturate(1.6); backdrop-filter: blur(24px) saturate(1.6); border: 1px solid var(--glass-border); box-shadow: var(--shadow); }
   html.side-mini body[data-ui="completo"][data-screen="app"] .side { width: 64px; padding: 10px 8px; border-radius: 999px; }
   html.side-mini body[data-ui="completo"][data-screen="app"] .brand { padding: 0 0 10px; gap: 10px; border-bottom: 1px solid var(--glass-border); margin-bottom: 10px; }
@@ -3080,8 +3076,7 @@ html[data-fundo="natureza"] { --fundo-img: url("../img/objetivos/independencia.j
 @media (min-width: 901px) {
   body[data-ui="completo"][data-screen="app"] .wg[data-wg="indicadores"] { padding: 12px; border-radius: 30px; background: var(--reflexo), var(--glass); -webkit-backdrop-filter: blur(20px) saturate(1.5); backdrop-filter: blur(20px) saturate(1.5); border: 1px solid var(--glass-border); box-shadow: var(--shadow); }
 }
-/* v6, rodada 2: título grande com a frase menor embaixo; segmentos do período; aviso do assistente dentro do campo; painel na largura do campo; logo sem fundo */
-.wsub { margin-top: 8px; color: var(--ink-2); font-size: 16px; font-weight: 500; line-height: 1.4; max-width: 62ch; }
+/* v6, rodada 2: segmentos do período; aviso do assistente dentro do campo; painel na largura do campo; logo sem fundo */
 .per-seg, .ia-cmd-n { display: none; }
 @media (min-width: 901px) {
   body[data-ui="completo"][data-screen="app"] .year.per { display: flex; align-items: center; gap: 2px; padding: 3px; border-radius: 999px; background: var(--glass-strong); border: 1px solid var(--glass-border); }
@@ -3106,3 +3101,76 @@ html[data-fundo="natureza"] { --fundo-img: url("../img/objetivos/independencia.j
   body[data-ui="completo"][data-screen="app"] .brand-mini .logo-ic > rect { fill: none; }
   body[data-ui="completo"][data-screen="app"] .brand-mini .logo-ic g > path:not(.seta-aven) { fill: var(--ink); }
 }
+/* v6, rodada 3: fundos que se mexem (como os temas do PlayStation), atrás do quadro de vidro; cores do tema; parados com "reduzir movimento" */
+.fundo-vivo { display: none; }
+:root { --fv-base: linear-gradient(160deg, color-mix(in srgb, var(--accent) 20%, #eef1f7), #f5f6fa 55%, color-mix(in srgb, var(--accent-2) 16%, #f1f3f8));
+  --fv-1: color-mix(in srgb, var(--accent) 50%, transparent); --fv-2: color-mix(in srgb, var(--accent-2) 42%, transparent); --fv-3: color-mix(in srgb, var(--accent) 30%, #fff); --fv-p: color-mix(in srgb, var(--accent) 55%, #fff); }
+:root[data-theme="oled"] { --fv-base: linear-gradient(160deg, color-mix(in srgb, var(--accent) 34%, #02040c), #03050c 55%, color-mix(in srgb, var(--accent-2) 28%, #05030d));
+  --fv-1: color-mix(in srgb, var(--accent) 60%, transparent); --fv-2: color-mix(in srgb, var(--accent-2) 50%, transparent); --fv-3: color-mix(in srgb, var(--accent) 40%, #fff); --fv-p: rgba(255, 255, 255, .75); }
+@media (min-width: 901px) {
+  html[data-fundo] body[data-ui="completo"][data-screen="app"] .fundo-vivo { display: block; position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; background: var(--fv-base); }
+  .fundo-vivo i { position: absolute; display: block; }
+  /* Ondas: faixas e uma linha de luz em ondas que correm de lado */
+  html[data-fundo="ondas"] .fundo-vivo i { left: 0; width: 200%; height: 58vh; bottom: -6vh; background: linear-gradient(180deg, var(--fv-1), transparent 85%);
+    -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 300' preserveAspectRatio='none'%3E%3Cpath d='M0 150 C200 60 400 60 600 150 S1000 240 1200 150 V300 H0Z'/%3E%3C/svg%3E") 0 0 / 50% 100% repeat-x;
+    mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 300' preserveAspectRatio='none'%3E%3Cpath d='M0 150 C200 60 400 60 600 150 S1000 240 1200 150 V300 H0Z'/%3E%3C/svg%3E") 0 0 / 50% 100% repeat-x;
+    animation: fv-corre 28s linear infinite; opacity: .55; }
+  html[data-fundo="ondas"] .fundo-vivo i:nth-child(2) { bottom: -16vh; height: 64vh; background: linear-gradient(180deg, var(--fv-2), transparent 85%); animation-duration: 40s; animation-direction: reverse; opacity: .45; }
+  html[data-fundo="ondas"] .fundo-vivo i:nth-child(3) { bottom: 14vh; height: 30vh; background: var(--fv-3); opacity: .7; animation-duration: 22s;
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 300' preserveAspectRatio='none'%3E%3Cpath d='M0 150 C200 60 400 60 600 150 S1000 240 1200 150' fill='none' stroke='black' stroke-width='3'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 300' preserveAspectRatio='none'%3E%3Cpath d='M0 150 C200 60 400 60 600 150 S1000 240 1200 150' fill='none' stroke='black' stroke-width='3'/%3E%3C/svg%3E"); filter: drop-shadow(0 0 6px var(--fv-1)); }
+  /* Aurora: manchas de luz grandes e desfocadas que flutuam devagar */
+  html[data-fundo="aurora"] .fundo-vivo i { width: 62vmax; height: 62vmax; border-radius: 50%; filter: blur(70px); background: radial-gradient(closest-side, var(--fv-1), transparent); left: -12vmax; top: -18vmax; animation: fv-deriva 26s ease-in-out infinite alternate; }
+  html[data-fundo="aurora"] .fundo-vivo i:nth-child(2) { background: radial-gradient(closest-side, var(--fv-2), transparent); left: auto; right: -16vmax; top: 18vh; animation-duration: 32s; animation-delay: -9s; }
+  html[data-fundo="aurora"] .fundo-vivo i:nth-child(3) { background: radial-gradient(closest-side, var(--fv-3), transparent); left: 28vw; top: auto; bottom: -30vmax; animation-duration: 38s; animation-delay: -17s; opacity: .8; }
+  /* Partículas: pontos de luz que sobem devagar sobre um brilho suave */
+  html[data-fundo="particulas"] .fundo-vivo i { inset: 0; background: radial-gradient(circle, var(--fv-p) 0 1.4px, transparent 2px) 0 0 / 120px 120px; opacity: .55; animation: fv-sobe 30s linear infinite; }
+  html[data-fundo="particulas"] .fundo-vivo i:nth-child(2) { background: radial-gradient(circle, var(--fv-p) 0 2.2px, transparent 3px) 40px 60px / 200px 200px; opacity: .35; animation-name: fv-sobe2; animation-duration: 46s; }
+  html[data-fundo="particulas"] .fundo-vivo i:nth-child(3) { inset: auto; width: 80vmax; height: 50vmax; left: 10vw; bottom: -20vmax; border-radius: 50%; filter: blur(80px); background: radial-gradient(closest-side, var(--fv-1), transparent); opacity: .8; animation: fv-deriva 30s ease-in-out infinite alternate; }
+}
+@keyframes fv-corre { to { transform: translateX(-50%); } }
+@keyframes fv-deriva { 0% { transform: translate(0, 0) scale(1); } 50% { transform: translate(14vw, 8vh) scale(1.15); } 100% { transform: translate(-6vw, 16vh) scale(.95); } }
+@keyframes fv-sobe { to { background-position: 0 -480px; } }
+@keyframes fv-sobe2 { to { background-position: 40px -740px; } }
+@media (prefers-reduced-motion: reduce) { .fundo-vivo i { animation: none !important; } }
+/* SaaS: Meus cartões com o cartão do App (modelos e cor) e a janela do cartão */
+.cc-bas { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+.cc-bas .bas-cc-c { width: auto; }
+.cc-jan { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 28px; align-items: start; }
+.cc-jan .bas-cc-big { width: 100%; max-width: 440px; margin: 0; }
+.cc-jan-t { margin: 20px 0 10px; font-size: 13px; font-weight: 650; color: var(--ink-2); }
+.cc-jan-r > .cc-jan-t:first-child { margin-top: 0; }
+.cc-jan .bas-ccms { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.cc-jan-l2 { list-style: none; margin: 0; padding: 0; display: grid; }
+.cc-jan-l2 li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 0; border-top: 1px solid var(--line); font-size: 14px; }
+.cc-jan-l2 li span { display: grid; } .cc-jan-l2 li small { font-size: 12px; color: var(--ink-3); } .cc-jan-l2 li b { font-variant-numeric: tabular-nums; }
+.cc-cores { display: flex; flex-wrap: wrap; gap: 10px; }
+.cc-cor { width: 30px; height: 30px; padding: 0; border-radius: 50%; border: 2px solid var(--surface); background: var(--c); box-shadow: 0 0 0 1px var(--line-2); cursor: pointer; }
+.cc-cor[aria-pressed="true"] { box-shadow: 0 0 0 2.5px var(--accent); }
+@media (max-width: 760px) { .cc-jan { grid-template-columns: 1fr; } .cc-jan .bas-ccms { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+/* Dúvidas no painel do assistente do SaaS (guias passo a passo, como no App) */
+.ia-dv { padding: 14px; display: grid; gap: 10px; overflow-y: auto; min-height: 0; }
+.ia-dv-b { display: flex; align-items: center; gap: 8px; padding: 0 14px; height: 42px; border-radius: 999px; background: var(--surface-2); border: 1px solid var(--line); color: var(--ink-3); }
+.ia-dv-b svg { width: 18px; height: 18px; flex: none; stroke: currentColor; fill: none; stroke-width: 2; }
+.ia-dv-b input { flex: 1; min-width: 0; border: 0; background: none; font: inherit; font-size: 14px; color: var(--ink); outline: none; }
+.ia-dv-p, .ia-dv-nada { margin: 0; font-size: 13px; color: var(--ink-2); }
+.ia-dv-l button { min-height: 56px; padding: 10px 14px 10px 10px; border-radius: 16px; background: var(--surface-2); color: var(--ink); text-align: left; font: inherit; cursor: pointer; }
+.ia-dv-l button:hover { background: var(--surface-3); }
+.ia-dv-l .bas-ini { width: 34px; height: 34px; font-size: 14px; font-weight: 700; }
+.ia-dv-l .bas-n b { font-size: 14px; } .ia-dv-l .bas-n small { font-size: 12px; }
+.ia-dv-l svg { width: 16px; height: 16px; flex: none; stroke: var(--ink-3); fill: none; stroke-width: 2; }
+/* larguras médias (notebook pequeno, celular deitado): o topo encolhe em vez de passar da tela */
+@media (min-width: 901px) {
+  body[data-ui="completo"][data-screen="app"] .topo-r > .topo-ic { flex: 1 1 0; min-width: 0; }
+  body[data-ui="completo"][data-screen="app"] .topo-r .year, body[data-ui="completo"][data-screen="app"] .topo-r .olho, body[data-ui="completo"][data-screen="app"] .topo-r > .htools > .ab-ir { flex: none; }
+}
+@media (min-width: 901px) and (max-width: 1180px) {
+  body[data-ui="completo"][data-screen="app"] .per-seg { display: none; }
+  body[data-ui="completo"][data-screen="app"] .per-seg-on .per-pill .per-rot, body[data-ui="completo"][data-screen="app"] .per-seg-on .per-pill .per-sep, body[data-ui="completo"][data-screen="app"] .per-seg-on .per-pill > svg:first-child { display: revert; }
+  body[data-ui="completo"][data-screen="app"] .year.per .per-pill { border-left: 0; border-radius: 999px; }
+  body[data-ui="completo"][data-screen="app"] .topo-eu-t, body[data-ui="completo"][data-screen="app"] .topo-eu-v { display: none; }
+  body[data-ui="completo"][data-screen="app"] .topo-eu { padding: 0; }
+}
+/* tela baixa: o menu rola por dentro para nada ficar cortado */
+@media (min-width: 901px) and (max-height: 640px) { html body[data-ui="completo"][data-screen="app"] .side { overflow-y: auto; scrollbar-width: none; } }
+.cc-jan .bas-ccm:focus:not(:focus-visible) { outline: none; }

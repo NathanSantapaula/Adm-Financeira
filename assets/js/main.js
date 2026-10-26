@@ -70,7 +70,7 @@ function render(opts) {
   }
   const tw2 = $('.tablewrap'); if (tw2 && tws && same) { tw2.scrollLeft = tws[0]; tw2.scrollTop = tws[1]; }
   window.scrollTo(window.scrollX, same ? y : 0); S.lastKey = key;
-  drawAll();
+  drawAll(); if (typeof iaDvLigar === 'function') iaDvLigar();
   if (scr === 'app' && typeof aberturaTalvez === 'function') aberturaTalvez();
   if (scr === 'app' && !modoBasico() && typeof tourTalvez === 'function') tourTalvez(); // não abre com o globo aberto; o abFechar chama de novo
   if (scr === 'app' && S.lastCount !== key + ':' + S.year) { S.lastCount = key + ':' + S.year; contarNumeros($('#view')); }
@@ -127,6 +127,7 @@ function onClick(e) {
       case 'ing-ia': ingRefinar(); break;
       case 'tema': definirTema(ds.tema); break;
       case 'fundo': definirFundo(ds.v || ''); break;
+      case 'cc-abrir': ccAbrir(ds.id); break;
       case 'tema-cor': definirCor(ds.campo, ds.v); break;
       case 'tema-roda': { const c = rodaCor(el, e); if (c) definirCor('cor', c); break; }
       case 'voz': definirVoz(ds.voz); break;

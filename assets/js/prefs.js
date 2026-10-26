@@ -132,8 +132,8 @@ function definirCor(campo, valor) {
   if (campo === 'base') p.custom.base = valor === 'oled' ? 'oled' : 'light'; else if (/^#[0-9a-f]{6}$/i.test(valor || '')) p.custom.cor = valor;
   p.manual = 'custom'; if (p.tema !== 'auto') p.tema = 'custom'; touch('profile'); aplicarTema(p.tema, true); if (S.adminOpen) renderAdmin();
 }
-// imagem atrás do vidro no SaaS, no computador (foto de assets/img/objetivos, desfocada); vazio = só o fundo do tema
-const FUNDOS = [['', 'Nenhuma'], ['imovel', 'Casa'], ['viagem', 'Viagem'], ['natureza', 'Natureza']];
+// fundo animado atrás do vidro no SaaS, no computador (CSS em .fundo-vivo, nas cores do tema; parado com "reduzir movimento"); vazio = só o fundo do tema
+const FUNDOS = [['', 'Nenhum'], ['ondas', 'Ondas'], ['aurora', 'Aurora'], ['particulas', 'Partículas']];
 function aplicarFundo() { const v = S.profile && S.profile.prefs ? S.profile.prefs.fundo : ''; const h = document.documentElement; if (v && FUNDOS.some((f) => f[0] === v)) h.dataset.fundo = v; else delete h.dataset.fundo; }
 function definirFundo(v) { if (!S.profile || !FUNDOS.some((f) => f[0] === v)) return; S.profile.prefs.fundo = v; touch('profile'); aplicarFundo(); if (S.adminOpen) renderAdmin(); }
 function definirVoz(v) { if (!S.profile || !VOZ[v]) return; S.profile.prefs.voz = v; touch('profile'); render(); if (S.adminOpen) renderAdmin(); toast('Voz alterada: ' + VOZES[v].nome + '.'); }
@@ -156,6 +156,6 @@ function prefsHtml() {
   return `<section class="dr-sec"><h3>Aparência</h3>
       <label class="ap-auto"><span><b>Automático</b><small>Claro de dia, escuro à noite, como o aparelho.</small></span><span class="wg-sw"><input type="checkbox" data-tema-auto ${auto ? 'checked' : ''} aria-label="Tema automático"><span></span></span></label>
       <div class="ap-ops" role="group" aria-label="Tema">${opcoes}</div>${custom}
-      <div class="ap-linha"><span>Imagem de fundo <small>(no computador)</small></span><div class="seg" role="group" aria-label="Imagem de fundo">${FUNDOS.map(([v, l]) => `<button class="${(p.fundo || '') === v ? 'on' : ''}" data-act="fundo" data-v="${v}" aria-pressed="${(p.fundo || '') === v}">${l}</button>`).join('')}</div></div></section>
+      <div class="ap-linha"><span>Fundo animado <small>(no computador)</small></span><div class="seg" role="group" aria-label="Fundo animado">${FUNDOS.map(([v, l]) => `<button class="${(p.fundo || '') === v ? 'on' : ''}" data-act="fundo" data-v="${v}" aria-pressed="${(p.fundo || '') === v}">${l}</button>`).join('')}</div></div></section>
     <section class="dr-sec"><h3>Voz do painel</h3><div class="ap-vozes">${vozes}</div></section>`;
 }

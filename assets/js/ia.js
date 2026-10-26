@@ -421,8 +421,63 @@ function iaPainelHtml(lista) {
   const tab = (k, l) => `<button class="np-chip" role="tab" data-act="ia-aba" data-aba="${k}" aria-selected="${aba === k}" aria-pressed="${aba === k}">${l}</button>`;
   return `<div class="popover npop iap${S.notifAnim ? ' entra' : ''}" role="dialog" aria-label="Assistente" tabindex="-1">
     <div class="np-h ia-h">${iaOrb()}<div class="ia-h-t"><b>Assistente ${esc(CFG.marca || '')}</b><small>Seu planejamento, em conversa · ${esc(CFG.consultor)}</small></div><div class="np-h-a">${aba === 'avisos' && novas ? '<button class="lnk" data-act="notif-todas">Marcar como lidas</button>' : ''}<button class="icon-btn np-x" data-act="notif-fechar" aria-label="Fechar o assistente">${I.x}</button></div></div>
-    <div class="np-chips ia-tabs" role="tablist">${tab('conversa', 'Conversa')}${tab('avisos', `Avisos${novas ? `<em>${novas}</em>` : ''}`)}</div>
-    ${aba === 'avisos' ? notifCorpo(lista) : `<div class="iap-c">${S.iaComecou ? iaConversaHtml('p') : iaIntroHtml()}</div>`}</div>`;
+    <div class="np-chips ia-tabs" role="tablist">${tab('conversa', 'Conversa')}${tab('duvidas', 'Dúvidas')}${tab('avisos', `Avisos${novas ? `<em>${novas}</em>` : ''}`)}</div>
+    ${aba === 'avisos' ? notifCorpo(lista) : aba === 'duvidas' ? iaDuvidasHtml() : `<div class="iap-c">${S.iaComecou ? iaConversaHtml('p') : iaIntroHtml()}</div>`}</div>`;
+}
+
+/* ---------- Dúvidas (como no App): guias passo a passo do SaaS, mostrados na própria tela por tourIniciar ---------- */
+const iaIr = (v) => () => { if (S.view !== v) { S.view = v; S.maisOpen = false; closeAdmin(); render(); } };
+const IA_GUIAS = [
+  { id: 'extrato', t: 'Como importo o extrato do banco?', k: ['extrato', 'importar', 'csv', 'ofx', 'banco', 'b3', 'arquivo'], passos: [
+    { ir: iaIr('despesas'), s: '[data-act="ingest-open"]', t: 'Importar extrato', d: 'Em Gastos, toque em Importar extrato e escolha o arquivo do banco (CSV ou OFX) ou da B3. Nada é salvo antes de você conferir a prévia.' }] },
+  { id: 'gasto', t: 'Como registro um gasto?', k: ['gasto', 'gastei', 'despesa', 'compra', 'lancar', 'paguei', 'parcel', 'conta fixa'], passos: [
+    { ir: iaIr('despesas'), s: '[data-act="add-lanc"]', t: 'Novo gasto', d: 'Em Gastos, toque em Novo gasto. No topo do formulário escolha gasto do dia, todo mês ou parcelado, e marque a categoria e o cartão.' }] },
+  { id: 'renda', t: 'Como cadastro uma renda?', k: ['renda', 'salario', 'entrada', 'recebi', 'ganho'], passos: [
+    { ir: iaIr('rendas'), s: '[data-act="add-item"]', t: 'Nova renda', d: 'Em Rendas, adicione o salário e as outras entradas. A diferença entre rendas e gastos é o que sobra para investir.' }] },
+  { id: 'limite', t: 'Como defino limites de gasto?', k: ['limite', 'orcamento', 'teto', 'controlar'], passos: [
+    { ir: iaIr('despesas'), s: '[data-wg="limites"]', t: 'Limites por área', d: 'Em Gastos, o widget Limites por área mostra quanto já usou de cada área. Toque numa área para mudar o limite do mês.' }] },
+  { id: 'cartao', t: 'Como personalizo os meus cartões?', k: ['cartao', 'cartoes', 'banco', 'modelo', 'cor'], passos: [
+    { ir: iaIr('despesas'), s: '[data-wg="cartoes"]', t: 'Meus cartões', d: 'Um cartão por banco. Toque num cartão para ver os gastos dele e escolher o modelo e a cor.' }] },
+  { id: 'aporte', t: 'Como registro um investimento?', k: ['aporte', 'aportar', 'investir', 'investimento', 'apliquei', 'resgate'], pago: true, passos: [
+    { ir: iaIr('inv'), s: '[data-act="aporte-novo"]', t: 'Novo aporte', d: 'Em Investimentos, toque em Novo aporte: escolha um ativo que já tem ou cadastre um novo, o mês e o valor.' }] },
+  { id: 'proventos', t: 'Onde vejo os meus dividendos?', k: ['dividendo', 'provento', 'rendimento', 'jcp', 'fii'], pago: true, passos: [
+    { ir: iaIr('pro'), s: '[data-act="nav"][data-view="pro"]', t: 'Proventos', d: 'Aqui ficam os dividendos e rendimentos de cada mês, quem mais paga e o calendário de pagamentos.' }] },
+  { id: 'carteira', t: 'Onde coloco o próximo aporte?', k: ['carteira', 'onde investir', 'rebalancear', 'alvo', 'classe'], pago: true, passos: [
+    { ir: iaIr('cart'), s: '[data-act="nav"][data-view="cart"]', t: 'Carteira', d: 'A Carteira mostra como os investimentos estão divididos e o que aportar para chegar nos alvos.' }] },
+  { id: 'periodo', t: 'Como mudo o mês ou o período?', k: ['periodo', 'mes', 'ano', 'calendario', 'data', 'meses'], passos: [
+    { s: '.per-seg, .per-pill, .year-pill', t: 'Período', d: 'Escolha o mês atual, os últimos 3 meses ou o ano todo. No ano, o calendário deixa marcar qualquer intervalo de meses.' }] },
+  { id: 'objetivo', t: 'Como acompanho os meus objetivos?', k: ['objetivo', 'sonho', 'meta', 'casa', 'carro', 'viagem', 'e se'], passos: [
+    { ir: iaIr('geral'), s: '[data-wg="objetivos"]', t: 'Seu objetivo', d: 'Na Visão geral, o cartão do objetivo mostra o progresso. "E se?" simula aportes e prazos; a seta abre todos os objetivos.' }] },
+  { id: 'organizar', t: 'Como organizo a Visão geral?', k: ['organizar', 'widget', 'personalizar', 'tela', 'mover', 'esconder'], passos: [
+    { ir: iaIr('geral'), s: '[data-act="wg-editar"]', t: 'Organizar a tela', d: 'Toque em Organizar a tela para arrastar, mudar a largura, ligar ou desligar cada bloco.' }] },
+  { id: 'olho', t: 'Como escondo os valores?', k: ['esconder', 'ocultar', 'olho', 'privacidade', 'valores'], passos: [
+    { s: '.olho', t: 'Esconder valores', d: 'Toque no olho e os valores em reais ficam ocultos. Percentuais continuam visíveis.' }] },
+  { id: 'globo', t: 'O que é o globo do patrimônio?', k: ['globo', 'universo', 'patrimonio', 'abertura'], passos: [
+    { s: '[data-act="ab-abrir"]', t: 'Seu universo financeiro', d: 'O globo mostra o patrimônio, as classes da carteira, os aportes e os dividendos num desenho que gira. Toque para abrir.' }] },
+  { id: 'aparencia', t: 'Como mudo as cores e o fundo?', k: ['cor', 'tema', 'escuro', 'claro', 'fundo', 'aparencia', 'visual'], passos: [
+    { s: '.topo-eu', t: 'Aparência', d: 'Toque na sua foto e abra Personalizar o painel › Aparência: tema claro ou escuro, cor de destaque e o fundo animado.' }] },
+  { id: 'assessor', t: 'Como falo com o assessor?', k: ['assessor', 'falar', 'contato', 'whatsapp', 'ajuda'], passos: [
+    { s: '[data-act="contact"]', t: 'Fale com o assessor', d: 'Dúvidas sobre o seu planejamento? Fale direto com o assessor pelo canal que preferir.' }] },
+  { id: 'dados', t: 'Como baixo os meus dados?', k: ['baixar', 'backup', 'dados', 'exportar', 'excluir', 'lgpd'], passos: [
+    { s: '.topo-eu', t: 'Seus dados', d: 'Toque na sua foto e abra Backup e planilhas: lá você baixa todos os seus dados ou exclui a conta.' }] },
+];
+const iaGuias = () => IA_GUIAS.filter((g) => !g.pago || temRecurso('investimentos'));
+const iaSemAcento = (t) => String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+function iaDuvidasHtml() {
+  return `<div class="ia-dv"><label class="ia-dv-b">${typeof I_LUPA !== 'undefined' ? I_LUPA : ''}<input type="search" placeholder="Qual é a sua dúvida?" aria-label="Procurar uma dúvida" data-ia-dv></label>
+    <p class="ia-dv-p">Escolha uma e eu mostro o caminho na tela, passo a passo.</p>
+    <ul class="bas-ativ ia-dv-l">${iaGuias().map((g) => `<li data-k="${esc(iaSemAcento(g.t + ' ' + g.k.join(' ')))}"><button type="button" data-act="ia-guia" data-id="${g.id}"><span class="bas-ini" aria-hidden="true">${g.passos.length}</span><span class="bas-n"><b>${esc(g.t)}</b><small>${g.passos.length === 1 ? '1 passo' : `${g.passos.length} passos`}</small></span>${I.chev}</button></li>`).join('')}</ul>
+    <p class="ia-dv-nada" hidden>Nada com esse nome. Tente outra palavra ou pergunte na Conversa.</p></div>`;
+}
+// filtra a lista enquanto digita (sem render)
+function iaDvLigar() {
+  const i = document.querySelector('[data-ia-dv]'); if (!i || i.dataset.lig) return; i.dataset.lig = '1';
+  i.addEventListener('input', () => { const ws = iaSemAcento(i.value).trim().split(/\s+/).filter(Boolean); let n = 0;
+    document.querySelectorAll('.ia-dv-l li').forEach((li) => { const ok = ws.every((w) => li.dataset.k.includes(w)); li.hidden = !ok; if (ok) n++; }); document.querySelector('.ia-dv-nada').hidden = !!n; });
+}
+function iaGuiaIniciar(id) {
+  const g = iaGuias().find((x) => x.id === id); if (!g || typeof tourIniciar !== 'function') return;
+  S.notifOpen = false; notifRefresh(); tourIniciar(g.passos.map((x) => Object.assign({}, x)), 'Entendi');
 }
 
 // atualiza só a conversa e as fichas (sem render(), sem perder o que está digitado)
@@ -442,7 +497,8 @@ function iaAcao(act, ds) {
       return true;
     }
     case 'ia-mais': S.iaMais = !S.iaMais; iaRefresh(); return true;
-    case 'ia-aba': S.iaAba = ds.aba; notifRefresh(`.ia-tabs [data-aba="${ds.aba}"]`); iaRefresh(); return true;
+    case 'ia-aba': S.iaAba = ds.aba; notifRefresh(`.ia-tabs [data-aba="${ds.aba}"]`); iaRefresh(); iaDvLigar(); return true;
+    case 'ia-guia': iaGuiaIniciar(ds.id); return true;
     case 'ia-ir': {
       const m = iaEstado().msgs[+ds.i]; const c = m && m.r && m.r.cta; if (!c) return true;
       if (c.acao === 'avisos') { S.notifOpen = true; S.iaAba = 'avisos'; notifRefresh('.npop'); return true; }
