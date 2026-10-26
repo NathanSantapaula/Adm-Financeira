@@ -13,12 +13,13 @@ const cartaoPlanoHtml = () => `<div class="advisor plano"><span class="adv-ic" a
 function renderSide() {
   if (modoBasico()) { basicoBarra(); return; } // modo Básico (basico.js): abas embaixo, sem menu lateral nem topo
   const items = navItems(); const nome = (S.profile && S.profile.nome) || 'Minha conta';
-  const btn = ([k, l]) => `<button data-act="nav" data-view="${k}" title="${esc(l)}" ${S.view === k ? 'aria-current="page"' : ''}>${I[k] || I.geral}<span>${l}</span>${k !== 'clientes' && !abaLiberada(k) ? `<em class="lk" title="Plano ${esc(nomePlano(planoMinimoDe(E.ABA_RECURSO[k] || 'fluxo')))}">${I.lock}</em>` : ''}</button>`;
+  const btn = ([k, l]) => `<button data-act="nav" data-view="${k}" ${S.view === k ? 'aria-current="page"' : ''}>${I[k] || I.geral}<span>${l}</span>${k !== 'clientes' && !abaLiberada(k) ? `<em class="lk" title="Plano ${esc(nomePlano(planoMinimoDe(E.ABA_RECURSO[k] || 'fluxo')))}">${I.lock}</em>` : ''}</button>`;
   // no computador o menu recolhe para só o ícone "AV" e os ícones das abas (estado guardado no aparelho: html.side-mini)
   const mini = document.documentElement.classList.contains('side-mini');
-  // topo da página: à direita, a busca (nas abas que têm), o sino e o perfil; a marca fica no menu lateral
+  // topo da página (barra de vidro de ponta a ponta): à esquerda, foto e saudação; depois período, assistente (com a busca), olho e globo; a marca fica no menu lateral
   const htAntes = $('#topo .htools'); // olho, globo e período movidos pelo render() (renderSide sozinho, no redimensionar, não os perde)
-  $('#topo').innerHTML = `<div class="topo-r"><div class="topo-ic">${buscaBtnHtml()}${typeof sinoHtml === 'function' ? sinoHtml() : ''}</div><button class="topo-eu" data-act="admin-open" aria-label="Abrir o seu perfil e o painel" title="${esc(nome)} · ${esc(planLabel())}">${avatarHtml(S.profile)}<span class="topo-eu-t"><b>${esc(nome)}</b><small>${esc(planLabel())}</small></span><svg class="topo-eu-v" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button></div>`;
+  const oi = S.profile && S.profile.nome ? `${saudacaoHora()}, ${S.profile.nome.trim().split(/\s+/)[0]}` : nome;
+  $('#topo').innerHTML = `<button class="topo-eu" data-act="admin-open" aria-label="Abrir o seu perfil e o painel" title="${esc(nome)} · ${esc(planLabel())}">${avatarHtml(S.profile)}<span class="topo-eu-t"><b>${esc(oi)}</b><small>${esc(planLabel())}</small></span><svg class="topo-eu-v" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><div class="topo-r"><div class="topo-ic">${buscaBtnHtml()}${typeof sinoHtml === 'function' ? sinoHtml() : ''}</div></div>`;
   if (htAntes) $('#topo .topo-r').prepend(htAntes);
   $('#side').innerHTML = `<div class="brand"><span class="brand-full">${logoMarca()}</span><span class="brand-mini" aria-hidden="true">${LOGO}</span>
       <button class="side-tog" data-act="side-toggle" aria-expanded="${!mini}" aria-label="${mini ? 'Expandir o menu' : 'Recolher o menu'}" title="${mini ? 'Expandir o menu' : 'Recolher o menu'}">${I.chev}</button></div>
@@ -57,7 +58,7 @@ function render(opts) {
   const key = scr + ':' + (scr === 'app' ? S.view : scr === 'onboarding' && S.ob ? S.ob.step + '.' + S.ob.q : scr === 'auth' ? S.authMode : '');
   const same = S.lastKey === key;
   if (soft && scr !== 'app' && same) return;
-  S.needsRender = false; document.body.dataset.screen = scr; document.documentElement.dataset.icones = (S.profile && S.profile.instEstilo) || 'auto'; document.body.dataset.ui = modoBasico() ? 'basico' : 'completo'; S.renderSeq = (S.renderSeq || 0) + 1;
+  S.needsRender = false; document.body.dataset.screen = scr; document.documentElement.dataset.icones = (S.profile && S.profile.instEstilo) || 'auto'; document.body.dataset.ui = modoBasico() ? 'basico' : 'completo'; aplicarFundo(); S.renderSeq = (S.renderSeq || 0) + 1;
   const y = window.scrollY; const tw = $('.tablewrap'); const tws = tw ? [tw.scrollLeft, tw.scrollTop] : null;
   S.C = S.plan && S.profile ? E.compute(S.plan, planCtx()) : null;
   hideTip();
@@ -126,6 +127,7 @@ function onClick(e) {
       case 'ing-filtro': S.ing.filtro = ds.f; renderIng(); break;
       case 'ing-ia': ingRefinar(); break;
       case 'tema': definirTema(ds.tema); break;
+      case 'fundo': definirFundo(ds.v || ''); break;
       case 'tema-cor': definirCor(ds.campo, ds.v); break;
       case 'tema-roda': { const c = rodaCor(el, e); if (c) definirCor('cor', c); break; }
       case 'voz': definirVoz(ds.voz); break;

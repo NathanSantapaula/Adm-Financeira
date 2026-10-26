@@ -3020,3 +3020,63 @@ html.side-mini .nav-g { height: 1px; margin: 10px 14px; font-size: 0; background
 .ing-massa-c select, .ing-massa-c input { width: 100%; min-width: 0; min-height: 36px; padding: 4px 24px 4px 12px; border-radius: var(--r-pill); font-size: 13px; }
 .ing-massa-c input { grid-column: 1 / -1; order: 3; padding-right: 12px; }
 .ing-sub .ing-cat { color: var(--ink); width: 140px; min-height: 30px; padding: 4px 12px; border-radius: var(--r-pill); font-size: 12.5px; }
+
+/* ---------- v6: vidro em quadro (SaaS no computador) ----------
+   barra do topo de ponta a ponta, um quadro de vidro (.app::before) que engloba o menu e a página,
+   menu em pílula com a logo no alto e, se o cliente escolher em Aparência, uma foto desfocada atrás de tudo (data-fundo) */
+html[data-fundo="imovel"] { --fundo-img: url("../img/objetivos/imovel.jpg"); }
+html[data-fundo="viagem"] { --fundo-img: url("../img/objetivos/viagem.jpg"); }
+html[data-fundo="natureza"] { --fundo-img: url("../img/objetivos/independencia.jpg"); }
+:root { --palco: rgba(255, 255, 255, .30); --fundo-veu: rgba(245, 246, 249, .28); }
+:root[data-theme="oled"] { --palco: rgba(16, 16, 20, .34); --fundo-veu: rgba(0, 0, 0, .22); }
+@media (prefers-reduced-transparency: reduce) { :root, :root[data-theme="oled"] { --palco: transparent; --fundo-veu: var(--bg); } }
+.ia-cmd { display: none; }
+@media (min-width: 901px) {
+  html body[data-ui="completo"][data-screen="app"] .app { grid-template-columns: auto minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); padding: 12px 16px 16px; row-gap: 14px; }
+  body[data-ui="completo"][data-screen="app"] .app::before { content: ""; grid-column: 1 / -1; grid-row: 2; border-radius: 34px; pointer-events: none;
+    background: var(--reflexo), var(--palco); -webkit-backdrop-filter: blur(14px) saturate(1.4); backdrop-filter: blur(14px) saturate(1.4); border: 1px solid var(--glass-border); box-shadow: var(--shadow); }
+  html[data-fundo] body[data-ui="completo"][data-screen="app"]::before { inset: -24px; background: linear-gradient(var(--fundo-veu), var(--fundo-veu)), var(--fundo-img) center / cover no-repeat; filter: blur(6px) saturate(1.1); }
+
+  /* topo: o vidro mora num ::before (backdrop-filter no próprio elemento prenderia os painéis fixos) */
+  body[data-ui="completo"][data-screen="app"] .topo { position: sticky; top: 12px; right: auto; grid-column: 1 / -1; grid-row: 1; z-index: 40; isolation: isolate; display: flex; align-items: center; gap: 12px; padding: 7px 8px 7px 7px; border-radius: 999px; }
+  body[data-ui="completo"][data-screen="app"] .topo::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none;
+    background: var(--reflexo), var(--glass); -webkit-backdrop-filter: blur(24px) saturate(1.6); backdrop-filter: blur(24px) saturate(1.6); border: 1px solid var(--glass-border); box-shadow: var(--shadow); }
+  body[data-ui="completo"][data-screen="app"] .topo-eu { flex: none; background: none; box-shadow: none; -webkit-backdrop-filter: none; backdrop-filter: none; padding: 0 10px 0 0; }
+  body[data-ui="completo"][data-screen="app"] .topo-eu-t b { max-width: 220px; }
+  body[data-ui="completo"][data-screen="app"] .topo-r { flex: 1; min-width: 0; margin-left: 0; display: flex; flex-wrap: nowrap; justify-content: flex-start; gap: 10px; }
+  body[data-ui="completo"][data-screen="app"] .topo-r > .htools { display: contents; }
+  body[data-ui="completo"][data-screen="app"] .topo-r .year { order: 1; }
+  body[data-ui="completo"][data-screen="app"] .topo-r .year > .popover { right: auto; left: 0; }
+  body[data-ui="completo"][data-screen="app"] .topo-r > .topo-ic { order: 2; flex: 1 1 auto; max-width: 580px; margin: 0 auto; padding: 3px; background: var(--glass-strong); border: 1px solid var(--glass-border); box-shadow: none; }
+  body[data-ui="completo"][data-screen="app"] .topo-ic::before { display: none; }
+  body[data-ui="completo"][data-screen="app"] .topo-ic .notif { order: -1; flex: 1; min-width: 0; display: flex; align-items: center; }
+  body[data-ui="completo"][data-screen="app"] .ia-cmd { display: block; flex: 1; min-width: 0; height: 38px; padding: 0 12px; border: 0; background: none; color: var(--ink-3); font: inherit; font-size: 14px; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: text; }
+  body[data-ui="completo"][data-screen="app"] .ia-cmd:hover { color: var(--ink-2); }
+  body[data-ui="completo"][data-screen="app"] .topo-r .olho, body[data-ui="completo"][data-screen="app"] .topo-r > .htools > .ab-ir { order: 3; }
+
+  /* menu em pílula de vidro, dentro do quadro */
+  html body[data-ui="completo"][data-screen="app"] .side { grid-column: 1; grid-row: 2; position: sticky; top: 92px; align-self: start; z-index: 30; width: 236px; height: auto; max-height: calc(100dvh - 112px); margin: 16px 0 16px 14px; padding: 12px 10px; overflow: visible;
+    border-radius: 28px; background: var(--reflexo), var(--glass); -webkit-backdrop-filter: blur(24px) saturate(1.6); backdrop-filter: blur(24px) saturate(1.6); border: 1px solid var(--glass-border); box-shadow: var(--shadow); }
+  html.side-mini body[data-ui="completo"][data-screen="app"] .side { width: 64px; padding: 10px 8px; border-radius: 999px; }
+  html.side-mini body[data-ui="completo"][data-screen="app"] .brand { padding: 0 0 10px; gap: 10px; border-bottom: 1px solid var(--glass-border); margin-bottom: 10px; }
+  html.side-mini body[data-ui="completo"][data-screen="app"] .brand-mini .logo-ic { width: 40px; height: 40px; filter: drop-shadow(0 4px 10px color-mix(in srgb, var(--accent) 35%, transparent)); }
+  html.side-mini body[data-ui="completo"][data-screen="app"] .nav { gap: 6px; align-items: center; }
+  html.side-mini body[data-ui="completo"][data-screen="app"] .nav button { width: 44px; height: 44px; padding: 0; border-radius: 50%; justify-content: center; }
+  html.side-mini body[data-ui="completo"][data-screen="app"] .nav button[aria-current="page"] { background: var(--accent); color: var(--on-accent); border-color: transparent; box-shadow: 0 6px 16px -6px var(--accent); }
+  html.side-mini body[data-ui="completo"][data-screen="app"] .nav button[aria-current="page"] svg { color: var(--on-accent); }
+  html.side-mini body[data-ui="completo"][data-screen="app"] .nav-g { width: 24px; margin: 4px auto; }
+  /* no menu recolhido o nome da aba aparece num balão ao lado */
+  html.side-mini body[data-ui="completo"][data-screen="app"] .nav button > span { display: block; position: absolute; left: calc(100% + 14px); top: 50%; translate: -4px -50%; z-index: 50; white-space: nowrap; pointer-events: none; opacity: 0;
+    padding: 6px 10px; border-radius: 10px; font-size: 13px; font-weight: 600; color: var(--ink); background: color-mix(in srgb, var(--surface) 94%, transparent); border: 1px solid var(--glass-border); box-shadow: var(--shadow); transition: opacity 160ms ease, translate 160ms ease; }
+  html.side-mini body[data-ui="completo"][data-screen="app"] .nav button:hover > span, html.side-mini body[data-ui="completo"][data-screen="app"] .nav button:focus-visible > span { opacity: 1; translate: 0 -50%; }
+  html.side-mini body[data-ui="completo"][data-screen="app"] .side-foot { padding-top: 8px; }
+
+  body[data-ui="completo"][data-screen="app"] .main { grid-column: 2; grid-row: 2; padding: 26px clamp(18px, 2.4vw, 32px) 32px 22px; }
+  body[data-ui="completo"][data-screen="app"] #view .page-h:first-child { padding-right: 0; }
+  body[data-ui="completo"][data-screen="app"] #view .welcome:first-child .wh { margin-top: 0; }
+}
+@media (min-width: 901px) and (prefers-reduced-motion: reduce) { html.side-mini body[data-ui="completo"][data-screen="app"] .nav button > span { transition: none; } }
+/* v6: os números do ano ficam juntos num cartão de vidro próprio, como um grupo */
+@media (min-width: 901px) {
+  body[data-ui="completo"][data-screen="app"] .wg[data-wg="indicadores"] { padding: 12px; border-radius: 30px; background: var(--reflexo), var(--glass); -webkit-backdrop-filter: blur(20px) saturate(1.5); backdrop-filter: blur(20px) saturate(1.5); border: 1px solid var(--glass-border); box-shadow: var(--shadow); }
+}
