@@ -3080,3 +3080,29 @@ html[data-fundo="natureza"] { --fundo-img: url("../img/objetivos/independencia.j
 @media (min-width: 901px) {
   body[data-ui="completo"][data-screen="app"] .wg[data-wg="indicadores"] { padding: 12px; border-radius: 30px; background: var(--reflexo), var(--glass); -webkit-backdrop-filter: blur(20px) saturate(1.5); backdrop-filter: blur(20px) saturate(1.5); border: 1px solid var(--glass-border); box-shadow: var(--shadow); }
 }
+/* v6, rodada 2: título grande com a frase menor embaixo; segmentos do período; aviso do assistente dentro do campo; painel na largura do campo; logo sem fundo */
+.wsub { margin-top: 8px; color: var(--ink-2); font-size: 16px; font-weight: 500; line-height: 1.4; max-width: 62ch; }
+.per-seg, .ia-cmd-n { display: none; }
+@media (min-width: 901px) {
+  body[data-ui="completo"][data-screen="app"] .year.per { display: flex; align-items: center; gap: 2px; padding: 3px; border-radius: 999px; background: var(--glass-strong); border: 1px solid var(--glass-border); }
+  body[data-ui="completo"][data-screen="app"] .per-seg { display: flex; gap: 2px; }
+  body[data-ui="completo"][data-screen="app"] .per-seg button { display: flex; align-items: center; gap: 6px; height: 34px; padding: 0 13px; border: 0; border-radius: 999px; background: none; color: var(--ink-2); font: inherit; font-size: 13.5px; font-weight: 600; white-space: nowrap; cursor: pointer; transition: background-color 160ms ease, color 160ms ease; }
+  body[data-ui="completo"][data-screen="app"] .per-seg button:hover { color: var(--ink); background: color-mix(in srgb, var(--ink) 6%, transparent); }
+  body[data-ui="completo"][data-screen="app"] .per-seg button.on { background: var(--ink); color: var(--bg); }
+  body[data-ui="completo"][data-screen="app"] .per-seg svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; }
+  body[data-ui="completo"][data-screen="app"] .year.per .per-pill { height: 34px; padding: 0 10px 0 12px; border: 0; border-left: 1px solid var(--glass-border); border-radius: 0 999px 999px 0; background: none; box-shadow: none; }
+  body[data-ui="completo"][data-screen="app"] .per-seg-on .per-pill > svg:first-child, body[data-ui="completo"][data-screen="app"] .per-seg-on .per-pill .per-rot, body[data-ui="completo"][data-screen="app"] .per-seg-on .per-pill .per-sep { display: none; }
+  /* o número de avisos vira uma ficha dentro do campo, à direita (no selo ele ficava cortado) */
+  body[data-ui="completo"][data-screen="app"] .topo-ic .bell-n { display: none; }
+  body[data-ui="completo"][data-screen="app"] .ia-cmd { display: flex; align-items: center; gap: 10px; }
+  body[data-ui="completo"][data-screen="app"] .ia-cmd > span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  body[data-ui="completo"][data-screen="app"] .ia-cmd-n { display: inline-block; flex: none; padding: 3px 9px; border-radius: 999px; font-style: normal; font-size: 12px; font-weight: 650; color: var(--on-accent); background: var(--accent); }
+  body[data-ui="completo"][data-screen="app"] .ia-cmd-n.crit { background: var(--neg); color: #fff; }
+  /* painel do assistente com a largura do campo de busca */
+  body[data-ui="completo"][data-screen="app"] .topo-ic .notif { position: static; }
+  body[data-ui="completo"][data-screen="app"] .topo-ic .npop { left: 0; right: 0; width: auto; max-width: none; top: calc(100% + 10px); transform-origin: top center; }
+  /* logo do menu: só as letras e a seta, sem o quadrado */
+  html.side-mini body[data-ui="completo"][data-screen="app"] .brand-mini .logo-ic { width: 46px; height: 46px; filter: none; }
+  body[data-ui="completo"][data-screen="app"] .brand-mini .logo-ic > rect { fill: none; }
+  body[data-ui="completo"][data-screen="app"] .brand-mini .logo-ic g > path:not(.seta-aven) { fill: var(--ink); }
+}

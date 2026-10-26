@@ -16,10 +16,9 @@ function renderSide() {
   const btn = ([k, l]) => `<button data-act="nav" data-view="${k}" ${S.view === k ? 'aria-current="page"' : ''}>${I[k] || I.geral}<span>${l}</span>${k !== 'clientes' && !abaLiberada(k) ? `<em class="lk" title="Plano ${esc(nomePlano(planoMinimoDe(E.ABA_RECURSO[k] || 'fluxo')))}">${I.lock}</em>` : ''}</button>`;
   // no computador o menu recolhe para só o ícone "AV" e os ícones das abas (estado guardado no aparelho: html.side-mini)
   const mini = document.documentElement.classList.contains('side-mini');
-  // topo da página (barra de vidro de ponta a ponta): à esquerda, foto e saudação; depois período, assistente (com a busca), olho e globo; a marca fica no menu lateral
+  // topo da página (barra de vidro de ponta a ponta): à esquerda, foto e nome; depois período, assistente (com a busca), olho e globo; a marca fica no menu lateral
   const htAntes = $('#topo .htools'); // olho, globo e período movidos pelo render() (renderSide sozinho, no redimensionar, não os perde)
-  const oi = S.profile && S.profile.nome ? `${saudacaoHora()}, ${S.profile.nome.trim().split(/\s+/)[0]}` : nome;
-  $('#topo').innerHTML = `<button class="topo-eu" data-act="admin-open" aria-label="Abrir o seu perfil e o painel" title="${esc(nome)} · ${esc(planLabel())}">${avatarHtml(S.profile)}<span class="topo-eu-t"><b>${esc(oi)}</b><small>${esc(planLabel())}</small></span><svg class="topo-eu-v" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><div class="topo-r"><div class="topo-ic">${buscaBtnHtml()}${typeof sinoHtml === 'function' ? sinoHtml() : ''}</div></div>`;
+  $('#topo').innerHTML = `<button class="topo-eu" data-act="admin-open" aria-label="Abrir o seu perfil e o painel" title="${esc(nome)} · ${esc(planLabel())}">${avatarHtml(S.profile)}<span class="topo-eu-t"><b>${esc(nome)}</b><small>${esc(planLabel())}</small></span><svg class="topo-eu-v" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><div class="topo-r"><div class="topo-ic">${buscaBtnHtml()}${typeof sinoHtml === 'function' ? sinoHtml() : ''}</div></div>`;
   if (htAntes) $('#topo .topo-r').prepend(htAntes);
   $('#side').innerHTML = `<div class="brand"><span class="brand-full">${logoMarca()}</span><span class="brand-mini" aria-hidden="true">${LOGO}</span>
       <button class="side-tog" data-act="side-toggle" aria-expanded="${!mini}" aria-label="${mini ? 'Expandir o menu' : 'Recolher o menu'}" title="${mini ? 'Expandir o menu' : 'Recolher o menu'}">${I.chev}</button></div>
