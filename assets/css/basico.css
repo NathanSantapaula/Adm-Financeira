@@ -1552,7 +1552,7 @@ button.bas-esc-c { cursor: pointer; transition: transform 140ms var(--ease-out);
 @keyframes bas-aura-brasa { 0%, 100% { transform: scale(.95); opacity: .7; } 50% { transform: scale(1.06); opacity: 1; } }
 .bas-mxw.bronze .bas-mx-rf { background: linear-gradient(120deg, transparent 30%, rgba(255, 220, 180, .45) 45%, transparent 62%) 0 0 / 260% 100%; mix-blend-mode: soft-light; animation: bas-rf-varre 6.5s ease-in-out infinite; }
 /* prata: luar frio que respira; risco fino e rápido */
-.bas-mxw.prata .bas-mx-aura { background: radial-gradient(circle, rgba(215, 232, 255, .55), rgba(180, 205, 255, .12) 50%, transparent 66%); box-shadow: 0 0 0 1px rgba(220, 235, 255, .18) inset; animation: bas-aura-luar 5s ease-in-out infinite; }
+.bas-mxw.prata .bas-mx-aura { background: radial-gradient(circle, rgba(215, 232, 255, .55), rgba(180, 205, 255, .12) 50%, transparent 66%); animation: bas-aura-luar 5s ease-in-out infinite; }
 @keyframes bas-aura-luar { 0%, 100% { opacity: .65; } 50% { opacity: 1; } }
 .bas-mxw.prata .bas-mx-rf { background: linear-gradient(118deg, transparent 47%, rgba(255, 255, 255, .95) 49.5%, transparent 52%) 0 0 / 300% 100%; mix-blend-mode: overlay; animation: bas-rf-varre 3.2s cubic-bezier(.6, 0, .2, 1) infinite; }
 /* ouro: raios dourados girando; reflexo duplo; faíscas na superfície */
