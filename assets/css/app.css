@@ -3306,3 +3306,5 @@ html.vt-ap::view-transition-old(root), html.vt-ap::view-transition-new(root) { a
   .tb-res .tb-ia b { color: var(--accent); }
 }
 @media (prefers-reduced-motion: reduce) { body[data-ui="completo"][data-screen="app"] .topo-ic:focus-within::after { animation: none; } }
+/* digitando no campo do topo: a lista da busca toma o lugar do painel do assistente; apagou o texto, o painel volta */
+.topo-ic.buscando .npop { display: none; }

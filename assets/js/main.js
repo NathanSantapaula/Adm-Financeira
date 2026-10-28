@@ -299,17 +299,24 @@ function topoBuscaDesenhar(inp) {
   const q = E.norm(inp.value).split(/\s+/).filter(Boolean);
   const telas = navItems().map(([k, l]) => ({ t: 'Tela', n: l, s: '', go: () => navPara(k) }));
   TB.achados = q.length ? telas.concat(buscaItens()).filter((x) => { const h = E.norm(`${x.n} ${x.s} ${x.t}`); return q.every((w) => h.includes(w)); }).slice(0, 7) : []; TB.sel = 0;
+  box.classList.toggle('buscando', !!q.length); // digitando: a busca aparece no lugar do painel; apagou, o painel volta
   if (!q.length) { if (ul) ul.remove(); return; }
   if (!ul) { ul = document.createElement('ul'); ul.className = 'tb-res'; ul.setAttribute('role', 'listbox'); ul.addEventListener('pointerdown', (e) => e.preventDefault()); box.appendChild(ul); }
   ul.innerHTML = TB.achados.map((x, i) => `<li><button type="button" class="busca-it${i === TB.sel ? ' on' : ''}" data-act="topo-busca-ir" data-i="${i}" role="option"><span><b>${esc(x.n)}</b>${x.s ? `<small>${esc(x.s)}</small>` : ''}</span><em>${esc(x.t)}</em></button></li>`).join('')
     + `<li><button type="button" class="busca-it tb-ia${TB.achados.length ? '' : ' on'}" data-act="topo-busca-ia" role="option"><span><b>Perguntar ao assistente</b><small>${esc(inp.value.trim())}</small></span><em>Enter</em></button></li>`;
 }
-function topoBuscaFechar(inp) { if (inp) inp.value = ''; const ul = document.querySelector('.tb-res'); if (ul) ul.remove(); TB.achados = []; }
+function topoBuscaFechar(inp) { if (inp) inp.value = ''; const ul = document.querySelector('.tb-res'); if (ul) ul.remove(); TB.achados = []; const b = document.querySelector('.topo-ic.buscando'); if (b) b.classList.remove('buscando'); }
+// tocar no campo abre o painel do assistente como antes (abertura, Dúvidas, Avisos) sem tirar o cursor do campo: o painel entra ao lado, sem redesenhar o campo
+function topoBuscaAbrirPainel(inp) {
+  if (S.notifOpen) return; const n = inp.closest('.notif'); if (!n) return;
+  S.notifOpen = true; S.notifAnim = true; n.insertAdjacentHTML('beforeend', iaPainelHtml(S.notifs || notifLista())); S.notifAnim = false;
+  const b = n.querySelector('.ia-btn'); if (b) b.setAttribute('aria-expanded', 'true'); if (typeof iaDvLigar === 'function') iaDvLigar();
+}
 function topoBuscaIr(i) { const x = TB.achados[i]; topoBuscaFechar(topoCampo()); if (x) x.go(); }
 function topoBuscaIa() { const inp = topoCampo(); const q = inp ? inp.value.trim() : ''; topoBuscaFechar(inp); if (!q) return; S.notifOpen = true; S.iaAba = 'conversa'; S.iaComecou = true; S.notifAnim = true; notifRefresh(); iaEnviar(q); }
 function topoBuscaTecla(e) {
   const inp = e.target; const n = TB.achados.length;
-  if (e.key === 'Escape') { e.preventDefault(); topoBuscaFechar(inp); inp.blur(); return true; }
+  if (e.key === 'Escape') { e.preventDefault(); topoBuscaFechar(inp); inp.blur(); if (S.notifOpen) { S.notifOpen = false; notifRefresh(); } return true; }
   if (e.key === 'Enter') { e.preventDefault(); if (n && TB.sel < n) topoBuscaIr(TB.sel); else topoBuscaIa(); return true; }
   if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { if (!document.querySelector('.tb-res')) return false; e.preventDefault(); TB.sel = (TB.sel + (e.key === 'ArrowDown' ? 1 : n)) % (n + 1);
     document.querySelectorAll('.tb-res .busca-it').forEach((b, k) => b.classList.toggle('on', k === TB.sel)); return true; }
@@ -358,6 +365,7 @@ const graficoRO = 'ResizeObserver' in window ? new ResizeObserver((es) => {
 function observarGraficos() { if (!graficoRO) return; graficoRO.disconnect(); document.querySelectorAll('#view .chart').forEach((c) => graficoRO.observe(c)); }
 function bind() {
   document.addEventListener('click', onClick); document.addEventListener('change', onChange); document.addEventListener('input', onInput);
+  document.addEventListener('focusin', (e) => { if (e.target.matches && e.target.matches('[data-ia-busca]')) topoBuscaAbrirPainel(e.target); });
   document.addEventListener('focusout', (e) => { if (e.target.matches && e.target.matches('[data-ia-busca]')) setTimeout(() => { if (document.activeElement !== e.target) topoBuscaFechar(); }, 150); });
   document.addEventListener('keydown', onKey); document.addEventListener('submit', onSubmit);
   infoIniciar(); painelDnD(); wgGestos(); // botão "i": descrições ficam atrás de um ícone ao lado do título
