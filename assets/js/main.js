@@ -128,6 +128,7 @@ function onClick(e) {
       case 'tema': definirTema(ds.tema); break;
       case 'fundo': definirFundo(ds.v || ''); break;
       case 'cc-abrir': ccAbrir(ds.id); break;
+      case 'cc-carteira': ccCarteira(el); break;
       case 'tema-cor': definirCor(ds.campo, ds.v); break;
       case 'tema-roda': { const c = rodaCor(el, e); if (c) definirCor('cor', c); break; }
       case 'voz': definirVoz(ds.voz); break;

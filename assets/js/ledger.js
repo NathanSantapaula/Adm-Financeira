@@ -172,8 +172,12 @@ function gWidgets(G) {
       ${soma[''] ? '<p class="cap">Marque "Pago com" nos lançamentos para separar o que está sem instituição.</p>' : ''}` : gVazio('Sem gastos neste período.')));
         // meus cartões: um cartão por instituição usada no período, na cor dela, com o gasto e a fatia; tocar filtra a lista
     const C2 = L.filter((x) => x.k); const quando = G.mes >= 0 ? 'em ' + MES_LONGO[G.mes] : perFrase();
-    // o mesmo cartão do App (basCcEstilo: modelo e cor escolhidos pelo cliente); tocar abre a janela do cartão (ccAbrir)
-    add('cartoes', gCard('cartoes', 'Meus cartões', C2.length ? `<div class="cc-bas" role="list">${C2.map((x) => { const i = instDe(x.k); return `<button type="button" class="bas-cc-c" role="listitem" ${basCcEstilo(x.k).attr} data-act="cc-abrir" data-id="${esc(x.k)}" aria-label="${esc(i[1])}: ${esc(brl(x.v))} ${esc(quando)}"><span class="bas-cc-t"><span class="bas-cc-nfc" aria-hidden="true">${CC_NFC}</span>${instIcone(x.k)}</span><span class="bas-cc-n">${esc(i[1])}</span><span class="bas-cc-v"><small>Gasto ${esc(quando)}</small><b>${brl(x.v)}</b></span><span class="bas-cc-p">${pct(x.v / tot)}</span></button>`; }).join('')}</div>` : gVazio('Marque "Pago com" ao lançar um gasto para ver um cartão por banco ou carteira.'))); }
+    // carteira que guarda os cartões (modelo e cor do App por basCcEstilo): passar o mouse levanta os cartões; tocar abre a vitrine (ccCarteira) e, nela, cada cartão abre a sua janela (ccAbrir)
+    S.ccCart = { L: C2, tot, quando }; const somaC = C2.reduce((t, x) => t + x.v, 0);
+    add('cartoes', gCard('cartoes', 'Meus cartões', C2.length ? `<div class="cw"><button type="button" class="cw-b" style="--n:${Math.min(4, C2.length)}" data-act="cc-carteira" aria-label="Abrir os seus ${C2.length} cartões">
+      <span class="cw-cs" aria-hidden="true">${C2.slice(0, 4).reverse().map((x, k) => { const i = instDe(x.k); return `<span class="bas-cc-c cw-c" ${basCcEstilo(x.k).attr.replace('style="', `style="--k:${k};`)}><span class="cw-c-n">${esc(i[1])}</span><span class="cw-c-v">${brl0(x.v)}</span></span>`; }).join('')}</span>
+      <span class="cw-bolso"><span class="cw-qt">${C2.length} ${C2.length === 1 ? 'cartão' : 'cartões'}</span><small>Gasto ${esc(quando)} <em>${pct(somaC / (tot || 1))} dos gastos</em></small><b>${brl(somaC)}</b></span></button>
+      <button type="button" class="cw-mais" data-act="add-lanc" aria-label="Novo gasto" title="Novo gasto">${I.plus || '+'}</button></div>` : gVazio('Marque "Pago com" ao lançar um gasto para ver um cartão por banco ou carteira.'))); }
   // limites por área: sempre de um mês (o escolhido; na visão do ano, o mês atual)
   { const m = G.mes >= 0 ? G.mes : S.year === NOW_Y ? NOW_M : 11; const L = E.analiseLimites((S.plan.settings || {}).limites, E.gastosAreaMes(S.plan, planCtx().carry, m)); const cor = { ok: 'var(--pos)', perto: 'var(--warn)', passou: 'var(--neg)' };
     const segL = L.reduce((t, x) => t + x.limite, 0); const segG = L.reduce((t, x) => t + x.gasto, 0); // barra em segmentos: tamanho = limite, preenchido até o gasto
@@ -641,10 +645,25 @@ function ccAbrir(k) {
   const lista = ents.slice().sort((a, b) => b.m - a.m || (b.dia || 0) - (a.dia || 0)).slice(0, 12).map((e) => `<li><span>${esc(e.nome || e.area)}<small>${esc(e.area)} · ${e.dia ? `${pad2(e.dia)}/${pad2(e.m + 1)}` : MES[e.m]}</small></span><b>${brl(e.valor)}</b></li>`).join('');
   const mini = CC_MODELOS.map(([m, n]) => `<button type="button" class="bas-ccm${m === E0.m ? ' on' : ''}" data-act="bas-cc-mod" data-id="${esc(k)}" data-m="${m}" aria-pressed="${m === E0.m}"><span class="bas-cc-c bas-cc-mini" data-m="${m}" style="--cb:${E0.c};--cf:${i[3]}" aria-hidden="true"><span class="bas-cc-nfc">${CC_NFC}</span></span><small>${n}</small></button>`).join('');
   const cores = [[i[2], `Cor do ${i[1]}`]].concat(CORES_DESTAQUE).map(([c, n]) => `<button type="button" class="cc-cor" style="--c:${c}" data-act="bas-cc-cor" data-id="${esc(k)}" data-v="${c}" aria-label="${esc(n)}" title="${esc(n)}" aria-pressed="${c.toLowerCase() === E0.c.toLowerCase()}"></button>`).join('');
-  $('#modal').addEventListener('close', () => render(), { once: true }); // ao fechar (Pronto ou Esc), o widget mostra o modelo novo
   openModal({ title: i[1], wide: true, ok: 'Pronto', noCancel: true, noFocus: true, onOk: () => true, body: `<div class="cc-jan">
     <div class="cc-jan-l"><div class="bas-cc-c bas-cc-big bas-cc-prev" ${E0.attr}><span class="bas-cc-t"><span class="bas-cc-nfc" aria-hidden="true">${CC_NFC}</span>${instIcone(k)}</span><span class="bas-cc-n">${esc(i[1])}</span><span class="bas-cc-v"><small>Gasto ${esc(perFrase())}</small><b>${brl(tot)}</b></span></div>
       ${la.length ? `<h4 class="cc-jan-t">Por categoria</h4><ul class="g-areas">${la.map(([n, v], x) => `<li><div class="g-area"><span class="g-area-n"><b>${esc(n)}</b></span><span class="g-area-t"><i style="width:${((v / mx) * 100).toFixed(1)}%;--bc:${PAL[x % 6]}"></i></span><span class="g-area-v"><b>${brl0(v)}</b><small>${pct(v / (tot || 1))}</small></span></div></li>`).join('')}</ul>` : ''}
       ${lista ? `<h4 class="cc-jan-t">Últimos gastos</h4><ul class="cc-jan-l2">${lista}</ul>` : '<p class="cap keep">Nenhum gasto neste cartão no período.</p>'}</div>
     <div class="cc-jan-r"><h4 class="cc-jan-t">Modelo</h4><div class="bas-ccms">${mini}</div><h4 class="cc-jan-t">Cor</h4><div class="cc-cores" role="group" aria-label="Cor do cartão">${cores}</div><p class="cap keep">A cor vale nos modelos Do banco, Vidro e Grafite aurora.</p></div></div>` });
+  // ao fechar (Pronto ou Esc), o widget mostra o modelo novo; o close que chega da janela anterior (ainda aberta ao trocar) é ignorado
+  const d = $('#modal'); const fim = () => { if (d.open) return; d.removeEventListener('close', fim); render(); }; d.addEventListener('close', fim);
+}
+
+// vitrine dos cartões: a janela sai da carteira (cresce a partir do lugar dela) e os cartões entram um a um; tocar num cartão abre a janela dele
+function ccCarteira(origem) {
+  const D = S.ccCart; if (!D || !D.L.length) return;
+  const cards = D.L.map((x, k) => { const i = instDe(x.k); return `<button type="button" class="bas-cc-c cw-g-c" ${basCcEstilo(x.k).attr.replace('style="', `style="--k:${k};`)} data-act="cc-abrir" data-id="${esc(x.k)}" aria-label="${esc(i[1])}: ${esc(brl(x.v))} ${esc(D.quando)}"><span class="bas-cc-t"><span class="bas-cc-nfc" aria-hidden="true">${CC_NFC}</span>${instIcone(x.k)}</span><span class="bas-cc-n">${esc(i[1])}</span><span class="bas-cc-v"><small>Gasto ${esc(D.quando)}</small><b>${brl(x.v)}</b></span><span class="bas-cc-p">${pct(x.v / (D.tot || 1))}</span></button>`; }).join('');
+  openModal({ title: 'Meus cartões', wide: true, ok: 'Fechar', noCancel: true, noFocus: true, onOk: () => true, body: `<p class="cap keep">Toque num cartão para ver os gastos dele e escolher o modelo e a cor.</p><div class="cw-grade">${cards}</div>` });
+  const d = $('#modal'); d.classList.add('cw-pop');
+  d.addEventListener('close', () => d.classList.remove('cw-pop'), { once: true });
+  if (origem && d.animate && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const a = origem.getBoundingClientRect(); const b = d.getBoundingClientRect();
+    const dx = a.left + a.width / 2 - (b.left + b.width / 2); const dy = a.top + a.height / 2 - (b.top + b.height / 2); const sc = Math.max(0.2, Math.min(1, a.width / b.width));
+    d.animate([{ transform: `translate(${dx}px, ${dy}px) scale(${sc})`, opacity: 0.4, borderRadius: '40px' }, { transform: 'none', opacity: 1 }], { duration: 460, easing: 'cubic-bezier(.2, .9, .25, 1)' });
+  }
 }
