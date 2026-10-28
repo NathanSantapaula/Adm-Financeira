@@ -3308,3 +3308,11 @@ html.vt-ap::view-transition-old(root), html.vt-ap::view-transition-new(root) { a
 @media (prefers-reduced-motion: reduce) { body[data-ui="completo"][data-screen="app"] .topo-ic:focus-within::after { animation: none; } }
 /* digitando no campo do topo: a lista da busca toma o lugar do painel do assistente; apagou o texto, o painel volta */
 .topo-ic.buscando .npop { display: none; }
+/* painel do assistente aberto pelo campo do topo (computador): sem o cabeçalho com o selo e o título, que repetiam o próprio campo;
+   fica só a linha de "Marcar como lidas" quando houver avisos novos; fecha por Esc ou clicando fora */
+@media (min-width: 901px) {
+  body[data-ui="completo"][data-screen="app"] .topo-ic .iap .ia-h:not(:has([data-act="notif-todas"])) { display: none; }
+  body[data-ui="completo"][data-screen="app"] .topo-ic .iap .ia-h :is(.ia-orb, .ia-h-t, .np-x) { display: none; }
+  body[data-ui="completo"][data-screen="app"] .topo-ic .iap .ia-h { justify-content: flex-end; padding-block: 8px 0; border-bottom: 0; }
+  body[data-ui="completo"][data-screen="app"] .topo-ic .iap .ia-tabs { padding-top: 12px; }
+}
