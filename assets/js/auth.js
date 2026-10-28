@@ -41,8 +41,9 @@ function authHtml() {
           <label class="chk"><input type="checkbox" name="termos"><span>Li e aceito os <button type="button" class="lnk strong" data-act="terms">termos e a política de privacidade</button>, inclusive o compartilhamento do resultado do diagnóstico com ${esc(CFG.consultor)}.</span></label>
           ${err}<div class="cad-bts"><button class="btn lg" type="button" data-act="as-passo" data-p="1">Voltar</button><button class="btn primary lg as-cta" type="submit">Criar conta ${I.chev}</button></div></form>`;
     return `<div class="auth cad"><aside class="cad-ass">${cadAssessorHtml()}</aside>
-      <section class="cad-form"><header class="cad-top">${back}<span class="cad-logo-cel">${logoMarca()}</span><p class="cap">Já tem conta? <button class="lnk strong" data-act="auth-mode" data-mode="login">Entrar</button></p></header>
-        <div class="cad-meio"><ol class="cad-trilha">${trilha}</ol><div class="cad-prog"><span>Passo ${passo} de 3</span><i><b style="width:${passo * 33.4}%"></b></i></div>${corpo}</div></section></div>`;
+      <section class="cad-form"><header class="cad-top">${back}</header>${cadFaixaHtml()}
+        <div class="cad-meio"><ol class="cad-trilha">${trilha}</ol><div class="cad-prog"><span>Passo ${passo} de 3</span><i><b style="width:${passo * 33.4}%"></b></i></div>${corpo}
+          <p class="cap cad-entrar">Já tem conta? <button class="lnk strong" data-act="auth-mode" data-mode="login">Entrar</button></p></div></section></div>`;
   } else {
     body = `<h2>Entrar</h2><p class="sub">Acesse o seu planejamento.</p>${note}
       <form id="f-auth" novalidate><label class="fld"><span>E-mail</span><input name="email" type="email" autocomplete="email" value="${esc(S.authDraft && S.authDraft.email || '')}"></label>
@@ -54,17 +55,19 @@ function authHtml() {
   return `<div class="auth">${back}<div class="auth-card">${body}</div></div>`;
 }
 
-/* lado do assessor no cadastro: foto, nome, a frase, os três passos e o vídeo de boas-vindas
-   (CFG.cadastroVideo: caminho de um .mp4 no próprio site, com CFG.cadastroVideoCapa opcional; sem vídeo, o espaço não aparece) */
+/* computador: à esquerda o título, o vídeo do app numa janela (CFG.cadastroVideo, um .mp4 do próprio site; sem vídeo, a capa
+   assets/img/tour-capa.jpg ou CFG.cadastroVideoCapa) e o assessor num bloquinho */
 function cadAssessorHtml() {
-  const foto = CFG.foto ? `<img src="${esc(CFG.foto)}" alt="">` : `<span>${esc(lpIniciais(CFG.consultor))}</span>`;
-  const passos = [['Diagnóstico em poucos minutos', 'Patrimônio, perfil de investidor e objetivos.'], ['Seu mês organizado', 'Importe o extrato e veja para onde vai cada real.'], ['Acompanhamento do assessor', 'Revisão do plano e da carteira quando você precisar.']];
-  const video = CFG.cadastroVideo ? `<figure class="cad-video"><video src="${esc(CFG.cadastroVideo)}"${CFG.cadastroVideoCapa ? ` poster="${esc(CFG.cadastroVideoCapa)}"` : ''} controls preload="metadata" playsinline></video><figcaption>Uma mensagem de ${esc(CFG.consultorCurto || CFG.consultor)} para você</figcaption></figure>` : '';
-  return `${logoMarca()}<div class="cad-ass-c"><div class="cad-quem"><span class="cad-foto">${foto}</span><span><b>${esc(CFG.consultor)}</b><small>${esc(CFG.consultorCargo || 'Assessor de investimentos · XP')}</small></span></div>
-    <h1>Planejamento financeiro com alguém de verdade do seu lado.</h1>
-    <ul class="cad-ben">${passos.map(([t, d], k) => `<li><i>${k + 1}</i><span><b>${t}</b>${d}</span></li>`).join('')}</ul>${video}</div>
-    <p class="cad-nota">Seus dados ficam protegidos: só você e o seu assessor acessam.</p>`;
+  const capa = CFG.cadastroVideoCapa || 'assets/img/tour-capa.jpg';
+  const tela = CFG.cadastroVideo ? `<video src="${esc(CFG.cadastroVideo)}" poster="${esc(capa)}" controls preload="metadata" playsinline></video>` : `<img src="${esc(capa)}" alt="O painel do ${esc(CFG.marca || 'AVEN')}">`;
+  return `${logoMarca()}<div class="cad-ass-c"><h1>Seu dinheiro inteiro,<br><em>numa tela só.</em></h1><p class="cad-lead">Gastos, investimentos e objetivos se conectando sozinhos.${CFG.cadastroVideo ? ' Dê o play e veja.' : ''}</p>
+    <figure class="cad-jan"><header aria-hidden="true"><i></i><i></i><i></i><span>${esc((CFG.marca || 'aven').toLowerCase())}.app</span></header>${tela}</figure>
+    ${cadBlocoHtml('“Eu acompanho o seu plano com você, mês a mês.”')}</div>`;
 }
+const cadFoto = () => (CFG.foto ? `<img src="${esc(CFG.foto)}" alt="">` : `<span>${esc(lpIniciais(CFG.consultor))}</span>`);
+const cadBlocoHtml = (frase) => `<div class="cad-bloco"><span class="cad-foto">${cadFoto()}</span><div><b>${esc(CFG.consultor)}</b><small>${esc(CFG.consultorCargo || 'Assessor de investimentos · XP')}</small>${frase ? `<p>${frase}</p>` : ''}</div></div>`;
+// celular: faixa escura curta com o logo, o assessor e a chamada; o formulário sobe num cartão por cima (sem vídeo)
+const cadFaixaHtml = () => `<div class="cad-faixa">${logoMarca()}<div class="cad-faixa-q"><span class="cad-foto">${cadFoto()}</span><span><b>${esc(CFG.consultor)}</b><small>Seu assessor · XP</small></span></div><h2>Seu planejamento financeiro começa aqui.</h2></div>`;
 
 async function submitAuth(f) {
   const d = Object.fromEntries(new FormData(f).entries()); const m = S.authMode; const demo = Store.mode === 'local';
