@@ -1,13 +1,15 @@
 /* Modo Básico: a segunda interface, para quem está começando. Jeito de app de celular: números grandes, pouco texto,
    uma ação principal por tela e abas embaixo; no computador fica centralizado como um app.
-   Mesmos dados (S.plan, S.profile) e os mesmos cálculos do engine; só a tela muda. Escolha por aparelho em localStorage fp:interface (padrão: S.profile.interface).
+   Mesmos dados (S.plan, S.profile) e os mesmos cálculos do engine; só a tela muda. Escolha por aparelho em localStorage fp:interface (padrão: o App no celular, basCelular; nos outros aparelhos, S.profile.interface).
    Telas próprias, sem modais nem painéis do Completo: cada aba, detalhe e formulário entra numa pilha (S.basPilha),
    com voltar pelo botão, pelo Esc e pelo voltar do celular (history). */
 'use strict';
 const BASICO_PAGANTES = true; // pagantes podem trocar para o Básico; false = Básico só no plano gratuito
 // a versão escolhida vale só neste aparelho (localStorage); sem escolha aqui, vale a do perfil. Trocar no celular não muda o computador.
 const basUiLocal = () => { try { const v = localStorage.getItem('fp:interface'); return v === 'basico' || v === 'completo' ? v : null; } catch (e) { return null; } };
-const basInterface = () => E.interfaceDe(planoAtual(), basUiLocal() || S.profile.interface, BASICO_PAGANTES);
+// celular (toque e tela pequena, deitado ou em pé): sem escolha guardada no próprio aparelho, abre o App; a escolha do perfil (que o computador grava) não leva o celular ao SaaS
+const basCelular = () => { try { return matchMedia('(pointer: coarse)').matches && Math.min(screen.width, screen.height) < 600; } catch (e) { return false; } };
+const basInterface = () => E.interfaceDe(planoAtual(), basUiLocal() || (basCelular() ? 'basico' : S.profile.interface), BASICO_PAGANTES);
 const modoBasico = () => S.screen === 'app' && !!S.profile && basInterface() === 'basico';
 const basEscolhe = () => BASICO_PAGANTES && planoAtual() !== 'gratis'; // pagantes e o consultor escolhem a versão
 const BAS_NOMES = { basico: 'App', completo: 'SaaS' }; // nomes das duas versões na tela: App (celular; no gratuito, a única) e SaaS (o painel completo)
