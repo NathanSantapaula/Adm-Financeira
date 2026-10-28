@@ -5,15 +5,24 @@
    As prévias são fragmentos do próprio painel com valores ilustrativos; o simulador usa E.rebalance, o mesmo cálculo da Carteira. */
 'use strict';
 
-/* carteira de exemplo do simulador: participação de cada ativo dentro da sua classe */
-const LP_ATIVOS = [
-  { n: 'Tesouro Selic', c: 'Renda fixa', k: 'rf', p: 0.45 },
-  { n: 'CDB pós-fixado', c: 'Renda fixa', k: 'rf', p: 0.30 },
-  { n: 'Tesouro IPCA+', c: 'Renda fixa', k: 'rf', p: 0.25 },
-  { n: 'Fundo de índice de ações', c: 'Renda variável', k: 'rv', p: 0.60 },
-  { n: 'Fundo imobiliário', c: 'Renda variável', k: 'rv', p: 0.40 },
+/* simulador do aporte: alocação de referência por perfil em sete classes, no padrão das carteiras de assessoria
+   (pós-fixado, inflação, prefixado, multimercado, imobiliário, ações e internacional); números ilustrativos, não são recomendação */
+const LP_CLASSES = [
+  { k: 'pos', n: 'Pós-fixado', c: 'Tesouro Selic, CDB e LCI/LCA', rf: true },
+  { k: 'inf', n: 'Inflação', c: 'Tesouro IPCA+ e títulos atrelados ao IPCA', rf: true },
+  { k: 'pre', n: 'Prefixado', c: 'Tesouro Prefixado e CDB prefixado', rf: true },
+  { k: 'mm', n: 'Multimercado', c: 'Fundos multimercado' },
+  { k: 'fii', n: 'Fundos imobiliários', c: 'FIIs de tijolo e de papel' },
+  { k: 'acoes', n: 'Ações', c: 'Fundo de índice ou ações brasileiras' },
+  { k: 'int', n: 'Internacional', c: 'ETFs e BDRs no exterior' },
 ];
-const LP_HOJE = { rf: { rf: 0.85, rv: 0.15 }, rv: { rf: 0.45, rv: 0.55 } }; // carteira atual de R$ 60.000
+const LP_ALVO = {
+  conservador: { pos: 60, inf: 20, pre: 10, mm: 5, fii: 0, acoes: 0, int: 5 },
+  moderado: { pos: 35, inf: 20, pre: 10, mm: 10, fii: 5, acoes: 10, int: 10 },
+  agressivo: { pos: 15, inf: 15, pre: 10, mm: 15, fii: 10, acoes: 20, int: 15 },
+};
+// carteira atual de R$ 60.000: quase tudo no pós-fixado, ou concentrada em ações
+const LP_HOJE = { rf: { pos: 0.72, inf: 0.12, pre: 0.08, mm: 0, fii: 0.08, acoes: 0, int: 0 }, rv: { pos: 0.15, inf: 0.05, pre: 0, mm: 0, fii: 0.15, acoes: 0.60, int: 0.05 } };
 const lpEstado = () => (S.lp = S.lp || { aporte: 5000, perfil: 'moderado', hoje: 'rf', ok: false, nome: '', tela: 'geral' });
 const lpPct = (x) => Math.round(x * 100) + '%';
 // empresas da trajetória do assessor (CFG.empresas); sem logo informado, o nome aparece em tipografia limpa
@@ -43,22 +52,23 @@ const lpIniciais = (n) => String(n || '').trim().split(/\s+/).filter(Boolean).ma
 const lpListaNomes = (l) => (l.length < 2 ? l.join('') : l.slice(0, -1).join(', ') + ' e ' + l[l.length - 1]);
 
 function lpCalculo() {
-  const st = lpEstado(); const alvo = E.PERFIS[st.perfil].alvo; const hoje = LP_HOJE[st.hoje]; const total = 60000;
-  const items = LP_ATIVOS.map((a) => ({ ...a, w: a.p * (a.k === 'rf' ? alvo.rendaFixa : alvo.bolsa), v: total * hoje[a.k] * a.p }));
+  const st = lpEstado(); const alvo = LP_ALVO[st.perfil]; const hoje = LP_HOJE[st.hoje]; const total = 60000;
+  const items = LP_CLASSES.map((a) => ({ ...a, w: alvo[a.k], v: total * hoje[a.k] }));
   const r = E.rebalance(items, st.aporte);
   const linhas = items.map((a, i) => ({ ...a, val: r.alloc[i] })).filter((a) => a.val >= 0.5).sort((a, b) => b.val - a.val);
-  const rfDepois = items.reduce((s, a, i) => s + (a.k === 'rf' ? a.v + r.alloc[i] : 0), 0) / (total + st.aporte);
-  return { st, alvo, linhas, rfHoje: hoje.rf, rfDepois };
+  const rfDepois = items.reduce((s, a, i) => s + (a.rf ? a.v + r.alloc[i] : 0), 0) / (total + st.aporte);
+  const rfHoje = LP_CLASSES.reduce((s, a) => s + (a.rf ? hoje[a.k] : 0), 0); const rfAlvo = LP_CLASSES.reduce((s, a) => s + (a.rf ? alvo[a.k] : 0), 0);
+  return { st, linhas, rfHoje, rfDepois, rfAlvo };
 }
 
 /* prévia "Onde investir", igual à aba Carteira */
 function lpOndeHtml() {
-  const { st, alvo, linhas, rfHoje, rfDepois } = lpCalculo();
+  const { st, linhas, rfHoje, rfDepois, rfAlvo } = lpCalculo();
   return `<div class="hp-onde-h"><b>Onde investir ${brl(st.aporte)}</b><span>Perfil ${esc(E.PERFIS[st.perfil].nome.toLowerCase())}</span></div>
     <ol class="hp-onde-l">${linhas.map((a) => `<li><span>${esc(a.n)}<small>${esc(a.c)}</small></span><b>${brl(a.val)}</b></li>`).join('')}</ol>
-    <div class="hp-rf"><div class="hp-rf-t"><span>Renda fixa</span><span>${lpPct(rfHoje)} hoje · ${lpPct(rfDepois)} depois · alvo ${alvo.rendaFixa}%</span></div>
-      <div class="hp-rf-bar" role="img" aria-label="Renda fixa: ${lpPct(rfDepois)} depois do aporte, alvo ${alvo.rendaFixa}%"><i style="width:${(rfDepois * 100).toFixed(1)}%"></i><b style="left:${alvo.rendaFixa}%"></b></div></div>
-    <p class="hp-onde-n">Carteira de exemplo de ${brl(60000)}. Valores ilustrativos, não é recomendação.</p>`;
+    <div class="hp-rf"><div class="hp-rf-t"><span>Renda fixa</span><span>${lpPct(rfHoje)} hoje · ${lpPct(rfDepois)} depois · alvo ${rfAlvo}%</span></div>
+      <div class="hp-rf-bar" role="img" aria-label="Renda fixa: ${lpPct(rfDepois)} depois do aporte, alvo ${rfAlvo}%"><i style="width:${(rfDepois * 100).toFixed(1)}%"></i><b style="left:${rfAlvo}%"></b></div></div>
+    <p class="hp-onde-n">Carteira de exemplo de ${brl(60000)} e alocação de referência por perfil. Valores ilustrativos, não é recomendação.</p>`;
 }
 
 /* um lançamento importado do extrato; o do meio confirma de verdade */
