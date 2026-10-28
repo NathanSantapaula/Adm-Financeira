@@ -23,21 +23,26 @@ function authHtml() {
     body = `<h2>Nova senha</h2><p class="sub">Escolha uma nova senha para a sua conta.</p>
       <form id="f-auth" novalidate><label class="fld"><span>Nova senha <small>(mínimo de 8 caracteres)</small></span><input name="password" type="password" autocomplete="new-password"></label>${err}<button class="btn primary lg" type="submit">Salvar nova senha</button></form>`;
   } else if (m === 'signup') {
-    const v = (k) => esc(S.authDraft && S.authDraft[k] || '');
+    // cadastro: à esquerda o assessor (foto, frase, três passos e o vídeo de boas-vindas, se houver); à direita o passo a passo
+    // (1 Seus dados, 2 Acesso; o 3 é o diagnóstico, que vem depois de criar a conta)
+    const v = (k) => esc(S.authDraft && S.authDraft[k] || ''); const passo = S.asPasso === 2 ? 2 : 1;
     const campo = (rot, inp, ico) => `<label class="fld"><span>${rot}</span><span class="as-in">${inp}${ico}</span></label>`;
-    // cadastro em cartão dividido: formulário à esquerda, arte da marca à direita (some no celular)
-    return `<div class="auth as">${back}<div class="as-card"><div class="as-form">${logoMarca()}
-      <h2>Crie a sua <em>conta</em></h2><p class="sub">${S.authPagar ? 'Em seguida você vai direto para o pagamento. O diagnóstico fica para depois.' : 'Em seguida você faz o diagnóstico: patrimônio, perfil de investidor e objetivo.'}</p>${note}
-      <form id="f-auth" novalidate>
-        ${campo('Nome completo', `<input name="nome" autocomplete="name" placeholder="Seu nome" value="${v('nome')}">`, I.user)}
-        ${campo('E-mail', `<input name="email" type="email" autocomplete="email" placeholder="voce@email.com" value="${v('email')}">`, I.mail)}
-        ${campo('WhatsApp', `<input name="whatsapp" inputmode="tel" autocomplete="tel" placeholder="(11) 99999-9999" value="${v('whatsapp')}">`, I.tel)}
-        ${demo ? '' : campo('Senha <small>(mínimo de 8 caracteres)</small>', '<input name="password" type="password" autocomplete="new-password" placeholder="Crie uma senha">', I.lock)}
-        ${S.authPagar && S.authPlano ? `<input type="hidden" name="plano" value="${esc(S.authPlano)}">` : ''}
-        ${err}<button class="btn primary lg as-cta" type="submit">Criar conta e começar ${I.chev}</button>
-        <label class="chk"><input type="checkbox" name="termos"><span>Li e aceito os <button type="button" class="lnk strong" data-act="terms">termos e a política de privacidade</button>, inclusive o compartilhamento do resultado do diagnóstico com ${esc(CFG.consultor)}.</span></label></form>
-      <p class="cap">Já tem conta? <button class="lnk strong" data-act="auth-mode" data-mode="login">Entrar</button></p></div>
-      <aside class="as-arte">${asArteHtml()}</aside></div></div>`;
+    const trilha = [['Seus dados', 'Nome e contato'], ['Acesso', 'E-mail e senha'], ['Diagnóstico', 'Patrimônio, perfil e objetivos']].map(([t, d], k) => `<li class="${k + 1 === passo ? 'on' : k + 1 < passo ? 'ok' : ''}"><i>${k + 1 < passo ? I.check : k + 1}</i><span><b>${t}</b><small>${d}</small></span></li>`).join('');
+    const corpo = passo === 1
+      ? `<h2>Como podemos te chamar?</h2><p class="sub">Usamos o seu nome no painel e o WhatsApp só para falar sobre o seu planejamento.</p>${note}
+        <form id="f-auth" novalidate>${campo('Nome completo', `<input name="nome" autocomplete="name" placeholder="Seu nome" value="${v('nome')}">`, I.user)}
+          ${campo('WhatsApp', `<input name="whatsapp" inputmode="tel" autocomplete="tel" placeholder="(11) 99999-9999" value="${v('whatsapp')}">`, I.tel)}
+          ${err}<button class="btn primary lg as-cta" type="submit">Continuar ${I.chev}</button></form>`
+      : `<h2>Agora, o seu acesso</h2><p class="sub">${S.authPagar ? 'Em seguida você vai direto para o pagamento. O diagnóstico fica para depois.' : 'É com o e-mail e a senha que você entra no painel.'}</p>${note}
+        <form id="f-auth" novalidate><input type="hidden" name="nome" value="${v('nome')}"><input type="hidden" name="whatsapp" value="${v('whatsapp')}">
+          ${campo('E-mail', `<input name="email" type="email" autocomplete="email" placeholder="voce@email.com" value="${v('email')}">`, I.mail)}
+          ${demo ? '' : campo('Senha <small>(mínimo de 8 caracteres)</small>', '<input name="password" type="password" autocomplete="new-password" placeholder="Crie uma senha">', I.lock)}
+          ${S.authPagar && S.authPlano ? `<input type="hidden" name="plano" value="${esc(S.authPlano)}">` : ''}
+          <label class="chk"><input type="checkbox" name="termos"><span>Li e aceito os <button type="button" class="lnk strong" data-act="terms">termos e a política de privacidade</button>, inclusive o compartilhamento do resultado do diagnóstico com ${esc(CFG.consultor)}.</span></label>
+          ${err}<div class="cad-bts"><button class="btn lg" type="button" data-act="as-passo" data-p="1">Voltar</button><button class="btn primary lg as-cta" type="submit">Criar conta ${I.chev}</button></div></form>`;
+    return `<div class="auth cad"><aside class="cad-ass">${cadAssessorHtml()}</aside>
+      <section class="cad-form"><header class="cad-top">${back}<span class="cad-logo-cel">${logoMarca()}</span><p class="cap">Já tem conta? <button class="lnk strong" data-act="auth-mode" data-mode="login">Entrar</button></p></header>
+        <div class="cad-meio"><ol class="cad-trilha">${trilha}</ol><div class="cad-prog"><span>Passo ${passo} de 3</span><i><b style="width:${passo * 33.4}%"></b></i></div>${corpo}</div></section></div>`;
   } else {
     body = `<h2>Entrar</h2><p class="sub">Acesse o seu planejamento.</p>${note}
       <form id="f-auth" novalidate><label class="fld"><span>E-mail</span><input name="email" type="email" autocomplete="email" value="${esc(S.authDraft && S.authDraft.email || '')}"></label>
@@ -49,24 +54,21 @@ function authHtml() {
   return `<div class="auth">${back}<div class="auth-card">${body}</div></div>`;
 }
 
-/* lado da arte no cadastro: selo e depoimentos reais (CFG.depoimentos, os mesmos da página inicial) */
-function asArteHtml() {
-  const deps = (CFG.depoimentos || []).filter((d) => d && d.texto && d.nome);
-  const av = (d) => `<span class="hp-av as-av">${d.foto ? `<img src="${esc(d.foto)}" alt="">` : esc(lpIniciais(d.nome))}</span>`;
-  const selo = `<div class="as-selo">${deps.length ? `<span class="as-avs" aria-hidden="true">${deps.slice(0, 4).map(av).join('')}</span>` : I.check}<span><b>Diagnóstico em poucos minutos</b><small>Com o acompanhamento de ${esc(CFG.consultor)}</small></span></div>`;
-  if (!deps.length) return `${selo}<div class="as-frase"><b>Planejamento, objetivos e carteira num lugar só.</b></div>`;
-  if (!S.asDepT) S.asDepT = setInterval(() => { const L = $$('.as-dep'); if (L.length < 2 || document.hidden || matchMedia('(prefers-reduced-motion: reduce)').matches) return; asDep((L.findIndex((x) => x.classList.contains('on')) + 1) % L.length); }, 7000);
-  return `${selo}<div class="as-deps" aria-roledescription="carrossel" aria-label="Depoimentos de clientes">${deps.map((d, i) => `<figure class="as-dep${i ? '' : ' on'}"${i ? ' aria-hidden="true"' : ''}><blockquote>${esc(d.destaque || d.texto)}</blockquote><figcaption>${av(d)}<span><b>${esc(d.nome)}</b>${d.descricao ? `<small>${esc(d.descricao)}</small>` : ''}</span></figcaption></figure>`).join('')}</div>
-    ${deps.length > 1 ? `<div class="as-dots" role="group" aria-label="Escolher depoimento">${deps.map((_, i) => `<button type="button" data-act="as-dep" data-i="${i}" aria-label="Depoimento ${i + 1}"${i ? '' : ' aria-current="true"'}></button>`).join('')}</div>` : ''}`;
-}
-function asDep(i) {
-  $$('.as-dep').forEach((x, k) => { x.classList.toggle('on', k === i); x.toggleAttribute('aria-hidden', k !== i); });
-  $$('.as-dots button').forEach((b, k) => { if (k === i) b.setAttribute('aria-current', 'true'); else b.removeAttribute('aria-current'); });
+/* lado do assessor no cadastro: foto, nome, a frase, os três passos e o vídeo de boas-vindas
+   (CFG.cadastroVideo: caminho de um .mp4 no próprio site, com CFG.cadastroVideoCapa opcional; sem vídeo, o espaço não aparece) */
+function cadAssessorHtml() {
+  const foto = CFG.foto ? `<img src="${esc(CFG.foto)}" alt="">` : `<span>${esc(lpIniciais(CFG.consultor))}</span>`;
+  const passos = [['Diagnóstico em poucos minutos', 'Patrimônio, perfil de investidor e objetivos.'], ['Seu mês organizado', 'Importe o extrato e veja para onde vai cada real.'], ['Acompanhamento do assessor', 'Revisão do plano e da carteira quando você precisar.']];
+  const video = CFG.cadastroVideo ? `<figure class="cad-video"><video src="${esc(CFG.cadastroVideo)}"${CFG.cadastroVideoCapa ? ` poster="${esc(CFG.cadastroVideoCapa)}"` : ''} controls preload="metadata" playsinline></video><figcaption>Uma mensagem de ${esc(CFG.consultorCurto || CFG.consultor)} para você</figcaption></figure>` : '';
+  return `${logoMarca()}<div class="cad-ass-c"><div class="cad-quem"><span class="cad-foto">${foto}</span><span><b>${esc(CFG.consultor)}</b><small>${esc(CFG.consultorCargo || 'Assessor de investimentos · XP')}</small></span></div>
+    <h1>Planejamento financeiro com alguém de verdade do seu lado.</h1>
+    <ul class="cad-ben">${passos.map(([t, d], k) => `<li><i>${k + 1}</i><span><b>${t}</b>${d}</span></li>`).join('')}</ul>${video}</div>
+    <p class="cad-nota">Seus dados ficam protegidos: só você e o seu assessor acessam.</p>`;
 }
 
 async function submitAuth(f) {
   const d = Object.fromEntries(new FormData(f).entries()); const m = S.authMode; const demo = Store.mode === 'local';
-  const fail = (msg, ehEmail) => { S.authErr = msg; S.authErrEmail = !!ehEmail; S.authDraft = { nome: d.nome, email: d.email, whatsapp: d.whatsapp }; render(); };
+  const fail = (msg, ehEmail) => { S.authErr = msg; S.authErrEmail = !!ehEmail; S.authDraft = Object.assign({}, S.authDraft); ['nome', 'email', 'whatsapp'].forEach((k) => { if (d[k] != null) S.authDraft[k] = d[k]; }); render(); };
   const email = String(d.email || '').trim(); const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
   S.authErr = ''; S.authErrEmail = false;
   const btn = $('button[type=submit]', f); if (btn) btn.disabled = true;
@@ -77,6 +79,12 @@ async function submitAuth(f) {
       if (S.recoveryUser) { await entrar(S.recoveryUser); } render(); return;
     }
     if (m === 'signup' && String(d.nome || '').trim().length < 2) return fail('Informe seu nome completo.');
+    // cadastro, passo 1: só nome e WhatsApp; guarda e segue para o acesso
+    if (m === 'signup' && S.asPasso !== 2) {
+      if (!/^\d{10,13}$/.test(String(d.whatsapp || '').replace(/\D/g, ''))) return fail('Informe seu WhatsApp com DDD.');
+      S.authDraft = Object.assign({}, S.authDraft, { nome: String(d.nome).trim(), whatsapp: String(d.whatsapp).trim() }); S.asPasso = 2; render();
+      const e = document.querySelector('#f-auth input[name="email"]'); if (e) e.focus(); return;
+    }
     if (!emailOk) return fail('Informe um e-mail válido.');
     if (m === 'reset') { await Store.resetPassword(email); S.authMsg = 'Se esse e-mail tiver conta, o link já está a caminho.'; render(); return; }
     if (m === 'login') {

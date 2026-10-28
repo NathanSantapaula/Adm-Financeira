@@ -184,12 +184,12 @@ function onClick(e) {
       case 'conta-excluir': openModal({ title: 'Excluir minha conta', ok: 'Excluir para sempre',
         body: `<p class="mmsg keep">Isso apaga o cadastro, o perfil, o diagnóstico, todos os anos de planejamento e a assinatura. Não dá para desfazer. Se quiser guardar uma cópia, use antes “Baixar meus dados”.</p><label class="fld"><span>Para confirmar, escreva EXCLUIR</span><input name="conf" autocomplete="off" autocapitalize="characters"></label>`,
         onOk: (d, err) => { if (String(d.conf || '').trim().toUpperCase() !== 'EXCLUIR') { err('Escreva EXCLUIR para confirmar.'); return false; } closeAdmin(); excluirConta().catch((e) => toast(e && e.amigavel ? e.message : 'Não foi possível excluir a conta agora.')); } }); break;
-      case 'as-dep': asDep(+ds.i); break;
+      case 'as-passo': S.asPasso = +ds.p === 2 ? 2 : 1; S.authErr = ''; render(); break;
       case 'adm-sec': { S.admSec = S.admSec || {}; const sec = el.closest('.dr-acc'); const ab = sec.dataset.open !== 'true'; S.admSec[ds.id] = ab; sec.dataset.open = ab; el.setAttribute('aria-expanded', ab); break; }
       case 'lp-confirma': case 'lp-set': case 'lp-tela': lpAcao(act, el); break;
       // "Quero a assessoria" (data-pagar) vai direto ao pagamento: logado, na hora; sem conta, logo depois do cadastro
-      case 'go-auth': S.authPagar = !!ds.pagar && (ds.plano === 'completo' || ds.plano === 'investidor'); if (S.user && S.authPagar && !S.isAdmin) { S.authPagar = false; iniciarCheckout(ds.plano); break; } if (S.user) { S.screen = S.profile.onboarded ? 'app' : 'onboarding'; if (S.screen === 'onboarding' && !S.ob) initOb(); render(); break; } S.authMode = ds.mode || 'signup'; S.authPlano = ds.plano === 'completo' || ds.plano === 'investidor' ? ds.plano : 'gratis'; S.authErr = ''; S.authDraft = null; S.screen = 'auth'; render(); break;
-      case 'auth-mode': S.authMode = ds.mode; S.authErr = ''; S.authMsg = ''; render(); break;
+      case 'go-auth': S.asPasso = 1; S.authPagar = !!ds.pagar && (ds.plano === 'completo' || ds.plano === 'investidor'); if (S.user && S.authPagar && !S.isAdmin) { S.authPagar = false; iniciarCheckout(ds.plano); break; } if (S.user) { S.screen = S.profile.onboarded ? 'app' : 'onboarding'; if (S.screen === 'onboarding' && !S.ob) initOb(); render(); break; } S.authMode = ds.mode || 'signup'; S.authPlano = ds.plano === 'completo' || ds.plano === 'investidor' ? ds.plano : 'gratis'; S.authErr = ''; S.authDraft = null; S.screen = 'auth'; render(); break;
+      case 'auth-mode': S.asPasso = 1; S.authMode = ds.mode; S.authErr = ''; S.authMsg = ''; render(); break;
       case 'goto-landing': closeAdmin(); S.screen = 'landing'; render(); break;
       case 'open-app': S.screen = S.profile.onboarded ? 'app' : 'onboarding'; if (S.screen === 'onboarding' && !S.ob) initOb(); render(); break;
       case 'scroll': { const t = document.getElementById(ds.to); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); break; }

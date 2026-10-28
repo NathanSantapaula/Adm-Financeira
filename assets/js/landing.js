@@ -392,7 +392,7 @@ function lpAcao(act, el) {
 function lpComecar() {
   const st = lpEstado();
   if (S.user) { S.screen = S.profile.onboarded ? 'app' : 'onboarding'; if (S.screen === 'onboarding' && !S.ob) initOb(); render(); return; }
-  S.authMode = 'signup'; S.authPlano = 'gratis'; S.authPagar = false; S.authErr = ''; S.authDraft = { nome: String(st.nome || '').trim() }; S.screen = 'auth'; render();
+  S.authMode = 'signup'; S.asPasso = 1; S.authPlano = 'gratis'; S.authPagar = false; S.authErr = ''; S.authDraft = { nome: String(st.nome || '').trim() }; S.screen = 'auth'; render();
 }
 
 /* entradas: cada bloco sobe uma vez ao aparecer, em sequência curta. Sem script ou com movimento reduzido, tudo já aparece. */
