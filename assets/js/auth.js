@@ -38,7 +38,7 @@ function authHtml() {
           ${campo('E-mail', `<input name="email" type="email" autocomplete="email" placeholder="voce@email.com" value="${v('email')}">`, I.mail)}
           ${demo ? '' : campo('Senha <small>(mínimo de 8 caracteres)</small>', '<input name="password" type="password" autocomplete="new-password" placeholder="Crie uma senha">', I.lock)}
           ${S.authPagar && S.authPlano ? `<input type="hidden" name="plano" value="${esc(S.authPlano)}">` : ''}
-          <label class="chk"><input type="checkbox" name="termos"><span>Li e aceito os <button type="button" class="lnk strong" data-act="terms">termos e a política de privacidade</button>, inclusive o compartilhamento do resultado do diagnóstico com ${esc(CFG.consultor)}.</span></label>
+          <label class="chk"><input type="checkbox" name="termos"><span>Li e aceito os <button type="button" class="lnk strong" data-act="terms">termos e a política de privacidade</button>.</span></label>
           ${err}<div class="cad-bts"><button class="btn lg" type="button" data-act="as-passo" data-p="1">Voltar</button><button class="btn primary lg as-cta" type="submit">Criar conta ${I.chev}</button></div></form>`;
     return `<div class="auth cad"><aside class="cad-ass">${cadAssessorHtml()}</aside>
       <section class="cad-form"><header class="cad-top">${back}</header>${cadFaixaHtml()}
