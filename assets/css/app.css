@@ -3340,3 +3340,28 @@ html.vt-ap::view-transition-old(root), html.vt-ap::view-transition-new(root) { a
   --hz-t1: color-mix(in srgb, var(--accent) 22%, rgba(30, 92, 92, .62)); --hz-t2: color-mix(in srgb, var(--accent) 20%, rgba(24, 76, 78, .66)); --hz-t3: color-mix(in srgb, var(--accent) 18%, rgba(18, 62, 66, .7));
   --hz-t4: color-mix(in srgb, var(--accent) 16%, rgba(14, 50, 54, .74)); --hz-t5: color-mix(in srgb, var(--accent) 14%, rgba(10, 40, 44, .8)); --hz-t6: color-mix(in srgb, var(--accent) 12%, rgba(8, 30, 34, .86));
   --hz-borda: color-mix(in srgb, var(--accent) 30%, rgba(170, 240, 230, .45)); --hz-sombra: rgba(0, 0, 0, .55); }
+
+/* SaaS no computador: animação na troca de aba (a tela antiga sai, a nova entra subindo) e o destaque que desliza de um botão ao outro no menu
+   e nos segmentos do período (.nav-ind e .seg-ind com nome de View Transition, telaTroca em main.js); parado com "reduzir movimento" */
+.nav-ind, .seg-ind { display: none; }
+@media (min-width: 901px) {
+  body[data-ui="completo"][data-screen="app"] .nav button, body[data-ui="completo"][data-screen="app"] .per-seg button { position: relative; isolation: isolate; }
+  body[data-ui="completo"][data-screen="app"] .nav-ind, body[data-ui="completo"][data-screen="app"] .seg-ind { display: block; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; transform-origin: 0 0; }
+  html body[data-ui="completo"][data-screen="app"] .nav button[aria-current="page"] { background: transparent; box-shadow: none; }
+  body[data-ui="completo"][data-screen="app"] .nav-ind { inset: -1px; background: var(--sheen) padding-box, linear-gradient(var(--glass-strong), var(--glass-strong)) padding-box, var(--rim) border-box; border: 1px solid transparent; box-shadow: var(--shadow); }
+  html.side-mini body[data-ui="completo"][data-screen="app"] .nav-ind { inset: 0; border: 0; background: var(--accent); box-shadow: 0 6px 16px -6px var(--accent); }
+  body[data-ui="completo"][data-screen="app"] .per-seg button.on { background: transparent; }
+  body[data-ui="completo"][data-screen="app"] .seg-ind { background: var(--ink); }
+  html[data-vt="aba"] body[data-ui="completo"] #view { view-transition-name: tela; }
+  html[data-vt="seg"] body[data-ui="completo"] #view { view-transition-name: tela-seg; }
+}
+html[data-vt]::view-transition-old(root), html[data-vt]::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+html[data-vt]::view-transition-group(tela), html[data-vt]::view-transition-group(tela-seg) { animation: none; }
+html[data-vt]::view-transition-old(tela) { animation: vt-sai 160ms ease-in both; }
+html[data-vt]::view-transition-new(tela) { animation: vt-entra 340ms cubic-bezier(.2, .9, .25, 1) 60ms both; }
+html[data-vt]::view-transition-old(tela-seg) { animation: vt-some 180ms ease both; }
+html[data-vt]::view-transition-new(tela-seg) { animation: vt-surge 260ms ease 40ms both; }
+@keyframes vt-sai { to { opacity: 0; transform: translateY(-10px) scale(.99); } }
+@keyframes vt-entra { from { opacity: 0; transform: translateY(18px); } }
+@keyframes vt-some { to { opacity: 0; } }
+@keyframes vt-surge { from { opacity: 0; } }

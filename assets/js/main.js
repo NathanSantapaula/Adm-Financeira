@@ -13,7 +13,7 @@ const cartaoPlanoHtml = () => `<div class="advisor plano"><span class="adv-ic" a
 function renderSide() {
   if (modoBasico()) { basicoBarra(); return; } // modo Básico (basico.js): abas embaixo, sem menu lateral nem topo
   const items = navItems(); const nome = (S.profile && S.profile.nome) || 'Minha conta';
-  const btn = ([k, l]) => `<button data-act="nav" data-view="${k}" ${S.view === k ? 'aria-current="page"' : ''}>${I[k] || I.geral}<span>${l}</span>${k !== 'clientes' && !abaLiberada(k) ? `<em class="lk" title="Plano ${esc(nomePlano(planoMinimoDe(E.ABA_RECURSO[k] || 'fluxo')))}">${I.lock}</em>` : ''}</button>`;
+  const btn = ([k, l]) => `<button data-act="nav" data-view="${k}" ${S.view === k ? 'aria-current="page"' : ''}>${S.view === k ? '<i class="nav-ind" aria-hidden="true"></i>' : ''}${I[k] || I.geral}<span>${l}</span>${k !== 'clientes' && !abaLiberada(k) ? `<em class="lk" title="Plano ${esc(nomePlano(planoMinimoDe(E.ABA_RECURSO[k] || 'fluxo')))}">${I.lock}</em>` : ''}</button>`;
   // no computador o menu recolhe para só o ícone "AV" e os ícones das abas (estado guardado no aparelho: html.side-mini)
   const mini = document.documentElement.classList.contains('side-mini');
   // topo da página (barra de vidro de ponta a ponta): à esquerda, foto e nome; depois período, assistente (com a busca), olho e globo; a marca fica no menu lateral
@@ -100,7 +100,7 @@ function onClick(e) {
   if (el) {
     const act = el.dataset.act; const p = S.plan; const ds = el.dataset;
     switch (act) {
-      case 'nav': if (ds.view === 'geral' && S.view !== 'geral') S.titTrocar = true; /* voltou à Visão geral: frase nova no título */ S.view = ds.view; S.stale = false; S.maisOpen = false; S.notifOpen = false; closeAdmin(); render(); break;
+      case 'nav': { if (ds.view === 'geral' && S.view !== 'geral') S.titTrocar = true; /* voltou à Visão geral: frase nova no título */ const outra = S.view !== ds.view; S.view = ds.view; S.stale = false; S.maisOpen = false; S.notifOpen = false; closeAdmin(); if (outra) telaTroca(() => render(), 'aba'); else render(); break; }
       case 'mais-toggle': S.maisOpen = !S.maisOpen; render(); break;
       case 'obj-sw-mover': objSwMover(+ds.d); break;
       case 'prov-cel': provCalSel(el); break;
@@ -152,7 +152,7 @@ function onClick(e) {
       case 'fluxo-modo': { S.fluxoModo = ds.v; const sec = el.closest('section'); if (sec) { sec.outerHTML = wFluxo(); drawFluxo(); if (typeof wgIcones === 'function') wgIcones(); } break; }
       case 'per-novo-ano': S.perNovoAno = !S.perNovoAno; render(); setTimeout(() => { const i = document.getElementById('yr-in'); if (i) i.focus(); }, 0); break;
       case 'per-toggle': S.perOpen = !S.perOpen; S.perIni = null; S.perNovoAno = false; S.yearOpen = false; S.notifOpen = false; render(); break;
-      case 'per-atalho': { const n = +ds.n; const ref = perRef(); S.periodo = n >= 12 ? null : { de: Math.max(0, ref - n + 1), ate: ref }; S.perOpen = false; S.perIni = null; render(); const b = document.querySelector('[data-act="per-toggle"]'); if (b) b.focus(); break; }
+      case 'per-atalho': { const n = +ds.n; const ref = perRef(); S.periodo = n >= 12 ? null : { de: Math.max(0, ref - n + 1), ate: ref }; S.perOpen = false; S.perIni = null; telaTroca(() => render(), 'seg'); const b = document.querySelector('[data-act="per-toggle"]'); if (b) b.focus(); break; }
       case 'per-mes': { // primeiro toque marca o início, o segundo fecha o período
         const m = +ds.m;
         if (S.perIni == null) { S.perIni = m; render(); const b = document.querySelector(`.per-m[data-m="${m}"]`); if (b) b.focus(); break; }
@@ -280,6 +280,17 @@ const I_LUPA = ic('<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/>')
 // a busca só existe em Gastos, Investimentos e Proventos
 const BUSCA_ABAS = ['despesas', 'inv', 'pro'];
 const buscaBtnHtml = () => (!BUSCA_ABAS.includes(S.view) ? '' : `<button class="ab-ir" data-act="busca" aria-label="Buscar (Ctrl+K)" title="Buscar (Ctrl+K)">${I_LUPA}</button>`);
+// SaaS no computador: troca de aba e de período com View Transitions (a tela sai e a nova entra; o destaque do menu e dos segmentos desliza entre os botões)
+function telaTroca(fn, tipo) {
+  const h = document.documentElement;
+  if (!document.startViewTransition || modoBasico() || innerWidth <= 900 || matchMedia('(prefers-reduced-motion: reduce)').matches) { fn(); return; }
+  // o destaque (do menu e dos segmentos) desliza por baixo do texto: mede antes, desenha e anima do lugar antigo para o novo (FLIP)
+  const sels = ['.nav .nav-ind', '.per-seg .seg-ind']; const antes = sels.map((q) => { const e = document.querySelector(q); return e ? e.getBoundingClientRect() : null; });
+  h.dataset.vt = tipo;
+  const t = document.startViewTransition(() => { fn(); sels.forEach((q, k) => { const a = antes[k]; const e = document.querySelector(q); if (!a || !e) return; const b = e.getBoundingClientRect(); if (!b.width || (a.left === b.left && a.top === b.top && a.width === b.width)) return;
+    e.animate([{ transform: `translate(${a.left - b.left}px, ${a.top - b.top}px) scale(${a.width / b.width}, ${a.height / b.height})` }, { transform: 'none' }], { duration: 440, easing: 'cubic-bezier(.3, 1.25, .5, 1)' }); }); });
+  t.finished.finally(() => { delete h.dataset.vt; });
+}
 function navPara(v) { closeModal(); S.view = v; S.stale = false; S.maisOpen = false; S.notifOpen = false; closeAdmin(); render(); }
 function buscaItens() {
   const p = S.plan; const L = []; const dt = (s) => { const d = E.parseDataISO(s); return d ? `${pad2(d.dia)}/${pad2(d.mes + 1)}` : ''; };
