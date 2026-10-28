@@ -162,7 +162,7 @@ h1, h2, h3, h4, p { margin: 0; }
 .main { padding: 30px clamp(18px, 3.4vw, 48px) 64px; min-width: 0; }
 .tabbar { display: none; }
 body:not([data-screen="app"]) .side { display: none; }
-body:not([data-screen="app"]) .app { grid-template-columns: minmax(0, 1fr); }
+html body:not([data-screen="app"]) .app { grid-template-columns: minmax(0, 1fr); }
 body:not([data-screen="app"]) .main { padding: 0; }
 body[data-screen="auth"] .main, body[data-screen="onboarding"] .main, body[data-screen="checkout"] .main { padding: calc(28px + env(safe-area-inset-top, 0px)) 18px calc(48px + env(safe-area-inset-bottom, 0px)); }
 
