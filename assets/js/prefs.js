@@ -132,10 +132,31 @@ function definirCor(campo, valor) {
   if (campo === 'base') p.custom.base = valor === 'oled' ? 'oled' : 'light'; else if (/^#[0-9a-f]{6}$/i.test(valor || '')) p.custom.cor = valor;
   p.manual = 'custom'; if (p.tema !== 'auto') p.tema = 'custom'; touch('profile'); aplicarTema(p.tema, true); if (S.adminOpen) renderAdmin();
 }
-// fundo animado atrás do vidro no SaaS, no computador (CSS em .fundo-vivo, nas cores do tema; parado com "reduzir movimento"); vazio = só o fundo do tema
-const FUNDOS = [['', 'Nenhum'], ['ondas', 'Ondas'], ['aurora', 'Aurora'], ['particulas', 'Partículas']];
-function aplicarFundo() { const v = S.profile && S.profile.prefs ? S.profile.prefs.fundo : ''; const h = document.documentElement; if (v && FUNDOS.some((f) => f[0] === v)) h.dataset.fundo = v; else delete h.dataset.fundo; }
+// fundo atrás do vidro no SaaS, no computador (CSS em .fundo-vivo, nas cores do tema; parado com "reduzir movimento"); vazio = só o fundo do tema;
+// "objetivo" usa a foto do objetivo em foco (assets/img/objetivos/<tipo>.jpg, com endereço completo: url() numa variável é lido a partir do CSS); a transparência do vidro (0 a 100) vai em --vt
+const FUNDOS = [['', 'Nenhum'], ['horizonte', 'Horizonte'], ['ondas', 'Ondas'], ['aurora', 'Aurora'], ['particulas', 'Partículas'], ['objetivo', 'Seu objetivo']];
+const FUNDO_FOTOS = ['imovel', 'carro', 'viagem', 'filhos', 'casamento', 'negocio', 'aposentadoria', 'educacao', 'reserva', 'independencia', 'outro'];
+function aplicarFundo() {
+  const p = S.profile && S.profile.prefs ? S.profile.prefs : {}; const v = p.fundo; const h = document.documentElement;
+  if (v && FUNDOS.some((f) => f[0] === v)) h.dataset.fundo = v; else delete h.dataset.fundo;
+  if (v === 'objetivo') { const os = (S.profile && S.profile.objetivos) || []; const o = os.find((x) => x.id === S.profile.objetivoFoco) || os[0]; const t = o && FUNDO_FOTOS.includes(o.tipo) ? o.tipo : 'outro'; h.style.setProperty('--fundo-img', `url("${new URL(`assets/img/objetivos/${t}.jpg`, document.baseURI).href}")`); }
+  h.style.setProperty('--vt', p.vidro == null ? 40 : Math.max(0, Math.min(100, +p.vidro || 0)));
+}
 function definirFundo(v) { if (!S.profile || !FUNDOS.some((f) => f[0] === v)) return; S.profile.prefs.fundo = v; touch('profile'); aplicarFundo(); if (S.adminOpen) renderAdmin(); }
+// transparência do vidro: enquanto arrasta só troca a variável; ao soltar grava no perfil
+function definirVidro(n, salvar) { if (!S.profile) return; S.profile.prefs.vidro = Math.max(0, Math.min(100, Math.round(+n || 0))); aplicarFundo(); if (salvar) touch('profile'); }
+// troca de aparência (tema, cor, fundo): o visual novo se espalha pela página num círculo que nasce de onde o cliente tocou (View Transitions)
+let apPonto = null;
+document.addEventListener('pointerdown', (e) => { apPonto = [e.clientX, e.clientY]; }, true);
+function aparenciaTroca(fn) {
+  const h = document.documentElement;
+  if (!document.startViewTransition || matchMedia('(prefers-reduced-motion: reduce)').matches) { fn(); return; }
+  const [x, y] = apPonto || [innerWidth / 2, innerHeight / 2]; const r = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
+  h.classList.add('vt-ap');
+  const t = document.startViewTransition(() => { fn(); });
+  t.ready.then(() => { h.animate({ clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${r}px at ${x}px ${y}px)`] }, { duration: 780, easing: 'cubic-bezier(.4, 0, .2, 1)', pseudoElement: '::view-transition-new(root)' }); }).catch(() => {});
+  t.finished.finally(() => h.classList.remove('vt-ap'));
+}
 function definirVoz(v) { if (!S.profile || !VOZ[v]) return; S.profile.prefs.voz = v; touch('profile'); render(); if (S.adminOpen) renderAdmin(); toast('Voz alterada: ' + VOZES[v].nome + '.'); }
 function prefsHtml() {
   const p = S.profile.prefs; const auto = p.tema === 'auto'; const escolhido = auto ? p.manual || null : p.tema; const k = temaCustom();
@@ -156,6 +177,7 @@ function prefsHtml() {
   return `<section class="dr-sec"><h3>Aparência</h3>
       <label class="ap-auto"><span><b>Automático</b><small>Claro de dia, escuro à noite, como o aparelho.</small></span><span class="wg-sw"><input type="checkbox" data-tema-auto ${auto ? 'checked' : ''} aria-label="Tema automático"><span></span></span></label>
       <div class="ap-ops" role="group" aria-label="Tema">${opcoes}</div>${custom}
-      <div class="ap-linha"><span>Fundo animado <small>(no computador)</small></span><div class="seg" role="group" aria-label="Fundo animado">${FUNDOS.map(([v, l]) => `<button class="${(p.fundo || '') === v ? 'on' : ''}" data-act="fundo" data-v="${v}" aria-pressed="${(p.fundo || '') === v}">${l}</button>`).join('')}</div></div></section>
+      <div class="ap-linha ap-fundo"><span>Fundo <small>(no computador)</small></span><div class="seg" role="group" aria-label="Fundo">${FUNDOS.map(([v, l]) => `<button class="${(p.fundo || '') === v ? 'on' : ''}" data-act="fundo" data-v="${v}" aria-pressed="${(p.fundo || '') === v}">${l}</button>`).join('')}</div></div>
+      <label class="ap-linha ap-vidro"><span>Transparência do vidro <small>(no computador)</small></span><span class="ap-vidro-c"><small>Sólido</small><input type="range" min="0" max="100" step="5" value="${p.vidro == null ? 40 : p.vidro}" data-vidro aria-label="Transparência do vidro"><small>Transparente</small></span></label></section>
     <section class="dr-sec"><h3>Voz do painel</h3><div class="ap-vozes">${vozes}</div></section>`;
 }

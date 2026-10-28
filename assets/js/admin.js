@@ -259,8 +259,8 @@ function onAdminChange(t) {
   if (t.matches('[data-objf]')) { objCampo(t); return true; }
   if (t.matches('[data-painel-on]')) { painelLigar(t); return true; }
   if (t.matches('[data-inst-minha]')) { instMinhaAlternar(t.dataset.instMinha, t.checked); return true; }
-  if (t.matches('[data-tema-livre]')) { definirCor('cor', t.value); return true; }
-  if (t.matches('[data-tema-auto]')) { definirTema(t.checked ? 'auto-on' : 'auto-off'); return true; }
+  if (t.matches('[data-tema-livre]')) { aparenciaTroca(() => definirCor('cor', t.value)); return true; }
+  if (t.matches('[data-tema-auto]')) { aparenciaTroca(() => definirTema(t.checked ? 'auto-on' : 'auto-off')); return true; }
   if (t.matches('[data-abf]')) { aberturaCampo(t); return true; }
   if (t.matches('[data-aba]')) {
     const keys = $$('[data-aba]:checked', $('#admin')).map((x) => x.dataset.aba);

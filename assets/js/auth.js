@@ -33,7 +33,7 @@ function authHtml() {
         ${campo('E-mail', `<input name="email" type="email" autocomplete="email" placeholder="voce@email.com" value="${v('email')}">`, I.mail)}
         ${campo('WhatsApp', `<input name="whatsapp" inputmode="tel" autocomplete="tel" placeholder="(11) 99999-9999" value="${v('whatsapp')}">`, I.tel)}
         ${demo ? '' : campo('Senha <small>(mínimo de 8 caracteres)</small>', '<input name="password" type="password" autocomplete="new-password" placeholder="Crie uma senha">', I.lock)}
-        <fieldset class="plan-pick"><legend>Plano</legend>${['gratis', 'investidor', 'completo'].map((id) => `<label class="pick"><input type="radio" name="plano" value="${id}" ${S.authPlano === id || (!S.authPlano && id === 'gratis') ? 'checked' : ''}><span><b>${esc(nomePlano(id))}</b><small>${esc(infoPlano(id).resumo)}</small></span><em>${esc(precoTxt(id))}</em></label>`).join('')}</fieldset>
+        ${S.authPagar && S.authPlano ? `<input type="hidden" name="plano" value="${esc(S.authPlano)}">` : ''}
         ${err}<button class="btn primary lg as-cta" type="submit">Criar conta e começar ${I.chev}</button>
         <label class="chk"><input type="checkbox" name="termos"><span>Li e aceito os <button type="button" class="lnk strong" data-act="terms">termos e a política de privacidade</button>, inclusive o compartilhamento do resultado do diagnóstico com ${esc(CFG.consultor)}.</span></label></form>
       <p class="cap">Já tem conta? <button class="lnk strong" data-act="auth-mode" data-mode="login">Entrar</button></p></div>
@@ -147,12 +147,11 @@ function onboardingHtml() {
     const lista = A.itens.length ? `<ul class="ob-objs">${A.itens.map((g, i) => `<li>${objIcone(g, i)}<div><b>${esc(objNomeDe(g))}</b><small>${brl0(g.valor)} até ${g.ano || '–'}${A.itens.length > 1 ? ` · fatia de ${g.pct}%` : ''}</small><p>${esc(objFrase(g))}</p></div></li>`).join('')}</ul>` : '';
     const quando = !A.itens.length ? 'Defina o valor de pelo menos um objetivo para ver a projeção. Você pode cadastrar e editar objetivos a qualquer momento no painel.'
       : `Projeção com retorno hipotético de ${ret}% ao ano.${A.itens.length > 1 ? ' O patrimônio e o aporte foram divididos entre os objetivos pelo prazo de cada um; você ajusta as fatias no painel, em Meus objetivos.' : ''}`;
-    const pend = pendente();
     body = `<h2>Seu diagnóstico.</h2><div class="diag">
       <div class="dg"><small>Patrimônio hoje</small><b>${brl0(+o.patrimonio || 0)}</b></div><div class="dg"><small>Perfil</small><b>${pf.nome}</b></div>
       <div class="dg"><small>Objetivos</small><b>${A.itens.length || 'a definir'}</b><span>${A.itens.length ? brl0(A.valorTotal) + ' no total' : 'cadastre no painel'}</span></div><div class="dg"><small>Aporte mensal</small><b>${+o.metaAporte ? brl0(+o.metaAporte) : 'a definir'}</b></div></div>
       ${lista}<p class="sub">${quando}</p><p class="cap">Projeção ilustrativa, baseada em uma hipótese de retorno, e não uma promessa de rentabilidade.</p>${typeof basObHtml === 'function' ? basObHtml() : ''}
-      <div class="btn-row center"><button class="btn primary lg" data-act="ob-finish">Abrir meu painel</button>${pend ? `<button class="btn lg" data-act="ob-finish-pay">Concluir assinatura do plano ${esc(nomePlano(pend))}</button>` : `<button class="btn lg" data-act="ob-finish-talk">Revisar com o ${esc(primeiroNome())}</button>`}</div>`;
+      ${obPlanosHtml(o, A)}`;
   }
   return `<div class="ob">${dots}<div class="ob-card">${body}</div></div>`;
 }
@@ -230,4 +229,14 @@ function checkoutHtml() {
       <div class="price2">${id === 'completo' && CFG.precoRegular > precoPlano(id) ? `<s class="hp-antes"><span class="hp-sr">De </span>${esc(brl(CFG.precoRegular))}</s>` : ''}<b>${esc(precoTxt(id))}</b></div>${id === 'completo' ? '<p class="launch">Condição de lançamento.</p>' : ''}
       <ul>${info.itens.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>${id === 'completo' ? `<p class="cap">Na Assessoria, o ${esc(primeiroNome())} passa a ver o seu planejamento para acompanhar você. Os termos explicam isso.</p>` : ''}</div>
       <div class="co-steps">${steps}</div></div></div>`;
+}
+
+// escolha do plano no fim do diagnóstico (saiu do cadastro): logo depois do resultado, com o plano que combina com ele em destaque
+function obPlanoRec(o, A) { const pat = +o.patrimonio || 0; return pat >= 300000 ? 'completo' : (A.itens.length || +o.metaAporte || pat > 0) ? 'investidor' : 'gratis'; }
+function obPlanosHtml(o, A) {
+  const rec = obPlanoRec(o, A); const sel = o.plano || rec;
+  const motivo = { completo: 'Seu patrimônio pede acompanhamento de perto, com carteira recomendada e revisão com o assessor.', investidor: 'Você já investe ou quer investir: acompanhe aportes, proventos e a carteira no mesmo lugar.', gratis: 'Comece organizando rendas e gastos. Dá para mudar de plano quando quiser.' }[rec];
+  const card = (id) => `<button type="button" class="ob-pl-c${id === sel ? ' on' : ''}" data-act="ob-plano" data-plano="${id}" aria-pressed="${id === sel}">${id === rec ? '<em class="ob-rec">Recomendado para você</em>' : ''}<b>${esc(nomePlano(id))}</b><small>${esc(infoPlano(id).resumo)}</small><span>${esc(precoTxt(id))}</span></button>`;
+  return `<section class="ob-planos"><h3>Escolha como continuar</h3><p class="sub">${esc(motivo)}</p><div class="ob-pl">${['gratis', 'investidor', 'completo'].map(card).join('')}</div></section>
+    <div class="btn-row center">${sel === 'gratis' ? '<button class="btn primary lg" data-act="ob-finish">Abrir meu painel</button>' : `<button class="btn primary lg" data-act="ob-finish-pay" data-plano="${sel}">Assinar o ${esc(nomePlano(sel))}</button><button class="btn lg" data-act="ob-finish">Começar no gratuito por enquanto</button>`}<button class="btn ghost lg" data-act="ob-finish-talk">Revisar com o ${esc(primeiroNome())}</button></div>`;
 }

@@ -125,12 +125,15 @@ function onClick(e) {
       case 'ing-edit': S.ing.editando = S.ing.editando === +ds.i ? null : +ds.i; renderIng(); break;
       case 'ing-filtro': S.ing.filtro = ds.f; renderIng(); break;
       case 'ing-ia': ingRefinar(); break;
-      case 'tema': definirTema(ds.tema); break;
-      case 'fundo': definirFundo(ds.v || ''); break;
+      case 'tema': aparenciaTroca(() => definirTema(ds.tema)); break;
+      case 'fundo': aparenciaTroca(() => definirFundo(ds.v || '')); break;
       case 'cc-abrir': ccAbrir(ds.id); break;
+      case 'topo-busca-ir': topoBuscaIr(+ds.i); break;
+      case 'topo-busca-ia': topoBuscaIa(); break;
+      case 'ia-avisos': S.notifOpen = true; S.iaAba = 'avisos'; S.notifAnim = true; notifRefresh(); break;
       case 'cc-carteira': ccCarteira(el); break;
-      case 'tema-cor': definirCor(ds.campo, ds.v); break;
-      case 'tema-roda': { const c = rodaCor(el, e); if (c) definirCor('cor', c); break; }
+      case 'tema-cor': aparenciaTroca(() => definirCor(ds.campo, ds.v)); break;
+      case 'tema-roda': { const c = rodaCor(el, e); if (c) aparenciaTroca(() => definirCor('cor', c)); break; }
       case 'voz': definirVoz(ds.voz); break;
       case 'rec-aplicar': recAplicar(); break;
       case 'rec-add': recAdd(); break;
@@ -193,7 +196,8 @@ function onClick(e) {
       case 'ob-back': { const f = $('#f-ob'); if (f) readOb(f); obBack(); break; }
       case 'quiz-pick': quizPick(+ds.i); break;
       case 'ob-finish': finishOb(); break;
-      case 'ob-finish-pay': finishOb(); iniciarCheckout(S.profile.planoSolicitado); break;
+      case 'ob-finish-pay': { const pl = ['investidor', 'completo'].includes(ds.plano) ? ds.plano : S.profile.planoSolicitado; if (pl) S.profile.planoSolicitado = pl; finishOb(); iniciarCheckout(pl); break; }
+      case 'ob-plano': if (['gratis', 'investidor', 'completo'].includes(ds.plano)) { S.ob.plano = ds.plano; S.profile.planoSolicitado = ds.plano === 'gratis' ? null : ds.plano; touch('profile'); render(); } break;
       case 'ob-finish-talk': finishOb(); openContact(); break;
       case 'admin-open': S.maisOpen = false; openAdmin(); break;
       case 'ob-obj-add': case 'ob-obj-del': obObjAcao(act, ds); break;
@@ -244,6 +248,7 @@ function onChange(e) {
   if (t.matches('[data-ing-todos]')) { ingMassa('todos', '', t.checked); return; }
   if (t.matches('[data-ing-massa]')) { ingMassa(t.dataset.ingMassa, t.value); return; }
   if (t.matches('[data-ing-col]')) { ingMapa(t.dataset.ingCol, t.value); return; }
+  if (t.matches('[data-vidro]')) { definirVidro(t.value, true); return; }
   if (t.closest && t.closest('#admin') && onAdminChange(t)) return;
   if (t.matches('[data-cat-name]')) { catAction('cat-rename', t.dataset.catName, t.value); return; }
   if (t.matches('[data-plano-cli]')) { setPlanoCliente(t.dataset.planoCli, t.value); return; }
@@ -261,6 +266,8 @@ function onInput(e) {
   const t = e.target; if (!(t.matches)) return;
   const refocus = (sel, pos) => { const n = $(sel); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (er) { /* ignora */ } } };
   if (t.matches('[data-sim]')) { simInput(t); return; }
+  if (t.matches('[data-ia-busca]')) { topoBuscaDesenhar(t); return; }
+  if (t.matches('[data-vidro]')) { definirVidro(t.value, false); return; }
   if (t.matches('[data-lp]')) { lpInput(t); return; }
   if (t.matches('[data-gf]')) { gInput(t); return; }
   if (t.matches('[data-cartv]')) { cartCampoVivo(t); return; }
@@ -284,7 +291,32 @@ function buscaItens() {
   }
   return L;
 }
+// no computador a busca mora no campo do topo (o mesmo do assistente): a lupa e o Ctrl+K só levam o cursor para lá
+const topoCampo = () => { const i = document.querySelector('[data-ia-busca]'); return i && i.offsetParent ? i : null; };
+const TB = { achados: [], sel: 0 };
+function topoBuscaDesenhar(inp) {
+  const box = inp.closest('.topo-ic'); if (!box) return; let ul = box.querySelector('.tb-res');
+  const q = E.norm(inp.value).split(/\s+/).filter(Boolean);
+  const telas = navItems().map(([k, l]) => ({ t: 'Tela', n: l, s: '', go: () => navPara(k) }));
+  TB.achados = q.length ? telas.concat(buscaItens()).filter((x) => { const h = E.norm(`${x.n} ${x.s} ${x.t}`); return q.every((w) => h.includes(w)); }).slice(0, 7) : []; TB.sel = 0;
+  if (!q.length) { if (ul) ul.remove(); return; }
+  if (!ul) { ul = document.createElement('ul'); ul.className = 'tb-res'; ul.setAttribute('role', 'listbox'); ul.addEventListener('pointerdown', (e) => e.preventDefault()); box.appendChild(ul); }
+  ul.innerHTML = TB.achados.map((x, i) => `<li><button type="button" class="busca-it${i === TB.sel ? ' on' : ''}" data-act="topo-busca-ir" data-i="${i}" role="option"><span><b>${esc(x.n)}</b>${x.s ? `<small>${esc(x.s)}</small>` : ''}</span><em>${esc(x.t)}</em></button></li>`).join('')
+    + `<li><button type="button" class="busca-it tb-ia${TB.achados.length ? '' : ' on'}" data-act="topo-busca-ia" role="option"><span><b>Perguntar ao assistente</b><small>${esc(inp.value.trim())}</small></span><em>Enter</em></button></li>`;
+}
+function topoBuscaFechar(inp) { if (inp) inp.value = ''; const ul = document.querySelector('.tb-res'); if (ul) ul.remove(); TB.achados = []; }
+function topoBuscaIr(i) { const x = TB.achados[i]; topoBuscaFechar(topoCampo()); if (x) x.go(); }
+function topoBuscaIa() { const inp = topoCampo(); const q = inp ? inp.value.trim() : ''; topoBuscaFechar(inp); if (!q) return; S.notifOpen = true; S.iaAba = 'conversa'; S.iaComecou = true; S.notifAnim = true; notifRefresh(); iaEnviar(q); }
+function topoBuscaTecla(e) {
+  const inp = e.target; const n = TB.achados.length;
+  if (e.key === 'Escape') { e.preventDefault(); topoBuscaFechar(inp); inp.blur(); return true; }
+  if (e.key === 'Enter') { e.preventDefault(); if (n && TB.sel < n) topoBuscaIr(TB.sel); else topoBuscaIa(); return true; }
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { if (!document.querySelector('.tb-res')) return false; e.preventDefault(); TB.sel = (TB.sel + (e.key === 'ArrowDown' ? 1 : n)) % (n + 1);
+    document.querySelectorAll('.tb-res .busca-it').forEach((b, k) => b.classList.toggle('on', k === TB.sel)); return true; }
+  return false;
+}
 function buscaAbrir() {
+  const campo = topoCampo(); if (S.screen === 'app' && campo) { campo.focus(); return; }
   if (S.screen !== 'app' || !BUSCA_ABAS.includes(S.view)) return; const itens = buscaItens(); let achados = [];
   const f = openModal({ title: 'Buscar', ok: 'Abrir', body: `<input class="search busca-in" name="q" type="search" placeholder="Gasto, ativo ou provento" autocomplete="off" aria-label="Buscar" aria-controls="busca-res"><ul class="busca-res" id="busca-res" role="listbox"></ul>`,
     onOk: () => { if (achados[0]) { achados[0].go(); return false; } return false; } });
@@ -297,6 +329,7 @@ function buscaAbrir() {
   desenhar();
 }
 function onKey(e) {
+  if (e.target && e.target.matches && e.target.matches('[data-ia-busca]') && topoBuscaTecla(e)) return;
   if ((e.ctrlKey || e.metaKey) && !e.altKey && (e.key === 'k' || e.key === 'K') && S.screen === 'app') { e.preventDefault(); buscaAbrir(); return; }
   if (e.key === 'Escape' && S.notifOpen) { S.notifOpen = false; notifRefresh('.bell'); return; }
   if (e.key === 'Escape' && S.yearOpen) { S.yearOpen = false; render(); return; }
@@ -325,6 +358,7 @@ const graficoRO = 'ResizeObserver' in window ? new ResizeObserver((es) => {
 function observarGraficos() { if (!graficoRO) return; graficoRO.disconnect(); document.querySelectorAll('#view .chart').forEach((c) => graficoRO.observe(c)); }
 function bind() {
   document.addEventListener('click', onClick); document.addEventListener('change', onChange); document.addEventListener('input', onInput);
+  document.addEventListener('focusout', (e) => { if (e.target.matches && e.target.matches('[data-ia-busca]')) setTimeout(() => { if (document.activeElement !== e.target) topoBuscaFechar(); }, 150); });
   document.addEventListener('keydown', onKey); document.addEventListener('submit', onSubmit);
   infoIniciar(); painelDnD(); wgGestos(); // botão "i": descrições ficam atrás de um ícone ao lado do título
   document.addEventListener('focusout', () => { if (S.needsRender) setTimeout(() => { if (S.needsRender && !isEditing() && !isTyping()) render(); }, 80); });
