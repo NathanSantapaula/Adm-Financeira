@@ -1,7 +1,7 @@
 /* Política de privacidade e termos de uso (LGPD, Lei 13.709/2018). Puro, sem DOM: o app abre num modal (openTerms em ui.js)
    e a página pública privacidade.html desenha o mesmo texto. Mudou o texto? Troque POLITICA_VERSAO: o aceite gravado no perfil guarda a versão. */
 'use strict';
-const POLITICA_VERSAO = '2026-11-01';
+const POLITICA_VERSAO = '2026-11-02';
 function politicaHtml(cfg, nuvem) {
   const e = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const marca = e(cfg.marca || 'AVEN'); const quem = e(cfg.controlador || cfg.consultor || ''); const cons = e(cfg.consultor || '');
@@ -11,6 +11,7 @@ function politicaHtml(cfg, nuvem) {
   return `<div class="terms politica">
   <p class="pol-v">Versão de ${+d} de ${MESES[+m - 1]} de ${a}.</p>
   <p>Esta política explica quais dados pessoais o ${marca} usa, para quê, com quem eles são compartilhados e como você exerce os seus direitos, conforme a Lei Geral de Proteção de Dados (LGPD, Lei 13.709/2018). Ao criar a conta você declara que leu este texto.</p>
+  <div class="pol-cons"><b>Consentimento do cadastro</b><p>Ao aceitar estes termos, você autoriza o compartilhamento do resultado do seu diagnóstico (patrimônio informado, perfil de investidor e objetivos) e dos seus dados de contato com ${cons}, o seu consultor, para que ele possa acompanhar o seu planejamento e falar com você. Você pode revogar esse consentimento a qualquer momento, como explicado na seção de direitos.</p></div>
   ${sec('1. Quem cuida dos seus dados', `<p>O controlador dos dados é ${quem}, responsável pelo ${marca}. O encarregado pelo tratamento de dados pessoais (art. 41 da LGPD) atende pelo e-mail <a href="mailto:${mail}">${mail}</a>${zap ? ` e pelo WhatsApp ${zap}` : ''}.</p>`)}
   ${sec('2. Que dados usamos', li([
     '<b>Cadastro:</b> nome, e-mail e WhatsApp. A senha é guardada pelo provedor de login apenas de forma cifrada (hash); ninguém, nem o consultor, consegue lê-la.',

@@ -3421,3 +3421,6 @@ body[data-screen="auth"] .main:has(.cad) { padding: 0; }
   .cad-trilha { gap: 6px; } .cad-trilha li { align-items: center; gap: 6px; } .cad-trilha small { display: none; } .cad-trilha b { font-size: 12.5px; }
   .cad-meio h2 { font-size: 26px; }
 }
+/* termos: o consentimento do diagnóstico com o consultor fica em destaque logo no começo da política */
+.pol-cons { margin: 14px 0; padding: 14px 16px; border-radius: 14px; background: color-mix(in srgb, var(--accent) 8%, var(--surface)); border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); }
+.pol-cons b { display: block; margin-bottom: 4px; } .pol-cons p { margin: 0; }
