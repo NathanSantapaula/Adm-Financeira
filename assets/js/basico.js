@@ -93,7 +93,7 @@ window.addEventListener('popstate', (e) => { // voltar do celular ou do navegado
   const t = basPilha()[n]; S.basPilha.length = n; if ($('#modal').open) $('#modal').close(); basSom('volta'); basTransicao('volta', () => { render(); window.scrollTo(0, t.volta || 0); });
 });
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modoBasico() && basPilha().length && !$('#modal').open) { e.preventDefault(); basFechar(); } });
-document.addEventListener('submit', (e) => { const f = e.target; if (f.dataset.form !== 'bas') return; e.preventDefault(); basSalvar(f); });
+document.addEventListener('submit', (e) => { const f = e.target; if (f.classList.contains('bas-jc')) return e.preventDefault(); if (f.dataset.form !== 'bas') return; e.preventDefault(); basSalvar(f); });
 
 function basicoHtml() {
   if (!S.plan) return `<div class="bas">${basCard(`<h2 class="bas-h2">Vamos começar</h2><p class="bas-p">${voz('bas_vazio')}</p><button class="btn primary lg bas-cta" data-act="create-plan">Começar ${S.year || NOW_Y}</button>`)}</div>`;
@@ -705,7 +705,7 @@ function basTelaSimular(o) {
   const g = o.id ? objAnalise().itens.find((x) => x.id === o.id) : objFoco(objAnalise()); const C = S.C; const ult = S.year === NOW_Y ? NOW_M : 11;
   const v0 = { inicial: Math.round(g ? g.saldo : C.patrimonio[ult]) || 0, aporte: Math.round(g ? g.aporte : +S.plan.settings.metaAporte || 0) || 0, taxa: +S.profile.retornoAnual || 10, anos: 10 };
   const campo = (k, rot, val, suf) => `<label class="bas-jc-f"><span>${rot}</span><span class="bas-jc-in">${suf ? '' : '<i>R$</i>'}<input data-jc="${k}" inputmode="decimal" value="${esc(nf.format(val))}">${suf ? `<i>${suf}</i>` : ''}</span></label>`;
-  return basDet('E se eu investir mais?', `<form class="bas-jc" onsubmit="return false">
+  return basDet('E se eu investir mais?', `<form class="bas-jc">
       <div class="card bas-jc-c">${campo('ini', 'Valor inicial', v0.inicial)}${campo('ap', 'Aporte por mês', v0.aporte)}${campo('tx', 'Taxa ao ano', v0.taxa, '% a.a.')}
         <fieldset class="bas-fs bas-jc-p"><legend>Prazo</legend><div class="bas-chips">${BAS_JC_PRAZOS.map((a) => `<label class="bas-chip"><input type="radio" name="jc-prazo" value="${a}" ${a === v0.anos ? 'checked' : ''}><span>${a} ${a === 1 ? 'ano' : 'anos'}</span></label>`).join('')}</div></fieldset></div>
       <div class="bas-jc-out" aria-live="polite">${basJcOut(v0)}</div></form>

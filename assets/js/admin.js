@@ -236,7 +236,7 @@ function aplicarPlanilha() {
 }
 
 /* ---------- campos do painel ---------- */
-function refazerPerfil() { closeAdmin(); initOb(); S.ob.step = OB_STEPS.indexOf('perfil'); S.ob.q = 0; S.ob.resp = []; S.ob.perfil = null; S.screen = 'onboarding'; render(); }
+function refazerPerfil() { closeAdmin(); initOb(); S.ob.i = OB_CONV.findIndex((p) => p.id === 'q0'); S.ob.resp = []; S.ob.perfil = null; S.screen = 'onboarding'; render(); }
 
 function onAdminChange(t) {
   const p = S.profile; const num = (v) => (String(v).trim() === '' ? 0 : E.parseValor(String(v).replace('%', '')));

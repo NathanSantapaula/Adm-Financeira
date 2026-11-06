@@ -111,116 +111,116 @@ async function submitAuth(f) {
   } catch (e) { fail(e && e.amigavel ? e.message : 'Não foi possível concluir agora. Tente novamente.', !!(e && e.email)); }
 }
 
-/* ---------- onboarding: diagnóstico ---------- */
-const OB_STEPS = ['voce', 'partida', 'perfil', 'resultado', 'metas', 'diagnostico'];
+/* ---------- onboarding: diagnóstico em conversa ----------
+   O assistente faz uma pergunta por vez (OB_CONV); cada resposta desbloqueia um pedaço do painel já com os números da pessoa
+   (cartões de obPremio e as conquistas no topo). Grava nos mesmos campos de S.ob que finishOb (core.js) já usava. */
+const OB_STEPS = ['conversa']; // compatibilidade: o diagnóstico virou um passo só, a conversa
+const obPn = (o) => String(o.nome || '').trim().split(/\s+/)[0] || '';
+const obObj = (o) => (o.objs[0] = o.objs[0] || { tipo: 'independencia', nome: '', valor: '', ano: NOW_Y + 20 });
+// "150.000", "150 mil" e "10k" valem
+const obNum = (v) => { const raw = String(v == null ? '' : v).trim(); if (raw === '') return 0; if (/mil|k\b/i.test(raw)) { const n = E.iaValor(raw); return n == null ? NaN : n; } return parseReais(raw); };
+const OB_VALOR_SUG = { independencia: [1000000, 2000000, 5000000], aposentadoria: [1000000, 2000000, 3000000], imovel: [300000, 600000, 1000000], carro: [60000, 100000, 180000], viagem: [10000, 25000, 50000],
+  filhos: [100000, 300000, 500000], educacao: [50000, 120000, 250000], reserva: [20000, 50000, 100000], casamento: [40000, 80000, 150000], negocio: [50000, 150000, 400000], outro: [10000, 50000, 100000] };
+const brlCurto = (v) => (S.privado ? brl0(v) : v >= 1e6 ? 'R$ ' + String(+(v / 1e6).toFixed(1)).replace('.', ',') + ' mi' : v >= 1000 ? 'R$ ' + Math.round(v / 1000) + ' mil' : brl0(v));
+const OB_CONV = [
+  { id: 'nome', tipo: 'texto', ph: 'Seu nome ou apelido', p: () => `Oi! Eu sou o assistente do ${CFG.marca}. Vou montar o seu diagnóstico em poucas perguntas, e cada resposta já libera uma parte do seu painel. Como posso te chamar?`,
+    ok: (o, v) => { v = String(v || '').trim(); if (v.length < 2) return 'Me diga pelo menos duas letras.'; o.nome = v; return ''; }, r: (o) => o.nome },
+  { id: 'patrimonio', tipo: 'valor', ph: 'Ex.: 150.000', chips: () => [['Ainda não invisto', '0'], ['Uns R$ 10 mil', '10000'], ['Uns R$ 100 mil', '100000']],
+    p: (o) => `Prazer, ${obPn(o)}! Quanto você já tem guardado ou investido hoje? Somando reserva, renda fixa, ações e fundos. Uma estimativa serve.`,
+    ok: (o, v) => { const n = obNum(v); if (Number.isNaN(n) || n < 0) return 'Use um número, como 150.000 ou 150 mil.'; o.patrimonio = n; return ''; }, r: (o) => (+o.patrimonio ? brl0(+o.patrimonio) : 'Ainda não invisto') },
+  { id: 'renda', tipo: 'valor', ph: 'Ex.: 8.000', chips: () => [['Prefiro não dizer', '-']],
+    p: () => 'E quanto entra por mês, já líquido? É opcional, mas me ajuda a sugerir quanto guardar.',
+    ok: (o, v) => { if (v === '-') { o.renda = 0; return ''; } const n = obNum(v); if (Number.isNaN(n) || n < 0) return 'Use um número, como 8.000.'; o.renda = n; return ''; }, r: (o) => (+o.renda ? brl0(+o.renda) + ' por mês' : 'Prefiro não dizer') },
+  { id: 'objetivo', tipo: 'chips', grade: true, chips: () => E.OBJ_TIPOS.filter(([k]) => k !== 'outro').map(([k, n]) => [n, k, k]),
+    p: () => 'Agora a parte boa. Qual é o seu maior objetivo com o dinheiro?',
+    ok: (o, v) => { const g = obObj(o); if (g.tipo !== v) { g.tipo = v; g.valor = ''; g.ano = NOW_Y + (OBJ_PRAZO[v] || 5); } return ''; }, r: (o) => objNome(obObj(o).tipo) },
+  { id: 'valor', tipo: 'valor', ph: 'Ex.: 500.000', chips: (o) => (OB_VALOR_SUG[obObj(o).tipo] || OB_VALOR_SUG.outro).map((v) => [brlCurto(v), String(v)]),
+    p: (o) => `Ótima escolha. Quanto você imagina para ${objNome(obObj(o).tipo).toLowerCase()}?`,
+    ok: (o, v) => { const n = obNum(v); if (!(n > 0)) return 'Me diga um valor, como 500.000 ou 500 mil.'; obObj(o).valor = n; return ''; }, r: (o) => brl0(+obObj(o).valor) },
+  { id: 'ano', tipo: 'ano', ph: 'Ano, ex.: ' + (NOW_Y + 10), chips: () => [2, 5, 10, 20].map((n) => [`${NOW_Y + n} · ${n} anos`, String(NOW_Y + n)]),
+    p: () => 'Para quando?',
+    ok: (o, v) => { const n = parseInt(v, 10); if (!anoValido(n) || n < NOW_Y) return `Escolha um ano a partir de ${NOW_Y}.`; obObj(o).ano = n; return ''; }, r: (o) => String(obObj(o).ano) },
+  { id: 'aporte', tipo: 'valor', ph: 'Ex.: 2.000',
+    chips: (o) => (+o.renda ? [10, 20, 30].map((p) => [`${brl0(Math.round((+o.renda * p) / 100))} · ${p}%`, String(Math.round((+o.renda * p) / 100))]) : [500, 1000, 3000].map((v) => [brl0(v), String(v)])),
+    p: (o) => `E quanto você consegue investir por mês para chegar lá?${+o.renda ? ` Quem guarda uns 20% da renda costuma andar bem: seriam ${brl0(Math.round(+o.renda * 0.2))}.` : ''}`,
+    ok: (o, v) => { const n = obNum(v); if (Number.isNaN(n) || n < 0) return 'Use um número, como 2.000.'; o.metaAporte = n; return ''; }, r: (o) => (+o.metaAporte ? brl0(+o.metaAporte) + ' por mês' : 'Por enquanto, nada') },
+].concat(E.QUIZ.map((q, k) => ({ id: 'q' + k, tipo: 'chips', lista: true, chips: () => q.o.map(([t], i) => [t, String(i)]),
+  p: (o) => (k === 0 ? `Falta pouco, ${obPn(o)}. São ${E.QUIZ.length} perguntas rápidas para eu entender o seu perfil de investidor. ` : '') + q.q,
+  ok: (o, v) => { o.resp[k] = +v; if (k === E.QUIZ.length - 1) o.perfil = E.scorePerfil(o.resp); return ''; }, r: (o) => (q.o[o.resp[k]] || [''])[0] })));
+const OB_PREMIO_DE = { nome: 'painel', patrimonio: 'partida', renda: 'guardar', ano: 'objetivo', aporte: 'chegada', ['q' + (E.QUIZ.length - 1)]: 'perfil' };
+const OB_PREMIOS = [['painel', 'Seu painel'], ['partida', 'Ponto de partida'], ['guardar', 'Quanto guardar'], ['objetivo', 'Seu objetivo'], ['chegada', 'Quando chega'], ['perfil', 'Seu perfil']];
+function obAnalise(o) {
+  const pf = (o.perfil && o.perfil.resultado) || 'moderado'; const ret = E.RETORNO_PADRAO[pf];
+  return { ret, A: E.analiseObjetivos({ objetivos: obObjetivosFinais(o, ret), patrimonio: +o.patrimonio || 0, aporte: +o.metaAporte || 0, retorno: ret, hoje: new Date() }) };
+}
+// cartão que aparece na conversa logo depois da resposta que o desbloqueia
+function obPremio(o, k) {
+  const cab = (t) => `<span class="obc-pr-k"><i aria-hidden="true">✦</i>Desbloqueado · ${t}</span>`;
+  if (k === 'painel') return `<div class="obc-pr">${cab('Seu painel')}<div class="obc-pr-row"><span class="obc-av">${esc(lpIniciais(o.nome))}</span><span><b>Painel de ${esc(obPn(o))}</b><small>${esc(CFG.marca)} ${esc(CFG.submarca || '')} · ${NOW_Y}</small></span></div></div>`;
+  if (k === 'partida') return `<div class="obc-pr">${cab('Ponto de partida')}<b class="obc-big">${brl0(+o.patrimonio || 0)}</b><small>${+o.patrimonio ? 'É daqui que o gráfico do seu patrimônio começa.' : 'Todo patrimônio começa no zero. O primeiro aporte já conta.'}</small></div>`;
+  if (k === 'guardar') { if (!(+o.renda > 0)) return ''; const g = Math.round(+o.renda * 0.2);
+    return `<div class="obc-pr">${cab('Quanto guardar')}<b class="obc-big">${brl0(g)}<em>/mês</em></b><small>20% da sua renda. Em um ano, ${brl0(g * 12)} só de aportes.</small><span class="obc-barra"><i style="width:20%"></i></span></div>`; }
+  if (k === 'objetivo') { const g = obObj(o); const n = Math.max(0, g.ano - NOW_Y);
+    return `<div class="obc-pr">${cab('Seu objetivo')}<div class="obc-pr-row">${objIcone(g, 0)}<span><b>${esc(objNome(g.tipo))}</b><small>${brl0(+g.valor)} até ${g.ano}${n ? ` · daqui a ${n} ${n === 1 ? 'ano' : 'anos'}` : ''}</small></span></div></div>`; }
+  if (k === 'chegada') { const { ret, A } = obAnalise(o); const g = A.itens[0]; if (!g) return '';
+    const pct = Math.round((g.progresso || 0) * 100); const prev = g.previsto ? `${MES_LONGO[g.previsto.mes].toLowerCase()} de ${g.previsto.ano}` : '';
+    const frase = g.status === 'concluido' ? 'Você já tem o suficiente. Agora é proteger e fazer render.' : g.status === 'no-prazo' ? `No prazo, com ${g.folga} ${g.folga === 1 ? 'mês' : 'meses'} de folga.`
+      : g.status === 'atrasado' ? `Passa ${g.atraso} ${g.atraso === 1 ? 'mês' : 'meses'} do prazo. Com ${brl0(g.necessario)} por mês, chega em ${g.ano}.` : 'Com algum aporte por mês, eu calculo quando você chega lá.';
+    return `<div class="obc-pr obc-hero">${cab('Quando chega')}<div class="obc-pr-row"><span class="obc-ring" style="--p:${pct}"><b>${pct}%</b></span><span><small>No seu ritmo, você chega em</small><b class="obc-big">${prev ? esc(prev) : 'defina um aporte'}</b></span></div><small>${esc(frase)}</small><small class="obc-leg">Simulação com retorno hipotético de ${ret}% ao ano, não é promessa de rentabilidade.</small></div>`; }
+  if (k === 'perfil') { const pf = E.PERFIS[o.perfil.resultado];
+    return `<div class="obc-pr">${cab('Seu perfil')}<b class="obc-big">${esc(pf.nome)}</b><small>${esc(pf.desc)}</small>
+      <div class="pbar big" role="img" aria-label="Referência: ${pf.alvo.rendaFixa}% renda fixa e ${pf.alvo.bolsa}% renda variável"><i style="width:${pf.alvo.rendaFixa}%"></i><b style="width:${pf.alvo.bolsa}%"></b></div>
+      <div class="pleg"><span><i class="d1"></i>Renda fixa ${pf.alvo.rendaFixa}%</span><span><i class="d2"></i>Renda variável ${pf.alvo.bolsa}%</span></div><small class="obc-leg">Questionário simplificado; não substitui a análise de adequação da assessoria.</small></div>`; }
+  return '';
+}
 function onboardingHtml() {
-  const o = S.ob; const st = OB_STEPS[o.step];
-  const dots = `<div class="ob-dots" aria-label="Etapa ${o.step + 1} de ${OB_STEPS.length}">${OB_STEPS.map((_, i) => `<i class="${i === o.step ? 'on' : i < o.step ? 'ok' : ''}"></i>`).join('')}</div>`;
-  const err = '<div class="merr" id="oerr" role="alert"></div>';
-  const nav = (next, label) => `<div class="btn-row center">${o.step > 0 ? '<button class="btn lg" type="button" data-act="ob-back">Voltar</button>' : ''}<button class="btn primary lg" type="submit">${label || 'Continuar'}</button></div>`;
-  let body = '';
-  if (st === 'voce') {
-    body = `<h2>Vamos começar por você.</h2><p class="sub">Leva poucos minutos e deixa o painel com a sua cara.</p>
-      <form id="f-ob" novalidate><label class="fld"><span>Como devemos chamar você?</span><input name="nome" autocomplete="name" value="${esc(o.nome)}"></label>
-      <label class="fld"><span>Ano do planejamento <small>você pode trocar ou criar outros anos quando quiser</small></span><input name="anoRef" inputmode="numeric" maxlength="4" value="${esc(o.anoRef)}"></label>${err}${nav()}</form>`;
-  } else if (st === 'partida') {
-    body = `<h2>Seu ponto de partida.</h2><p class="sub">Quanto você já tem investido hoje? Somando renda fixa, ações, fundos e reserva. Uma estimativa serve.</p>
-      <form id="f-ob" novalidate><label class="fld"><span>Patrimônio financeiro atual (R$)</span><input name="patrimonio" inputmode="decimal" placeholder="Ex.: 150.000,00" value="${o.patrimonio ? esc(nf.format(+o.patrimonio)) : ''}"></label>
-      <label class="fld"><span>Renda mensal líquida (R$) <small>opcional, ajuda a sugerir suas metas</small></span><input name="renda" inputmode="decimal" placeholder="Ex.: 12.000,00" value="${o.renda ? esc(nf.format(+o.renda)) : ''}"></label>${err}${nav()}</form>`;
-  } else if (st === 'perfil') {
-    const q = E.QUIZ[o.q]; const cur = o.resp[o.q];
-    body = `<p class="qn">Pergunta ${o.q + 1} de ${E.QUIZ.length}</p><h2 class="qh">${esc(q.q)}</h2>
-      <div class="qopts">${q.o.map(([t], i) => `<button type="button" class="qopt${cur === i ? ' on' : ''}" data-act="quiz-pick" data-i="${i}">${esc(t)}</button>`).join('')}</div>
-      <div class="btn-row center"><button class="btn" type="button" data-act="ob-back">Voltar</button></div>`;
-  } else if (st === 'resultado') {
-    const pf = E.PERFIS[o.perfil.resultado];
-    body = `<p class="qn">Seu perfil de investidor</p><h2 class="big-h">${pf.nome}</h2><p class="sub">${pf.desc}</p>
-      <div class="pbar big" role="img" aria-label="Alocação de referência: ${pf.alvo.rendaFixa}% renda fixa e ${pf.alvo.bolsa}% renda variável"><i style="width:${pf.alvo.rendaFixa}%"></i><b style="width:${pf.alvo.bolsa}%"></b></div>
-      <div class="pleg"><span><i class="d1"></i>Renda fixa ${pf.alvo.rendaFixa}%</span><span><i class="d2"></i>Renda variável ${pf.alvo.bolsa}%</span></div>
-      <p class="cap">Alocação de referência, apenas ilustrativa. O questionário é simplificado e não substitui a análise de adequação feita na assessoria. A aba Carteira usa esse ponto de partida e você ajusta como quiser.</p>
-      <form id="f-ob" novalidate>${nav()}</form>`;
-  } else if (st === 'metas') {
-    const sugest = +o.renda > 0 ? Math.round(+o.renda * 0.2) : '';
-    const linha = (g, i) => `<div class="obr" data-i="${i}">${objIcone(g, i)}
-      <label class="fld"><span>Objetivo</span>${sel('ot-' + i, OBJETIVOS, g.tipo).replace('<select', `<select data-obr="tipo"`)}</label>
-      <label class="fld"><span>Valor alvo (R$)</span><input name="ov-${i}" data-obr="valor" inputmode="decimal" placeholder="Ex.: ${g.tipo === 'carro' ? '90.000,00' : g.tipo === 'viagem' ? '25.000,00' : g.tipo === 'imovel' ? '600.000,00' : '1.000.000,00'}" value="${g.valor ? esc(nf.format(+g.valor)) : ''}"></label>
-      <label class="fld"><span>Até</span><input name="oa-${i}" data-obr="ano" inputmode="numeric" maxlength="4" value="${esc(g.ano || '')}" aria-label="Ano limite"></label>
-      ${o.objs.length > 1 ? `<button type="button" class="icon-btn sm danger obr-x" data-act="ob-obj-del" data-i="${i}" aria-label="Remover objetivo">${I.x}</button>` : '<span class="obr-x"></span>'}</div>`;
-    const usados = o.objs.map((g) => g.tipo); const atalhos = ['imovel', 'carro', 'viagem', 'filhos', 'reserva', 'aposentadoria'].filter((t) => !usados.includes(t)).slice(0, 4);
-    body = `<h2>Seus objetivos e suas metas.</h2><p class="sub">Cadastre tudo o que você quer conquistar, com valor e prazo. O painel acompanha cada objetivo separadamente.</p>
-      <form id="f-ob" novalidate><div class="obrs">${o.objs.map(linha).join('')}</div>
-      ${o.objs.length < 8 ? `<div class="obr-add"><button type="button" class="btn sm" data-act="ob-obj-add">${I.plus}Adicionar objetivo</button>${atalhos.map((t) => `<button type="button" class="np-chip" data-act="ob-obj-add" data-tipo="${t}">+ ${esc(objNome(t))}</button>`).join('')}</div>` : ''}
-      <label class="fld"><span>Meta de aportes mensais (R$)</span><input name="metaAporte" inputmode="decimal" placeholder="${sugest ? 'Sugestão: ' + nf.format(sugest) : 'Ex.: 3.000,00'}" value="${o.metaAporte ? esc(nf.format(+o.metaAporte)) : ''}"></label>
-      <label class="fld"><span>Meta de investimento do ano (R$) <small>opcional</small></span><input name="metaInvAno" inputmode="decimal" value="${o.metaInvAno ? esc(nf.format(+o.metaInvAno)) : ''}"></label>${err}${nav('', 'Ver meu diagnóstico')}</form>`;
+  const o = S.ob; const N = OB_CONV.length; o.i = Math.max(0, Math.min(N, o.i || 0)); const fim = o.i >= N;
+  const feitos = OB_CONV.slice(0, o.i).map((p) => OB_PREMIO_DE[p.id]).filter(Boolean);
+  const orb = typeof iaOrb === 'function' ? iaOrb('obc-orb') : '<span class="obc-orb" aria-hidden="true"></span>';
+  const fala = (t, novo) => `<div class="obc-a${novo ? ' novo' : ''}">${orb}<p><span class="obc-dig" aria-hidden="true"><i></i><i></i><i></i></span><span class="obc-t">${esc(t)}</span></p></div>`;
+  let hist = '';
+  OB_CONV.slice(0, o.i).forEach((p) => { hist += fala(p.p(o)) + `<div class="obc-u"><p>${esc(p.r(o))}</p></div>`; const pr = OB_PREMIO_DE[p.id]; if (pr) hist += obPremio(o, pr); });
+  let atual;
+  if (!fim) {
+    const p = OB_CONV[o.i]; const chips = p.chips ? p.chips(o) : [];
+    const ch = chips.length ? `<div class="obc-chips${p.grade ? ' grade' : ''}${p.lista ? ' lista' : ''}">${chips.map(([t, v, ic]) => `<button type="button" class="obc-chip" data-act="ob-cv" data-v="${esc(v)}">${ic && OBJ_ICONES[ic] ? `<span class="obc-chip-ic" aria-hidden="true">${OBJ_ICONES[ic]}</span>` : ''}${esc(t)}</button>`).join('')}</div>` : '';
+    const campo = p.tipo === 'chips' ? '' : `<form id="f-ob" class="obc-in" novalidate autocomplete="off"><label class="hp-sr" for="obc-v">Sua resposta</label>
+      <input id="obc-v" name="v" ${p.tipo === 'texto' ? 'autocomplete="given-name"' : 'inputmode="decimal"'} placeholder="${esc(p.ph || '')}" value="${p.id === 'nome' ? esc(o.nome || '') : ''}">
+      <button type="submit" aria-label="Enviar">${I.chev}</button></form>`;
+    atual = fala(p.p(o), true) + `<div class="obc-resp">${ch}${campo}<div class="merr" id="oerr" role="alert"></div></div>`;
   } else {
-    const pf = E.PERFIS[o.perfil.resultado]; const ret = E.RETORNO_PADRAO[o.perfil.resultado];
-    const finais = obObjetivosFinais(o, ret); const A = E.analiseObjetivos({ objetivos: finais, patrimonio: +o.patrimonio || 0, aporte: +o.metaAporte || 0, retorno: ret, hoje: new Date() });
-    const lista = A.itens.length ? `<ul class="ob-objs">${A.itens.map((g, i) => `<li>${objIcone(g, i)}<div><b>${esc(objNomeDe(g))}</b><small>${brl0(g.valor)} até ${g.ano || '–'}${A.itens.length > 1 ? ` · fatia de ${g.pct}%` : ''}</small><p>${esc(objFrase(g))}</p></div></li>`).join('')}</ul>` : '';
-    const quando = !A.itens.length ? 'Defina o valor de pelo menos um objetivo para ver a projeção. Você pode cadastrar e editar objetivos a qualquer momento no painel.'
-      : `Projeção com retorno hipotético de ${ret}% ao ano.${A.itens.length > 1 ? ' O patrimônio e o aporte foram divididos entre os objetivos pelo prazo de cada um; você ajusta as fatias no painel, em Meus objetivos.' : ''}`;
-    body = `<h2>Seu diagnóstico.</h2><div class="diag">
-      <div class="dg"><small>Patrimônio hoje</small><b>${brl0(+o.patrimonio || 0)}</b></div><div class="dg"><small>Perfil</small><b>${pf.nome}</b></div>
-      <div class="dg"><small>Objetivos</small><b>${A.itens.length || 'a definir'}</b><span>${A.itens.length ? brl0(A.valorTotal) + ' no total' : 'cadastre no painel'}</span></div><div class="dg"><small>Aporte mensal</small><b>${+o.metaAporte ? brl0(+o.metaAporte) : 'a definir'}</b></div></div>
-      ${lista}<p class="sub">${quando}</p><p class="cap">Projeção ilustrativa, baseada em uma hipótese de retorno, e não uma promessa de rentabilidade.</p>${typeof basObHtml === 'function' ? basObHtml() : ''}
-      ${obPlanosHtml(o, A)}`;
+    const { ret, A } = obAnalise(o); const pf = E.PERFIS[o.perfil.resultado];
+    atual = fala(`Pronto, ${obPn(o)}. Seu diagnóstico está completo e o seu painel já nasce com tudo isso.`, true) + `<div class="obc-fim">
+      <div class="diag"><div class="dg"><small>Patrimônio hoje</small><b>${brl0(+o.patrimonio || 0)}</b></div><div class="dg"><small>Perfil</small><b>${pf.nome}</b></div>
+      <div class="dg"><small>Objetivo</small><b>${A.itens.length ? brlCurto(A.valorTotal) : 'a definir'}</b></div><div class="dg"><small>Aporte mensal</small><b>${+o.metaAporte ? brl0(+o.metaAporte) : 'a definir'}</b></div></div>
+      <p class="cap">Projeção com retorno hipotético de ${ret}% ao ano, não é promessa de rentabilidade. Você ajusta objetivos e metas no painel quando quiser.</p>
+      ${typeof basObHtml === 'function' ? basObHtml() : ''}${obPlanosHtml(o, A)}</div>`;
   }
-  return `<div class="ob">${dots}<div class="ob-card">${body}</div></div>`;
+  const pct = Math.round((o.i / N) * 100);
+  return `<div class="obc"><header class="obc-top"><div class="obc-top-in">
+      <button type="button" class="obc-volta" data-act="ob-back"${o.i ? '' : ' disabled'} aria-label="Voltar uma pergunta">${I.chev}</button>
+      <div class="obc-prog"><div class="obc-prog-t"><b>Seu diagnóstico</b><span>${fim ? 'Completo' : `${o.i} de ${N} · cada resposta desbloqueia algo`}</span></div>
+        <span class="obc-barra" role="progressbar" aria-label="Progresso do diagnóstico" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></span></div></div>
+      <ul class="obc-conq" aria-label="Conquistas">${OB_PREMIOS.map(([k, n]) => `<li class="${feitos.includes(k) ? 'on' : ''}"><i aria-hidden="true">${feitos.includes(k) ? '✦' : '○'}</i>${n}</li>`).join('')}</ul></header>
+    <div class="obc-chat" aria-live="polite">${hist}${atual}</div></div>`;
 }
+// leva a conversa até a pergunta nova e põe o cursor no campo (só com mouse: no celular o teclado cobriria a conversa)
+function obFoco() {
+  requestAnimationFrame(() => { const n = document.querySelector('.obc-a.novo'); if (n) n.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+    const i = $('#obc-v'); if (i && matchMedia('(pointer: fine)').matches) i.focus({ preventScroll: true }); });
+}
+function obResponder(v) {
+  const o = S.ob; const p = OB_CONV[o.i]; if (!p) return;
+  const e = p.ok(o, v); if (e) { const el = $('#oerr'); if (el) { el.textContent = e; el.classList.add('show'); } return; }
+  o.i += 1; render(); obFoco();
+}
+function obBack() { const o = S.ob; o.i = Math.max(0, (o.i || 0) - 1); render(); obFoco(); }
 
-/* Objetivos no diagnóstico: as linhas do formulário viram S.ob.objs (sem validar, para não perder o que foi digitado) */
-function obCapturarObjs(f) {
-  const o = S.ob; if (!f) return;
-  o.objs = $$('.obr', f).map((row) => { const v = (k) => { const el = row.querySelector(`[data-obr="${k}"]`); return el ? el.value : ''; };
-    const raw = String(v('valor')).trim(); return { tipo: v('tipo') || 'outro', nome: '', valor: raw === '' ? '' : parseReais(raw), ano: parseInt(v('ano'), 10) || '' }; });
-}
-function obObjAcao(act, ds) {
-  const o = S.ob; const f = $('#f-ob'); obCapturarObjs(f);
-  if (act === 'ob-obj-add') { const t = ds.tipo || 'outro'; o.objs.push({ tipo: t, nome: '', valor: '', ano: NOW_Y + (OBJ_PRAZO[t] || 5) }); }
-  else if (act === 'ob-obj-del') { o.objs.splice(+ds.i, 1); if (!o.objs.length) o.objs.push({ tipo: 'independencia', nome: '', valor: '', ano: NOW_Y + 20 }); }
-  render();
-  if (act === 'ob-obj-add') { const n = o.objs.length - 1; const el = document.querySelector(`[name="ov-${n}"]`); if (el) el.focus(); }
-}
 // objetivos com valor viram a lista final, com fatias: 100% se for um só, ou divididas pelo prazo
 function obObjetivosFinais(o, ret) {
   const L = (o.objs || []).filter((g) => +g.valor > 0).map((g) => ({ id: uid(), tipo: g.tipo, nome: g.nome || '', valor: +g.valor, ano: +g.ano || null, pct: 0 }));
   if (L.length === 1) L[0].pct = 100; else if (L.length > 1) { const sug = E.sugerirDivisao({ objetivos: L, retorno: ret, hoje: new Date() }); L.forEach((g) => { g.pct = sug[g.id]; }); }
   return E.normObjetivos({ objetivos: L }, uid);
-}
-
-function readOb(f) {
-  const d = new FormData(f); const o = S.ob; const st = OB_STEPS[o.step];
-  const err = (m) => { const e = $('#oerr'); if (e) { e.textContent = m; e.classList.add('show'); } return false; };
-  const num = (k) => { const raw = String(d.get(k) || ''); return raw.trim() === '' ? 0 : E.parseValor(raw); };
-  if (st === 'voce') {
-    const nome = String(d.get('nome') || '').trim(); const ano = parseInt(d.get('anoRef'), 10);
-    if (nome.length < 2) return err('Informe seu nome.'); if (!anoValido(ano)) return err('Informe um ano entre 1990 e 2100.');
-    o.nome = nome; o.anoRef = ano;
-  } else if (st === 'partida') {
-    const p = num('patrimonio'); const r = num('renda');
-    if (Number.isNaN(p) || Number.isNaN(r) || p < 0 || r < 0) return err('Confira os valores: use números como 1.234,56.');
-    o.patrimonio = p; o.renda = r;
-  } else if (st === 'metas') {
-    const ma = num('metaAporte'); const mi = num('metaInvAno'); obCapturarObjs(f);
-    if ([ma, mi].some((v) => Number.isNaN(v) || v < 0) || o.objs.some((g) => Number.isNaN(+g.valor) || +g.valor < 0)) return err('Confira os valores: use números como 1.234,56.');
-    const semAno = o.objs.find((g) => +g.valor > 0 && !anoValido(+g.ano)); if (semAno) return err(`Informe o ano de ${objNome(semAno.tipo).toLowerCase()}.`);
-    if (o.objs.some((g) => +g.valor > 0 && +g.ano < NOW_Y)) return err(`O ano de cada objetivo precisa ser ${NOW_Y} ou depois.`);
-    Object.assign(o, { metaAporte: ma, metaInvAno: mi });
-  }
-  return true;
-}
-
-function obNext() { S.ob.step = Math.min(OB_STEPS.length - 1, S.ob.step + 1); render(); }
-function obBack() {
-  const o = S.ob;
-  if (OB_STEPS[o.step] === 'perfil' && o.q > 0) o.q -= 1;
-  else if (OB_STEPS[o.step] === 'resultado') { o.step -= 1; o.q = E.QUIZ.length - 1; }
-  else o.step = Math.max(0, o.step - 1);
-  render();
-}
-function quizPick(i) {
-  const o = S.ob; o.resp[o.q] = i;
-  if (o.q < E.QUIZ.length - 1) o.q += 1; else { o.perfil = E.scorePerfil(o.resp); o.step += 1; }
-  render();
 }
 
 /* ---------- checkout (Investidor ou Assessoria) ---------- */

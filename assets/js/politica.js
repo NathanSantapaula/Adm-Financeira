@@ -1,7 +1,7 @@
 /* Política de privacidade e termos de uso (LGPD, Lei 13.709/2018). Puro, sem DOM: o app abre num modal (openTerms em ui.js)
    e a página pública privacidade.html desenha o mesmo texto. Mudou o texto? Troque POLITICA_VERSAO: o aceite gravado no perfil guarda a versão. */
 'use strict';
-const POLITICA_VERSAO = '2026-11-02';
+const POLITICA_VERSAO = '2026-11-06';
 function politicaHtml(cfg, nuvem) {
   const e = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const marca = e(cfg.marca || 'AVEN'); const quem = e(cfg.controlador || cfg.consultor || ''); const cons = e(cfg.consultor || '');
@@ -20,7 +20,7 @@ function politicaHtml(cfg, nuvem) {
     '<b>Planejamento:</b> o que você lança ou importa: rendas, gastos, contas, parcelas, investimentos, proventos, carteira, metas e limites.',
     '<b>Arquivos de extrato:</b> CSV, OFX e planilhas são lidos no próprio aparelho; só os lançamentos que você confirma são gravados. O PDF lido por inteligência artificial (plano Assessoria) é enviado de forma temporária e apagado logo após a leitura.',
     '<b>Preferências:</b> tema, cores, voz do painel e a organização das telas.',
-    '<b>Dados técnicos:</b> a sessão de login e preferências guardadas no navegador (armazenamento local). Não usamos cookies de publicidade nem ferramentas de rastreamento.',
+    '<b>Cookies e armazenamento do navegador:</b> a sessão de login (essencial: sem ela você não entra) e as preferências (tema, menu, cores e a sua escolha deste aviso, guardada na chave <i>fp:cookies</i>). Não usamos cookies de publicidade, de análise nem ferramentas de rastreamento. Se um dia usarmos cookies opcionais, pediremos sua permissão antes, e recusar não impede o uso do app.',
   ]) + '<p>Não pedimos nem guardamos senhas de banco, números de cartão, documentos (CPF, RG) ou localização.</p>')}
   ${sec('3. Para que usamos e com qual base legal', li([
     '<b>Prestar o serviço que você contratou</b> (organizar finanças, calcular orçamento, metas e carteira): execução de contrato (art. 7º, V).',
@@ -46,7 +46,7 @@ function politicaHtml(cfg, nuvem) {
     'saber com quem eles são compartilhados;',
     'revogar o consentimento e pedir a eliminação dos dados tratados com base nele;',
     'opor-se a um tratamento que descumpra a lei.',
-  ]) + `<p>Dentro do app você já pode baixar todos os seus dados (Baixar meus dados), corrigir o perfil e excluir a conta (Excluir minha conta). Para o resto, escreva para <a href="mailto:${mail}">${mail}</a>; respondemos em até 15 dias. Você também pode reclamar à Autoridade Nacional de Proteção de Dados (ANPD).</p><p>O assistente do app funciona no próprio aparelho, não toma decisões automatizadas sobre você e não envia suas perguntas para fora.</p>`)}
+  ]) + `<p>Dentro do app você já pode baixar todos os seus dados (Baixar meus dados), corrigir o perfil e excluir a conta (Excluir minha conta). Para o resto, escreva para <a href="mailto:${mail}">${mail}</a>; respondemos em até 15 dias. Você também pode reclamar à Autoridade Nacional de Proteção de Dados (ANPD).</p><p>Para apagar as preferências guardadas no navegador, limpe os dados deste site; o aviso de cookies volta a aparecer na próxima visita.</p><p>O assistente do app funciona no próprio aparelho, não toma decisões automatizadas sobre você e não envia suas perguntas para fora.</p>`)}
   ${sec('7. Segurança', li([
     'Conexão sempre cifrada (HTTPS).',
     'Cada conta só lê os próprios dados: a regra fica no banco (Row Level Security), não apenas na tela.',
