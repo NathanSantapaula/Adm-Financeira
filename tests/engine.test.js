@@ -519,4 +519,10 @@ const NV = (() => { const pl = { v: 2, year: 2026, settings: { orcPadrao: 4000, 
   ok(np && np.id === 'prev:2026-10:negativo' && Math.abs(np.vars.valor - 2100) < 0.01, 'notificações: no ritmo de hoje o mês fecha no vermelho'); }
 { const ri = E.iaResponder(E.iaIntencao('Quanto posso gastar hoje?'), { C: NV.C, mes: 9, dia: 10, ano: 2026, recursos: {} });
   ok(ri.chave === 'ia_livre_hoje' && Math.abs(ri.vars.porDia - 45.45) < 0.01 && ri.vars.dias === 22, 'assistente: posso_gastar responde com o livre de hoje'); }
+{ const lc = E.livreHoje({ C: NV.C, hoje: NV.hoje, contas: E.contasMes({ ano: 2026, mes: 9, despesas: NV.pl.despesas }) });
+  ok(lc.contasAPagar === 2000 && Math.abs(lc.restante - 1000) < 0.01, 'livreHoje: contas não pagas já reservadas no restante');
+  const sp = [0, 4, 8].map((mm, i) => ({ id: 's' + i, data: `2026-0${mm + 1}-03`, desc: 'Seguro', valor: 100 }));
+  ok(E.detectarRecorrentes({ lancamentos: sp, ano: 2026 }).length === 0, 'detectarRecorrentes: 3 meses sem intervalo de cerca de 30 dias não é recorrente');
+  const ea = E.etapasObjetivo({ valor: 10000, saldo: 3000, aporte: 1000, retorno: 0, hoje: { ano: 2026, mes: 9 }, prazo: 14 });
+  ok(ea[4].esperado === 14 && ea[4].atraso === -7 && ea[2].atraso === -2 && ea[0].atraso === null, 'etapasObjetivo: adiantado ou atrasado em meses contra o prazo'); }
 process.exit(bad ? 1 : 0);

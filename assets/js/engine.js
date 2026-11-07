@@ -1226,17 +1226,20 @@
     const orc = +(C.orcamento || [])[m] || 0; const base = orc > 0 ? 'orcamento' : 'sobra';
     const limite = orc > 0 ? orc : (+C.receita[m] || 0) - (+(C.metaAporteMes || [])[m] || 0);
     const restante = r2(limite - (+C.despesas[m] || 0));
-    return { base, limite: r2(limite), restante, diasRestantes: dias, porDia: restante > 0 ? r2(Math.floor(restante / dias * 100) / 100) : 0 };
+    // contas fixas e parcelas do mês já estão inteiras em C.despesas: as não pagas (o.contas = contasMes) já ficam reservadas no restante
+    return { base, limite: r2(limite), restante, contasAPagar: o.contas ? o.contas.falta : null, diasRestantes: dias, porDia: restante > 0 ? r2(Math.floor(restante / dias * 100) / 100) : 0 };
   }
   // gastos que se repetem nos lançamentos (mesmo estabelecimento em minMeses meses ou mais); assinatura = valor quase igual (até 10%); jaFixo = já existe gasto fixo com esse nome
   function detectarRecorrentes(o) {
     const min = o.minMeses || 3; const g = {};
     (o.lancamentos || []).forEach((l) => { const d = parseDataISO(l.data); const v = +l.valor || 0; if (!d || !(v > 0) || (o.ano && d.ano !== +o.ano)) return;
-      const k = nomeEstab(l.desc || l.nome || ''); if (!k) return; const x = g[k] || (g[k] = { nome: l.desc || l.nome, area: l.area || '', meses: {}, ultimo: '' });
-      const mk = d.ano * 12 + d.mes; x.meses[mk] = (x.meses[mk] || 0) + v; if (l.data > x.ultimo) { x.ultimo = l.data; x.nome = l.desc || l.nome; } });
+      const k = nomeEstab(l.desc || l.nome || ''); if (!k) return; const x = g[k] || (g[k] = { nome: l.desc || l.nome, area: l.area || '', meses: {}, dias: {}, ultimo: '' });
+      const mk = d.ano * 12 + d.mes; x.meses[mk] = (x.meses[mk] || 0) + v; if (!x.dias[mk] || l.data < x.dias[mk]) x.dias[mk] = l.data; if (l.data > x.ultimo) { x.ultimo = l.data; x.nome = l.desc || l.nome; } });
     const parece = (a, b) => a === b || a.startsWith(b + ' ') || b.startsWith(a + ' ');
     const fixos = (o.despesas || []).map((it) => nomeEstab(it.nome || '')).filter(Boolean);
     return Object.keys(g).map((k) => { const x = g[k]; const vs = Object.values(x.meses); if (vs.length < min) return null;
+      const ds = Object.keys(x.dias).sort((a, b) => a - b).map((mk) => x.dias[mk]); // intervalo de cerca de 30 dias (20 a 40) entre um mês e o seguinte
+      if (ds.slice(1).filter((dt, i) => { const gd = (Date.parse(dt) - Date.parse(ds[i])) / 864e5; return gd >= 20 && gd <= 40; }).length < min - 1) return null;
       const media = sum(vs) / vs.length; const assinatura = vs.every((v) => Math.abs(v - media) <= media * 0.1);
       return { chave: k, nome: x.nome, area: x.area, meses: vs.length, valor: r2(media), anual: r2(media * 12), ultimo: x.ultimo, assinatura, jaFixo: fixos.some((f) => parece(f, k)) };
     }).filter(Boolean).sort((a, b) => b.valor - a.valor);
@@ -1263,11 +1266,12 @@
       maior: maior ? { desc: maior.desc || maior.nome || '', valor: r2(+maior.valor || 0), data: maior.data, area: maior.area || '' } : null, lancamentos: lanc.length,
       variacao: { gastos: vr('despesas'), receita: vr('receita'), sobra: vr('investAlocado') } };
   }
-  // etapas de um objetivo (10/25/50/75/100% por padrão, ou o.pcts): valor de cada etapa, se já foi atingida e quando deve ser (mesesAteMeta, sem promessa de rentabilidade: retorno vem do cliente)
+  // etapas de um objetivo (10/25/50/75/100% por padrão, ou o.pcts), com atraso (+) ou adiantamento (-) em meses contra o prazo (o.prazo, meses até a data): valor de cada etapa, se já foi atingida e quando deve ser (mesesAteMeta, sem promessa de rentabilidade: retorno vem do cliente)
   function etapasObjetivo(o) {
-    const ps = o.pcts || [0.1, 0.25, 0.5, 0.75, 1]; const h = o.hoje || { ano: 2000, mes: 0 }; const saldo = +o.saldo || 0;
+    const ps = o.pcts || [0.1, 0.25, 0.5, 0.75, 1]; const total = +o.valor || 0; const h = o.hoje || { ano: 2000, mes: 0 }; const saldo = +o.saldo || 0;
     return ps.map((pct) => { const valor = r2((+o.valor || 0) * pct); const meses = mesesAteMeta(saldo, o.aporte, o.retorno, valor, 1200);
-      return { pct, valor, atingido: saldo >= valor, falta: r2(Math.max(0, valor - saldo)), meses, previsto: meses == null ? null : { ano: h.ano + Math.floor((h.mes + meses) / 12), mes: (h.mes + meses) % 12 } }; });
+      const esp = o.prazo > 0 && !(saldo >= valor) && total > saldo ? Math.ceil(o.prazo * (valor - saldo) / (total - saldo)) : null; // mês esperado no caminho em linha reta até o prazo
+      return { pct, valor, atingido: saldo >= valor, falta: r2(Math.max(0, valor - saldo)), meses, esperado: esp, atraso: esp != null && meses != null ? meses - esp : null, previsto: meses == null ? null : { ano: h.ano + Math.floor((h.mes + meses) / 12), mes: (h.mes + meses) % 12 } }; });
   }
 
   // sobra mês a mês até dezembro: meses passados realizados, o mês de hoje pela previsaoMes, os seguintes pelo previsto; com o acumulado
