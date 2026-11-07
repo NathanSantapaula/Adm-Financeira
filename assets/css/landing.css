@@ -216,3 +216,4 @@ body[data-screen="auth"] .cad-ass { box-shadow: inset -1px 0 0 rgba(255, 255, 25
     backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); } }
 .back-seta { display: inline-grid; margin-right: 6px; } .back-seta svg { width: 16px; height: 16px; transform: rotate(180deg); }
 @media (min-width: 901px) { body[data-screen="auth"] .cad-top { width: min(440px, calc(100% - 40px)); margin: 0 auto; padding: 28px 0 0; } body[data-screen="auth"] .cad-top .back { padding-left: 0; } }
+@media (max-width: 560px) { .hm-b { min-height: 0; } }
