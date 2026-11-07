@@ -10,7 +10,7 @@
     if (lido()) return;
     const b = document.createElement('section');
     b.className = 'ck'; b.setAttribute('role', 'region'); b.setAttribute('aria-label', 'Aviso de cookies');
-    b.innerHTML = '<p><b>Cookies e armazenamento.</b> Usamos o navegador só para o essencial: manter você conectado e lembrar suas preferências. Não usamos cookies de publicidade. Se um dia usarmos cookies opcionais, pedimos sua permissão antes. <a href="privacidade.html">Política de privacidade</a></p>'
+    b.innerHTML = '<p>Só cookies essenciais. <a href="privacidade.html">Privacidade</a></p>'
       + '<div class="ck-b"><button type="button" class="btn" data-ck="essencial">Só o essencial</button><button type="button" class="btn primary" data-ck="todos">Aceitar</button></div>';
     b.addEventListener('click', (e) => { const k = e.target.closest('[data-ck]'); if (!k) return; grava(k.dataset.ck); b.remove(); });
     document.body.appendChild(b);
