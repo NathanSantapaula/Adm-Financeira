@@ -16,7 +16,9 @@ const BAS_NOMES = { basico: 'App', completo: 'SaaS' }; // nomes das duas versõe
 // seletor dos dois modos: Perfil do Simples, página inicial do painel e o Mais do celular no Completo (só para quem pode escolher)
 const basTrocaHtml = () => { const v = basInterface();
   return `<div class="seg bas-troca" role="group" aria-label="Versão do AVEN">${['basico', 'completo'].map((k) => `<button${v === k ? ' class="on"' : ''} data-act="bas-ui" data-v="${k}" aria-pressed="${v === k}">${BAS_NOMES[k]}</button>`).join('')}</div>`; };
-const BAS_ABAS = [['inicio', 'Início', I.geral], ['gastos', 'Gastos', I.despesas], ['investir', 'Investir', I.inv], ['perfil', 'Perfil', I.user]];
+const I_FUTURO = ic('<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r=".6"/>');
+// as 5 áreas do produto (PRODUTO.md); as chaves internas continuam as de antes para não quebrar atalhos e guias
+const BAS_ABAS = [['inicio', 'Hoje', I.geral], ['gastos', 'Dinheiro', I.despesas], ['futuro', 'Futuro', I_FUTURO], ['investir', 'Patrimônio', I.inv], ['perfil', 'Você', I.user]];
 const BAS_FORMS = new Set(['gasto', 'conta', 'conta-f', 'entrada', 'aporte', 'meta', 'objetivo', 'perfil', 'provento', 'limite', 'alvos', 'ponto', 'excluir', 'retro']); // telas de formulário (e a retrospectiva, em tela cheia) escondem as abas
 const BAS_AREAS = ['Alimentação', 'Moradia', 'Transporte', 'Saúde', 'Lazer', 'Compras', 'Contas', 'Educação'];
 const I_VOLTA = ic('<path d="m15 6-6 6 6 6"/>');
@@ -100,7 +102,7 @@ function basicoHtml() {
   const t = basTopoPilha();
   if (t) { const f = BAS_TELAS[t.t]; return `<div class="bas bas-tela" data-t="${t.t}">${f ? f(t) : basSumiu()}</div>`; }
   const a = basAba(); const m = S.mes;
-  return `<div class="bas" data-aba="${a}">${a === 'gastos' ? basGastos(m) : a === 'investir' ? basInvestir(m) : a === 'perfil' ? basPerfil() : basInicio(m)}</div>`;
+  return `<div class="bas" data-aba="${a}">${a === 'gastos' ? basGastos(m) : a === 'investir' ? basInvestir(m) : a === 'perfil' ? basPerfil() : a === 'futuro' ? basFuturo() : basInicio(m)}</div>`;
 }
 
 /* ================= abas ================= */
@@ -1277,7 +1279,10 @@ function basWidgetsInicio(secs) {
 }
 const r2Bas = (v) => Math.round((+v || 0) * 100) / 100;
 // Meus sonhos: escolher o principal tocando no carrossel; o palco mostra o principal; os detalhes ficam num toque
-function basTelaSonhos() {
+function basTelaSonhos() { return basDet('Meus sonhos', basSonhosCorpo()); }
+// aba Futuro: o mesmo palco dos sonhos, com a calculadora de juros compostos a um toque
+const basFuturo = () => `<div class="bas-pg bas-pg-f">${basCab('Futuro')}${basSonhosCorpo()}</div>`;
+function basSonhosCorpo() {
   const A = objAnalise(); const g = objFoco(A); const tipo = g ? obj3dDe(g) : 'diamante';
   const carrossel = A.itens.length ? `<div class="bas-sn-c" role="radiogroup" aria-label="Escolher o sonho principal">${A.itens.map((x, i) => `<button class="bas-sn${g && x.id === g.id ? ' on' : ''}" data-act="bas-foco" data-id="${esc(x.id)}" role="radio" aria-checked="${!!(g && x.id === g.id)}">${basAnel(x.progresso, 54, objIcone(x, i))}<b>${esc(objNomeDe(x))}</b><small>${pct(x.progresso)}</small></button>`).join('')}<button class="bas-sn novo" ${basIr('objetivo')}><span class="bas-sn-mais" aria-hidden="true">${I.plus}</span><b>Novo</b><small>sonho</small></button></div>` : '';
   const palco = `<div class="bas-palco bas-palco-sn">
@@ -1286,7 +1291,7 @@ function basTelaSonhos() {
       <span class="bas-sn-st ${BAS_SN_COR[g.status] || ''}">${esc(cap(BAS_OBJ_ST[g.status] || ''))}</span>
       <span class="bas-sn-bts"><button class="bas-sn-bt" ${basIr('sonho-det', { id: g.id })}>Detalhes</button>${basPago() ? `<button class="bas-sn-bt prim" ${basIr('simular', { id: g.id })}>E se eu investir mais?</button>` : ''}</span>`
       : `<b class="bas-palco-n">Qual é o seu sonho?</b><span class="bas-palco-s">Dê um nome a ele e veja quanto falta, mês a mês.</span><span class="bas-sn-bts"><button class="bas-sn-bt prim" ${basIr('objetivo')}>Criar o meu sonho</button></span>`}</div>`;
-  return basDet('Meus sonhos', `${carrossel ? `<p class="bas-sn-dica">Toque num sonho para torná-lo o principal.</p>${carrossel}` : ''}${palco}<p class="bas-disc keep">Projeção ilustrativa, sem promessa de rentabilidade.</p>`);
+  return `${carrossel}${palco}<button class="bas-org" ${basIr('objetivo')}>+ Novo sonho</button><p class="bas-disc keep">Projeção ilustrativa, sem promessa de rentabilidade.</p>`;
 }
 const BAS_SN_COR = { concluido: 'ok', 'no-prazo': 'ok', atrasado: 'atencao', fora: 'baixo', 'sem-prazo': '', 'sem-divisao': 'atencao', 'sem-valor': '' };
 function basTelaSonhoDet(o) {
