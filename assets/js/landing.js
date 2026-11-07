@@ -84,57 +84,6 @@ function lpLanc(estado, vivo) {
 }
 
 
-/* objetivo da prévia: o visitante escolhe qual (os mesmos tipos do app, E.OBJ_TIPOS); valores ilustrativos por tipo:
-   [meta em reais, progresso de 0 a 1, anos até a previsão] */
-const LP_OBJ = { independencia: [2400000, 0.62, 12], aposentadoria: [1800000, 0.48, 15], imovel: [180000, 0.71, 2], carro: [95000, 0.85, 1], viagem: [28000, 0.9, 1],
-  filhos: [320000, 0.34, 8], educacao: [120000, 0.55, 4], reserva: [36000, 0.92, 0], casamento: [70000, 0.66, 2], negocio: [250000, 0.4, 5] };
-const lpObj = () => { const t = LP_OBJ[lpEstado().obj] ? lpEstado().obj : 'independencia'; const [meta, pct, anos] = LP_OBJ[t]; return { t, meta, pct, anos }; };
-const lpObjIc = (t) => (typeof OBJ_ICONES !== 'undefined' && OBJ_ICONES[t]) || '';
-function lpObjSel() {
-  const { t } = lpObj();
-  return `<label class="hp-obj-sel"><span class="hp-obj-ic" id="hp-obj-ic" aria-hidden="true">${lpObjIc(t)}</span>
-    <select data-lp="obj" aria-label="Escolha o objetivo da simulação">${E.OBJ_TIPOS.filter(([k]) => LP_OBJ[k]).map(([k, n]) => `<option value="${k}"${k === t ? ' selected' : ''}>${esc(n)}</option>`).join('')}</select>
-    <i aria-hidden="true">${I.chev}</i></label>`;
-}
-// troca o objetivo sem redesenhar a página: anel, ano e meta
-function lpObjAtualiza() {
-  const o = lpObj(); const r = $('#hp-ring'); if (r) r.innerHTML = ring(o.pct, { size: 104, stroke: 10, label: Math.round(o.pct * 100) + '%', aria: `${Math.round(o.pct * 100)}% do objetivo` });
-  const a = $('#hp-obj-ano'); if (a) a.textContent = NOW_Y + o.anos; const m = $('#hp-obj-meta'); if (m) m.textContent = 'Meta de ' + brl0(o.meta);
-  const ic = $('#hp-obj-ic'); if (ic) ic.innerHTML = lpObjIc(o.t);
-}
-
-/* herói: janela do painel com três telas (Visão geral, Carteira, Gastos) e cartões de vidro flutuando em volta */
-function lpPainelHtml() {
-  const st = lpEstado(); const mes = MES_LONGO[NOW_M].toLowerCase();
-  const abas = [['geral', 'Visão geral'], ['carteira', 'Carteira'], ['gastos', 'Gastos']];
-  const tela = (id, html) => `<div class="hp-scr${st.tela === id ? ' on' : ''}" id="hp-scr-${id}" role="tabpanel" aria-labelledby="hp-tab-${id}"${st.tela === id ? '' : ' aria-hidden="true"'}>${html}</div>`;
-  const geral = `<div class="hp-kpis">
-      <div class="hp-kpi hp-kpi-p"><small>Patrimônio estimado</small><b class="hp-num" data-conta="487320">R$ 487.320</b><span class="hp-delta"><i aria-hidden="true"></i>R$ 74.900 no ano</span></div>
-      <div class="hp-kpi"><small>Aportado em ${NOW_Y}</small><b>R$ 36.000</b><span class="hp-kbar" aria-hidden="true"><i style="width:83%"></i></span><em>83% da meta do ano</em></div>
-      <div class="hp-kpi"><small>Sobrou para investir</small><b>32%</b><em>da renda de ${mes}</em></div></div>
-    <div class="hp-scr-g"><div class="hp-tile"><small>Evolução do patrimônio</small><div class="chart" id="hp-line"></div></div>
-      <div class="hp-tile hp-t-ring">${lpObjSel()}<div class="hp-ring-w"><div id="hp-ring"></div><span><b id="hp-obj-ano">${NOW_Y + lpObj().anos}</b><em id="hp-obj-meta">Meta de ${brl0(lpObj().meta)}</em>previsão no ritmo atual</span></div></div></div>`;
-  const carteira = `<div class="hp-scr-g c2"><div class="hp-tile"><small>Composição da carteira</small><div class="donut" id="hp-donut"></div>
-        <ul class="hp-leg"><li><i style="background:var(--c1)"></i>Renda fixa<b>54%</b></li><li><i style="background:var(--c2)"></i>Ações<b>28%</b></li><li><i style="background:var(--c3)"></i>Imobiliário<b>18%</b></li></ul></div>
-      <div class="hp-tile"><small>Onde investir R$ 3.000 em ${mes}</small><ol class="hp-onde-mini">
-        <li><span>Tesouro IPCA+<small>3,8 p.p. abaixo do alvo</small></span><b>R$ 1.800</b></li>
-        <li><span>Fundo imobiliário<small>1,9 p.p. abaixo do alvo</small></span><b>R$ 800</b></li>
-        <li><span>CDB pós-fixado<small>0,6 p.p. abaixo do alvo</small></span><b>R$ 400</b></li></ol>
-        <span class="hp-ok-pill">Sem vender nada</span></div></div>`;
-  const gastos = `<div class="hp-scr-g c2"><div class="hp-tile"><small>Orçamento de ${mes}</small><b class="hp-num sm">R$ 4.680 <em>de R$ 6.000</em></b><div class="hp-bar"><i style="width:78%"></i></div><span class="hp-pos">Restam R$ 1.320 para o mês</span></div>
-      <div class="hp-tile"><small>Para onde foi</small><ul class="hp-cats sm">${[['Moradia', 100, 2200], ['Alimentação', 52, 1150], ['Transporte', 28, 620], ['Lazer', 20, 430]].map((c) => `<li><span>${c[0]}</span><span class="hp-cat-t"><i style="width:${c[1]}%"></i></span><b>${brl(c[2])}</b></li>`).join('')}</ul></div></div>`;
-  return `<div class="hp-stage hp-in" id="hp-stage">
-      <div class="hp-device" id="hp-device" aria-label="Prévia ilustrativa do painel">
-        <div class="hp-device-bar"><span class="hp-dots" aria-hidden="true"><i></i><i></i><i></i></span>
-          <div class="hp-tabs" role="tablist" aria-label="Telas do painel">${abas.map(([id, n]) => `<button type="button" role="tab" id="hp-tab-${id}" aria-controls="hp-scr-${id}" aria-selected="${st.tela === id}" data-act="lp-tela" data-v="${id}">${n}</button>`).join('')}</div></div>
-        <div class="hp-scrs">${tela('geral', geral)}${tela('carteira', carteira)}${tela('gastos', gastos)}</div>
-      </div>
-      <div class="hp-float f1" aria-hidden="true"><span class="hp-fi ok"></span><span><b>Aporte de ${mes} registrado</b><small>R$ 3.000 · meta do mês batida</small></span></div>
-      <div class="hp-float f2" aria-hidden="true"><span class="hp-fi doc"></span><span><b>Extrato importado</b><small>42 lançamentos categorizados</small></span></div>
-      <div class="hp-float f3" aria-hidden="true"><span class="hp-fi seta"></span><span><b>Próximo aporte</b><small>Tesouro IPCA+ · R$ 1.800</small></span></div>
-    </div>`;
-}
-
 /* assessor: a foto fica num quadro com o fundo original dela e o topo da cabeça sai do quadro sobre o fundo do site
    (contorno em CFG.fotoRecorte, em pixels da foto; o quadro começa em CFG.fotoCorte). Sem contorno, só o quadro. */
 function lpFotoHtml() {
@@ -313,35 +262,8 @@ function landingHtml() {
 
 function drawLanding() {
   const meses = MES; const patr = [412, 418, 425, 431, 440, 446, 455, 461, 470, 476, 482, 487].map((x) => x * 1000);
-  chartLine($('#hp-line'), { height: 168, zoom: true, labels: meses, aria: 'Evolução ilustrativa do patrimônio', series: [{ color: 'var(--c1)', values: patr, area: true, w: 3 }], tip: (i) => `<b>${meses[i]}</b><br>${brl0(patr[i])}` });
-  chartDonut($('#hp-donut'), { aria: 'Composição ilustrativa da carteira', title: '3 classes', sub: 'diversificada', items: [{ label: 'Renda fixa', value: 54, color: 'var(--c1)' }, { label: 'Ações', value: 28, color: 'var(--c2)' }, { label: 'Fundos imobiliários', value: 18, color: 'var(--c3)' }] });
   chartDonut($('#hm-donut'), { aria: 'Composição ilustrativa da carteira', title: '54%', sub: 'renda fixa', items: [{ label: 'Renda fixa', value: 54, color: 'var(--c1)' }, { label: 'Ações', value: 28, color: 'var(--c2)' }, { label: 'Fundos imobiliários', value: 18, color: 'var(--c3)' }] });
-  lpObjAtualiza();
-  lpHeroVivo(); lpCarrossel();
-}
-
-/* herói vivo: o número do patrimônio sobe ao abrir e a janela inclina de leve seguindo o mouse (só mouse, sem movimento reduzido) */
-function lpHeroVivo() {
-  const stage = $('#hp-stage'); const dev = $('#hp-device'); if (!stage || !dev || stage.dataset.vivo) return; stage.dataset.vivo = '1';
-  const calmo = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const num = stage.querySelector('[data-conta]');
-  if (num && !calmo && !S.lpContou) {
-    S.lpContou = true; const alvo = +num.dataset.conta; const final = num.textContent; const t0 = performance.now(); const dur = 1400;
-    const passo = (t) => { const k = Math.min(1, (t - t0) / dur); const e = 1 - Math.pow(1 - k, 4); num.textContent = k < 1 ? brl0(alvo * (0.82 + 0.18 * e)) : final; if (k < 1) requestAnimationFrame(passo); };
-    setTimeout(() => requestAnimationFrame(passo), 380);
-  }
-  if (calmo || !matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-  const floats = [...stage.querySelectorAll('.hp-float')]; let raf = 0; let px = 0; let py = 0;
-  const aplica = () => { raf = 0; dev.style.transform = `rotateX(${(-py * 4).toFixed(2)}deg) rotateY(${(px * 5).toFixed(2)}deg)`;
-    floats.forEach((f, i) => { const k = (i + 1) * 7; f.style.translate = `${(px * k).toFixed(1)}px ${(py * k).toFixed(1)}px`; }); };
-  stage.addEventListener('pointermove', (e) => { if (e.pointerType !== 'mouse') return; const r = stage.getBoundingClientRect(); px = (e.clientX - r.left) / r.width - 0.5; py = (e.clientY - r.top) / r.height - 0.5; if (!raf) raf = requestAnimationFrame(aplica); });
-  stage.addEventListener('pointerleave', () => { px = 0; py = 0; if (!raf) raf = requestAnimationFrame(aplica); });
-}
-// troca a tela da prévia sem redesenhar a página (as três telas ficam empilhadas; os gráficos já estão desenhados)
-function lpTela(v) {
-  const st = lpEstado(); st.tela = v;
-  document.querySelectorAll('.hp-tabs [role="tab"]').forEach((b) => b.setAttribute('aria-selected', b.dataset.v === v));
-  document.querySelectorAll('.hp-scr').forEach((s) => { const on = s.id === 'hp-scr-' + v; s.classList.toggle('on', on); if (on) s.removeAttribute('aria-hidden'); else s.setAttribute('aria-hidden', 'true'); });
+  lpCarrossel();
 }
 
 /* carrossel inteligente: rolagem nativa com encaixe no centro. A cada quadro de rolagem, cada cartão recebe escala e
@@ -437,13 +359,11 @@ function lpAtualiza() { const o = $('#lp-onde'); if (o) o.innerHTML = lpOndeHtml
 function lpInput(t) {
   const st = lpEstado(); const k = t.dataset.lp;
   if (k === 'aporte') { st.aporte = +t.value || 0; lpAtualiza(); } else if (k === 'nome') st.nome = t.value;
-  else if (k === 'obj') { st.obj = t.value; lpObjAtualiza(); }
 }
 function lpAcao(act, el) {
   const st = lpEstado();
   if (act === 'lp-confirma') { st.ok = !st.ok; const w = $('#lp-vivo-w'); if (w) { w.innerHTML = lpLanc(st.ok ? 'pronto' : 'chega', true); const b = w.querySelector('button'); if (b) b.focus(); } return true; }
   if (act === 'lp-set') { st[el.dataset.k] = el.dataset.v; el.parentElement.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', b === el)); lpAtualiza(); return true; }
-  if (act === 'lp-tela') { lpTela(el.dataset.v); return true; }
   if (act === 'lp-pl') { lpPlano(el); return true; }
   return false;
 }

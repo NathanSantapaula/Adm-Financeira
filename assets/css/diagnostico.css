@@ -99,3 +99,6 @@ body[data-screen="onboarding"] { background: #070B16; }
   .obc-prog-t span { display: none; }
 }
 @media (prefers-reduced-transparency: reduce) { .obc-top { background: #070B16; backdrop-filter: none; } }
+/* tela de ponta a ponta: o .main do app tem respiro próprio, que aqui virava faixa clara */
+html:has(body[data-screen="onboarding"]) { background: #070B16; }
+body[data-screen="onboarding"] .main { padding: 0; max-width: none; }
