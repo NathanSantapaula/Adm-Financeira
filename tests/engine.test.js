@@ -505,4 +505,6 @@ const NV = (() => { const pl = { v: 2, year: 2026, settings: { orcPadrao: 4000, 
     return { pl, C: E.compute(pl, {}), hoje: { ano: 2026, mes: 9, dia: 10 } }; })();
 { const pa = E.previsaoAno({ C: NV.C, plan: NV.pl, hoje: NV.hoje });
   ok(pa.meses.length === 12 && pa.meses[8].tipo === 'real' && pa.meses[9].tipo === 'agora' && Math.abs(pa.meses[9].sobra - 900) < 0.01 && pa.meses[11].tipo === 'previsto' && Math.abs(pa.total - (9 * 4000 + 900 + 2 * 4000)) < 0.01 && pa.piorMes.mes === 9, 'previsaoAno: mês a mês com o mês de hoje previsto e o acumulado'); }
+{ const sd = E.saldoDiario({ plan: NV.pl, hoje: NV.hoje });
+  ok(sd.dias.length === 31 && sd.dias[4].saldo === 5400 && sd.dias[9].saldo === 3000 && sd.dias[10].previsto && Math.abs(sd.fim - 900) < 0.01 && sd.menor.dia === 1, 'saldoDiario: entradas, contas no dia, gastos com data e ritmo até o fim do mês'); }
 process.exit(bad ? 1 : 0);

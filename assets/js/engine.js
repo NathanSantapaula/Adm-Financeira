@@ -1259,6 +1259,20 @@
     return { meses, total: ac, piorMes: meses.slice(m).reduce((b, x) => (x.sobra < b.sobra ? x : b), meses[m]) };
   }
 
+  // calendário do dinheiro do mês: entradas (r.dia ou o.diaRenda, padrão 5), contas fixas (it.dia ou o.diaContas, padrão 10), gastos com data e, nos dias que faltam, o ritmo dos gastos do dia; saldo acumulado
+  // shortcut: o plano quase nunca tem dia de renda e de conta, então usa o padrão; lançamento conciliado num fixo (itemId) não conta de novo
+  function saldoDiario(o) {
+    const pl = o.plan; const m = o.hoje.mes; const dm = diasNoMes(o.hoje.ano, m); const hoje = Math.min(dm, +o.hoje.dia || 1);
+    const ent = new Array(dm + 1).fill(0); const sai = new Array(dm + 1).fill(0); const dd = (d) => Math.max(1, Math.min(dm, +d || 1));
+    (pl.rendas || []).forEach((r) => { ent[dd(r.dia || o.diaRenda || 5)] += +(r.valores || [])[m] || 0; });
+    (pl.ativos || []).forEach((a) => { if (a.tipo !== 'RENDA FIXA') ent[dd(o.diaRenda || 5)] += +(a.pr || [])[m] || 0; });
+    (pl.despesas || []).concat(o.carry || []).forEach((it) => { sai[dd(it.dia || o.diaContas || 10)] += itemValores(it, pl.year)[m] || 0; });
+    let reais = 0; (pl.lancamentos || []).forEach((l) => { const d = parseDataISO(l.data); if (!d || d.ano !== pl.year || d.mes !== m || l.itemId) return; sai[dd(d.dia)] += +l.valor || 0; if (d.dia <= hoje) reais += +l.valor || 0; });
+    const ritmo = reais / hoje; let s = 0; const dias = [];
+    for (let d = 1; d <= dm; d++) { const extra = d > hoje ? ritmo : 0; s += ent[d] - sai[d] - extra; dias.push({ dia: d, entra: r2(ent[d]), sai: r2(sai[d] + extra), saldo: r2(s), previsto: d > hoje, baixo: s < 0 }); }
+    return { dias, menor: dias.reduce((b, x) => (x.saldo < b.saldo ? x : b), dias[0]), fim: r2(s) };
+  }
+
   /* dias úteis no Brasil: fim de semana e feriados nacionais (fixos e os que dependem da Páscoa) não contam */
   function pascoa(y) { const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451);
     const mes = Math.floor((h + l - 7 * m + 114) / 31); return Date.UTC(y, mes - 1, ((h + l - 7 * m + 114) % 31) + 1); }
@@ -1271,6 +1285,6 @@
     z, add, sub, sum, r2, norm, monthIndex, parseValor, distribuir, parcelaMeses, parcelaFim, parcelaIndice, itemValores, carryItems,
     ativoKey, buildAssetTree, rebalance, contasMes, gastosPorInst, variacao, janelaAnterior, analiseInvest, jurosCompostos, sequenciaMeses, disponivelAporte, analiseRenda, analiseGastos, analiseCarteira, nomeEstab, historico, ctxAno, OBJ_TIPOS, normObjetivos, analiseObjetivos, sugerirDivisao, aporteNecessario, notificacoes, scorePerfil, projetar, mesesAteMeta, simularObjetivo, migratePlan, compute, makeBackup, parseBackup,
     templateSheets, parseImport, applyImport, gastosAreaMes, gastosAreaPeriodo, saudeFinanceira, analiseLimites, repetirValores, acharFixo, feriadoBR, diaUtilBR, IA_INTENCOES, IA_FICHAS, IA_PRODUTOS, iaIntencao, iaProduto, iaValor, iaParcelas, iaResponder,
-    previsaoMes, livreHoje, detectarRecorrentes, planoDoMes, raioXMes, etapasObjetivo, previsaoAno };
+    previsaoMes, livreHoje, detectarRecorrentes, planoDoMes, raioXMes, etapasObjetivo, saldoDiario, previsaoAno };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.FPEngine = api;
 })(typeof window !== 'undefined' ? window : globalThis);
