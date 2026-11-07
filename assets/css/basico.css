@@ -1671,7 +1671,7 @@ body[data-ui="basico"][data-screen="app"] .tabbar { left: 50%; right: auto; widt
 .bas-ch { margin: 28px 0 10px; }
 .bas-big { font-weight: 700; letter-spacing: -.045em; }
 /* cartões: vidro de verdade, fio fino, sombra em camadas, sem contorno grosso */
-.bas .card, .bas-card { border-radius: var(--bas-r); background: var(--bas-vidro); -webkit-backdrop-filter: blur(24px) saturate(170%); backdrop-filter: blur(24px) saturate(170%); border: .5px solid var(--bas-fio); box-shadow: var(--bas-sombra); }
+:where(.bas) .card:not(:where(.bas-w-ano)), :where(.bas) .bas-card:not(:where(.bas-w-ano)) { border-radius: var(--bas-r); background: var(--bas-vidro); -webkit-backdrop-filter: blur(24px) saturate(170%); backdrop-filter: blur(24px) saturate(170%); border: .5px solid var(--bas-fio); box-shadow: var(--bas-sombra); }
 /* listas agrupadas num cartão só, com divisórias finas (em vez de um cartão por linha) */
 .bas-ativ { gap: 0; border-radius: var(--bas-r); background: var(--bas-vidro); -webkit-backdrop-filter: blur(24px) saturate(170%); backdrop-filter: blur(24px) saturate(170%); border: .5px solid var(--bas-fio); box-shadow: var(--bas-sombra); overflow: hidden; }
 .bas-ativ li + li { border-top: .5px solid var(--bas-fio); margin-left: 64px; }
@@ -1682,5 +1682,5 @@ body[data-ui="basico"][data-screen="app"] .tabbar { left: 50%; right: auto; widt
 /* cartão de membro: número e nome em linhas próprias (antes se sobrepunham) */
 .bas-membro-f { grid-template-rows: auto auto 1fr auto auto; }
 .bas-membro-num { align-self: end; margin-bottom: 4px; }
-@media (prefers-reduced-transparency: reduce) { .bas .card, .bas-card, .bas-ativ, body[data-ui="basico"][data-screen="app"] .tabbar { background: var(--surface); -webkit-backdrop-filter: none; backdrop-filter: none; } }
+@media (prefers-reduced-transparency: reduce) { :where(.bas) .card:not(:where(.bas-w-ano)), .bas-ativ, body[data-ui="basico"][data-screen="app"] .tabbar { background: var(--surface); -webkit-backdrop-filter: none; backdrop-filter: none; } }
 @media (prefers-reduced-motion: reduce) { .bas-tabs button { transition: none; } }
