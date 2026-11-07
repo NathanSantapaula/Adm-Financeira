@@ -3507,3 +3507,9 @@ body[data-screen="auth"] .main:has(.cad) { padding: 0; }
 .ft-barras .agora i { background: linear-gradient(var(--accent), color-mix(in srgb, var(--accent) 40%, transparent)); }
 .ft-barras .neg i { background: var(--neg); }
 .ft-barras small { font-size: 11px; color: var(--ink-3); }
+/* v7: abas internas do Patrimônio (segmentos em vidro) */
+.pat-abas { display: inline-flex; gap: 4px; margin: 0 0 18px; padding: 4px; border-radius: 999px; background: var(--glass); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); box-shadow: var(--shadow); max-width: 100%; overflow-x: auto; }
+.pat-abas button { border: 0; background: none; padding: 8px 18px; border-radius: 999px; font: inherit; font-size: 14px; font-weight: 600; color: var(--ink-3); cursor: pointer; white-space: nowrap; transition: background .2s, color .2s; }
+.pat-abas button:hover { color: var(--ink); }
+.pat-abas button[aria-current] { color: var(--ink); background: var(--surface); box-shadow: 0 1px 3px rgba(0, 0, 0, .12); }
+@media (prefers-reduced-motion: reduce) { .pat-abas button { transition: none; } }
