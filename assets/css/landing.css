@@ -194,3 +194,10 @@
 .hm-voce { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
 .hm-voce li { padding: 10px 16px; border-radius: 980px; background: rgba(255, 255, 255, .06); font-size: 14px; }
 @media (max-width: 560px) { .hm-hoje, .hm-patr { grid-template-columns: 1fr; } }
+/* revelação nunca esconde: o bloco já está visível e só desliza de leve */
+.hm.rv-on [data-rv]:not(.in) { opacity: 1; transform: translateY(14px); }
+.hm-l1 { color: var(--ink); font-weight: 400; }
+.hm-tel.esq { transform: rotate(-6deg) translate(16px, 10px); }
+.hm-tel.dir { transform: rotate(6deg) translate(-16px, 10px); }
+@media (max-width: 900px) { .hm-tel.dir { margin-top: 20px; transform: none; } }
+.as-demo { margin-top: 12px; color: var(--ink-3); font-size: 13px; text-align: center; }

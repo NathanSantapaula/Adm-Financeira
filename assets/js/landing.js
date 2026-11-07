@@ -199,7 +199,6 @@ function landingHtml() {
       <div class="hm-meio" aria-hidden="true"><small>● Pode gastar hoje</small><b>${brl0(86)}</b><span>e o mês ainda fecha no azul</span></div>
       ${tel('dir', `<div class="hm-tel-c"><p class="hm-tel-t">Gastos por categoria</p><small class="hm-mut">${MES_LONGO[NOW_M]} ${NOW_Y}</small><b class="hm-big">${brl0(totCat)}</b><ul class="hm-cats">${cats.map(([n, v, c]) => `<li><i style="background:${c}"></i><span>${n}<small>${Math.round((v / totCat) * 100)}% dos gastos</small></span><b>${brl0(v)}</b></li>`).join('')}</ul></div>`)}
     </div>
-    <p class="hp-cap">Telas ilustrativas, com valores fictícios.</p>
   </div></section>
 
   <section class="hp-sec" id="produto"><div class="hp-w">
