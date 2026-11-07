@@ -156,7 +156,7 @@ function basTelaPeriodo() {
 const BAS_SECS = {
   // Hoje: só o plano, as contas, o sonho e a sequência aparecem de início; o resto fica a um toque em Organizar
   inicio: [['plano', 'Seu plano do mês'], ['contas', 'Contas a pagar'], ['sonho', 'Meu sonho'], ['sequencia', 'Sequência de meses'], ['disp', 'Dá para investir', 0], ['historico', 'Patrimônio ano a ano', 0], ['aviso', 'O que o assistente notou', 0], ['ritmo', 'Ritmo do mês', 0], ['seuano', 'Seu ano', 0], ['resumo', 'Resumo do mês', 0], ['atividade', 'Atividade', 0], ['calendario', 'Mês dia a dia', 0], ['semana', 'Dia que mais gasta', 0], ['maior', 'Maior gasto', 0], ['globo', 'Seu universo', 0], ['saude', 'Saúde financeira', 0], ['limite', 'Limite do mês', 0], ['meta', 'Meta de investimento', 0], ['cartoes', 'Seus cartões', 0], ['proventos', 'Proventos', 0]],
-  gastos: [['anel', 'Gastos por categoria'], ['onde', 'Para onde foi o dinheiro'], ['limites', 'Limites por área'], ['cartoes', 'Seus cartões'], ['ultimos', 'Últimos gastos']],
+  gastos: [['anel', 'Gastos por categoria'], ['raiox', 'Raio-x do mês'], ['ultimos', 'Últimos gastos'], ['assinaturas', 'Assinaturas'], ['cartoes', 'Seus cartões'], ['limites', 'Limites por área'], ['onde', 'Para onde foi o dinheiro', 0]],
   investir: [['patr', 'Evolução do patrimônio'], ['meta', 'Meta e disponível'], ['sonhos', 'Seus sonhos'], ['comp', 'Como está dividido'], ['feitos', 'Investido no período']],
 };
 function basOrdemDe(aba) {
@@ -280,9 +280,15 @@ function basGastos() {
     ${lista.length ? `<div class="bas-leg">${lista.map(([n, v], i) => `<button data-act="bas-arco" data-area="${esc(n)}" data-v="${esc(brl(v))}" data-p="${esc(pct(v / (tot || 1)))}"><i style="--bc:${PAL[i % 6]}"></i>${esc(n)}<b>${pct(v / (tot || 1))}</b></button>`).join('')}</div>` : `<p class="bas-p bas-centro">${voz('bas_vazio')}</p>`}`;
   secs.cartoes = basCartoesHtml();
   secs.onde = basOndeHtml(); secs.limites = basLimitesHtml();
+  // raio-x do mês (E.raioXMes): entrou, saiu e sobrou num cartão, com a variação contra o mês anterior
+  const X = E.raioXMes({ C, plan: S.plan, carry, mes: j.ate }); const vr = (f, bom) => (f == null ? '' : `<em class="${(f >= 0) === bom ? 'pos' : 'neg'}">${f >= 0 ? '↑' : '↓'} ${pct(Math.abs(f))}</em>`);
+  secs.raiox = basSecao(`Raio-x de ${MES_LONGO[j.ate]}`, '', `<div class="card bas-rx3">${[['Entrou', X.receita, vr(X.variacao.receita, true)], ['Saiu', X.gastos, vr(X.variacao.gastos, false)], ['Sobrou', X.sobra, vr(X.variacao.sobra, true)]].map(([n, v, e]) => `<span><small>${n}</small><b>${brl0(v)}</b>${e}</span>`).join('')}</div>`);
+  // assinaturas e gastos que se repetem (E.detectarRecorrentes), com o custo no ano
+  const rec = E.detectarRecorrentes({ lancamentos: S.plan.lancamentos, ano: S.year, despesas: S.plan.despesas }).filter((x) => !x.jaFixo).slice(0, 5);
+  if (rec.length) secs.assinaturas = basSecao('Se repetem todo mês', `<small>${brl0(rec.reduce((a, x) => a + x.anual, 0))}/ano</small>`, `<ul class="bas-ativ">${rec.map((x) => basRow('disabled', basIniciais(x.nome), esc(x.nome), `${x.meses} meses · ${brl0(x.anual)} no ano`, `<b>${basCent(x.valor)}</b>`)).join('')}</ul>`);
   const lanc = basLancJan().slice(0, 8);
   secs.ultimos = lanc.length ? basSecao('Últimos gastos', '', `<ul class="bas-ativ">${lanc.map(basLancLinha).join('')}</ul>`) : '';
-  return `<div class="bas-pg bas-pg-g">${basCab('Gastos', `<button class="bell" data-act="bas-importar" aria-label="Importar extrato do banco" title="Importar extrato">${I_IMPORTAR}</button><button class="bas-inv-pl" ${basIr('gasto')} aria-label="Novo gasto">${I.plus}<span>Gasto</span></button>`)}<div class="bas-pg-per">${basPerPill()}<button class="bas-rx" ${basPago() ? basIr('raiox') : 'data-act="upgrade" data-plano="investidor"'}><span class="bas-rx-ic" aria-hidden="true">${I_RAIOX}</span>Raio-X${basPago() ? '' : I.lock}</button><button class="bas-circ" ${basIr('entradas')} aria-label="Entradas" title="Entradas">${I_ENTRADA}</button></div>
+  return `<div class="bas-pg bas-pg-g">${basCab('Dinheiro', `<button class="bell" data-act="bas-importar" aria-label="Importar extrato do banco" title="Importar extrato">${I_IMPORTAR}</button><button class="bas-inv-pl" ${basIr('gasto')} aria-label="Novo gasto">${I.plus}<span>Gasto</span></button>`)}<div class="bas-pg-per">${basPerPill()}<button class="bas-rx" ${basPago() ? basIr('raiox') : 'data-act="upgrade" data-plano="investidor"'}><span class="bas-rx-ic" aria-hidden="true">${I_RAIOX}</span>Raio-X${basPago() ? '' : I.lock}</button><button class="bas-circ" ${basIr('entradas')} aria-label="Entradas" title="Entradas">${I_ENTRADA}</button></div>
     ${basOrdenar('gastos', secs)}${basOrganizarBtn('gastos')}</div>`;
 }
 // toque num arco ou na legenda: destaca a categoria e mostra o valor no centro, sem redesenhar; o segundo toque abre

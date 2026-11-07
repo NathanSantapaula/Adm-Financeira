@@ -1687,3 +1687,11 @@ body[data-ui="basico"][data-screen="app"] .tabbar { left: 50%; right: auto; widt
 /* Hoje: frase de estado em pílula sobre o painel escuro */
 .bas-hj-st { display: inline-block; margin: 18px auto 6px; padding: 6px 14px; border-radius: 999px; font-size: 14px; font-weight: 650; background: color-mix(in srgb, var(--pos) 18%, transparent); color: var(--pos); }
 .bas-hj-st.neg { background: color-mix(in srgb, var(--neg) 20%, transparent); color: var(--neg); }
+/* Dinheiro: raio-x do mês em três números lado a lado */
+.bas-rx3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 16px 6px; }
+.bas-rx3 span { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; padding: 0 6px; text-align: center; }
+.bas-rx3 span + span { border-left: .5px solid var(--bas-fio); }
+.bas-rx3 small { font-size: 13px; color: var(--ink-2); }
+.bas-rx3 b { font-size: 17px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.bas-rx3 em { font-style: normal; font-size: 12px; font-weight: 650; }
+.bas-rx3 .pos { color: var(--pos); } .bas-rx3 .neg { color: var(--neg); }
