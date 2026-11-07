@@ -151,8 +151,7 @@ function lpFotoHtml() {
 }
 function lpAssessorHtml() {
   const emps = lpEmpresas(); const antes = emps.map((e) => e.nome).filter((n) => !/\bXP\b/i.test(n));
-  const bio = CFG.bio || `Assessor de investimentos vinculado à XP Inc.${antes.length ? `, com passagens por ${lpListaNomes(antes)}` : ''}. Meu trabalho é um só: fazer você saber, todo mês, exatamente o que fazer com o seu dinheiro.`;
-  const pilares = [['plano', 'Planejamento completo', 'Orçamento, metas e patrimônio num só lugar.'], ['alvo', 'Carteira com alvo claro', 'Cada aporte vai para onde a carteira precisa.'], ['mes', 'Ao seu lado todo mês', 'Revisão mensal e o próximo passo definido.']];
+  const bio = CFG.bio || `Assessor de investimentos vinculado à XP Inc.${antes.length ? `, com passagens por ${lpListaNomes(antes)}` : ''}. Todo mês, você sabe o que fazer com o seu dinheiro.`;
   const agenda = CFG.agendaUrl ? `<a class="hp-btn lg" href="${esc(CFG.agendaUrl)}" ${ext}>Agendar uma conversa</a>` : `<button class="hp-btn lg" data-act="contact">Falar com o ${esc(primeiroNome())}</button>`;
   const wa = waLink(baseMsg(`Vi o ${CFG.marca} e gostaria de conversar sobre assessoria.`));
   const lnk = CFG.linkedinUrl ? `<a class="hp-lnk" href="${esc(CFG.linkedinUrl)}" ${ext}>Ver trajetória no LinkedIn ${I.chev}</a>` : '';
@@ -164,7 +163,6 @@ function lpAssessorHtml() {
         <p class="hp-k">Seu assessor</p>
         <h2 class="hp-h2">Quem cuida do<br>seu planejamento.</h2>
         <p class="hp-lead">${esc(bio)}</p>
-        <ul class="hp-pilares">${pilares.map(([k, t, d]) => `<li><span class="hp-pi ${k}" aria-hidden="true"></span><span><b>${t}</b><small>${d}</small></span></li>`).join('')}</ul>
         ${emps.length ? `<div class="hp-traj"><small>Trajetória</small><ul>${emps.map((e) => `<li class="hp-emp"${e.cargo || e.periodo ? ` title="${esc([e.cargo, e.periodo].filter(Boolean).join(' · '))}"` : ''}>${lpLogo(e)}</li>`).join('')}</ul></div>` : ''}
         ${(CFG.credenciais || []).length ? `<ul class="hp-creds">${CFG.credenciais.map((c) => `<li>${esc(c)}</li>`).join('')}</ul>` : ''}
         <div class="hp-sobre-cta">${agenda}${wa ? `<a class="hp-btn lg vidro" href="${esc(wa)}" ${ext}>WhatsApp</a>` : ''}</div>
@@ -211,12 +209,12 @@ function landingHtml() {
       <ul>${i.itens.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>
       <button class="hp-btn${d ? ' lg' : id === 'gratis' ? ' vidro' : ''}" data-act="go-auth" data-mode="signup" data-plano="${id}"${d ? ' data-pagar="1"' : ''}>${id === 'gratis' ? 'Começar grátis' : id === 'investidor' ? (txt ? 'Quero saber mais' : 'Quero o Investidor') : 'Quero a assessoria'}</button></article>`; };
   const faq = [
-    ['O que é o diagnóstico?', 'É uma etapa guiada logo após o cadastro: você informa seu patrimônio atual, responde a sete perguntas de perfil de investidor e define seus objetivos. Com isso o painel já nasce personalizado.'],
+    ['O que é o diagnóstico?', 'Uma conversa curta depois do cadastro: patrimônio, perfil de investidor e objetivos. O painel já nasce com a sua cara.'],
     ['Onde ficam os meus dados?', `Seus lançamentos ficam em servidor protegido por login e só você acessa. ${esc(CFG.consultor)} vê apenas seu nome, contato e o resultado do diagnóstico, a menos que você contrate a Assessoria.`],
-    ['Como funciona a importação do extrato?', 'Você exporta o extrato ou a fatura em CSV ou OFX no aplicativo do banco e envia o arquivo. O sistema lê no seu aparelho, sugere a categoria de cada lançamento, ignora o que já foi importado e mostra tudo para você conferir antes de gravar.'],
+    ['Como funciona a importação do extrato?', 'Envie o CSV ou OFX do app do banco. A leitura acontece no seu aparelho, cada lançamento ganha categoria e nada é gravado sem você conferir.'],
     ['Como ativo a Assessoria?', `Depois do cadastro, você faz o pagamento e envia o comprovante. O ${esc(nome)} confirma e libera o plano na sua conta.`],
     ['O assessor vê os meus lançamentos?', `No Organização e no Investidor, não: o ${esc(nome)} vê nome, contato e o resultado do diagnóstico. Na Assessoria ele também acompanha o planejamento, para orientar você.`],
-    ['Posso levar meus dados embora?', 'Sim. A qualquer momento você baixa um backup completo e pode restaurá-lo depois.'],
+    ['Posso levar meus dados embora?', 'Sim. Baixe um backup completo quando quiser.'],
   ];
   const cta = logged ? 'Abrir meu painel' : 'Fazer meu diagnóstico gratuito';
   const links = [['produto', 'Recursos'], ['como', 'Como funciona'], ['assessor', 'O assessor']].concat(temDepo ? [['depoimentos', 'Depoimentos']] : []).concat([['planos', 'Planos'], ['duvidas', 'Dúvidas']]);
@@ -233,7 +231,7 @@ function landingHtml() {
     ['', 'Carteira com alvo', 'Onde investir o próximo aporte', `<div class="donut" id="hm-donut"></div>`],
     ['w2', 'Pergunte ao assistente', 'Resposta com os seus números', `<div class="hm-chat"><p class="eu">Posso comprar um celular de R$ 3 mil?</p><p>Cabe na sobra de ${mes}, mas adia em 1 mês o seu objetivo. Quer ver como dividir?</p></div>`],
   ];
-  const passos = [['O extrato chega', 'Exporte do app do banco em CSV ou OFX e envie. A leitura acontece no seu aparelho.'], [`O ${esc(CFG.marca)} organiza`, 'Cada lançamento ganha categoria, instituição e dá baixa no que você planejou.'], ['Você só confere', 'Nada é gravado sem a sua aprovação. A mesma compra nunca entra duas vezes.']];
+  const passos = ['Envie o extrato', `O ${esc(CFG.marca)} organiza`, 'Você confere'];
 
   return `<div class="hp hp-dark hm">
   <header class="hp-nav hm-nav"><div class="hp-w hp-nav-in">
@@ -243,14 +241,13 @@ function landingHtml() {
   </div></header>
 
   <section class="hm-hero" id="topo"><div class="hp-w">
-    <p class="hm-tags hp-in"><span class="hm-novo">Novo</span><span>Assistente no painel</span><span>↳ Globo do patrimônio</span><span>↳ Onde investir o aporte</span></p>
     <h1 class="hm-h1 hp-in"><span class="hm-l1">O ${esc(CFG.marca)} organiza tudo.</span><span class="hm-l2">Você alcança seu objetivo.</span></h1>
-    <p class="hm-sub hp-in">Importa o extrato, avisa das contas, mostra para onde vai cada real e diz onde investir o que sobrou. Com a assessoria de ${esc(CFG.consultor)}.</p>
+    <p class="hm-sub hp-in">Seu dinheiro organizado sozinho e o próximo passo sempre claro. Com a assessoria de ${esc(CFG.consultor)}.</p>
     <div class="hm-ctas hp-in"><button class="hp-btn lg" data-act="go-auth" data-mode="signup">${cta} ↗</button><button class="hp-btn lg vidro" data-act="scroll" data-to="como">Ver como funciona</button></div>
-    <ul class="hp-garantias hp-in"><li>Grátis para começar</li><li>Sem cartão de crédito</li><li>Sem senha do banco</li></ul>
+    <p class="hm-garantia hp-in">Grátis para começar · sem cartão · sem senha do banco</p>
     <div class="hm-fone hp-in">
       ${tel('esq', `<div class="hm-tel-c"><p class="hm-tel-t">Assistente</p><div class="hm-chat"><p class="eu">Quanto sobrou em ${mes}?</p><p>Sobraram ${brl0(1840)}. Já dá para o aporte do mês e ainda fica uma folga.</p></div></div>`)}
-      <div class="hm-meio" aria-hidden="true"><small>● Disponível para aportar</small><b>${brl0(1840)}</b><span>de ${brl0(5750)} que entraram em ${mes}</span><p>Investindo hoje, o objetivo chega <b>2 meses antes</b>.</p></div>
+      <div class="hm-meio" aria-hidden="true"><small>● Disponível para aportar</small><b>${brl0(1840)}</b><span>de ${brl0(5750)} que entraram em ${mes}</span></div>
       ${tel('dir', `<div class="hm-tel-c"><p class="hm-tel-t">Gastos por categoria</p><small class="hm-mut">${MES_LONGO[NOW_M]} ${NOW_Y}</small><b class="hm-big">${brl0(totCat)}</b><ul class="hm-cats">${cats.map(([n, v, c]) => `<li><i style="background:${c}"></i><span>${n}<small>${Math.round((v / totCat) * 100)}% dos gastos</small></span><b>${brl0(v)}</b></li>`).join('')}</ul></div>`)}
     </div>
     <p class="hp-cap">Telas ilustrativas, com valores fictícios.</p>
@@ -258,26 +255,22 @@ function landingHtml() {
 
   <section class="hp-sec" id="produto"><div class="hp-w">
     <div class="hp-head" data-rv><p class="hp-k">Tudo num painel só</p><h2 class="hp-h2">Organiza, avisa e aponta o caminho.</h2></div>
-    <div class="hm-bento">${bento.map(([w, t, s, v]) => `<article class="hm-b ${w}" data-rv><div class="hm-b-v">${v}</div><h3>${t}</h3><p>${s}</p></article>`).join('')}</div>
+    <div class="hm-bento">${bento.map(([w, t, s, v]) => `<article class="hm-b ${w}" data-rv><div class="hm-b-v">${v}</div><h3>${t}</h3></article>`).join('')}</div>
   </div></section>
 
   <section class="hp-sec" id="como"><div class="hp-w">
-    <div class="hp-head" data-rv><p class="hp-k">Do extrato ao mês</p><h2 class="hp-h2">Sem digitar. Sem senha do banco.</h2><p class="hp-lead">Você envia o extrato e o painel faz o resto. Experimente confirmar o lançamento do meio.</p></div>
-    <ol class="hm-passos">${passos.map(([t, d], i) => `<li data-rv><span class="hm-n">${i + 1}</span><h3>${t}</h3><p>${d}</p></li>`).join('')}</ol>
+    <div class="hp-head" data-rv><p class="hp-k">Do extrato ao mês</p><h2 class="hp-h2">Sem digitar. Sem senha do banco.</h2></div>
+    <ol class="hm-passos">${passos.map((t, i) => `<li data-rv><span class="hm-n">${i + 1}</span><h3>${t}</h3></li>`).join('')}</ol>
     <div class="hp-card hp-vis hm-imp" data-rv><small>Importação de ${mes}</small><ul class="hp-lancs">${lpLanc('chega')}</ul><ul class="hp-lancs" id="lp-vivo-w">${lpLanc(st.ok ? 'pronto' : 'chega', true)}</ul><ul class="hp-lancs">${lpLanc('pronto')}</ul></div>
   </div></section>
 
-  <section class="hp-sec" id="dentro"><div class="hp-w">
-    <div class="hp-head" data-rv><p class="hp-k">Por dentro do painel</p><h2 class="hp-h2">Cada recurso, do jeito que você vai usar.</h2></div>
-    ${lpPainelHtml()}
-  </div></section>
 
   <section class="hp-sec" id="simulador"><div class="hp-w">
     <div class="hp-sim hp-dark" data-rv>
       <div class="hp-sim-c">
         <p class="hp-k">Seus objetivos</p>
         <h2 class="hp-h2">O que sobra<br>tem destino.</h2>
-        <p class="hp-lead">O aporte vai primeiro para o que está abaixo do alvo do seu perfil. Ninguém vende nada.</p>
+        <p class="hp-lead">Mexa no aporte e veja para onde ele vai.</p>
         <div class="hp-ctl"><label for="lp-ap">Aporte do mês</label><output id="lp-ap-o">${brl(st.aporte)}</output><input id="lp-ap" type="range" min="500" max="20000" step="500" value="${st.aporte}" data-lp="aporte"></div>
         <div class="hp-ctl"><span class="hp-ctl-l" id="hp-perfil-l">Seu perfil</span><div class="hp-seg" role="group" aria-labelledby="hp-perfil-l">${['conservador', 'moderado', 'agressivo'].map((k) => `<button type="button" data-act="lp-set" data-k="perfil" data-v="${k}" aria-pressed="${st.perfil === k}">${E.PERFIS[k].nome}</button>`).join('')}</div></div>
         <div class="hp-ctl"><span class="hp-ctl-l" id="hp-hoje-l">Sua carteira hoje</span><div class="hp-seg" role="group" aria-labelledby="hp-hoje-l"><button type="button" data-act="lp-set" data-k="hoje" data-v="rf" aria-pressed="${st.hoje === 'rf'}">Mais renda fixa</button><button type="button" data-act="lp-set" data-k="hoje" data-v="rv" aria-pressed="${st.hoje === 'rv'}">Mais ações</button></div></div>
@@ -292,7 +285,7 @@ function landingHtml() {
 
   <section class="hp-sec" id="planos"><div class="hp-w">
     <div class="hm-pl-h" data-rv><p class="hp-k">Planos · comece grátis</p><h2 class="hm-h1 hm-h1-s"><span class="hm-l1">Chega de fim de mês no susto.</span><span class="hm-l2">Comece hoje.</span></h2>
-      <p class="hm-sub">A partir de <b>${esc(brl(precoPlano('investidor') / 30))} por dia</b>. Ou comece grátis, sem prazo e sem cartão.</p></div>
+      <p class="hm-sub">A partir de <b>${esc(brl(precoPlano('investidor') / 30))} por dia</b>.</p></div>
     <div id="hm-pl" data-rv>${lpPlanosHtml()}</div>
   </div></section>
 
@@ -303,11 +296,11 @@ function landingHtml() {
 
   <section class="hp-sec"><div class="hp-w">
     <div class="hp-fim hp-dark" data-rv>
-      <h2 class="hp-h2">Comece pelo<br>diagnóstico.</h2><p class="hp-lead">Leva poucos minutos e o painel já nasce com a sua cara.</p>
+      <h2 class="hp-h2">Comece pelo<br>diagnóstico.</h2>
       <form class="hp-fim-f" id="lp-comeco"><label class="hp-sr" for="hp-nome">Como devemos chamar você?</label>
         <input id="hp-nome" name="nome" autocomplete="given-name" placeholder="Como devemos chamar você?" value="${esc(st.nome)}" data-lp="nome">
         <button class="hp-btn lg" type="submit">${logged ? 'Abrir meu painel' : 'Começar agora'}</button></form>
-      <p class="hp-fim-n">Grátis no plano Organização.</p>
+      
     </div>
   </div></section>
 
@@ -429,7 +422,7 @@ function lpPlanosHtml() {
       <div class="hm-ctas">${anual ? `<button class="hp-btn lg" data-act="contact">Combinar o anual com o ${esc(nome)}</button>` : `<button class="hp-btn lg" data-act="go-auth" data-mode="signup" data-plano="${pl.plano}" data-pagar="1">Criar conta e pagar</button>`}<button type="button" class="hp-btn lg vidro" data-act="lp-pl" data-k="passo" data-v="2">Voltar</button></div>`;
   }
   return `${topo}<div class="hm-pl-box">${corpo}</div>
-    <ul class="hm-pl-conf"><li><b>Comece grátis</b> no Organização, sem prazo e sem cartão.</li><li><b>Cartão ou Pix</b> pelo Mercado Pago. O ${esc(CFG.marca)} não vê nem guarda o seu cartão.</li><li><b>Mude quando quiser</b> de plano, direto com o ${esc(nome)}.</li></ul>
+    <ul class="hm-pl-conf"><li><b>Grátis</b> sem prazo</li><li><b>Cartão ou Pix</b> pelo Mercado Pago</li><li><b>Mude</b> quando quiser</li></ul>
     <p class="hm-pl-leg"><button class="hp-lnk" data-act="terms">Termos de uso e privacidade</button></p>`;
 }
 function lpPlano(el) {
