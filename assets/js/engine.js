@@ -1192,6 +1192,66 @@
     return r('ia_nao_entendi', {}, null, ['resumo', 'aporte', 'gastos', 'objetivos']);
   }
 
+  /* ---------- funcionalidades novas do SaaS reinventado (hoje = { ano, mes 0-11, dia }) ---------- */
+  const diasNoMes = (ano, mes) => new Date(Date.UTC(ano, mes + 1, 0)).getUTCDate();
+  // previsão da sobra no fim do mês (gastos do dia no ritmo de hoje, fixos inteiros) e no fim do ano (mais a sobra prevista dos meses seguintes)
+  function previsaoMes(o) {
+    const C = o.C; const m = o.hoje.mes; const dm = diasNoMes(o.hoje.ano, m); const dia = Math.max(1, Math.min(dm, +o.hoje.dia || 1));
+    const reais = +(C.despReais || [])[m] || 0; const gastosFim = r2((+C.despesas[m] || 0) - reais + reais * dm / dia);
+    const saldoFim = r2((+C.receita[m] || 0) - gastosFim - (+(C.beneficio || [])[m] || 0) + (m ? +(C.beneficio || [])[m - 1] || 0 : 0));
+    let resto = 0; for (let i = m + 1; i < 12; i++) resto += +C.investAlocado[i] || 0;
+    return { dia, diasMes: dm, mes: { receita: r2(+C.receita[m] || 0), gastosAteHoje: r2(+C.despesas[m] || 0), gastosFim, saldoFim }, ano: { saldoFim: r2(saldoFim + resto) } };
+  }
+  // quanto dá para gastar por dia até o fim do mês: orçamento do mês (ou renda menos a meta de aporte) menos o já gasto, pelos dias que faltam (hoje incluso)
+  function livreHoje(o) {
+    const C = o.C; const m = o.hoje.mes; const dm = diasNoMes(o.hoje.ano, m); const dias = Math.max(1, dm - (+o.hoje.dia || 1) + 1);
+    const orc = +(C.orcamento || [])[m] || 0; const base = orc > 0 ? 'orcamento' : 'sobra';
+    const limite = orc > 0 ? orc : (+C.receita[m] || 0) - (+(C.metaAporteMes || [])[m] || 0);
+    const restante = r2(limite - (+C.despesas[m] || 0));
+    return { base, limite: r2(limite), restante, diasRestantes: dias, porDia: restante > 0 ? r2(Math.floor(restante / dias * 100) / 100) : 0 };
+  }
+  // gastos que se repetem nos lançamentos (mesmo estabelecimento em minMeses meses ou mais); assinatura = valor quase igual (até 10%); jaFixo = já existe gasto fixo com esse nome
+  function detectarRecorrentes(o) {
+    const min = o.minMeses || 3; const g = {};
+    (o.lancamentos || []).forEach((l) => { const d = parseDataISO(l.data); const v = +l.valor || 0; if (!d || !(v > 0) || (o.ano && d.ano !== +o.ano)) return;
+      const k = nomeEstab(l.desc || l.nome || ''); if (!k) return; const x = g[k] || (g[k] = { nome: l.desc || l.nome, area: l.area || '', meses: {}, ultimo: '' });
+      const mk = d.ano * 12 + d.mes; x.meses[mk] = (x.meses[mk] || 0) + v; if (l.data > x.ultimo) { x.ultimo = l.data; x.nome = l.desc || l.nome; } });
+    const parece = (a, b) => a === b || a.startsWith(b + ' ') || b.startsWith(a + ' ');
+    const fixos = (o.despesas || []).map((it) => nomeEstab(it.nome || '')).filter(Boolean);
+    return Object.keys(g).map((k) => { const x = g[k]; const vs = Object.values(x.meses); if (vs.length < min) return null;
+      const media = sum(vs) / vs.length; const assinatura = vs.every((v) => Math.abs(v - media) <= media * 0.1);
+      return { chave: k, nome: x.nome, area: x.area, meses: vs.length, valor: r2(media), anual: r2(media * 12), ultimo: x.ultimo, assinatura, jaFixo: fixos.some((f) => parece(f, k)) };
+    }).filter(Boolean).sort((a, b) => b.valor - a.valor);
+  }
+  // plano do mês: até 3 ações em ordem de prioridade (déficit, contas a pagar, objetivo atrasado, investir o disponível, orçamento perto do fim)
+  function planoDoMes(o) {
+    const C = o.C; const m = o.mes; const a = []; const sobra = +C.investAlocado[m] || 0;
+    if (sobra < 0) a.push({ id: 'deficit', valor: r2(-sobra) });
+    if (o.contas && o.contas.falta > 0) a.push({ id: 'contas', valor: o.contas.falta, qtd: o.contas.itens.filter((x) => !x.pago).length });
+    const atr = ((o.objetivos && o.objetivos.itens) || []).filter((g) => g.status === 'atrasado' && g.extra > 0).sort((x, y) => y.extra - x.extra)[0];
+    if (atr) a.push({ id: 'objetivo', valor: atr.extra, objetivo: atr.id, nome: atr.nome });
+    const disp = disponivelAporte({ C, mes: m, metaMes: C.metaAporteMes }).disponivel; if (disp > 0) a.push({ id: 'investir', valor: disp });
+    const uso = (C.usoOrc || [])[m]; if (uso != null && uso >= 0.8) a.push({ id: 'orcamento', valor: r2((+C.orcamento[m] || 0) - (+C.despesas[m] || 0)), uso });
+    return a.slice(0, 3).map((x, i) => Object.assign({ prioridade: i + 1 }, x));
+  }
+  // raio-x de um mês: entradas, gastos, sobra, poupança, áreas, maior gasto, lançamentos e variação contra o mês anterior (só no mesmo ano)
+  function raioXMes(o) {
+    const C = o.C; const m = o.mes; const v = (k, i) => +(C[k] || [])[i] || 0; const vr = (k) => (m > 0 && v(k, m - 1) ? r2((v(k, m) - v(k, m - 1)) / Math.abs(v(k, m - 1))) : null);
+    const ar = gastosAreaMes(o.plan, o.carry, m); const gastos = v('despesas', m);
+    const lanc = (o.plan.lancamentos || []).filter((l) => { const d = parseDataISO(l.data); return d && d.ano === o.plan.year && d.mes === m; });
+    const maior = lanc.reduce((b, l) => (!b || (+l.valor || 0) > (+b.valor || 0) ? l : b), null);
+    return { receita: r2(v('receita', m)), gastos: r2(gastos), sobra: r2(v('investAlocado', m)), poupanca: (C.poupanca || [])[m] == null ? null : C.poupanca[m], aportes: r2(v('aplicado', m)),
+      areas: Object.keys(ar).map((k) => ({ area: k, valor: ar[k], pct: gastos > 0 ? ar[k] / gastos : 0 })).sort((x, y) => y.valor - x.valor),
+      maior: maior ? { desc: maior.desc || maior.nome || '', valor: r2(+maior.valor || 0), data: maior.data, area: maior.area || '' } : null, lancamentos: lanc.length,
+      variacao: { gastos: vr('despesas'), receita: vr('receita'), sobra: vr('investAlocado') } };
+  }
+  // etapas de um objetivo (10/25/50/75/100% por padrão, ou o.pcts): valor de cada etapa, se já foi atingida e quando deve ser (mesesAteMeta, sem promessa de rentabilidade: retorno vem do cliente)
+  function etapasObjetivo(o) {
+    const ps = o.pcts || [0.1, 0.25, 0.5, 0.75, 1]; const h = o.hoje || { ano: 2000, mes: 0 }; const saldo = +o.saldo || 0;
+    return ps.map((pct) => { const valor = r2((+o.valor || 0) * pct); const meses = mesesAteMeta(saldo, o.aporte, o.retorno, valor, 1200);
+      return { pct, valor, atingido: saldo >= valor, falta: r2(Math.max(0, valor - saldo)), meses, previsto: meses == null ? null : { ano: h.ano + Math.floor((h.mes + meses) / 12), mes: (h.mes + meses) % 12 } }; });
+  }
+
   /* dias úteis no Brasil: fim de semana e feriados nacionais (fixos e os que dependem da Páscoa) não contam */
   function pascoa(y) { const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451);
     const mes = Math.floor((h + l - 7 * m + 114) / 31); return Date.UTC(y, mes - 1, ((h + l - 7 * m + 114) % 31) + 1); }
@@ -1203,6 +1263,7 @@
   const api = { PLANOS, RECURSOS, ABA_RECURSO, planoPermite, planoMinimo, planoNorm, interfaceDe, parseDataISO, MES, MES_LONGO, TAXONOMIA, ASSET_LEVELS, QUIZ, PERFIS, RETORNO_PADRAO, CATS_DESP, CATS_RENDA, FORMATO_BACKUP,
     z, add, sub, sum, r2, norm, monthIndex, parseValor, distribuir, parcelaMeses, parcelaFim, parcelaIndice, itemValores, carryItems,
     ativoKey, buildAssetTree, rebalance, contasMes, gastosPorInst, variacao, janelaAnterior, analiseInvest, jurosCompostos, sequenciaMeses, disponivelAporte, analiseRenda, analiseGastos, analiseCarteira, nomeEstab, historico, ctxAno, OBJ_TIPOS, normObjetivos, analiseObjetivos, sugerirDivisao, aporteNecessario, notificacoes, scorePerfil, projetar, mesesAteMeta, simularObjetivo, migratePlan, compute, makeBackup, parseBackup,
-    templateSheets, parseImport, applyImport, gastosAreaMes, gastosAreaPeriodo, saudeFinanceira, analiseLimites, repetirValores, acharFixo, feriadoBR, diaUtilBR, IA_INTENCOES, IA_FICHAS, IA_PRODUTOS, iaIntencao, iaProduto, iaValor, iaParcelas, iaResponder };
+    templateSheets, parseImport, applyImport, gastosAreaMes, gastosAreaPeriodo, saudeFinanceira, analiseLimites, repetirValores, acharFixo, feriadoBR, diaUtilBR, IA_INTENCOES, IA_FICHAS, IA_PRODUTOS, iaIntencao, iaProduto, iaValor, iaParcelas, iaResponder,
+    previsaoMes, livreHoje, detectarRecorrentes, planoDoMes, raioXMes, etapasObjetivo };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.FPEngine = api;
 })(typeof window !== 'undefined' ? window : globalThis);

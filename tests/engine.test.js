@@ -467,4 +467,35 @@ ok(E.interfaceDe('gratis', 'completo') === 'basico' && E.interfaceDe('qualquer')
   ok(Math.abs(CB.investAlocado[2] - 5000) < 0.01 && Math.abs(CB.beneficio[2] - 900) < 0.01, 'benefício: mês sem gasto no vale guarda o saldo inteiro');
   ok(Math.abs(CB.receita[0] - 5800) < 0.01, 'benefício: a entrada continua contando como renda');
 }
+// --- funcionalidades novas do SaaS reinventado
+{
+  const pl = { v: 2, year: 2026, settings: { orcPadrao: 4000 }, rendaCats: E.CATS_RENDA(), catsDesp: E.CATS_DESP(),
+    rendas: [{ id: 'r', cat: 'fixa', nome: 'Salário', valores: new Array(12).fill(6000) }],
+    despesas: [{ id: 'd', cat: 'fixa', area: 'Moradia', nome: 'Aluguel', valores: new Array(12).fill(2000) }],
+    lancamentos: [{ id: 'a', data: '2026-10-05', desc: 'Mercado', valor: 600, cat: 'variavel', area: 'Alimentação' },
+      { id: 'b', data: '2026-10-08', desc: 'Restaurante', valor: 400, cat: 'variavel', area: 'Lazer' },
+      { id: 'n1', data: '2026-07-03', desc: 'NETFLIX.COM', valor: 39.9, area: 'Lazer' }, { id: 'n2', data: '2026-08-03', desc: 'Netflix.com', valor: 39.9, area: 'Lazer' },
+      { id: 'n3', data: '2026-09-03', desc: 'NETFLIX COM', valor: 39.9, area: 'Lazer' }, { id: 'u1', data: '2026-08-10', desc: 'Uber', valor: 20, area: 'Transporte' }],
+    ativos: [] };
+  const CN = E.compute(pl, {}); const hoje = { ano: 2026, mes: 9, dia: 10 };
+  const ps = E.previsaoMes({ C: CN, plan: pl, hoje });
+  ok(ps.diasMes === 31 && Math.abs(ps.mes.gastosFim - 5100) < 0.01 && Math.abs(ps.mes.saldoFim - 900) < 0.01, 'previsaoMes: ritmo do mês projeta os gastos do dia até o fim');
+  ok(Math.abs(ps.ano.saldoFim - (900 + 2 * 4000)) < 0.01, 'previsaoMes: fim do ano soma a sobra prevista dos meses seguintes');
+  const gd = E.livreHoje({ C: CN, hoje });
+  ok(gd.base === 'orcamento' && Math.abs(gd.restante - 1000) < 0.01 && gd.diasRestantes === 22 && Math.abs(gd.porDia - 45.45) < 0.01, 'livreHoje: o que resta do orçamento dividido pelos dias que faltam');
+  const gd2 = E.livreHoje({ C: Object.assign({}, CN, { despesas: CN.despesas.map(() => 5000) }), hoje });
+  ok(gd2.porDia === 0 && gd2.restante < 0, 'livreHoje: orçamento estourado dá zero por dia');
+  const rc = E.detectarRecorrentes({ lancamentos: pl.lancamentos, ano: 2026 });
+  ok(rc.length === 1 && rc[0].meses === 3 && rc[0].assinatura && Math.abs(rc[0].valor - 39.9) < 0.01 && !rc[0].jaFixo, 'detectarRecorrentes: assinatura em 3 meses');
+  ok(E.detectarRecorrentes({ lancamentos: pl.lancamentos, ano: 2026, despesas: [{ nome: 'Netflix', valores: [] }] })[0].jaFixo, 'detectarRecorrentes: marca o que já é gasto fixo');
+  const pm = E.planoDoMes({ C: CN, mes: 9, contas: E.contasMes({ ano: 2026, mes: 9, despesas: pl.despesas }), objetivos: { itens: [{ id: 'o', nome: 'Casa', status: 'atrasado', extra: 300 }] } });
+  ok(pm.length === 3 && pm[0].id === 'contas' && pm.some((a) => a.id === 'objetivo' && a.valor === 300), 'planoDoMes: até 3 ações priorizadas');
+  const pmD = E.planoDoMes({ C: Object.assign({}, CN, { investAlocado: CN.investAlocado.map(() => -500), despesas: CN.despesas.map(() => 6500) }), mes: 9 });
+  ok(pmD[0].id === 'deficit' && pmD[0].valor === 500, 'planoDoMes: déficit vem primeiro');
+  const rx = E.raioXMes({ C: CN, plan: pl, mes: 9 });
+  ok(Math.abs(rx.gastos - 3000) < 0.01 && rx.areas[0].area === 'Moradia' && rx.maior.desc === 'Mercado' && rx.lancamentos === 2 && Math.abs(rx.sobra - 3000) < 0.01, 'raioXMes: totais, áreas e maior gasto');
+  ok(rx.variacao.gastos != null && rx.variacao.gastos > 0, 'raioXMes: variação contra o mês anterior');
+  const et = E.etapasObjetivo({ valor: 10000, saldo: 3000, aporte: 1000, retorno: 0, hoje: { ano: 2026, mes: 9 } });
+  ok(et.length === 5 && et[1].atingido && !et[2].atingido && et[2].meses === 2 && et[4].meses === 7 && et[4].previsto.ano === 2027 && et[4].previsto.mes === 4, 'etapasObjetivo: 5 etapas com data prevista');
+}
 process.exit(bad ? 1 : 0);
