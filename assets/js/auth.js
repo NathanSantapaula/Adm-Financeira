@@ -27,13 +27,13 @@ function authHtml() {
     // (1 Seus dados, 2 Acesso; o 3 é o diagnóstico, que vem depois de criar a conta)
     const v = (k) => esc(S.authDraft && S.authDraft[k] || ''); const passo = S.asPasso === 2 ? 2 : 1;
     const campo = (rot, inp, ico) => `<label class="fld"><span>${rot}</span><span class="as-in">${inp}${ico}</span></label>`;
-    const trilha = [['Seus dados', 'Nome e contato'], ['Acesso', 'E-mail e senha'], ['Diagnóstico', 'Patrimônio, perfil e objetivos']].map(([t, d], k) => `<li class="${k + 1 === passo ? 'on' : k + 1 < passo ? 'ok' : ''}"><i>${k + 1 < passo ? I.check : k + 1}</i><span><b>${t}</b><small>${d}</small></span></li>`).join('');
+    const trilha = [['Seus dados', 'Nome e contato'], ['Acesso', 'E-mail e senha'], ['Diagnóstico', 'Patrimônio, perfil e objetivos']].map(([t, d], k) => `<li class="${k + 1 === passo ? 'on' : k + 1 < passo ? 'ok' : ''}"><i>${k + 1 < passo ? I.check : k + 1}</i><span><b>${t}</b></span></li>`).join('');
     const corpo = passo === 1
-      ? `<h2>Como podemos te chamar?</h2><p class="sub">Usamos o seu nome no painel e o WhatsApp só para falar sobre o seu planejamento.</p>${note}
+      ? `<h2>Como podemos te chamar?</h2>${note}
         <form id="f-auth" novalidate>${campo('Nome completo', `<input name="nome" autocomplete="name" placeholder="Seu nome" value="${v('nome')}">`, I.user)}
           ${campo('WhatsApp', `<input name="whatsapp" inputmode="tel" autocomplete="tel" placeholder="(11) 99999-9999" value="${v('whatsapp')}">`, I.tel)}
           ${err}<button class="btn primary lg as-cta" type="submit">Continuar ${I.chev}</button></form>`
-      : `<h2>Agora, o seu acesso</h2><p class="sub">${S.authPagar ? 'Em seguida você vai direto para o pagamento. O diagnóstico fica para depois.' : 'É com o e-mail e a senha que você entra no painel.'}</p>${note}
+      : `<h2>Agora, o seu acesso</h2><p class="sub">${S.authPagar ? 'Em seguida você vai direto para o pagamento. O diagnóstico fica para depois.' : ''}</p>${note}
         <form id="f-auth" novalidate><input type="hidden" name="nome" value="${v('nome')}"><input type="hidden" name="whatsapp" value="${v('whatsapp')}">
           ${campo('E-mail', `<input name="email" type="email" autocomplete="email" placeholder="voce@email.com" value="${v('email')}">`, I.mail)}
           ${demo ? '' : campo('Senha <small>(mínimo de 8 caracteres)</small>', '<input name="password" type="password" autocomplete="new-password" placeholder="Crie uma senha">', I.lock)}
