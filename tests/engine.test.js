@@ -509,4 +509,6 @@ const NV = (() => { const pl = { v: 2, year: 2026, settings: { orcPadrao: 4000, 
   ok(sd.dias.length === 31 && sd.dias[4].saldo === 5400 && sd.dias[9].saldo === 3000 && sd.dias[10].previsto && Math.abs(sd.fim - 900) < 0.01 && sd.menor.dia === 1, 'saldoDiario: entradas, contas no dia, gastos com data e ritmo até o fim do mês'); }
 { const fh = E.faixaHistorica({ serie: [100, 300, 0, 200, 400], atual: 350 });
   ok(fh.min === 100 && fh.max === 400 && fh.mediana === 250 && fh.faixa === 'alto' && Math.abs(fh.pos - 0.8333) < 0.001 && E.faixaHistorica({ serie: [1, 2], atual: 1 }) === null && E.faixaHistorica({ serie: [1, 2, 3], atual: 9 }).faixa === 'acima', 'faixaHistorica: mínimo, mediana, máximo e onde o mês cai'); }
+{ const mr = E.metaReserva({ C: NV.C, patrimonio: 6000, hoje: NV.hoje });
+  ok(mr.gastoMedio === 2000 && mr.meta === 12000 && mr.cobertos === 3 && mr.falta === 6000 && mr.pct === 0.5 && mr.objetivo.modo === 'marco', 'metaReserva: 6 meses do gasto fixo médio e meses cobertos'); }
 process.exit(bad ? 1 : 0);

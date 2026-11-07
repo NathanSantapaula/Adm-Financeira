@@ -1280,6 +1280,15 @@
     return { min: r2(min), mediana: r2(md), max: r2(max), n: xs.length, atual: r2(a), pos: max > min ? Math.max(0, Math.min(1, (a - min) / (max - min))) : 0.5, faixa: a < min ? 'abaixo' : a > max ? 'acima' : a > md ? 'alto' : a < md ? 'baixo' : 'normal' };
   }
 
+  // reserva de emergência guiada: meta = o.meses (padrão 6) x gasto essencial médio (gastos fixos dos meses com gasto até hoje; sem fixos, o gasto total); meses cobertos pela reserva (ou patrimônio)
+  function metaReserva(o) {
+    const C = o.C; const ate = o.hoje ? o.hoje.mes + 1 : 12; const fx = (C.despCat && C.despCat.fixa) || z();
+    const med = (arr) => { const v = arr.slice(0, ate).filter((x) => x > 0); return v.length ? sum(v) / v.length : 0; };
+    const base = med(fx) > 0 ? med(fx) : med(C.despesas); const n = o.meses || 6; const meta = r2(base * n); const atual = Math.max(0, +(o.reserva != null ? o.reserva : o.patrimonio) || 0);
+    return { gastoMedio: r2(base), meta, atual: r2(atual), cobertos: base > 0 ? r2(atual / base) : null, falta: r2(Math.max(0, meta - atual)), pct: meta > 0 ? Math.min(1, atual / meta) : 0,
+      objetivo: { tipo: 'reserva', nome: 'Reserva de emergência', modo: 'marco', valor: meta } };
+  }
+
   /* dias úteis no Brasil: fim de semana e feriados nacionais (fixos e os que dependem da Páscoa) não contam */
   function pascoa(y) { const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451);
     const mes = Math.floor((h + l - 7 * m + 114) / 31); return Date.UTC(y, mes - 1, ((h + l - 7 * m + 114) % 31) + 1); }
@@ -1292,6 +1301,6 @@
     z, add, sub, sum, r2, norm, monthIndex, parseValor, distribuir, parcelaMeses, parcelaFim, parcelaIndice, itemValores, carryItems,
     ativoKey, buildAssetTree, rebalance, contasMes, gastosPorInst, variacao, janelaAnterior, analiseInvest, jurosCompostos, sequenciaMeses, disponivelAporte, analiseRenda, analiseGastos, analiseCarteira, nomeEstab, historico, ctxAno, OBJ_TIPOS, normObjetivos, analiseObjetivos, sugerirDivisao, aporteNecessario, notificacoes, scorePerfil, projetar, mesesAteMeta, simularObjetivo, migratePlan, compute, makeBackup, parseBackup,
     templateSheets, parseImport, applyImport, gastosAreaMes, gastosAreaPeriodo, saudeFinanceira, analiseLimites, repetirValores, acharFixo, feriadoBR, diaUtilBR, IA_INTENCOES, IA_FICHAS, IA_PRODUTOS, iaIntencao, iaProduto, iaValor, iaParcelas, iaResponder,
-    previsaoMes, livreHoje, detectarRecorrentes, planoDoMes, raioXMes, etapasObjetivo, faixaHistorica, saldoDiario, previsaoAno };
+    previsaoMes, livreHoje, detectarRecorrentes, planoDoMes, raioXMes, etapasObjetivo, metaReserva, faixaHistorica, saldoDiario, previsaoAno };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.FPEngine = api;
 })(typeof window !== 'undefined' ? window : globalThis);
