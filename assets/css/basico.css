@@ -1653,3 +1653,45 @@ button.bas-gx-c { width: 100%; border: 0; font: inherit; color: inherit; text-al
 /* nas listas, a logo do banco aparece no formato dela (ícone de app), sem a bolinha em volta */
 .bas-ini:has(> .inst-ic) { background: none; border-radius: 0; }
 .bas-ini > .inst-ic { width: 40px; height: 40px; border-radius: 26%; }
+
+/* ===== Redesenho 2026 (REFERENCIAS.md): vidro Apple, números grandes, listas agrupadas, barra de abas flutuante ===== */
+body[data-ui="basico"] { --bas-r: 24px; --bas-vidro: color-mix(in srgb, var(--surface) 72%, transparent); --bas-fio: color-mix(in srgb, var(--ink) 8%, transparent);
+  --bas-sombra: 0 1px 1px rgba(0, 0, 0, .04), 0 6px 16px -6px rgba(0, 0, 0, .10), 0 18px 40px -18px color-mix(in srgb, var(--accent) 22%, rgba(0, 0, 0, .18)); }
+/* barra de abas: pílula de vidro flutuante; aba ativa só com cor e um realce suave (padrão iOS) */
+body[data-ui="basico"][data-screen="app"] .tabbar { left: 50%; right: auto; width: min(360px, calc(100% - 32px)); transform: translateX(-50%); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 80%, transparent); -webkit-backdrop-filter: blur(30px) saturate(190%); backdrop-filter: blur(30px) saturate(190%); border: .5px solid var(--bas-fio); box-shadow: var(--bas-sombra); }
+.bas-tabs { padding: 5px; gap: 2px; }
+.bas-tabs button { min-height: 54px; border-radius: 999px; font-size: 11px; font-weight: 600; letter-spacing: .01em; color: var(--ink-3); transition: color 200ms, background 200ms; }
+.bas-tabs button[aria-current="page"] { color: var(--accent); background: color-mix(in srgb, var(--accent) 13%, transparent); box-shadow: none; }
+.bas-tabs svg { width: 23px; height: 23px; }
+/* títulos grandes, como no iOS */
+.bas-top { margin-bottom: 10px; }
+.bas-top h1 { font-size: 34px; font-weight: 750; letter-spacing: -.035em; }
+.bas-h2 { font-size: 20px; font-weight: 700; letter-spacing: -.02em; }
+.bas-ch { margin: 28px 0 10px; }
+.bas-big { font-weight: 700; letter-spacing: -.045em; }
+/* cartões: vidro de verdade, fio fino, sombra em camadas, sem contorno grosso */
+:where(.bas) .card:not(:where(.bas-w-ano)), :where(.bas) .bas-card:not(:where(.bas-w-ano)) { border-radius: var(--bas-r); background: var(--bas-vidro); -webkit-backdrop-filter: blur(24px) saturate(170%); backdrop-filter: blur(24px) saturate(170%); border: .5px solid var(--bas-fio); box-shadow: var(--bas-sombra); }
+/* listas agrupadas num cartão só, com divisórias finas (em vez de um cartão por linha) */
+.bas-ativ { gap: 0; border-radius: var(--bas-r); background: var(--bas-vidro); -webkit-backdrop-filter: blur(24px) saturate(170%); backdrop-filter: blur(24px) saturate(170%); border: .5px solid var(--bas-fio); box-shadow: var(--bas-sombra); overflow: hidden; }
+.bas-ativ li + li { border-top: .5px solid var(--bas-fio); margin-left: 64px; }
+.bas-ativ li + li button { margin-left: -64px; width: calc(100% + 64px); }
+.bas-ativ button { border-radius: 0; background: transparent; box-shadow: none; min-height: 62px; }
+/* "Organizar esta tela" vira um link discreto no fim */
+.bas .bas-org { width: auto; min-height: 44px; margin: 24px auto 0; display: flex; padding: 0 16px; background: transparent; border: 0; box-shadow: none; color: var(--ink-3); font-size: 14px; font-weight: 600; }
+/* cartão de membro: número e nome em linhas próprias (antes se sobrepunham) */
+.bas-membro-f { display: flex; flex-direction: column; } .bas-membro-f .bas-membro-num { margin-top: auto; }
+.bas-membro-f .bas-membro-n { align-self: stretch; margin-top: 2px; }
+@media (prefers-reduced-transparency: reduce) { :where(.bas) .card:not(:where(.bas-w-ano)), .bas-ativ, body[data-ui="basico"][data-screen="app"] .tabbar { background: var(--surface); -webkit-backdrop-filter: none; backdrop-filter: none; } }
+@media (prefers-reduced-motion: reduce) { .bas-tabs button { transition: none; } }
+/* Hoje: frase de estado em pílula sobre o painel escuro */
+.bas-hj-st { display: inline-block; margin: 18px auto 6px; padding: 6px 14px; border-radius: 999px; font-size: 14px; font-weight: 650; background: color-mix(in srgb, var(--pos) 18%, transparent); color: var(--pos); }
+.bas-hj-st.neg { background: color-mix(in srgb, var(--neg) 20%, transparent); color: var(--neg); }
+/* Dinheiro: raio-x do mês em três números lado a lado */
+.bas-rx3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 16px 6px; }
+.bas-rx3 span { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; padding: 0 6px; text-align: center; }
+.bas-rx3 span + span { border-left: .5px solid var(--bas-fio); }
+.bas-rx3 small { font-size: 13px; color: var(--ink-2); }
+.bas-rx3 b { font-size: 17px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.bas-rx3 em { font-style: normal; font-size: 12px; font-weight: 650; }
+.bas-rx3 .pos { color: var(--pos); } .bas-rx3 .neg { color: var(--neg); }
