@@ -1684,3 +1684,6 @@ body[data-ui="basico"][data-screen="app"] .tabbar { left: 50%; right: auto; widt
 .bas-membro-f .bas-membro-n { align-self: stretch; margin-top: 2px; }
 @media (prefers-reduced-transparency: reduce) { :where(.bas) .card:not(:where(.bas-w-ano)), .bas-ativ, body[data-ui="basico"][data-screen="app"] .tabbar { background: var(--surface); -webkit-backdrop-filter: none; backdrop-filter: none; } }
 @media (prefers-reduced-motion: reduce) { .bas-tabs button { transition: none; } }
+/* Hoje: frase de estado em pílula sobre o painel escuro */
+.bas-hj-st { display: inline-block; margin: 18px auto 6px; padding: 6px 14px; border-radius: 999px; font-size: 14px; font-weight: 650; background: color-mix(in srgb, var(--pos) 18%, transparent); color: var(--pos); }
+.bas-hj-st.neg { background: color-mix(in srgb, var(--neg) 20%, transparent); color: var(--neg); }

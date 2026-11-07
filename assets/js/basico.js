@@ -36,9 +36,9 @@ const BAS_VOZ = {
     bas_saude_bom: 'Que orgulho! Sua base está firme.', bas_saude_med: 'Você está indo bem. Dá para cuidar de um ou dois pontos.', bas_saude_baixo: 'Sem pressa: vamos fortalecer a base juntos.' },
 };
 // Hoje (PRODUTO.md): frase de estado e as ações do plano do mês, curtas, nas três vozes
-Object.assign(BAS_VOZ.consultivo, { bas_hj_ok: 'Você está no ritmo', bas_hj_neg: 'O mês fecha {v} no vermelho', bas_ac_deficit: 'Corte {v} para fechar no azul', bas_ac_contas: 'Pague {n} contas: {v}', bas_ac_objetivo: 'Aporte {v} em {nome}', bas_ac_investir: 'Invista {v} que sobraram', bas_ac_orcamento: 'Segure os gastos: {u} do limite' });
-Object.assign(BAS_VOZ.direto, { bas_hj_ok: 'No ritmo', bas_hj_neg: 'Fecha {v} negativo', bas_ac_deficit: 'Corte {v}', bas_ac_contas: '{n} contas: {v}', bas_ac_objetivo: '{v} em {nome}', bas_ac_investir: 'Invista {v}', bas_ac_orcamento: '{u} do limite usado' });
-Object.assign(BAS_VOZ.acolhedor, { bas_hj_ok: 'Tudo certo por aqui', bas_hj_neg: 'Cuidado: faltam {v} no mês', bas_ac_deficit: 'Que tal cortar {v}?', bas_ac_contas: 'Faltam {n} contas: {v}', bas_ac_objetivo: 'Mais {v} para {nome}', bas_ac_investir: '{v} esperando para crescer', bas_ac_orcamento: 'Já usou {u} do limite, calma' });
+Object.assign(BAS_VOZ.consultivo, { bas_hj_ok: 'Você está no ritmo', bas_hj_neg: 'O mês fecha {v} no vermelho', bas_ac_deficit: 'Corte {v} para fechar no azul', bas_ac_contas: 'Contas a pagar: {v}', bas_ac_objetivo: 'Aporte {v} em {nome}', bas_ac_investir: 'Invista {v} que sobraram', bas_ac_orcamento: 'Segure os gastos: {u} do limite' });
+Object.assign(BAS_VOZ.direto, { bas_hj_ok: 'No ritmo', bas_hj_neg: 'Fecha {v} negativo', bas_ac_deficit: 'Corte {v}', bas_ac_contas: 'A pagar: {v}', bas_ac_objetivo: '{v} em {nome}', bas_ac_investir: 'Invista {v}', bas_ac_orcamento: '{u} do limite usado' });
+Object.assign(BAS_VOZ.acolhedor, { bas_hj_ok: 'Tudo certo por aqui', bas_hj_neg: 'Cuidado: faltam {v} no mês', bas_ac_deficit: 'Que tal cortar {v}?', bas_ac_contas: 'Faltam {v} em contas', bas_ac_objetivo: 'Mais {v} para {nome}', bas_ac_investir: '{v} esperando para crescer', bas_ac_orcamento: 'Já usou {u} do limite, calma' });
 Object.keys(BAS_VOZ).forEach((t) => { if (VOZ[t]) Object.assign(VOZ[t], BAS_VOZ[t]); });
 
 /* ---------- peças de tela ---------- */
@@ -154,7 +154,8 @@ function basTelaPeriodo() {
 
 /* ---- blocos que o cliente organiza (ordem e quais aparecem), salvos no perfil ---- */
 const BAS_SECS = {
-  inicio: [['plano', 'Seu plano do mês'], ['contas', 'A pagar'], ['sonho', 'Meu sonho'], ['disp', 'Dá para investir'], ['sequencia', 'Sequência de meses'], ['historico', 'Patrimônio ano a ano'], ['aviso', 'O que o assistente notou'], ['ritmo', 'Ritmo do mês'], ['seuano', 'Seu ano'], ['resumo', 'Resumo do mês'], ['atividade', 'Atividade'], ['calendario', 'Mês dia a dia', 0], ['semana', 'Dia que mais gasta', 0], ['maior', 'Maior gasto', 0], ['globo', 'Seu universo', 0], ['saude', 'Saúde financeira', 0], ['contas', 'Contas a pagar', 0], ['limite', 'Limite do mês', 0], ['meta', 'Meta de investimento', 0], ['cartoes', 'Seus cartões', 0], ['proventos', 'Proventos', 0]],
+  // Hoje: só o plano, as contas, o sonho e a sequência aparecem de início; o resto fica a um toque em Organizar
+  inicio: [['plano', 'Seu plano do mês'], ['contas', 'Contas a pagar'], ['sonho', 'Meu sonho'], ['sequencia', 'Sequência de meses'], ['disp', 'Dá para investir', 0], ['historico', 'Patrimônio ano a ano', 0], ['aviso', 'O que o assistente notou', 0], ['ritmo', 'Ritmo do mês', 0], ['seuano', 'Seu ano', 0], ['resumo', 'Resumo do mês', 0], ['atividade', 'Atividade', 0], ['calendario', 'Mês dia a dia', 0], ['semana', 'Dia que mais gasta', 0], ['maior', 'Maior gasto', 0], ['globo', 'Seu universo', 0], ['saude', 'Saúde financeira', 0], ['limite', 'Limite do mês', 0], ['meta', 'Meta de investimento', 0], ['cartoes', 'Seus cartões', 0], ['proventos', 'Proventos', 0]],
   gastos: [['anel', 'Gastos por categoria'], ['onde', 'Para onde foi o dinheiro'], ['limites', 'Limites por área'], ['cartoes', 'Seus cartões'], ['ultimos', 'Últimos gastos']],
   investir: [['patr', 'Evolução do patrimônio'], ['meta', 'Meta e disponível'], ['sonhos', 'Seus sonhos'], ['comp', 'Como está dividido'], ['feitos', 'Investido no período']],
 };
@@ -214,8 +215,6 @@ function basInicio() {
   const ct = basContas(mH); const acoes = E.planoDoMes({ C, mes: mH, contas: ct, objetivos: objAnalise() });
   const AC = { deficit: [I_GASTO, 'gastos'], contas: [I_CONTA, 'gastos'], objetivo: [I_FUTURO, 'futuro'], investir: [I.inv, 'investir'], orcamento: [I.despesas, 'gastos'] };
   if (acoes.length) secs.plano = basSecao('Seu plano do mês', '', `<ul class="bas-ativ bas-plano">${acoes.map((x) => `<li><button data-act="bas-aba" data-v="${AC[x.id][1]}"><span class="bas-ini" aria-hidden="true">${AC[x.id][0]}</span>${basNome(voz('bas_ac_' + x.id, { v: brl0(x.valor), n: x.qtd || '', nome: esc(x.nome || ''), u: x.uso != null ? pct(x.uso) : '' }), '')}${I.chev}</button></li>`).join('')}</ul>`);
-  const aPagar = ct.itens.filter((x) => !x.pago);
-  if (aPagar.length) secs.contas = basSecao('A pagar', `<small>${brl0(ct.falta)}</small>`, `<ul class="bas-ativ">${aPagar.slice(0, 4).map((x) => basRow(basIr('conta', { id: x.id }), basIniciais(x.nome), esc(x.nome), esc(x.area || 'Conta') + (x.parcela ? ` · ${x.parcela.i}/${x.parcela.n}` : ''), `<b>${basCent(x.valor)}</b>`)).join('')}</ul>`);
   secs.disp = basCard(`<div class="bas-disp"><span class="bas-n"><small class="bas-k">Dá para investir ${j.n > 1 ? basJanFrase() : 'agora'}</small><b class="bas-big md">${basCent(D.disponivel)}</b></span>${D.disponivel > 0.005 ? `<button class="btn primary bas-cta" ${basIrInv()}>Aplicar</button>` : ''}</div>
     <p class="bas-p">${voz(D.disponivel > 0.005 ? 'bas_disp_sim' : D.sobra > 0.005 ? 'bas_disp_tudo' : !(ent > 0) && !(sai > 0) ? 'bas_vazio' : 'bas_disp_nao')}</p>`);
   const ents = j.n === 1 ? p.rendas.filter((r) => +r.valores[j.de] > 0.005).map((r) => basRow(basIr('entrada', { id: r.id }), I_ENTRADA, esc(r.nome), `Entrada · ${MES_LONGO[j.de]}`, `<b class="pos">+${basCent(r.valores[j.de])}</b>`)) : [];
