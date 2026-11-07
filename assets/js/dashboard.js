@@ -185,7 +185,27 @@ document.addEventListener('visibilitychange', () => {
 function viewGeral() {
   const p = S.plan; const pr = S.profile; const nome = (pr.apelido || (pr.nome || '').split(' ')[0]) || 'por aqui';
   const cab = `<div class="welcome"><div><p class="greet">${esc(voz('saudacao', { saud: saudacaoHora(), nome }))}</p>${(() => { const f = tituloAtual(); return `<h1 class="wh${visualAtual() === '3d' ? ' wh-conversa' : ''}" aria-label="${esc(f)}"><span class="wh-t" aria-hidden="true">${esc(f)}</span>${visualAtual() === '3d' ? '<span class="wh-cur" aria-hidden="true"></span>' : ''}</h1>`; })()}</div>${yearControl()}</div>`;
-  return cab + widgetsHtml(); // widgets na ordem e no tamanho escolhidos pelo cliente (widgets.js)
+  return cab + hojeHtml() + widgetsHtml(); // widgets na ordem e no tamanho escolhidos pelo cliente (widgets.js)
+}
+
+/* Hoje: responde em segundos "como estou e o que faço agora". Só lê o que já é calculado (S.C, E.disponivelAporte, E.contasMes). */
+function hojeHtml() {
+  const C = S.C; if (!C) return ''; const m = mesRef(); const mn = MES_LONGO[m];
+  const sobra = C.investAlocado[m] || 0; const orc = C.orcamento[m] > 0; const uso = orc ? C.usoOrc[m] : 0;
+  const D = E.disponivelAporte({ C, mes: m, metaMes: C.metaAporteMes });
+  const K = E.contasMes({ despesas: S.plan.despesas, carry: E.carryItems(S.plans, S.year), ano: S.year, mes: m });
+  const st = sobra < 0 ? ['neg', `Atenção: ${mn} fecha no vermelho em ${brl0(-sobra)}`] : uso > 1 ? ['warn', `Você passou do orçamento de ${mn}`] : uso > 0.85 ? ['warn', 'Perto do limite do orçamento'] : ['pos', 'Você está no ritmo'];
+  const passos = proximosPassos();
+  const acoes = (passos.length ? passos : [['Ver para onde foi o dinheiro', 'nav', 'despesas']]).map(([t, a, v]) =>
+    `<button class="hj-acao" data-act="${a}"${v ? ` data-view="${v}"` : ''}><span>${esc(t)}</span><i aria-hidden="true">→</i></button>`).join('');
+  const abertas = K.itens.filter((i) => !i.pago).slice(0, 3);
+  const contas = abertas.length ? `<ul class="hj-contas">${abertas.map((i) => `<li><span>${esc(i.nome)}</span><b>${brl0(i.valor)}</b></li>`).join('')}</ul>` : '<p class="hj-ok keep">Nenhuma conta em aberto neste mês.</p>';
+  return `<section class="hoje" aria-label="Hoje">
+    <div class="hj-placar"><p class="hj-st ${st[0]}"><i aria-hidden="true"></i>${esc(st[1])}</p>
+      <p class="hj-rot">Disponível para aportar em ${mn}</p><p class="hj-num">${brl0(D.disponivel)}</p>
+      <p class="hj-sub">Sobra do mês <b>${brl0(sobra)}</b>${K.falta > 0 ? ` · contas a pagar <b>${brl0(K.falta)}</b>` : ''}</p></div>
+    <div class="hj-col"><h3>Faça agora</h3><div class="hj-acoes">${acoes}</div></div>
+    <div class="hj-col"><h3>Contas de ${mn}</h3>${contas}</div></section>`;
 }
 
 /* Patrimônio estimado: linha do patrimônio (bolinha em cada mês, mês atual em destaque, ritmo da meta opcional).
