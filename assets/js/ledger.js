@@ -72,6 +72,9 @@ const G_WIDGETS = [
   { id: 'inst', nome: () => 'Por instituição', desc: 'Quanto saiu por banco, cartão ou carteira no período, com o ícone de cada um.', tam: 3, tams: [2, 3, 4, 6], padrao: () => true },
   { id: 'cartoes', nome: () => 'Meus cartões', desc: 'Um cartão por banco, cartão ou carteira usado no período, com quanto saiu por ele.', tam: 3, tams: [2, 3, 4, 6], padrao: () => true },
   { id: 'limites', nome: () => 'Limites por área', desc: 'Um limite por mês para as áreas que você escolher, com aviso ao chegar perto.', tam: 3, tams: [2, 3, 4, 6], padrao: () => true },
+  { id: 'calendario', nome: () => 'Calendário do dinheiro', desc: 'O saldo de cada dia do mês: entradas, contas e o ritmo dos gastos.', tam: 3, tams: [3, 4, 6], padrao: () => true },
+  { id: 'assin', nome: () => 'Assinaturas detectadas', desc: 'Cobranças que se repetem com o mesmo valor, com o custo no ano.', tam: 3, tams: [2, 3, 4, 6], padrao: () => true },
+  { id: 'faixa', nome: () => 'Você contra você', desc: 'O gasto do mês comparado com os seus meses anteriores.', tam: 3, tams: [2, 3, 4, 6], padrao: () => true },
   { id: 'semana', nome: () => 'Por dia da semana', desc: 'Em que dias você mais gasta.', tam: 3, tams: [3, 4, 6], padrao: () => false },
 ];
 // visão do mês quando o período do topo é um mês só; gIrMes leva a ele (o período vale para todas as abas)
@@ -154,6 +157,19 @@ function gWidgets(G) {
   // onde mais compra
   add('estab', gCard('estab', 'Onde você mais compra', G.estab.length ? `<ul class="g-lista">${G.estab.map((x) => `<li><button class="g-li" data-act="g-busca" data-q="${esc(x.k)}"><span><b>${esc(x.nome)}</b><small>${x.qtd} ${x.qtd === 1 ? 'compra' : 'compras'} · média de ${brl(x.media)}</small></span><span class="g-li-v"><b>${brl0(x.total)}</b><small>${pct(x.pct)}</small></span></button></li>`).join('')}</ul>` : gVazio('Aparece quando houver lançamentos reais (importados ou lançados à mão).')));
   // recorrentes
+  // Dinheiro, rodada nova: calendário do saldo (E.saldoDiario), assinaturas (E.detectarRecorrentes) e você contra você (E.faixaHistorica)
+  { const m = G.mes >= 0 ? G.mes : S.year === NOW_Y ? NOW_M : 11; const hoje = { ano: S.year, mes: m, dia: S.year === NOW_Y && m === NOW_M ? new Date().getDate() : 1 };
+    const K = E.saldoDiario({ plan: S.plan, carry: planCtx().carry, hoje }); const ini = new Date(S.year, m, 1).getDay();
+    if (K && K.dias && K.dias.length) add('calendario', gCard('calendario', 'Calendário de ' + MES_LONGO[m], `<div class="gc-cal" role="grid" aria-label="Saldo de cada dia">${['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((d) => `<b aria-hidden="true">${d}</b>`).join('')}${'<span></span>'.repeat(ini)}${K.dias.map((d) => `<span class="${d.baixo ? 'neg' : ''}${d.previsto ? ' prev' : ''}${d.entra > 0 ? ' entra' : ''}${d.sai > 0 ? ' sai' : ''}" title="${d.dia}: saldo ${brl0(d.saldo)}${d.entra ? ' · entra ' + brl0(d.entra) : ''}${d.sai ? ' · sai ' + brl0(d.sai) : ''}">${d.dia}</span>`).join('')}</div>
+      <p class="gc-pe">Menor saldo no dia <b>${K.menor ? K.menor.dia : '–'}</b>: ${K.menor ? brl0(K.menor.saldo) : '–'} · fim do mês <b>${brl0(K.fim)}</b></p>`)); }
+  { const R = E.detectarRecorrentes({ lancamentos: S.plan.lancamentos, ano: S.year, despesas: S.plan.despesas }).filter((x) => x.assinatura);
+    if (R.length) add('assin', gCard('assin', 'Assinaturas detectadas', `<p class="gc-tot">${brl0(R.reduce((t, x) => t + x.anual, 0))} <small>por ano</small></p><ul class="g-lista">${R.slice(0, 6).map((x) => `<li class="gc-as"><span><b>${esc(x.nome)}</b><small>${brl0(x.valor)} por mês · ${x.meses} meses</small></span>${x.jaFixo ? '<em class="ent-st">Fixo</em>' : `<button class="lnk strong" data-act="g-fixo" data-nome="${esc(x.nome)}" data-valor="${x.valor}" data-m="${S.year === NOW_Y ? NOW_M : 11}">Tornar fixo</button>`}</li>`).join('')}</ul>`)); }
+  { const m = G.mes >= 0 ? G.mes : S.year === NOW_Y ? NOW_M : 11; const F = E.faixaHistorica({ serie: S.C.despesas.slice(0, m), atual: S.C.despesas[m] });
+    const TXT = { abaixo: 'Bem abaixo do seu normal', baixo: 'Abaixo do seu normal', normal: 'Dentro do seu normal', alto: 'Acima do seu normal', acima: 'Bem acima do seu normal' };
+    if (F) add('faixa', gCard('faixa', 'Você contra você', `<p class="gc-tot ${F.faixa === 'acima' || F.faixa === 'alto' ? 'warn' : 'pos'}">${esc(TXT[F.faixa] || '')}</p>
+      <div class="gc-faixa" role="img" aria-label="Gasto de ${MES_LONGO[m]} entre o menor e o maior dos meses anteriores"><i class="md" style="left:${F.max > F.min ? ((F.mediana - F.min) / (F.max - F.min)) * 100 : 50}%"></i><i class="at" style="left:${Math.max(0, Math.min(1, F.pos)) * 100}%"></i></div>
+      <div class="gc-faixa-l"><small>${brl0(F.min)}</small><small>mediana ${brl0(F.mediana)}</small><small>${brl0(F.max)}</small></div>
+      <p class="gc-pe">${MES_LONGO[m]}: <b>${brl0(F.atual)}</b> contra ${F.n} meses anteriores</p>`)); }
   add('recorr', gCard('recorr', 'Assinaturas e contas recorrentes', G.recorrentes.length ? `<ul class="g-lista">${G.recorrentes.slice(0, 8).map((x) => `<li class="g-rec"><button class="g-li" data-act="g-busca" data-q="${esc(E.nomeEstab(x.nome))}"><span><b>${esc(x.nome)}</b><small>em ${x.meses} meses · último em ${MES[x.ultimoMes]}</small></span><span class="g-li-v"><b>${brl(x.media)}</b><small>por mês</small></span></button>${gEhFixo(x.nome) ? '<span class="badge prev">Fixo</span>' : x.ultimoMes < 11 ? `<button class="btn sm" data-act="g-fixo" data-nome="${esc(x.nome)}" data-valor="${x.ultimo}" data-m="${x.ultimoMes}">Tornar fixo</button>` : ''}</li>`).join('')}</ul>
     <p class="g-foot">Somam cerca de <b>${brl0(G.recorrentesMes)}</b> por mês${G.recorrentes.length > 8 ? ` (${G.recorrentes.length} no total)` : ''}.</p>` : gVazio('Nada se repetiu com valor parecido em vários meses até aqui.')));
   // parcelamentos

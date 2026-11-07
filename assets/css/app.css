@@ -3513,3 +3513,23 @@ body[data-screen="auth"] .main:has(.cad) { padding: 0; }
 .pat-abas button:hover { color: var(--ink); }
 .pat-abas button[aria-current] { color: var(--ink); background: var(--surface); box-shadow: 0 1px 3px rgba(0, 0, 0, .12); }
 @media (prefers-reduced-motion: reduce) { .pat-abas button { transition: none; } }
+/* v7: Dinheiro, calendário do saldo, assinaturas e você contra você */
+.gc-cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.gc-cal b { font-size: 11px; font-weight: 600; text-align: center; color: var(--ink-3); padding-bottom: 2px; }
+.gc-cal span { position: relative; height: 34px; display: grid; place-items: center; border-radius: 10px; font-size: 12.5px; font-variant-numeric: tabular-nums; color: var(--ink-2); background: color-mix(in srgb, var(--ink) 4%, transparent); }
+.gc-cal span:empty { background: none; }
+.gc-cal span.prev { opacity: .6; }
+.gc-cal span.entra { background: color-mix(in srgb, var(--pos) 16%, transparent); color: var(--pos); font-weight: 600; }
+.gc-cal span.sai::after { content: ""; position: absolute; bottom: 5px; width: 4px; height: 4px; border-radius: 50%; background: var(--accent); }
+.gc-cal span.neg { background: color-mix(in srgb, var(--neg) 14%, transparent); color: var(--neg); }
+.gc-pe { margin: 12px 0 0; font-size: 13px; color: var(--ink-3); } .gc-pe b { color: var(--ink); }
+.gc-tot { margin: 0 0 10px; font-size: 26px; font-weight: 700; letter-spacing: -.025em; font-variant-numeric: tabular-nums; }
+.gc-tot small { font-size: 13px; font-weight: 500; color: var(--ink-3); letter-spacing: 0; }
+.gc-tot.pos { color: var(--pos); font-size: 20px; } .gc-tot.warn { color: var(--warn); font-size: 20px; }
+.gc-as { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 0; }
+.gc-as span { display: grid; } .gc-as small { color: var(--ink-3); font-size: 12.5px; }
+.gc-faixa { position: relative; height: 10px; margin: 18px 6px 8px; border-radius: 999px; background: linear-gradient(90deg, color-mix(in srgb, var(--pos) 35%, transparent), color-mix(in srgb, var(--accent) 25%, transparent), color-mix(in srgb, var(--warn) 40%, transparent)); }
+.gc-faixa i { position: absolute; top: 50%; transform: translate(-50%, -50%); border-radius: 50%; }
+.gc-faixa .md { width: 2px; height: 18px; border-radius: 1px; background: var(--ink-3); }
+.gc-faixa .at { width: 18px; height: 18px; background: var(--ink); border: 3px solid var(--surface); box-shadow: var(--shadow); }
+.gc-faixa-l { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--ink-3); }
