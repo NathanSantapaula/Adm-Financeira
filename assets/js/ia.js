@@ -24,6 +24,8 @@ const IA_VOZ = {
     ia_orc_sem: '{Mes} ainda não tem orçamento. Com um limite definido, eu mostro quanto ainda cabe no mês.',
     ia_orc_passou: 'O orçamento de {mes} passou em {valor} ({pct} usado). Vale ver o que dá para segurar até o fim do mês.',
     ia_orc_ok: 'Você usou {pct} do orçamento de {mes}. Ainda restam {restante}, cerca de {porDia} por dia até o fim do mês.',
+    ia_livre_hoje: 'Hoje você pode gastar até {porDia}. Restam {restante} para os {dias} dias que faltam de {mes}, já contando as contas do mês.',
+    ia_livre_zero: 'O planejado de {mes} já foi usado: passou {valor}. O ideal agora é segurar os gastos que podem esperar.',
     ia_gastos_vazio: 'Não há gastos em {mes} ainda. Importe o extrato e eu separo tudo por categoria.',
     ia_gastos: 'Os gastos de {mes} somam {gasto}. A maior área é {area}, com {areaValor} ({pctArea} do total).',
     ia_gastos_sem_area: 'Os gastos de {mes} somam {gasto}.',
@@ -80,6 +82,8 @@ const IA_VOZ = {
     ia_orc_sem: '{Mes} sem orçamento. Defina um.',
     ia_orc_passou: 'Orçamento estourado em {valor} ({pct}).',
     ia_orc_ok: '{pct} usado. Restam {restante} ({porDia} por dia).',
+    ia_livre_hoje: 'Hoje: até {porDia}. Restam {restante} em {dias} dias.',
+    ia_livre_zero: 'Passou {valor} do planejado de {mes}. Segure o que puder esperar.',
     ia_gastos_vazio: 'Sem gastos em {mes}.',
     ia_gastos: 'Gastos: {gasto}. Maior área: {area}, {areaValor} ({pctArea}).',
     ia_gastos_sem_area: 'Gastos: {gasto}.',
@@ -136,6 +140,8 @@ const IA_VOZ = {
     ia_orc_sem: '{Mes} ainda está sem orçamento. Que tal definir um? Assim eu mostro quanto ainda cabe no mês.',
     ia_orc_passou: 'O orçamento de {mes} passou um pouquinho: {valor} além ({pct} usado). Acontece! Vamos ajustar até o fim do mês?',
     ia_orc_ok: 'Tudo certo: você usou {pct} do orçamento de {mes} e ainda tem {restante}, cerca de {porDia} por dia.',
+    ia_livre_hoje: 'Pode ficar tranquilo: hoje cabem até {porDia}. Ainda há {restante} para os {dias} dias que faltam de {mes}.',
+    ia_livre_zero: 'Sem susto: o planejado de {mes} passou {valor}. Segurando o que pode esperar, o mês se ajeita.',
     ia_gastos_vazio: '{Mes} ainda está em branco. Importe o extrato e eu organizo tudo para você.',
     ia_gastos: 'Os gastos de {mes} somam {gasto}. {area} é a área que mais pesa: {areaValor} ({pctArea} do total).',
     ia_gastos_sem_area: 'Os gastos de {mes} somam {gasto}.',
@@ -346,7 +352,7 @@ const iaNome = () => String((S.profile && S.profile.nome) || '').trim().split(/\
 // dados do ano corrente para o assistente, montados com as mesmas análises das telas (e o mesmo contexto dos avisos)
 function iaDados() {
   const hoje = new Date(); const m = hoje.getMonth(); const ctx = notifContexto();
-  const d = { mes: m, dia: hoje.getDate(), meses: m + 1, recursos: ctx ? ctx.recursos : {}, avisos: (S.notifs || []).filter((n) => !n.lida).length };
+  const d = { ano: hoje.getFullYear(), mes: m, dia: hoje.getDate(), meses: m + 1, recursos: ctx ? ctx.recursos : {}, avisos: (S.notifs || []).filter((n) => !n.lida).length };
   if (!ctx) return d;
   const C = ctx.C; d.C = C; d.disp = E.disponivelAporte({ C, mes: m, metaMes: C.metaAporteMes }); d.areas = E.gastosAreaMes(ctx.plan, ctx.carry, m);
   if (ctx.recursos.carteira && (ctx.plan.ativos || []).length) {
