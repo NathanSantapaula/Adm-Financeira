@@ -428,7 +428,11 @@ ok(E.interfaceDe('gratis', 'completo') === 'basico' && E.interfaceDe('qualquer')
   const h = E.saudeFinanceira({ C: Cq, ult: 3, fixosMes: 2000, objetivo: { progresso: 0.4, status: 'atrasado' } }); const it = (id) => h.itens.find((x) => x.id === id);
   ok(Math.abs(it('reserva').valor - 6.67) < 0.01 && it('reserva').sit === 'ok' && Math.abs(it('poupanca').valor - 0.4) < 1e-9 && it('poupanca').sit === 'ok' && Math.abs(it('fixos').valor - 0.4) < 1e-9 && it('fixos').sit === 'ok' && it('sonho').sit === 'atencao' && h.nota === 90, 'saúde financeira: reserva, poupança, contas fixas, sonho e a nota');
   const h2 = E.saudeFinanceira({ C: { receita: z(), despesas: z(), patrimonio: z() }, ult: 3, fixosMes: 0 });
-  ok(h2.nota === null && h2.itens.every((x) => x.sit === 'sem'), 'saúde financeira: sem dados, sem nota'); }
+  ok(h2.nota === null && h2.itens.every((x) => x.sit === 'sem'), 'saúde financeira: sem dados, sem nota');
+  const h3 = E.saudeFinanceira({ C: { receita: [5000, 5000, 5000, 5000].concat(z().slice(4)), despesas: z(), patrimonio: z() }, ult: 3, fixosMes: 0 });
+  ok(h3.nota === null, 'saúde financeira: renda sem nenhum gasto não dá nota (era 100, Base sólida)');
+  const h4 = E.saudeFinanceira({ C: { receita: Cq.receita, despesas: Cq.despesas, patrimonio: z() }, ult: 3, fixosMes: 0, objetivo: { status: 'no-prazo' } });
+  ok(h4.nota != null && h4.nota < 100 && h4.itens[0].sit === 'baixo', 'saúde financeira: reserva zero nunca dá nota máxima'); }
 
 // os scripts da interface dividem o escopo global: um nome de topo repetido entre arquivos derruba o arquivo inteiro no navegador
 { const fs = require('fs'); const path = require('path'); const dir = path.join(__dirname, '..', 'assets', 'js'); const dono = {}; const rep = [];

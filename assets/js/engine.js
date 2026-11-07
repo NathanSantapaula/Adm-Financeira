@@ -740,7 +740,7 @@
       { id: 'sonho', valor: g ? g.progresso : null, status: g ? g.status : null, nota: nS, sit: sit(nS) },
     ];
     const com = itens.filter((x) => x.nota != null);
-    return { itens, nota: com.length ? Math.round((sum(com.map((x) => x.nota)) / com.length) * 100) : null, mediaGasto: r2(mediaGasto), mediaRenda: r2(mediaRenda) };
+    return { itens, nota: mediaGasto > 0 && com.length ? Math.round((sum(com.map((x) => x.nota)) / com.length) * 100) : null, mediaGasto: r2(mediaGasto), mediaRenda: r2(mediaRenda) };
   }
   // cada limite com o gasto da área (nome comparado sem acento nem maiúscula); 80% ou mais = perto, acima de 100% = passou
   function analiseLimites(limites, gastos) {
