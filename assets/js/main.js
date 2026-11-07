@@ -7,11 +7,11 @@ const navItems = () => {
 };
 // menu em grupos com título (como MAIN / FEATURES / TOOLS); aba que não estiver num grupo vai para o fim
 // as 5 áreas do produto (iguais no App): Hoje, Dinheiro, Futuro, Patrimônio e Você; Futuro abre Meus objetivos e Você o painel
-const GRUPOS_NAV = [['Hoje', ['geral']], ['Dinheiro', ['despesas', 'rendas']], ['Futuro', []], ['Patrimônio', ['inv', 'pro', 'cart', 'relatorio']], ['', ['clientes']]];
+const GRUPOS_NAV = [['Hoje', ['geral']], ['Dinheiro', ['despesas', 'rendas']], ['Patrimônio', ['inv', 'pro', 'cart', 'relatorio']], ['', ['clientes']]];
 const AREAS_EXTRA = ['futuro', 'patrimonio']; // áreas que não são abas do perfil (sempre visíveis)
 const NAV_EXTRA = { Futuro: ['futuro', 'Futuro', '<path d="M5 21V4M5 4h12l-2.2 4L17 12H5"/>'] };
 const navExtra = (t) => { const x = NAV_EXTRA[t]; return x ? `<button data-act="nav" data-view="${x[0]}" ${S.view === x[0] ? 'aria-current="page"' : ''}>${S.view === x[0] ? '<i class="nav-ind" aria-hidden="true"></i>' : ''}${ic(x[2])}<span>${x[1]}</span></button>` : ''; };
-const navAgrupado = (items, btn) => GRUPOS_NAV.map(([t, ks]) => { let its = items.filter((i) => ks.includes(i[0])); if (t === 'Patrimônio' && its.length) { const k = PAT_ABAS.includes(S.view) ? S.view : (its.find((i) => i[0] === S.patUlt) || its[0])[0]; its = [[k, 'Patrimônio']]; } const ex = navExtra(t); return its.length || ex ? (t ? `<div class="nav-g" aria-hidden="true">${t}</div>` : '') + its.map(btn).join('') + ex : ''; }).join('') + items.filter((i) => !GRUPOS_NAV.some((g) => g[1].includes(i[0]))).map(btn).join('') + `<div class="nav-g" aria-hidden="true">Você</div><button data-act="admin-open">${ic('<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>')}<span>Você</span></button>`;
+const navAgrupado = (items, btn) => GRUPOS_NAV.map(([t, ks]) => { let its = items.filter((i) => ks.includes(i[0])); if (t === 'Patrimônio' && its.length) { const k = PAT_ABAS.includes(S.view) ? S.view : (its.find((i) => i[0] === S.patUlt) || its[0])[0]; its = [[k, 'Patrimônio']]; } const ex = navExtra(t); return its.length || ex ? (t ? `<div class="nav-g" aria-hidden="true">${t}</div>` : '') + its.map(btn).join('') + ex : ''; }).join('') + items.filter((i) => !GRUPOS_NAV.some((g) => g[1].includes(i[0]))).map(btn).join('');
 // no plano gratuito o rodapé do menu convida a conhecer o Investidor (como o Upgrade Pro); nos pagos fica o cartão do assessor
 const cartaoPlanoHtml = () => `<div class="advisor plano"><span class="adv-ic" aria-hidden="true">${I.inv || '★'}</span><div class="adv-t"><b>Conheça o plano ${esc(nomePlano('investidor'))}</b><small>Investimentos, proventos e a carteira no mesmo painel, com o disponível para aportar todo mês.</small></div><button class="hp-btn sm" data-act="upgrade" data-plano="investidor">Conhecer</button><button class="lnk adv-lnk" data-act="contact">Falar com o ${esc(primeiroNome())}</button></div>`;
 function renderSide() {
@@ -203,7 +203,7 @@ function onClick(e) {
         onOk: (d, err) => { if (String(d.conf || '').trim().toUpperCase() !== 'EXCLUIR') { err('Escreva EXCLUIR para confirmar.'); return false; } closeAdmin(); excluirConta().catch((e) => toast(e && e.amigavel ? e.message : 'Não foi possível excluir a conta agora.')); } }); break;
       case 'as-passo': S.asPasso = +ds.p === 2 ? 2 : 1; S.authErr = ''; render(); break;
       case 'adm-sec': { S.admSec = S.admSec || {}; const sec = el.closest('.dr-acc'); const ab = sec.dataset.open !== 'true'; S.admSec[ds.id] = ab; sec.dataset.open = ab; el.setAttribute('aria-expanded', ab); break; }
-      case 'lp-confirma': case 'lp-set': case 'lp-pl': lpAcao(act, el); break;
+      case 'lp-confirma': case 'lp-set': case 'lp-tela': case 'lp-pl': lpAcao(act, el); break;
       // "Quero a assessoria" (data-pagar) vai direto ao pagamento: logado, na hora; sem conta, logo depois do cadastro
       case 'go-auth': S.asPasso = 1; S.authPagar = !!ds.pagar && (ds.plano === 'completo' || ds.plano === 'investidor'); if (S.user && S.authPagar && !S.isAdmin) { S.authPagar = false; iniciarCheckout(ds.plano); break; } if (S.user) { S.screen = S.profile.onboarded ? 'app' : 'onboarding'; if (S.screen === 'onboarding' && !S.ob) initOb(); render(); break; } S.authMode = ds.mode || 'signup'; S.authPlano = ds.plano === 'completo' || ds.plano === 'investidor' ? ds.plano : 'gratis'; S.authErr = ''; S.authDraft = null; S.screen = 'auth'; render(); break;
       case 'auth-mode': S.asPasso = 1; S.authMode = ds.mode; S.authErr = ''; S.authMsg = ''; render(); break;

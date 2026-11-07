@@ -43,8 +43,8 @@ Object.keys(BAS_VOZ).forEach((t) => { if (VOZ[t]) Object.assign(VOZ[t], BAS_VOZ[
 
 /* ---------- peças de tela ---------- */
 // o consultor abre Clientes pelo fim do Perfil (tela `clientes`)
-const basAbas = () => BAS_ABAS;
-const basAba = () => (basAbas().some((a) => a[0] === S.basAba) ? S.basAba : 'inicio');
+const basAbas = () => BAS_ABAS.filter((a) => a[0] !== 'futuro' && a[0] !== 'perfil'); // Futuro e Você saíram da barra (pedido do Nathan); abrem pelo avatar e pelos atalhos
+const basAba = () => (BAS_ABAS.some((a) => a[0] === S.basAba) ? S.basAba : 'inicio');
 const basPilha = () => (S.basPilha = S.basPilha || []);
 const basTopoPilha = () => basPilha()[basPilha().length - 1] || null;
 const basBarra = (f) => `<span class="bas-bar" aria-hidden="true"><i style="width:${(Math.max(0, Math.min(1, f)) * 100).toFixed(1)}%"></i></span>`;
@@ -202,7 +202,7 @@ function basInicio() {
   const hr = new Date().getHours(); const fase = hr >= 5 && hr < 12 ? 'manha' : hr >= 12 && hr < 18 ? 'tarde' : 'noite';
   const metaM = C.metaAporteMes[j.ate] || 0; const humor = basAvisoNivel() ? 'atento' : rec || (metaM > 0 && D.aportado >= metaM) ? 'festa' : 'calmo';
   const hero = `<section class="bas-noite" data-fase="${fase}">
-    <header class="bas-noite-h"><button class="bas-eu-m" ${basIr('perfil')} aria-label="Meu perfil">${avatarHtml(pr)}<span class="bas-eu-t"><small>${esc(saudacaoHora())},</small><b>${esc(nome || 'você')}${basPago() ? `<em class="bas-plano-chip">${esc(nomePlano(planoAtual()))}</em>` : ''}</b></span></button>
+    <header class="bas-noite-h"><button class="bas-eu-m" data-act="bas-aba" data-v="perfil" aria-label="Meu perfil">${avatarHtml(pr)}<span class="bas-eu-t"><small>${esc(saudacaoHora())},</small><b>${esc(nome || 'você')}${basPago() ? `<em class="bas-plano-chip">${esc(nomePlano(planoAtual()))}</em>` : ''}</b></span></button>
       <span class="bas-noite-r"><button class="bell ia-btn${basAvisoNivel()} humor-${humor}" ${basIr('ia')} aria-label="Assistente${av ? `: ${av} avisos novos` : ''}" title="Assistente">${IA_ICONE}${av ? `<span class="bell-n" aria-hidden="true">${av > 9 ? '9+' : av}</span>` : ''}</button>${typeof aberturaPode === 'function' && aberturaPode() ? `<button class="bell bas-globo-btn" data-act="bas-globo" aria-label="Abrir o globo do patrimônio" title="Seu universo">${I_GLOBO}</button>` : ''}${olhoHtml()}</span></header>
     <span class="bas-hj-st ${PV.mes.saldoFim < -0.005 ? 'neg' : 'pos'}">${voz(PV.mes.saldoFim < -0.005 ? 'bas_hj_neg' : 'bas_hj_ok', { v: brl0(-PV.mes.saldoFim) })}</span>
     <small class="bas-noite-k">${hojeMes ? 'Pode gastar hoje' : 'Sobrou no mês'}</small><b class="bas-noite-v brilha" data-conta="${hojeMes ? LH.porDia : sob}">${basCent(hojeMes ? LH.porDia : sob)}</b>

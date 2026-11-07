@@ -84,6 +84,57 @@ function lpLanc(estado, vivo) {
 }
 
 
+/* objetivo da prévia: o visitante escolhe qual (os mesmos tipos do app, E.OBJ_TIPOS); valores ilustrativos por tipo:
+   [meta em reais, progresso de 0 a 1, anos até a previsão] */
+const LP_OBJ = { independencia: [2400000, 0.62, 12], aposentadoria: [1800000, 0.48, 15], imovel: [180000, 0.71, 2], carro: [95000, 0.85, 1], viagem: [28000, 0.9, 1],
+  filhos: [320000, 0.34, 8], educacao: [120000, 0.55, 4], reserva: [36000, 0.92, 0], casamento: [70000, 0.66, 2], negocio: [250000, 0.4, 5] };
+const lpObj = () => { const t = LP_OBJ[lpEstado().obj] ? lpEstado().obj : 'independencia'; const [meta, pct, anos] = LP_OBJ[t]; return { t, meta, pct, anos }; };
+const lpObjIc = (t) => (typeof OBJ_ICONES !== 'undefined' && OBJ_ICONES[t]) || '';
+function lpObjSel() {
+  const { t } = lpObj();
+  return `<label class="hp-obj-sel"><span class="hp-obj-ic" id="hp-obj-ic" aria-hidden="true">${lpObjIc(t)}</span>
+    <select data-lp="obj" aria-label="Escolha o objetivo da simulação">${E.OBJ_TIPOS.filter(([k]) => LP_OBJ[k]).map(([k, n]) => `<option value="${k}"${k === t ? ' selected' : ''}>${esc(n)}</option>`).join('')}</select>
+    <i aria-hidden="true">${I.chev}</i></label>`;
+}
+// troca o objetivo sem redesenhar a página: anel, ano e meta
+function lpObjAtualiza() {
+  const o = lpObj(); const r = $('#hp-ring'); if (r) r.innerHTML = ring(o.pct, { size: 104, stroke: 10, label: Math.round(o.pct * 100) + '%', aria: `${Math.round(o.pct * 100)}% do objetivo` });
+  const a = $('#hp-obj-ano'); if (a) a.textContent = NOW_Y + o.anos; const m = $('#hp-obj-meta'); if (m) m.textContent = 'Meta de ' + brl0(o.meta);
+  const ic = $('#hp-obj-ic'); if (ic) ic.innerHTML = lpObjIc(o.t);
+}
+
+/* herói: janela do painel com três telas (Visão geral, Carteira, Gastos) e cartões de vidro flutuando em volta */
+function lpPainelHtml() {
+  const st = lpEstado(); const mes = MES_LONGO[NOW_M].toLowerCase();
+  const abas = [['geral', 'Visão geral'], ['carteira', 'Carteira'], ['gastos', 'Gastos']];
+  const tela = (id, html) => `<div class="hp-scr${st.tela === id ? ' on' : ''}" id="hp-scr-${id}" role="tabpanel" aria-labelledby="hp-tab-${id}"${st.tela === id ? '' : ' aria-hidden="true"'}>${html}</div>`;
+  const geral = `<div class="hp-kpis">
+      <div class="hp-kpi hp-kpi-p"><small>Patrimônio estimado</small><b class="hp-num" data-conta="487320">R$ 487.320</b><span class="hp-delta"><i aria-hidden="true"></i>R$ 74.900 no ano</span></div>
+      <div class="hp-kpi"><small>Aportado em ${NOW_Y}</small><b>R$ 36.000</b><span class="hp-kbar" aria-hidden="true"><i style="width:83%"></i></span><em>83% da meta do ano</em></div>
+      <div class="hp-kpi"><small>Sobrou para investir</small><b>32%</b><em>da renda de ${mes}</em></div></div>
+    <div class="hp-scr-g"><div class="hp-tile"><small>Evolução do patrimônio</small><div class="chart" id="hp-line"></div></div>
+      <div class="hp-tile hp-t-ring">${lpObjSel()}<div class="hp-ring-w"><div id="hp-ring"></div><span><b id="hp-obj-ano">${NOW_Y + lpObj().anos}</b><em id="hp-obj-meta">Meta de ${brl0(lpObj().meta)}</em>previsão no ritmo atual</span></div></div></div>`;
+  const carteira = `<div class="hp-scr-g c2"><div class="hp-tile"><small>Composição da carteira</small><div class="donut" id="hp-donut"></div>
+        <ul class="hp-leg"><li><i style="background:var(--c1)"></i>Renda fixa<b>54%</b></li><li><i style="background:var(--c2)"></i>Ações<b>28%</b></li><li><i style="background:var(--c3)"></i>Imobiliário<b>18%</b></li></ul></div>
+      <div class="hp-tile"><small>Onde investir R$ 3.000 em ${mes}</small><ol class="hp-onde-mini">
+        <li><span>Tesouro IPCA+<small>3,8 p.p. abaixo do alvo</small></span><b>R$ 1.800</b></li>
+        <li><span>Fundo imobiliário<small>1,9 p.p. abaixo do alvo</small></span><b>R$ 800</b></li>
+        <li><span>CDB pós-fixado<small>0,6 p.p. abaixo do alvo</small></span><b>R$ 400</b></li></ol>
+        <span class="hp-ok-pill">Sem vender nada</span></div></div>`;
+  const gastos = `<div class="hp-scr-g c2"><div class="hp-tile"><small>Orçamento de ${mes}</small><b class="hp-num sm">R$ 4.680 <em>de R$ 6.000</em></b><div class="hp-bar"><i style="width:78%"></i></div><span class="hp-pos">Restam R$ 1.320 para o mês</span></div>
+      <div class="hp-tile"><small>Para onde foi</small><ul class="hp-cats sm">${[['Moradia', 100, 2200], ['Alimentação', 52, 1150], ['Transporte', 28, 620], ['Lazer', 20, 430]].map((c) => `<li><span>${c[0]}</span><span class="hp-cat-t"><i style="width:${c[1]}%"></i></span><b>${brl(c[2])}</b></li>`).join('')}</ul></div></div>`;
+  return `<div class="hp-stage hp-in" id="hp-stage">
+      <div class="hp-device" id="hp-device" aria-label="Prévia ilustrativa do painel">
+        <div class="hp-device-bar"><span class="hp-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <div class="hp-tabs" role="tablist" aria-label="Telas do painel">${abas.map(([id, n]) => `<button type="button" role="tab" id="hp-tab-${id}" aria-controls="hp-scr-${id}" aria-selected="${st.tela === id}" data-act="lp-tela" data-v="${id}">${n}</button>`).join('')}</div></div>
+        <div class="hp-scrs">${tela('geral', geral)}${tela('carteira', carteira)}${tela('gastos', gastos)}</div>
+      </div>
+      <div class="hp-float f1" aria-hidden="true"><span class="hp-fi ok"></span><span><b>Aporte de ${mes} registrado</b><small>R$ 3.000 · meta do mês batida</small></span></div>
+      <div class="hp-float f2" aria-hidden="true"><span class="hp-fi doc"></span><span><b>Extrato importado</b><small>42 lançamentos categorizados</small></span></div>
+      <div class="hp-float f3" aria-hidden="true"><span class="hp-fi seta"></span><span><b>Próximo aporte</b><small>Tesouro IPCA+ · R$ 1.800</small></span></div>
+    </div>`;
+}
+
 /* assessor: a foto fica num quadro com o fundo original dela e o topo da cabeça sai do quadro sobre o fundo do site
    (contorno em CFG.fotoRecorte, em pixels da foto; o quadro começa em CFG.fotoCorte). Sem contorno, só o quadro. */
 function lpFotoHtml() {
@@ -100,7 +151,8 @@ function lpFotoHtml() {
 }
 function lpAssessorHtml() {
   const emps = lpEmpresas(); const antes = emps.map((e) => e.nome).filter((n) => !/\bXP\b/i.test(n));
-  const bio = CFG.bio || `Assessor de investimentos vinculado à XP Inc.${antes.length ? `, com passagens por ${lpListaNomes(antes)}` : ''}. Todo mês, você sabe o que fazer com o seu dinheiro.`;
+  const bio = CFG.bio || `Assessor de investimentos vinculado à XP Inc.${antes.length ? `, com passagens por ${lpListaNomes(antes)}` : ''}. Meu trabalho é um só: fazer você saber, todo mês, exatamente o que fazer com o seu dinheiro.`;
+  const pilares = [['plano', 'Planejamento completo', 'Orçamento, metas e patrimônio num só lugar.'], ['alvo', 'Carteira com alvo claro', 'Cada aporte vai para onde a carteira precisa.'], ['mes', 'Ao seu lado todo mês', 'Revisão mensal e o próximo passo definido.']];
   const agenda = CFG.agendaUrl ? `<a class="hp-btn lg" href="${esc(CFG.agendaUrl)}" ${ext}>Agendar uma conversa</a>` : `<button class="hp-btn lg" data-act="contact">Falar com o ${esc(primeiroNome())}</button>`;
   const wa = waLink(baseMsg(`Vi o ${CFG.marca} e gostaria de conversar sobre assessoria.`));
   const lnk = CFG.linkedinUrl ? `<a class="hp-lnk" href="${esc(CFG.linkedinUrl)}" ${ext}>Ver trajetória no LinkedIn ${I.chev}</a>` : '';
@@ -112,6 +164,7 @@ function lpAssessorHtml() {
         <p class="hp-k">Seu assessor</p>
         <h2 class="hp-h2">Quem cuida do<br>seu planejamento.</h2>
         <p class="hp-lead">${esc(bio)}</p>
+        <ul class="hp-pilares">${pilares.map(([k, t, d]) => `<li><span class="hp-pi ${k}" aria-hidden="true"></span><span><b>${t}</b><small>${d}</small></span></li>`).join('')}</ul>
         ${emps.length ? `<div class="hp-traj"><small>Trajetória</small><ul>${emps.map((e) => `<li class="hp-emp"${e.cargo || e.periodo ? ` title="${esc([e.cargo, e.periodo].filter(Boolean).join(' · '))}"` : ''}>${lpLogo(e)}</li>`).join('')}</ul></div>` : ''}
         ${(CFG.credenciais || []).length ? `<ul class="hp-creds">${CFG.credenciais.map((c) => `<li>${esc(c)}</li>`).join('')}</ul>` : ''}
         <div class="hp-sobre-cta">${agenda}${wa ? `<a class="hp-btn lg vidro" href="${esc(wa)}" ${ext}>WhatsApp</a>` : ''}</div>
@@ -158,67 +211,51 @@ function landingHtml() {
       <ul>${i.itens.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>
       <button class="hp-btn${d ? ' lg' : id === 'gratis' ? ' vidro' : ''}" data-act="go-auth" data-mode="signup" data-plano="${id}"${d ? ' data-pagar="1"' : ''}>${id === 'gratis' ? 'Começar grátis' : id === 'investidor' ? (txt ? 'Quero saber mais' : 'Quero o Investidor') : 'Quero a assessoria'}</button></article>`; };
   const faq = [
-    ['O que é o diagnóstico?', 'Uma conversa curta depois do cadastro: patrimônio, perfil de investidor e objetivos. O painel já nasce com a sua cara.'],
+    ['O que é o diagnóstico?', 'É uma etapa guiada logo após o cadastro: você informa seu patrimônio atual, responde a sete perguntas de perfil de investidor e define seus objetivos. Com isso o painel já nasce personalizado.'],
     ['Onde ficam os meus dados?', `Seus lançamentos ficam em servidor protegido por login e só você acessa. ${esc(CFG.consultor)} vê apenas seu nome, contato e o resultado do diagnóstico, a menos que você contrate a Assessoria.`],
-    ['Como funciona a importação do extrato?', 'Envie o CSV ou OFX do app do banco. A leitura acontece no seu aparelho, cada lançamento ganha categoria e nada é gravado sem você conferir.'],
+    ['Como funciona a importação do extrato?', 'Você exporta o extrato ou a fatura em CSV ou OFX no aplicativo do banco e envia o arquivo. O sistema lê no seu aparelho, sugere a categoria de cada lançamento, ignora o que já foi importado e mostra tudo para você conferir antes de gravar.'],
     ['Como ativo a Assessoria?', `Depois do cadastro, você faz o pagamento e envia o comprovante. O ${esc(nome)} confirma e libera o plano na sua conta.`],
     ['O assessor vê os meus lançamentos?', `No Organização e no Investidor, não: o ${esc(nome)} vê nome, contato e o resultado do diagnóstico. Na Assessoria ele também acompanha o planejamento, para orientar você.`],
-    ['Posso levar meus dados embora?', 'Sim. Baixe um backup completo quando quiser.'],
+    ['Posso levar meus dados embora?', 'Sim. A qualquer momento você baixa um backup completo e pode restaurá-lo depois.'],
   ];
   const cta = logged ? 'Abrir meu painel' : 'Fazer meu diagnóstico gratuito';
-  const links = [['produto', 'Recursos'], ['como', 'Como funciona'], ['assessor', 'O assessor']].concat(temDepo ? [['depoimentos', 'Depoimentos']] : []).concat([['planos', 'Planos'], ['duvidas', 'Dúvidas']]);
+  const links = [['produto', 'Produto'], ['simulador', 'Simulador'], ['assessor', 'O assessor']].concat(temDepo ? [['depoimentos', 'Depoimentos']] : []).concat([['planos', 'Planos'], ['duvidas', 'Dúvidas']]);
 
-  const mes = MES_LONGO[NOW_M].toLowerCase();
-  const tel = (cls, corpo) => `<div class="hm-tel ${cls}" aria-hidden="true"><span class="hm-tel-ilha"></span><div class="hm-tel-st"><b>9:41</b><i></i></div>${corpo}</div>`;
-  const cats = [['Moradia', 2200, 'var(--c1)'], ['Alimentação', 1150, 'var(--c2)'], ['Transporte', 620, 'var(--c3)'], ['Lazer', 430, 'var(--c4)']];
-  const totCat = cats.reduce((s, c) => s + c[1], 0);
-  // as 5 áreas do produto, cada uma com uma pergunta e um widget (valores ilustrativos)
-  const bento = [
-    ['w2', 'Hoje', 'Como estou e o que faço agora?', `<div class="hm-hoje"><div><small class="hm-mut">Pode gastar hoje</small><b class="hm-big">${brl0(86)}</b><span class="hm-ok">● No ritmo · sobra prevista de ${brl0(1320)}</span></div><ol class="hm-plano"><li>Pague a internet <em>vence amanhã</em></li><li>Aporte ${brl0(300)} no sonho</li><li>Segure o lazer <em>85% do limite</em></li></ol></div>`],
-    ['', 'Dinheiro', 'Para onde vai e de onde vem?', `<ul class="hm-contas"><li><b>Salário</b><small>dia 5</small><em class="pos">+${brl0(5750)}</em></li><li><b>Mercado</b><small>ontem</small><em>−${brl0(386)}</em></li></ul>`],
-    ['', 'Futuro', 'Vou chegar lá?', `<ul class="hm-etapas" aria-hidden="true">${[10, 25, 50, 75, 100].map((n) => `<li class="${n <= 50 ? 'ok' : ''}"><i></i>${n}%</li>`).join('')}</ul><small class="hm-mut">Próxima etapa em março</small>`],
-    ['w2', 'Patrimônio', 'Quanto tenho e como cresce?', `<div class="hm-patr"><div class="donut" id="hm-donut"></div><div><b class="hm-big">${brl0(487320)}</b><small class="hm-mut">aportes, proventos e carteira com alvo</small></div></div>`],
-    ['w2', 'Você', 'Seu jeito, seus dados', `<ul class="hm-voce"><li>Sem senha do banco</li><li>Backup quando quiser</li><li>Assessor a um toque</li></ul>`],
-  ];
-  const passos = ['Envie o extrato', `O ${esc(CFG.marca)} organiza`, 'Você confere'];
-
-  return `<div class="hp hp-dark hm">
-  <header class="hp-nav hm-nav"><div class="hp-w hp-nav-in">
+  return `<div class="hp">
+  <header class="hp-nav"><div class="hp-w hp-nav-in">
     <a class="hp-marca" href="#topo" data-act="scroll" data-to="topo">${logoMarca()}</a>
     <nav class="hp-links" aria-label="Seções">${links.map(([id, n]) => `<button data-act="scroll" data-to="${id}">${n}</button>`).join('')}</nav>
-    <div class="hp-nav-a">${logged ? '<button class="hp-btn sm" data-act="open-app">Abrir meu painel</button>' : '<button class="hp-btn sm ghost" data-act="go-auth" data-mode="login">Entrar</button><button class="hp-btn sm" data-act="go-auth" data-mode="signup">Começar →</button>'}</div>
+    <div class="hp-nav-a">${logged ? '<button class="hp-btn sm" data-act="open-app">Abrir meu painel</button>' : '<button class="hp-btn sm ghost" data-act="go-auth" data-mode="login">Entrar</button><button class="hp-btn sm" data-act="go-auth" data-mode="signup">Fazer diagnóstico</button>'}</div>
   </div></header>
 
-  <section class="hm-hero" id="topo"><div class="hp-w">
-    <h1 class="hm-h1 hp-in"><span class="hm-l1">O ${esc(CFG.marca)} organiza tudo.</span><span class="hm-l2">Você alcança seu objetivo.</span></h1>
-    <p class="hm-sub hp-in">Seu dinheiro organizado sozinho e o próximo passo sempre claro. Com a assessoria de ${esc(CFG.consultor)}.</p>
-    <div class="hm-ctas hp-in"><button class="hp-btn lg" data-act="go-auth" data-mode="signup">${cta} ↗</button><button class="hp-btn lg vidro" data-act="scroll" data-to="como">Ver como funciona</button></div>
-    <p class="hm-garantia hp-in">Grátis para começar · sem cartão · sem senha do banco</p>
-    <div class="hm-fone hp-in">
-      ${tel('esq', `<div class="hm-tel-c"><p class="hm-tel-t">Assistente</p><div class="hm-chat"><p class="eu">Quanto sobrou em ${mes}?</p><p>Sobraram ${brl0(1840)}. Já dá para o aporte do mês e ainda fica uma folga.</p></div></div>`)}
-      <div class="hm-meio" aria-hidden="true"><small>● Pode gastar hoje</small><b>${brl0(86)}</b><span>e o mês ainda fecha no azul</span></div>
-      ${tel('dir', `<div class="hm-tel-c"><p class="hm-tel-t">Gastos por categoria</p><small class="hm-mut">${MES_LONGO[NOW_M]} ${NOW_Y}</small><b class="hm-big">${brl0(totCat)}</b><ul class="hm-cats">${cats.map(([n, v, c]) => `<li><i style="background:${c}"></i><span>${n}<small>${Math.round((v / totCat) * 100)}% dos gastos</small></span><b>${brl0(v)}</b></li>`).join('')}</ul></div>`)}
-    </div>
+  <section class="hp-hero" id="topo"><div class="hp-w">
+    <p class="hp-pill hp-in">Planejamento financeiro com assessoria de ${esc(CFG.consultor)}</p>
+    <h1 class="hp-h1 hp-in">Seu patrimônio,<br><span class="hp-grad">sob controle.</span></h1>
+    <p class="hp-sub hp-in">Importe o extrato, veja para onde vai cada real e saiba exatamente onde investir a cada aporte. Em minutos você descobre seu perfil e recebe um diagnóstico do seu momento financeiro.</p>
+    <div class="hp-ctas hp-in"><button class="hp-btn lg" data-act="go-auth" data-mode="signup">${cta}</button><button class="hp-lnk" data-act="contact">Falar com o ${esc(nome)} ${I.chev}</button></div>
+    <ul class="hp-garantias hp-in"><li>Grátis para começar</li><li>Sem cartão de crédito</li><li>Seus dados só seus</li></ul>
+    ${lpPainelHtml()}
+    <p class="hp-cap">Prévia ilustrativa, com valores fictícios. Toque nas abas para ver outras telas.</p>
   </div></section>
 
   <section class="hp-sec" id="produto"><div class="hp-w">
-    <div class="hp-head" data-rv><p class="hp-k">Cinco áreas, nada a mais</p><h2 class="hp-h2">Cada tela responde uma pergunta.</h2></div>
-    <div class="hm-bento">${bento.map(([w, t, q, v]) => `<article class="hm-b ${w}" data-rv><h3>${t}</h3><p>${q}</p><div class="hm-b-v">${v}</div></article>`).join('')}</div>
+    <div class="hp-head" data-rv><h2 class="hp-h2">Tudo o que importa,<br>em uma única tela.</h2><p class="hp-lead">Patrimônio, orçamento, metas e carteira conectados. Sem planilhas soltas, sem adivinhar.</p></div>
+    <div class="hp-feat" data-rv>
+      <div class="hp-feat-t"><h3>Um orçamento que você cumpre.</h3><p>Defina quanto pode gastar em cada mês e acompanhe quanto já foi, quanto resta e quanto sobra para investir. Cada categoria mostra para onde o dinheiro está indo.</p></div>
+      <div class="hp-card hp-vis"><small>Outubro</small><b class="hp-num">R$ 4.680 <em>de R$ 6.000</em></b><div class="hp-bar lg"><i style="width:78%"></i></div>
+        <ul class="hp-cats">${[['Moradia', 100, 2200], ['Alimentação', 52, 1150], ['Transporte', 28, 620], ['Lazer', 20, 430]].map((c) => `<li><span>${c[0]}</span><span class="hp-cat-t"><i style="width:${c[1]}%"></i></span><b>${brl(c[2])}</b></li>`).join('')}</ul></div>
+    </div>
+    <div class="hp-feat inv" data-rv>
+      <div class="hp-feat-t"><h3>Do extrato ao mês, sem digitar.</h3><p>Envie o extrato em CSV ou OFX. Cada lançamento chega com uma categoria sugerida e dá baixa no que você planejou. Nada é gravado sem você conferir: experimente confirmar o do meio.</p></div>
+      <div class="hp-card hp-vis"><small>Importação de outubro</small><ul class="hp-lancs">${lpLanc('chega')}</ul><ul class="hp-lancs" id="lp-vivo-w">${lpLanc(st.ok ? 'pronto' : 'chega', true)}</ul><ul class="hp-lancs">${lpLanc('pronto')}</ul></div>
+    </div>
   </div></section>
-
-  <section class="hp-sec" id="como"><div class="hp-w">
-    <div class="hp-head" data-rv><p class="hp-k">Do extrato ao mês</p><h2 class="hp-h2">Sem digitar. Sem senha do banco.</h2></div>
-    <ol class="hm-passos">${passos.map((t, i) => `<li data-rv><span class="hm-n">${i + 1}</span><h3>${t}</h3></li>`).join('')}</ol>
-    <div class="hp-card hp-vis hm-imp" data-rv><small>Importação de ${mes}</small><ul class="hp-lancs">${lpLanc('chega')}</ul><ul class="hp-lancs" id="lp-vivo-w">${lpLanc(st.ok ? 'pronto' : 'chega', true)}</ul><ul class="hp-lancs">${lpLanc('pronto')}</ul></div>
-  </div></section>
-
 
   <section class="hp-sec" id="simulador"><div class="hp-w">
     <div class="hp-sim hp-dark" data-rv>
       <div class="hp-sim-c">
-        <p class="hp-k">Seus objetivos</p>
-        <h2 class="hp-h2">O que sobra<br>tem destino.</h2>
-        <p class="hp-lead">Mexa no aporte e veja para onde ele vai.</p>
+        <h2 class="hp-h2">Onde vai o<br>próximo aporte?</h2>
+        <p class="hp-lead">O aporte vai primeiro para o que está abaixo do alvo do seu perfil. Ninguém vende nada.</p>
         <div class="hp-ctl"><label for="lp-ap">Aporte do mês</label><output id="lp-ap-o">${brl(st.aporte)}</output><input id="lp-ap" type="range" min="500" max="20000" step="500" value="${st.aporte}" data-lp="aporte"></div>
         <div class="hp-ctl"><span class="hp-ctl-l" id="hp-perfil-l">Seu perfil</span><div class="hp-seg" role="group" aria-labelledby="hp-perfil-l">${['conservador', 'moderado', 'agressivo'].map((k) => `<button type="button" data-act="lp-set" data-k="perfil" data-v="${k}" aria-pressed="${st.perfil === k}">${E.PERFIS[k].nome}</button>`).join('')}</div></div>
         <div class="hp-ctl"><span class="hp-ctl-l" id="hp-hoje-l">Sua carteira hoje</span><div class="hp-seg" role="group" aria-labelledby="hp-hoje-l"><button type="button" data-act="lp-set" data-k="hoje" data-v="rf" aria-pressed="${st.hoje === 'rf'}">Mais renda fixa</button><button type="button" data-act="lp-set" data-k="hoje" data-v="rv" aria-pressed="${st.hoje === 'rv'}">Mais ações</button></div></div>
@@ -232,9 +269,10 @@ function landingHtml() {
   ${lpDepoimentosHtml()}
 
   <section class="hp-sec" id="planos"><div class="hp-w">
-    <div class="hm-pl-h" data-rv><p class="hp-k">Planos · comece grátis</p><h2 class="hm-h1 hm-h1-s"><span class="hm-l1">Chega de fim de mês no susto.</span><span class="hm-l2">Comece hoje.</span></h2>
-      <p class="hm-sub">A partir de <b>${esc(brl(precoPlano('investidor') / 30))} por dia</b>.</p></div>
+    <div class="hp-head" data-rv><h2 class="hp-h2">Escolha como começar.</h2><p class="hp-lead">Comece grátis e mude de plano quando quiser.</p></div>
     <div id="hm-pl" data-rv>${lpPlanosHtml()}</div>
+    <p class="hp-cap hp-planos-dica">Arraste para o lado para ver os outros planos.</p>
+    <p class="hp-cap">Depois do cadastro, você conclui o pagamento e o ${esc(nome)} confirma a ativação do plano na sua conta.</p>
   </div></section>
 
   <section class="hp-sec hp-alt" id="duvidas"><div class="hp-w hp-estreito">
@@ -244,11 +282,11 @@ function landingHtml() {
 
   <section class="hp-sec"><div class="hp-w">
     <div class="hp-fim hp-dark" data-rv>
-      <h2 class="hp-h2">Comece pelo<br>diagnóstico.</h2>
+      <h2 class="hp-h2">Comece pelo<br>diagnóstico.</h2><p class="hp-lead">Leva poucos minutos e o painel já nasce com a sua cara.</p>
       <form class="hp-fim-f" id="lp-comeco"><label class="hp-sr" for="hp-nome">Como devemos chamar você?</label>
         <input id="hp-nome" name="nome" autocomplete="given-name" placeholder="Como devemos chamar você?" value="${esc(st.nome)}" data-lp="nome">
         <button class="hp-btn lg" type="submit">${logged ? 'Abrir meu painel' : 'Começar agora'}</button></form>
-      
+      <p class="hp-fim-n">Grátis no plano Organização.</p>
     </div>
   </div></section>
 
@@ -261,8 +299,34 @@ function landingHtml() {
 
 function drawLanding() {
   const meses = MES; const patr = [412, 418, 425, 431, 440, 446, 455, 461, 470, 476, 482, 487].map((x) => x * 1000);
-  chartDonut($('#hm-donut'), { aria: 'Composição ilustrativa da carteira', title: '54%', sub: 'renda fixa', items: [{ label: 'Renda fixa', value: 54, color: 'var(--c1)' }, { label: 'Ações', value: 28, color: 'var(--c2)' }, { label: 'Fundos imobiliários', value: 18, color: 'var(--c3)' }] });
-  lpCarrossel();
+  chartLine($('#hp-line'), { height: 168, zoom: true, labels: meses, aria: 'Evolução ilustrativa do patrimônio', series: [{ color: 'var(--c1)', values: patr, area: true, w: 3 }], tip: (i) => `<b>${meses[i]}</b><br>${brl0(patr[i])}` });
+  chartDonut($('#hp-donut'), { aria: 'Composição ilustrativa da carteira', title: '3 classes', sub: 'diversificada', items: [{ label: 'Renda fixa', value: 54, color: 'var(--c1)' }, { label: 'Ações', value: 28, color: 'var(--c2)' }, { label: 'Fundos imobiliários', value: 18, color: 'var(--c3)' }] });
+  lpObjAtualiza();
+  lpHeroVivo(); lpCarrossel();
+}
+
+/* herói vivo: o número do patrimônio sobe ao abrir e a janela inclina de leve seguindo o mouse (só mouse, sem movimento reduzido) */
+function lpHeroVivo() {
+  const stage = $('#hp-stage'); const dev = $('#hp-device'); if (!stage || !dev || stage.dataset.vivo) return; stage.dataset.vivo = '1';
+  const calmo = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const num = stage.querySelector('[data-conta]');
+  if (num && !calmo && !S.lpContou) {
+    S.lpContou = true; const alvo = +num.dataset.conta; const final = num.textContent; const t0 = performance.now(); const dur = 1400;
+    const passo = (t) => { const k = Math.min(1, (t - t0) / dur); const e = 1 - Math.pow(1 - k, 4); num.textContent = k < 1 ? brl0(alvo * (0.82 + 0.18 * e)) : final; if (k < 1) requestAnimationFrame(passo); };
+    setTimeout(() => requestAnimationFrame(passo), 380);
+  }
+  if (calmo || !matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+  const floats = [...stage.querySelectorAll('.hp-float')]; let raf = 0; let px = 0; let py = 0;
+  const aplica = () => { raf = 0; dev.style.transform = `rotateX(${(-py * 4).toFixed(2)}deg) rotateY(${(px * 5).toFixed(2)}deg)`;
+    floats.forEach((f, i) => { const k = (i + 1) * 7; f.style.translate = `${(px * k).toFixed(1)}px ${(py * k).toFixed(1)}px`; }); };
+  stage.addEventListener('pointermove', (e) => { if (e.pointerType !== 'mouse') return; const r = stage.getBoundingClientRect(); px = (e.clientX - r.left) / r.width - 0.5; py = (e.clientY - r.top) / r.height - 0.5; if (!raf) raf = requestAnimationFrame(aplica); });
+  stage.addEventListener('pointerleave', () => { px = 0; py = 0; if (!raf) raf = requestAnimationFrame(aplica); });
+}
+// troca a tela da prévia sem redesenhar a página (as três telas ficam empilhadas; os gráficos já estão desenhados)
+function lpTela(v) {
+  const st = lpEstado(); st.tela = v;
+  document.querySelectorAll('.hp-tabs [role="tab"]').forEach((b) => b.setAttribute('aria-selected', b.dataset.v === v));
+  document.querySelectorAll('.hp-scr').forEach((s) => { const on = s.id === 'hp-scr-' + v; s.classList.toggle('on', on); if (on) s.removeAttribute('aria-hidden'); else s.setAttribute('aria-hidden', 'true'); });
 }
 
 /* carrossel inteligente: rolagem nativa com encaixe no centro. A cada quadro de rolagem, cada cartão recebe escala e
@@ -311,6 +375,40 @@ function lpCarrossel() {
   ir(0, false); pinta();
 }
 
+/* parte viva: atualiza só o trecho, sem redesenhar a página */
+function lpAtualiza() { const o = $('#lp-onde'); if (o) o.innerHTML = lpOndeHtml(); const ap = $('#lp-ap-o'); if (ap) ap.textContent = brl(lpEstado().aporte); }
+function lpInput(t) {
+  const st = lpEstado(); const k = t.dataset.lp;
+  if (k === 'aporte') { st.aporte = +t.value || 0; lpAtualiza(); } else if (k === 'nome') st.nome = t.value;
+  else if (k === 'obj') { st.obj = t.value; lpObjAtualiza(); }
+}
+function lpAcao(act, el) {
+  const st = lpEstado();
+  if (act === 'lp-confirma') { st.ok = !st.ok; const w = $('#lp-vivo-w'); if (w) { w.innerHTML = lpLanc(st.ok ? 'pronto' : 'chega', true); const b = w.querySelector('button'); if (b) b.focus(); } return true; }
+  if (act === 'lp-set') { st[el.dataset.k] = el.dataset.v; el.parentElement.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', b === el)); lpAtualiza(); return true; }
+  if (act === 'lp-tela') { lpTela(el.dataset.v); return true; }
+  if (act === 'lp-pl') { lpPlano(el); return true; }
+  return false;
+}
+function lpComecar() {
+  const st = lpEstado();
+  if (S.user) { S.screen = S.profile.onboarded ? 'app' : 'onboarding'; if (S.screen === 'onboarding' && !S.ob) initOb(); render(); return; }
+  S.authMode = 'signup'; S.asPasso = 1; S.authPlano = 'gratis'; S.authPagar = false; S.authErr = ''; S.authDraft = { nome: String(st.nome || '').trim() }; S.screen = 'auth'; render();
+}
+
+/* entradas: cada bloco sobe uma vez ao aparecer, em sequência curta. Sem script ou com movimento reduzido, tudo já aparece. */
+function initReveal() {
+  const raiz = $('.hp'); if (!raiz) return;
+  if (!('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  raiz.classList.add('rv-on');
+  const io = new IntersectionObserver((es) => es.forEach((e) => {
+    if (!e.isIntersecting) return; io.unobserve(e.target);
+    const irmaos = [...e.target.parentElement.children].filter((x) => x.hasAttribute('data-rv'));
+    e.target.style.transitionDelay = Math.min(3, Math.max(0, irmaos.indexOf(e.target))) * 80 + 'ms'; e.target.classList.add('in');
+  }), { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+  raiz.querySelectorAll('[data-rv]').forEach((e) => io.observe(e));
+}
+
 /* planos em três passos (Plano, Período, Pagamento), como um checkout; troca só o bloco #hm-pl, sem render() */
 const LP_PL_IC = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4L19 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 function lpPlanosHtml() {
@@ -351,36 +449,4 @@ function lpPlano(el) {
   if (k === 'plano') { if (v === 'gratis') { S.lp.pl.plano = v; return lpComecar(); } pl.plano = v; pl.passo = 2; }
   else if (k === 'per') { pl.per = v; pl.passo = 3; } else pl.passo = +v;
   const w = $('#hm-pl'); if (w) { w.innerHTML = lpPlanosHtml(); }
-}
-
-/* parte viva: atualiza só o trecho, sem redesenhar a página */
-function lpAtualiza() { const o = $('#lp-onde'); if (o) o.innerHTML = lpOndeHtml(); const ap = $('#lp-ap-o'); if (ap) ap.textContent = brl(lpEstado().aporte); }
-function lpInput(t) {
-  const st = lpEstado(); const k = t.dataset.lp;
-  if (k === 'aporte') { st.aporte = +t.value || 0; lpAtualiza(); } else if (k === 'nome') st.nome = t.value;
-}
-function lpAcao(act, el) {
-  const st = lpEstado();
-  if (act === 'lp-confirma') { st.ok = !st.ok; const w = $('#lp-vivo-w'); if (w) { w.innerHTML = lpLanc(st.ok ? 'pronto' : 'chega', true); const b = w.querySelector('button'); if (b) b.focus(); } return true; }
-  if (act === 'lp-set') { st[el.dataset.k] = el.dataset.v; el.parentElement.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', b === el)); lpAtualiza(); return true; }
-  if (act === 'lp-pl') { lpPlano(el); return true; }
-  return false;
-}
-function lpComecar() {
-  const st = lpEstado();
-  if (S.user) { S.screen = S.profile.onboarded ? 'app' : 'onboarding'; if (S.screen === 'onboarding' && !S.ob) initOb(); render(); return; }
-  S.authMode = 'signup'; S.asPasso = 1; S.authPlano = 'gratis'; S.authPagar = false; S.authErr = ''; S.authDraft = { nome: String(st.nome || '').trim() }; S.screen = 'auth'; render();
-}
-
-/* entradas: cada bloco sobe uma vez ao aparecer, em sequência curta. Sem script ou com movimento reduzido, tudo já aparece. */
-function initReveal() {
-  const raiz = $('.hp'); if (!raiz) return;
-  if (!('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  raiz.classList.add('rv-on');
-  const io = new IntersectionObserver((es) => es.forEach((e) => {
-    if (!e.isIntersecting) return; io.unobserve(e.target);
-    const irmaos = [...e.target.parentElement.children].filter((x) => x.hasAttribute('data-rv'));
-    e.target.style.transitionDelay = Math.min(3, Math.max(0, irmaos.indexOf(e.target))) * 80 + 'ms'; e.target.classList.add('in');
-  }), { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
-  raiz.querySelectorAll('[data-rv]').forEach((e) => io.observe(e));
 }

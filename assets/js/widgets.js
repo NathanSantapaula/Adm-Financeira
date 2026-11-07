@@ -159,6 +159,7 @@ function drawOrc() {
 
 /* ---------- catálogo ---------- */
 const WIDGETS = [
+  { id: 'hoje', nome: () => 'Resumo de hoje', desc: 'Quanto dá para gastar hoje, o que fazer agora e as contas do mês.', tam: 6, tams: [6], padrao: () => false, html: () => hojeHtml() },
   { id: 'patrimonio', nome: () => (inv() ? 'Patrimônio estimado' : 'Sobra para investir'), desc: 'Valor do ano com o gráfico mês a mês (patrimônio ou aportes, com o ritmo da meta) e o Histórico.', tam: 4, tams: [3, 4, 6], padrao: () => true, html: wPatrimonio, aba: () => (inv() ? 'inv' : 'despesas') },
   { id: 'objetivos', nome: () => 'Objetivos', desc: 'O objetivo em foco com a foto do seu sonho, o progresso e o prazo; troque entre as metas.', tam: 2, tams: [2, 3, 4, 6], padrao: () => true, html: () => objCardHtml(), disponivel: inv },
   { id: 'orcmes', nome: () => 'Orçamento do mês', desc: 'Quanto do orçamento do mês já foi usado.', tam: 2, tams: [2, 3], padrao: () => !inv(), html: wOrcMes, aba: () => 'despesas' },

@@ -185,7 +185,7 @@ document.addEventListener('visibilitychange', () => {
 function viewGeral() {
   const p = S.plan; const pr = S.profile; const nome = (pr.apelido || (pr.nome || '').split(' ')[0]) || 'por aqui';
   const cab = `<div class="welcome"><div><p class="greet">${esc(voz('saudacao', { saud: saudacaoHora(), nome }))}</p>${(() => { const f = tituloAtual(); return `<h1 class="wh${visualAtual() === '3d' ? ' wh-conversa' : ''}" aria-label="${esc(f)}"><span class="wh-t" aria-hidden="true">${esc(f)}</span>${visualAtual() === '3d' ? '<span class="wh-cur" aria-hidden="true"></span>' : ''}</h1>`; })()}</div>${yearControl()}</div>`;
-  return cab + hojeHtml() + widgetsHtml(); // widgets na ordem e no tamanho escolhidos pelo cliente (widgets.js)
+  return cab + widgetsHtml(); // widgets na ordem e no tamanho escolhidos pelo cliente (widgets.js)
 }
 
 /* Hoje: responde em segundos "como estou e o que faço agora". Só lê o que já é calculado (S.C, E.disponivelAporte, E.contasMes). */
