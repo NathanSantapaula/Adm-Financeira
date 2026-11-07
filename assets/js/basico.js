@@ -531,7 +531,7 @@ function basCartoes3d() {
 function basSurpresas() {
   if (S.basSurpresa || (typeof AB !== 'undefined' && AB) || (S.basPilha || []).length || basAba() !== 'inicio' || !S.profile || S.year !== NOW_Y) return; S.basSurpresa = true;
   const chave = `${NOW_Y}-${NOW_M}`; const dia = new Date().getDate();
-  if (NOW_M > 0 && dia <= 7 && S.profile.retroVista !== chave && S.year === NOW_Y && S.plan.lancamentos.some((l) => basMesDe(l.data) === NOW_M - 1)) { /* só com gastos anotados no mês que passou */ S.profile.retroVista = chave; touch('profile'); setTimeout(() => basAbrir('retro', { id: NOW_M - 1 }), 900); return; }
+  if (NOW_M > 0 && dia <= 7 && S.profile.retroVista !== chave && S.year === NOW_Y && S.plan && S.plan.lancamentos.some((l) => basMesDe(l.data) === NOW_M - 1)) { /* só com gastos anotados no mês que passou */ S.profile.retroVista = chave; touch('profile'); setTimeout(() => basAbrir('retro', { id: NOW_M - 1 }), 900); return; }
   const n = basSeqDados().Q.atual; const marco = BAS_SEQ_MARCOS.filter((x) => x[0] <= n).pop();
   if (marco && marco[0] > (+S.profile.seqCelebrado || 0)) { S.profile.seqCelebrado = marco[0]; touch('profile'); setTimeout(() => basAbrir('conquista', { id: marco[0] }), 900); }
 }
