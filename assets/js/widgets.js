@@ -55,7 +55,7 @@ function wIndicadores() {
       ['Entradas ' + fr, brl0(TP.receita), '', `média de ${brl0(TP.receita / n)} por mês`, null, '<path d="M12 3v12M7 10l5 5 5-5M4 20h16"/>', 'rendas'], ['Gastos ' + fr, brl0(TP.despesas), '', `média de ${brl0(TP.despesas / n)} por mês`, null, '<rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6.5 15h4"/>', 'despesas']];
   }
   const chips = inv() ? ['', '', varChip('aplicado', 1), varChip('dividendos', 1)] : ['', '', varChip('receita', 1), varChip('despesas', -1)]; // variação contra o período anterior
-  return `<div class="stats4">${k.map((x, i) => `<div class="stat"><div class="c-k wg-tit">${wgIco(x[5], x[6])}<span>${esc(x[0])}</span></div><div class="c-num ${x[2] || ''}">${esc(x[1])}${chips[i] || ''}</div>${x[4] != null ? `<div class="bar ${x[2] || ''}"><i style="width:${Math.min(100, x[4] * 100).toFixed(1)}%"></i></div>` : ''}<div class="c-n">${esc(x[3])}</div></div>`).join('')}</div>`;
+  return `<div class="stats4">${k.map((x, i) => `<div class="stat"><div class="c-k wg-tit">${wgIco(x[5], x[6])}<span>${esc(x[0])}</span></div><div class="c-num ${x[2] || ''}">${x[1] === '–' ? `<button class="lnk strong c-def" data-act="nav" data-view="${x[6]}">Definir</button>` : esc(x[1])}${chips[i] || ''}</div>${x[4] != null ? `<div class="bar ${x[2] || ''}"><i style="width:${Math.min(100, x[4] * 100).toFixed(1)}%"></i></div>` : ''}<div class="c-n">${esc(x[3])}</div></div>`).join('')}</div>`;
 }
 // fluxo mês a mês com abas (como Income / Expense / Saving): tudo, entradas, gastos ou sobra no mesmo gráfico; trocar redesenha só ele
 const FLUXO_MODOS = [['tudo', 'Tudo', [['var(--c2)', 'Gastos'], ['var(--c1)', 'Sobra para investir']]], ['entradas', 'Entradas', [['var(--pos)', 'Entradas']]], ['gastos', 'Gastos', [['var(--c2)', 'Gastos'], ['var(--ink-3)', 'Orçado']]], ['sobra', 'Sobra', [['var(--c1)', 'Sobra do mês']]]];
@@ -159,6 +159,7 @@ function drawOrc() {
 
 /* ---------- catálogo ---------- */
 const WIDGETS = [
+  { id: 'hoje', nome: () => 'Resumo de hoje', desc: 'Quanto dá para gastar hoje, o que fazer agora e as contas do mês.', tam: 6, tams: [6], padrao: () => false, html: () => hojeHtml() },
   { id: 'patrimonio', nome: () => (inv() ? 'Patrimônio estimado' : 'Sobra para investir'), desc: 'Valor do ano com o gráfico mês a mês (patrimônio ou aportes, com o ritmo da meta) e o Histórico.', tam: 4, tams: [3, 4, 6], padrao: () => true, html: wPatrimonio, aba: () => (inv() ? 'inv' : 'despesas') },
   { id: 'objetivos', nome: () => 'Objetivos', desc: 'O objetivo em foco com a foto do seu sonho, o progresso e o prazo; troque entre as metas.', tam: 2, tams: [2, 3, 4, 6], padrao: () => true, html: () => objCardHtml(), disponivel: inv },
   { id: 'orcmes', nome: () => 'Orçamento do mês', desc: 'Quanto do orçamento do mês já foi usado.', tam: 2, tams: [2, 3], padrao: () => !inv(), html: wOrcMes, aba: () => 'despesas' },
@@ -169,7 +170,7 @@ const WIDGETS = [
   { id: 'contas', nome: () => 'Contas do mês', desc: 'Gastos fixos e parcelas do mês, pagos ou previstos (o mês escolhido no período, ou o atual).', tam: 3, tams: [2, 3, 4, 6], padrao: () => false, html: () => contasHtml(S.periodo && S.periodo.de === S.periodo.ate ? S.periodo.de : S.year === NOW_Y ? NOW_M : 11), aba: () => 'despesas' },
   { id: 'areas', nome: () => 'Onde você mais gasta', desc: 'Ranking das áreas de gasto do ano.', tam: 3, tams: [2, 3, 4, 6], padrao: () => true, html: wAreas, aba: () => 'despesas' },
   { id: 'destaques', nome: () => 'Assistente', desc: 'Converse sobre o mês, a carteira e os objetivos, com as leituras automáticas do painel.', tam: 3, tams: [3, 4, 6], padrao: () => true, html: wDestaques },
-  { id: 'assessor', nome: () => 'Assessor e próximos passos', desc: 'Recomendação do assessor ou os próximos passos sugeridos.', tam: 3, tams: [2, 3, 4], padrao: () => true, html: wAssessor },
+  { id: 'assessor', nome: () => 'Assessor e próximos passos', desc: 'Recomendação do assessor ou os próximos passos sugeridos.', tam: 3, tams: [2, 3, 4], padrao: () => true, disponivel: () => !!(S.recomendacao && temRecurso('carteira_recomendada') && ((S.recomendacao.carteira || []).length || (S.recomendacao.notas || '').trim())), html: wAssessor },
   { id: 'orcamento', nome: () => 'Orçamento e gastos', desc: 'Gasto de cada mês contra o orçamento.', tam: 3, tams: [3, 4, 6], padrao: () => false, html: wOrcamento, aba: () => 'despesas' },
   { id: 'proventos', nome: () => 'Proventos mês a mês', desc: 'Dividendos e rendimentos recebidos em cada mês.', tam: 3, tams: [3, 4, 6], padrao: () => false, html: wProventos, aba: () => 'pro', disponivel: () => temRecurso('investimentos') },
   { id: 'objlista', nome: () => 'Todos os objetivos', desc: 'Lista com o progresso e a situação de cada objetivo.', tam: 3, tams: [2, 3, 4, 6], padrao: () => false, html: wObjLista, disponivel: inv },

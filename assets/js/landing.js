@@ -270,7 +270,7 @@ function landingHtml() {
 
   <section class="hp-sec" id="planos"><div class="hp-w">
     <div class="hp-head" data-rv><h2 class="hp-h2">Escolha como começar.</h2><p class="hp-lead">Comece grátis e mude de plano quando quiser.</p></div>
-    <div class="hp-grid3 hp-planos">${['gratis', 'investidor', 'completo'].map(plano).join('')}</div>
+    <div id="hm-pl" data-rv>${lpPlanosHtml()}</div>
     <p class="hp-cap hp-planos-dica">Arraste para o lado para ver os outros planos.</p>
     <p class="hp-cap">Depois do cadastro, você conclui o pagamento e o ${esc(nome)} confirma a ativação do plano na sua conta.</p>
   </div></section>
@@ -387,6 +387,7 @@ function lpAcao(act, el) {
   if (act === 'lp-confirma') { st.ok = !st.ok; const w = $('#lp-vivo-w'); if (w) { w.innerHTML = lpLanc(st.ok ? 'pronto' : 'chega', true); const b = w.querySelector('button'); if (b) b.focus(); } return true; }
   if (act === 'lp-set') { st[el.dataset.k] = el.dataset.v; el.parentElement.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', b === el)); lpAtualiza(); return true; }
   if (act === 'lp-tela') { lpTela(el.dataset.v); return true; }
+  if (act === 'lp-pl') { lpPlano(el); return true; }
   return false;
 }
 function lpComecar() {
@@ -406,4 +407,46 @@ function initReveal() {
     e.target.style.transitionDelay = Math.min(3, Math.max(0, irmaos.indexOf(e.target))) * 80 + 'ms'; e.target.classList.add('in');
   }), { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
   raiz.querySelectorAll('[data-rv]').forEach((e) => io.observe(e));
+}
+
+/* planos em três passos (Plano, Período, Pagamento), como um checkout; troca só o bloco #hm-pl, sem render() */
+const LP_PL_IC = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.2 4L19 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function lpPlanosHtml() {
+  const st = lpEstado(); const pl = (st.pl = st.pl || { passo: 1, plano: 'investidor', per: 'mensal' }); const nome = primeiroNome();
+  const passos = ['Plano', 'Período', 'Pagamento'];
+  const topo = `<div class="hm-pl-pas" role="tablist" aria-label="Etapas">${passos.map((n, i) => `<button type="button" role="tab" class="${pl.passo === i + 1 ? 'on' : pl.passo > i + 1 ? 'ok' : ''}" aria-selected="${pl.passo === i + 1}" data-act="lp-pl" data-k="passo" data-v="${i + 1}"${i + 1 > pl.passo ? ' disabled' : ''}><i>${pl.passo > i + 1 ? '✓' : i + 1}</i>${n}</button>`).join('')}</div>`;
+  const preco = (id) => precoPlano(id); const mensal = preco(pl.plano);
+  let corpo;
+  if (pl.passo === 1) {
+    // os cartões de sempre (nível, preço de/por, itens); escolher um pago leva ao Período
+    const card = (id, n) => { const i = infoPlano(id); const d = id === 'completo'; const txt = id !== 'gratis' && preco(id) <= 0;
+      const antes = d && CFG.precoRegular > preco(id) ? `<s class="hp-antes"><span class="hp-sr">De </span>${esc(brl(CFG.precoRegular))}</s>` : '';
+      return `<article class="hp-card hp-plano n${n + 1}${d ? ' rec hp-dark' : ''}${pl.plano === id ? ' sel' : ''}">${d ? `<span class="hp-selo">Com o ${esc(nome)}</span>` : ''}
+        <span class="hp-nivel" role="img" aria-label="Nível ${n + 1} de 3"><i></i><i></i><i></i></span>
+        <h3>${esc(nomePlano(id))}</h3><p class="hp-plano-r">${esc(i.resumo)}</p>
+        <div class="hp-preco-w">${antes}<p class="hp-preco${txt ? ' txt' : ''}">${antes ? '<span class="hp-sr">por </span>' : ''}${esc(precoTxt(id))}</p></div>
+        <p class="hp-plano-n">${antes ? 'Condição de lançamento.' : id === 'gratis' ? 'Grátis, sem prazo.' : '&nbsp;'}</p>
+        <ul>${i.itens.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>
+        <button class="hp-btn${d ? ' lg' : id === 'gratis' ? ' vidro' : ''}" data-act="lp-pl" data-k="plano" data-v="${id}">${id === 'gratis' ? 'Começar grátis' : id === 'investidor' ? 'Quero o Investidor' : 'Quero a assessoria'}</button></article>`; };
+    corpo = `<div class="hp-grid3 hp-planos">${['gratis', 'investidor', 'completo'].map(card).join('')}</div>`;
+  } else if (pl.passo === 2) {
+    const ops = [['mensal', 'Mensal', `${brl(mensal)}/mês`, 'Renova todo mês. Mude de plano quando quiser.'], ['anual', 'Anual', `12 × ${brl(mensal)}`, `Condição para o ano inteiro: combine com o ${nome}.`]];
+    corpo = `<div class="hm-pl-g g2">${ops.map(([k, n, v, d]) => `<button type="button" class="hm-pl-c${pl.per === k ? ' sel' : ''}" data-act="lp-pl" data-k="per" data-v="${k}" aria-pressed="${pl.per === k}"><b class="hm-pl-n">${n}</b><span class="hm-pl-p"><b>${esc(v)}</b></span><span class="hm-pl-r">${esc(d)}</span><span class="hm-pl-esc">Continuar →</span></button>`).join('')}</div>
+      <button type="button" class="hm-pl-volta" data-act="lp-pl" data-k="passo" data-v="1">← Trocar de plano</button>`;
+  } else {
+    const anual = pl.per === 'anual';
+    corpo = `<div class="hm-pl-res"><div><small>Seu plano</small><b class="hm-pl-n">${esc(nomePlano(pl.plano))}${anual ? ' · anual' : ' · mensal'}</b><span class="hm-pl-r">${esc(infoPlano(pl.plano).resumo)}</span></div>
+      <div class="hm-pl-tot"><small>${anual ? 'Total do ano' : 'Por mês'}</small><b>${esc(brl(anual ? mensal * 12 : mensal))}</b></div></div>
+      <ol class="hm-pl-ord"><li>Crie sua conta e faça o diagnóstico</li><li>Pague pelo link seguro do Mercado Pago, no cartão ou no Pix</li><li>O ${esc(nome)} confirma e libera o plano na sua conta</li></ol>
+      <div class="hm-ctas">${anual ? `<button class="hp-btn lg" data-act="contact">Combinar o anual com o ${esc(nome)}</button>` : `<button class="hp-btn lg" data-act="go-auth" data-mode="signup" data-plano="${pl.plano}" data-pagar="1">Criar conta e pagar</button>`}<button type="button" class="hp-btn lg vidro" data-act="lp-pl" data-k="passo" data-v="2">Voltar</button></div>`;
+  }
+  return `${topo}<div class="hm-pl-box">${corpo}</div>
+    <ul class="hm-pl-conf"><li><b>Grátis</b> sem prazo</li><li><b>Cartão ou Pix</b> pelo Mercado Pago</li><li><b>Mude</b> quando quiser</li></ul>
+    <p class="hm-pl-leg"><button class="hp-lnk" data-act="terms">Termos de uso e privacidade</button></p>`;
+}
+function lpPlano(el) {
+  const pl = lpEstado().pl; const k = el.dataset.k; const v = el.dataset.v;
+  if (k === 'plano') { if (v === 'gratis') { S.lp.pl.plano = v; return lpComecar(); } pl.plano = v; pl.passo = 2; }
+  else if (k === 'per') { pl.per = v; pl.passo = 3; } else pl.passo = +v;
+  const w = $('#hm-pl'); if (w) { w.innerHTML = lpPlanosHtml(); }
 }

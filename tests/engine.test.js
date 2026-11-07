@@ -428,7 +428,11 @@ ok(E.interfaceDe('gratis', 'completo') === 'basico' && E.interfaceDe('qualquer')
   const h = E.saudeFinanceira({ C: Cq, ult: 3, fixosMes: 2000, objetivo: { progresso: 0.4, status: 'atrasado' } }); const it = (id) => h.itens.find((x) => x.id === id);
   ok(Math.abs(it('reserva').valor - 6.67) < 0.01 && it('reserva').sit === 'ok' && Math.abs(it('poupanca').valor - 0.4) < 1e-9 && it('poupanca').sit === 'ok' && Math.abs(it('fixos').valor - 0.4) < 1e-9 && it('fixos').sit === 'ok' && it('sonho').sit === 'atencao' && h.nota === 90, 'saúde financeira: reserva, poupança, contas fixas, sonho e a nota');
   const h2 = E.saudeFinanceira({ C: { receita: z(), despesas: z(), patrimonio: z() }, ult: 3, fixosMes: 0 });
-  ok(h2.nota === null && h2.itens.every((x) => x.sit === 'sem'), 'saúde financeira: sem dados, sem nota'); }
+  ok(h2.nota === null && h2.itens.every((x) => x.sit === 'sem'), 'saúde financeira: sem dados, sem nota');
+  const h3 = E.saudeFinanceira({ C: { receita: [5000, 5000, 5000, 5000].concat(z().slice(4)), despesas: z(), patrimonio: z() }, ult: 3, fixosMes: 0 });
+  ok(h3.nota === null, 'saúde financeira: renda sem nenhum gasto não dá nota (era 100, Base sólida)');
+  const h4 = E.saudeFinanceira({ C: { receita: Cq.receita, despesas: Cq.despesas, patrimonio: z() }, ult: 3, fixosMes: 0, objetivo: { status: 'no-prazo' } });
+  ok(h4.nota != null && h4.nota < 100 && h4.itens[0].sit === 'baixo', 'saúde financeira: reserva zero nunca dá nota máxima'); }
 
 // os scripts da interface dividem o escopo global: um nome de topo repetido entre arquivos derruba o arquivo inteiro no navegador
 { const fs = require('fs'); const path = require('path'); const dir = path.join(__dirname, '..', 'assets', 'js'); const dono = {}; const rep = [];
@@ -467,4 +471,62 @@ ok(E.interfaceDe('gratis', 'completo') === 'basico' && E.interfaceDe('qualquer')
   ok(Math.abs(CB.investAlocado[2] - 5000) < 0.01 && Math.abs(CB.beneficio[2] - 900) < 0.01, 'benefício: mês sem gasto no vale guarda o saldo inteiro');
   ok(Math.abs(CB.receita[0] - 5800) < 0.01, 'benefício: a entrada continua contando como renda');
 }
+// --- funcionalidades novas do SaaS reinventado
+{
+  const pl = { v: 2, year: 2026, settings: { orcPadrao: 4000 }, rendaCats: E.CATS_RENDA(), catsDesp: E.CATS_DESP(),
+    rendas: [{ id: 'r', cat: 'fixa', nome: 'Salário', valores: new Array(12).fill(6000) }],
+    despesas: [{ id: 'd', cat: 'fixa', area: 'Moradia', nome: 'Aluguel', valores: new Array(12).fill(2000) }],
+    lancamentos: [{ id: 'a', data: '2026-10-05', desc: 'Mercado', valor: 600, cat: 'variavel', area: 'Alimentação' },
+      { id: 'b', data: '2026-10-08', desc: 'Restaurante', valor: 400, cat: 'variavel', area: 'Lazer' },
+      { id: 'n1', data: '2026-07-03', desc: 'NETFLIX.COM', valor: 39.9, area: 'Lazer' }, { id: 'n2', data: '2026-08-03', desc: 'Netflix.com', valor: 39.9, area: 'Lazer' },
+      { id: 'n3', data: '2026-09-03', desc: 'NETFLIX COM', valor: 39.9, area: 'Lazer' }, { id: 'u1', data: '2026-08-10', desc: 'Uber', valor: 20, area: 'Transporte' }],
+    ativos: [] };
+  const CN = E.compute(pl, {}); const hoje = { ano: 2026, mes: 9, dia: 10 };
+  const ps = E.previsaoMes({ C: CN, plan: pl, hoje });
+  ok(ps.diasMes === 31 && Math.abs(ps.mes.gastosFim - 5100) < 0.01 && Math.abs(ps.mes.saldoFim - 900) < 0.01, 'previsaoMes: ritmo do mês projeta os gastos do dia até o fim');
+  ok(Math.abs(ps.ano.saldoFim - (900 + 2 * 4000)) < 0.01, 'previsaoMes: fim do ano soma a sobra prevista dos meses seguintes');
+  const gd = E.livreHoje({ C: CN, hoje });
+  ok(gd.base === 'orcamento' && Math.abs(gd.restante - 1000) < 0.01 && gd.diasRestantes === 22 && Math.abs(gd.porDia - 45.45) < 0.01, 'livreHoje: o que resta do orçamento dividido pelos dias que faltam');
+  const gd2 = E.livreHoje({ C: Object.assign({}, CN, { despesas: CN.despesas.map(() => 5000) }), hoje });
+  ok(gd2.porDia === 0 && gd2.restante < 0, 'livreHoje: orçamento estourado dá zero por dia');
+  const rc = E.detectarRecorrentes({ lancamentos: pl.lancamentos, ano: 2026 });
+  ok(rc.length === 1 && rc[0].meses === 3 && rc[0].assinatura && Math.abs(rc[0].valor - 39.9) < 0.01 && !rc[0].jaFixo, 'detectarRecorrentes: assinatura em 3 meses');
+  ok(E.detectarRecorrentes({ lancamentos: pl.lancamentos, ano: 2026, despesas: [{ nome: 'Netflix', valores: [] }] })[0].jaFixo, 'detectarRecorrentes: marca o que já é gasto fixo');
+  const pm = E.planoDoMes({ C: CN, mes: 9, contas: E.contasMes({ ano: 2026, mes: 9, despesas: pl.despesas }), objetivos: { itens: [{ id: 'o', nome: 'Casa', status: 'atrasado', extra: 300 }] } });
+  ok(pm.length === 3 && pm[0].id === 'contas' && pm.some((a) => a.id === 'objetivo' && a.valor === 300), 'planoDoMes: até 3 ações priorizadas');
+  const pmD = E.planoDoMes({ C: Object.assign({}, CN, { investAlocado: CN.investAlocado.map(() => -500), despesas: CN.despesas.map(() => 6500) }), mes: 9 });
+  ok(pmD[0].id === 'deficit' && pmD[0].valor === 500, 'planoDoMes: déficit vem primeiro');
+  const rx = E.raioXMes({ C: CN, plan: pl, mes: 9 });
+  ok(Math.abs(rx.gastos - 3000) < 0.01 && rx.areas[0].area === 'Moradia' && rx.maior.desc === 'Mercado' && rx.lancamentos === 2 && Math.abs(rx.sobra - 3000) < 0.01, 'raioXMes: totais, áreas e maior gasto');
+  ok(rx.variacao.gastos != null && rx.variacao.gastos > 0, 'raioXMes: variação contra o mês anterior');
+  const et = E.etapasObjetivo({ valor: 10000, saldo: 3000, aporte: 1000, retorno: 0, hoje: { ano: 2026, mes: 9 } });
+  ok(et.length === 5 && et[1].atingido && !et[2].atingido && et[2].meses === 2 && et[4].meses === 7 && et[4].previsto.ano === 2027 && et[4].previsto.mes === 4, 'etapasObjetivo: 5 etapas com data prevista');
+}
+const NV = (() => { const pl = { v: 2, year: 2026, settings: { orcPadrao: 4000, limites: { Lazer: 900 } }, rendaCats: E.CATS_RENDA(), catsDesp: E.CATS_DESP(),
+    rendas: [{ id: 'r', cat: 'fixa', nome: 'Salário', valores: new Array(12).fill(6000) }],
+    despesas: [{ id: 'd', cat: 'fixa', area: 'Moradia', nome: 'Aluguel', dia: 10, valores: new Array(12).fill(2000) }],
+    lancamentos: [{ id: 'a', data: '2026-10-05', desc: 'Mercado', valor: 600, cat: 'variavel', area: 'Alimentação' }, { id: 'b', data: '2026-10-08', desc: 'Restaurante', valor: 400, cat: 'variavel', area: 'Lazer' }], ativos: [] };
+    return { pl, C: E.compute(pl, {}), hoje: { ano: 2026, mes: 9, dia: 10 } }; })();
+{ const pa = E.previsaoAno({ C: NV.C, plan: NV.pl, hoje: NV.hoje });
+  ok(pa.meses.length === 12 && pa.meses[8].tipo === 'real' && pa.meses[9].tipo === 'agora' && Math.abs(pa.meses[9].sobra - 900) < 0.01 && pa.meses[11].tipo === 'previsto' && Math.abs(pa.total - (9 * 4000 + 900 + 2 * 4000)) < 0.01 && pa.piorMes.mes === 9, 'previsaoAno: mês a mês com o mês de hoje previsto e o acumulado'); }
+{ const sd = E.saldoDiario({ plan: NV.pl, hoje: NV.hoje });
+  ok(sd.dias.length === 31 && sd.dias[4].saldo === 5400 && sd.dias[9].saldo === 3000 && sd.dias[10].previsto && Math.abs(sd.fim - 900) < 0.01 && sd.menor.dia === 1, 'saldoDiario: entradas, contas no dia, gastos com data e ritmo até o fim do mês'); }
+{ const fh = E.faixaHistorica({ serie: [100, 300, 0, 200, 400], atual: 350 });
+  ok(fh.min === 100 && fh.max === 400 && fh.mediana === 250 && fh.faixa === 'alto' && Math.abs(fh.pos - 0.8333) < 0.001 && E.faixaHistorica({ serie: [1, 2], atual: 1 }) === null && E.faixaHistorica({ serie: [1, 2, 3], atual: 9 }).faixa === 'acima', 'faixaHistorica: mínimo, mediana, máximo e onde o mês cai'); }
+{ const mr = E.metaReserva({ C: NV.C, patrimonio: 6000, hoje: NV.hoje });
+  ok(mr.gastoMedio === 2000 && mr.meta === 12000 && mr.cobertos === 3 && mr.falta === 6000 && mr.pct === 0.5 && mr.objetivo.modo === 'marco', 'metaReserva: 6 meses do gasto fixo médio e meses cobertos'); }
+{ const rodarN = (pl) => E.notificacoes({ C: E.compute(pl, {}), plan: pl, hoje: { ano: 2026, mes: 9, dia: 10 }, recursos: {} });
+  const nl = rodarN(NV.pl).find((n) => n.chave === 'n_lim_ritmo');
+  ok(nl && nl.id === 'limprev:2026-10:lazer' && nl.vars.dia === 23 && nl.vars.limite === 900, 'notificações: limite da área passa antes do fim do mês, com o dia provável');
+  const pv = JSON.parse(JSON.stringify(NV.pl)); pv.rendas[0].valores = new Array(12).fill(3000); pv.settings.limites = {}; pv.settings.orcPadrao = 0;
+  const np = rodarN(pv).find((n) => n.chave === 'n_prev_negativo');
+  ok(np && np.id === 'prev:2026-10:negativo' && Math.abs(np.vars.valor - 2100) < 0.01, 'notificações: no ritmo de hoje o mês fecha no vermelho'); }
+{ const ri = E.iaResponder(E.iaIntencao('Quanto posso gastar hoje?'), { C: NV.C, mes: 9, dia: 10, ano: 2026, recursos: {} });
+  ok(ri.chave === 'ia_livre_hoje' && Math.abs(ri.vars.porDia - 45.45) < 0.01 && ri.vars.dias === 22, 'assistente: posso_gastar responde com o livre de hoje'); }
+{ const lc = E.livreHoje({ C: NV.C, hoje: NV.hoje, contas: E.contasMes({ ano: 2026, mes: 9, despesas: NV.pl.despesas }) });
+  ok(lc.contasAPagar === 2000 && Math.abs(lc.restante - 1000) < 0.01, 'livreHoje: contas não pagas já reservadas no restante');
+  const sp = [0, 4, 8].map((mm, i) => ({ id: 's' + i, data: `2026-0${mm + 1}-03`, desc: 'Seguro', valor: 100 }));
+  ok(E.detectarRecorrentes({ lancamentos: sp, ano: 2026 }).length === 0, 'detectarRecorrentes: 3 meses sem intervalo de cerca de 30 dias não é recorrente');
+  const ea = E.etapasObjetivo({ valor: 10000, saldo: 3000, aporte: 1000, retorno: 0, hoje: { ano: 2026, mes: 9 }, prazo: 14 });
+  ok(ea[4].esperado === 14 && ea[4].atraso === -7 && ea[2].atraso === -2 && ea[0].atraso === null, 'etapasObjetivo: adiantado ou atrasado em meses contra o prazo'); }
 process.exit(bad ? 1 : 0);

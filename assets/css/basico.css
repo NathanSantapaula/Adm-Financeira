@@ -1653,3 +1653,13 @@ button.bas-gx-c { width: 100%; border: 0; font: inherit; color: inherit; text-al
 /* nas listas, a logo do banco aparece no formato dela (ícone de app), sem a bolinha em volta */
 .bas-ini:has(> .inst-ic) { background: none; border-radius: 0; }
 .bas-ini > .inst-ic { width: 40px; height: 40px; border-radius: 26%; }
+
+/* barra de abas do redesenho 2026 (mantida a pedido do Nathan) */
+/* barra de abas: pílula de vidro flutuante; aba ativa só com cor e um realce suave (padrão iOS) */
+body[data-ui="basico"][data-screen="app"] .tabbar { left: 50%; right: auto; width: min(360px, calc(100% - 32px)); transform: translateX(-50%); bottom: calc(12px + env(safe-area-inset-bottom, 0px)); border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 80%, transparent); -webkit-backdrop-filter: blur(30px) saturate(190%); backdrop-filter: blur(30px) saturate(190%); border: .5px solid var(--bas-fio); box-shadow: var(--bas-sombra); }
+.bas-tabs { padding: 5px; gap: 2px; }
+.bas-tabs button { min-height: 54px; border-radius: 999px; font-size: 11px; font-weight: 600; letter-spacing: .01em; color: var(--ink-3); transition: color 200ms, background 200ms; }
+.bas-tabs button[aria-current="page"] { color: var(--accent); background: color-mix(in srgb, var(--accent) 13%, transparent); box-shadow: none; }
+.bas-tabs svg { width: 23px; height: 23px; }
+@media (prefers-reduced-motion: reduce) { .bas-tabs button { transition: none; } }

@@ -64,7 +64,7 @@ const G_WIDGETS = [
   { id: 'ritmo', nome: () => 'Ritmo do mês', desc: 'Gasto acumulado dia a dia contra o orçamento, com a projeção até o fim do mês. Só na visão de um mês.', tam: 3, tams: [3, 4, 6], padrao: () => true },
   { id: 'mensal', nome: () => 'Mês a mês', desc: 'Gastos fixos e variáveis de cada mês, com o orçamento marcado.', tam: 6, tams: [3, 4, 6], padrao: () => true },
   { id: 'contas', nome: () => 'Contas do mês', desc: 'Gastos fixos e parcelas que caem no mês, pagos ou previstos.', tam: 3, tams: [2, 3, 4, 6], padrao: () => true },
-  { id: 'top', nome: () => 'Maiores gastos', desc: 'Os lançamentos de maior valor do período.', tam: 3, tams: [2, 3, 4, 6], padrao: () => true },
+  { id: 'top', nome: () => 'Maiores gastos', desc: 'Os lançamentos de maior valor do período.', tam: 3, tams: [2, 3, 4, 6], padrao: () => false },
   { id: 'parc', nome: () => 'Parcelamentos em andamento', desc: 'Parcela do mês, quanto falta e quando termina.', tam: 3, tams: [2, 3, 4, 6], padrao: () => true },
   { id: 'mudou', nome: () => 'O que mudou', desc: 'Áreas que subiram ou caíram em relação à média dos meses anteriores. Só na visão de um mês.', tam: 3, tams: [2, 3, 4, 6], padrao: () => false },
   { id: 'estab', nome: () => 'Onde você mais compra', desc: 'Estabelecimentos agrupados pelo nome, com número de compras e total.', tam: 3, tams: [2, 3, 4, 6], padrao: () => false },
@@ -72,6 +72,9 @@ const G_WIDGETS = [
   { id: 'inst', nome: () => 'Por instituição', desc: 'Quanto saiu por banco, cartão ou carteira no período, com o ícone de cada um.', tam: 3, tams: [2, 3, 4, 6], padrao: () => true },
   { id: 'cartoes', nome: () => 'Meus cartões', desc: 'Um cartão por banco, cartão ou carteira usado no período, com quanto saiu por ele.', tam: 3, tams: [2, 3, 4, 6], padrao: () => true },
   { id: 'limites', nome: () => 'Limites por área', desc: 'Um limite por mês para as áreas que você escolher, com aviso ao chegar perto.', tam: 3, tams: [2, 3, 4, 6], padrao: () => true },
+  { id: 'calendario', nome: () => 'Calendário do dinheiro', desc: 'O saldo de cada dia do mês: entradas, contas e o ritmo dos gastos.', tam: 3, tams: [3, 4, 6], padrao: () => true },
+  { id: 'assin', nome: () => 'Assinaturas detectadas', desc: 'Cobranças que se repetem com o mesmo valor, com o custo no ano.', tam: 3, tams: [2, 3, 4, 6], padrao: () => true },
+  { id: 'faixa', nome: () => 'Você contra você', desc: 'O gasto do mês comparado com os seus meses anteriores.', tam: 3, tams: [2, 3, 4, 6], padrao: () => true },
   { id: 'semana', nome: () => 'Por dia da semana', desc: 'Em que dias você mais gasta.', tam: 3, tams: [3, 4, 6], padrao: () => false },
 ];
 // visão do mês quando o período do topo é um mês só; gIrMes leva a ele (o período vale para todas as abas)
@@ -144,7 +147,7 @@ function gWidgets(G) {
     <p class="cap">Gastos previstos e parcelas entram no dia 1; os lançamentos reais, no dia em que aconteceram.</p>`));
   // mês a mês
   { const C = S.C; const lim = S.year === NOW_Y ? NOW_M : 11; const comOrc = MES.map((_, i) => i).filter((i) => i <= lim && C.orcamento[i] > 0); const dentro = comOrc.filter((i) => C.despesas[i] <= C.orcamento[i]).length;
-    add('mensal', gCard('mensal', 'Mês a mês', `${legenda(['pos', 'warn', 'neg', 'sem'].map((k) => ORC_SIT[k]).concat([['var(--ink-3)', 'Orçado']]))}<div class="chart" id="g-mensal"></div><p class="cap">Cada mês na cor do orçamento. Toque em um mês para abri-lo.</p>`,
+    add('mensal', gCard('mensal', 'Mês a mês', `${(() => { const tem = MES.map((_, i) => orcSit(i)); return legenda(['pos', 'warn', 'neg', 'sem'].filter((k) => tem.includes(k)).map((k) => ORC_SIT[k]).concat(S.C.orcamento.some((o) => o > 0) ? [['var(--ink-3)', 'Orçado']] : [])); })()}<div class="chart" id="g-mensal"></div><p class="cap">Cada mês na cor do orçamento. Toque em um mês para abri-lo.</p>`,
       comOrc.length ? `<small class="c-note">${dentro} de ${comOrc.length} ${comOrc.length === 1 ? 'mês' : 'meses'} dentro</small>` : '')); }
   // o que mudou
   if (!ano) add('mudou', gCard('mudou', 'O que mudou', G.baseMeses ? (G.mudou.length ? `<ul class="g-lista">${G.mudou.map((x) => `<li><button class="g-li" data-act="g-area" data-area="${esc(x.nome)}"><span><b>${esc(x.nome)}</b><small>${esc(x.catNome)} · média ${brl0(x.media)}</small></span><span class="g-li-v"><b>${brl0(x.agora)}</b><small class="${x.dif > 0 ? 'neg' : 'pos'}">${x.pct == null ? 'novo no período' : gSinal(x.pct)}</small></span></button></li>`).join('')}</ul>`
@@ -154,6 +157,19 @@ function gWidgets(G) {
   // onde mais compra
   add('estab', gCard('estab', 'Onde você mais compra', G.estab.length ? `<ul class="g-lista">${G.estab.map((x) => `<li><button class="g-li" data-act="g-busca" data-q="${esc(x.k)}"><span><b>${esc(x.nome)}</b><small>${x.qtd} ${x.qtd === 1 ? 'compra' : 'compras'} · média de ${brl(x.media)}</small></span><span class="g-li-v"><b>${brl0(x.total)}</b><small>${pct(x.pct)}</small></span></button></li>`).join('')}</ul>` : gVazio('Aparece quando houver lançamentos reais (importados ou lançados à mão).')));
   // recorrentes
+  // Dinheiro, rodada nova: calendário do saldo (E.saldoDiario), assinaturas (E.detectarRecorrentes) e você contra você (E.faixaHistorica)
+  { const m = G.mes >= 0 ? G.mes : S.year === NOW_Y ? NOW_M : 11; const hoje = { ano: S.year, mes: m, dia: S.year === NOW_Y && m === NOW_M ? new Date().getDate() : 1 };
+    const K = E.saldoDiario({ plan: S.plan, carry: planCtx().carry, hoje }); const ini = new Date(S.year, m, 1).getDay();
+    if (K && K.dias && K.dias.length) add('calendario', gCard('calendario', 'Calendário de ' + MES_LONGO[m], `<div class="gc-cal" role="grid" aria-label="Saldo de cada dia">${['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((d) => `<b aria-hidden="true">${d}</b>`).join('')}${'<span></span>'.repeat(ini)}${K.dias.map((d) => `<span class="${d.baixo ? 'neg' : ''}${d.previsto ? ' prev' : ''}${d.entra > 0 ? ' entra' : ''}${d.sai > 0 ? ' sai' : ''}" title="${d.dia}: saldo ${brl0(d.saldo)}${d.entra ? ' · entra ' + brl0(d.entra) : ''}${d.sai ? ' · sai ' + brl0(d.sai) : ''}">${d.dia}</span>`).join('')}</div>
+      <p class="gc-pe">Menor saldo no dia <b>${K.menor ? K.menor.dia : '–'}</b>: ${K.menor ? brl0(K.menor.saldo) : '–'} · fim do mês <b>${brl0(K.fim)}</b></p>`)); }
+  { const R = E.detectarRecorrentes({ lancamentos: S.plan.lancamentos, ano: S.year, despesas: S.plan.despesas }).filter((x) => x.assinatura);
+    if (R.length) add('assin', gCard('assin', 'Assinaturas detectadas', `<p class="gc-tot">${brl0(R.reduce((t, x) => t + x.anual, 0))} <small>por ano</small></p><ul class="g-lista">${R.slice(0, 6).map((x) => `<li class="gc-as"><span><b>${esc(x.nome)}</b><small>${brl0(x.valor)} por mês · ${x.meses} meses</small></span>${x.jaFixo ? '<em class="ent-st">Fixo</em>' : `<button class="lnk strong" data-act="g-fixo" data-nome="${esc(x.nome)}" data-valor="${x.valor}" data-m="${S.year === NOW_Y ? NOW_M : 11}">Tornar fixo</button>`}</li>`).join('')}</ul>`)); }
+  { const m = G.mes >= 0 ? G.mes : S.year === NOW_Y ? NOW_M : 11; const F = E.faixaHistorica({ serie: S.C.despesas.slice(0, m), atual: S.C.despesas[m] });
+    const TXT = { abaixo: 'Bem abaixo do seu normal', baixo: 'Abaixo do seu normal', normal: 'Dentro do seu normal', alto: 'Acima do seu normal', acima: 'Bem acima do seu normal' };
+    if (F) add('faixa', gCard('faixa', 'Você contra você', `<p class="gc-tot ${F.faixa === 'acima' || F.faixa === 'alto' ? 'warn' : 'pos'}">${esc(TXT[F.faixa] || '')}</p>
+      <div class="gc-faixa" role="img" aria-label="Gasto de ${MES_LONGO[m]} entre o menor e o maior dos meses anteriores"><i class="md" style="left:${F.max > F.min ? ((F.mediana - F.min) / (F.max - F.min)) * 100 : 50}%"></i><i class="at" style="left:${Math.max(0, Math.min(1, F.pos)) * 100}%"></i></div>
+      <div class="gc-faixa-l"><small>${brl0(F.min)}</small><small>mediana ${brl0(F.mediana)}</small><small>${brl0(F.max)}</small></div>
+      <p class="gc-pe">${MES_LONGO[m]}: <b>${brl0(F.atual)}</b> contra ${F.n} meses anteriores</p>`)); }
   add('recorr', gCard('recorr', 'Assinaturas e contas recorrentes', G.recorrentes.length ? `<ul class="g-lista">${G.recorrentes.slice(0, 8).map((x) => `<li class="g-rec"><button class="g-li" data-act="g-busca" data-q="${esc(E.nomeEstab(x.nome))}"><span><b>${esc(x.nome)}</b><small>em ${x.meses} meses · último em ${MES[x.ultimoMes]}</small></span><span class="g-li-v"><b>${brl(x.media)}</b><small>por mês</small></span></button>${gEhFixo(x.nome) ? '<span class="badge prev">Fixo</span>' : x.ultimoMes < 11 ? `<button class="btn sm" data-act="g-fixo" data-nome="${esc(x.nome)}" data-valor="${x.ultimo}" data-m="${x.ultimoMes}">Tornar fixo</button>` : ''}</li>`).join('')}</ul>
     <p class="g-foot">Somam cerca de <b>${brl0(G.recorrentesMes)}</b> por mês${G.recorrentes.length > 8 ? ` (${G.recorrentes.length} no total)` : ''}.</p>` : gVazio('Nada se repetiu com valor parecido em vários meses até aqui.')));
   // parcelamentos
@@ -166,7 +182,7 @@ function gWidgets(G) {
   { const meses = new Set(G.mes >= 0 ? [G.mes] : perIds()); const soma = {}; let tot = 0;
     gastosDados().ents.forEach((e) => { if (!meses.has(e.m) || !(e.valor > 0)) return; const k = instDe(e.inst) ? e.inst : ''; soma[k] = (soma[k] || 0) + e.valor; tot += e.valor; });
     const L = Object.keys(soma).map((k) => ({ k, v: soma[k] })).sort((a, b) => b.v - a.v); const mx = L.length ? L[0].v : 1;
-    add('inst', gCard('inst', 'Por instituição', L.length ? `<ul class="g-areas">${L.map((x) => { const nome = x.k ? instDe(x.k)[1] : 'Sem instituição';
+    if (L.some((x) => x.k)) add('inst', gCard('inst', 'Por instituição', L.length ? `<ul class="g-areas">${L.map((x) => { const nome = x.k ? instDe(x.k)[1] : 'Sem instituição';
       return `<li><button class="g-area g-inst" ${x.k ? `data-act="g-busca" data-q="${esc(nome)}"` : 'disabled'}>${instIcone(x.k)}<span class="g-area-n"><b>${esc(nome)}</b></span>
         <span class="g-area-t"><i style="width:${((x.v / mx) * 100).toFixed(1)}%;--bc:${x.k ? instDe(x.k)[2] : 'var(--ink-3)'}"></i></span><span class="g-area-v"><b>${brl0(x.v)}</b><small>${pct(x.v / tot)}</small></span></button></li>`; }).join('')}</ul>
       ${soma[''] ? '<p class="cap">Marque "Pago com" nos lançamentos para separar o que está sem instituição.</p>' : ''}` : gVazio('Sem gastos neste período.')));
@@ -174,7 +190,7 @@ function gWidgets(G) {
     const C2 = L.filter((x) => x.k); const quando = G.mes >= 0 ? 'em ' + MES_LONGO[G.mes] : perFrase();
     // carteira que guarda os cartões (modelo e cor do App por basCcEstilo): passar o mouse levanta os cartões; tocar abre a vitrine (ccCarteira) e, nela, cada cartão abre a sua janela (ccAbrir)
     S.ccCart = { L: C2, tot, quando }; const somaC = C2.reduce((t, x) => t + x.v, 0);
-    add('cartoes', gCard('cartoes', 'Meus cartões', C2.length ? `<div class="cw"><button type="button" class="cw-b" style="--n:${Math.min(4, C2.length)}" data-act="cc-carteira" aria-label="Abrir os seus ${C2.length} cartões">
+    if (C2.length) add('cartoes', gCard('cartoes', 'Meus cartões', C2.length ? `<div class="cw"><button type="button" class="cw-b" style="--n:${Math.min(4, C2.length)}" data-act="cc-carteira" aria-label="Abrir os seus ${C2.length} cartões">
       <span class="cw-cs" aria-hidden="true">${C2.slice(0, 4).reverse().map((x, k) => { const i = instDe(x.k); return `<span class="bas-cc-c cw-c" ${basCcEstilo(x.k).attr.replace('style="', `style="--k:${k};`)}><span class="cw-c-n">${esc(i[1])}</span><span class="cw-c-v">${brl0(x.v)}</span></span>`; }).join('')}</span>
       <span class="cw-bolso"><span class="cw-qt">${C2.length} ${C2.length === 1 ? 'cartão' : 'cartões'}</span><small>Gasto ${esc(quando)} <em>${pct(somaC / (tot || 1))} dos gastos</em></small><b>${brl(somaC)}</b></span></button>
       <button type="button" class="cw-mais" data-act="add-lanc" aria-label="Novo gasto" title="Novo gasto">${I.plus || '+'}</button></div>` : gVazio('Marque "Pago com" ao lançar um gasto para ver um cartão por banco ou carteira.'))); }
@@ -184,7 +200,7 @@ function gWidgets(G) {
     const seg = L.length ? `<div class="lim-seg-h"><b>${brl0(segG)}</b><small>de ${brl0(segL)} somando os limites</small></div><div class="lim-seg" role="img" aria-label="Uso de cada limite">${L.map((x, i) => `<span style="flex:${x.limite}" title="${esc(x.area)}: ${pct(x.uso)}"><i style="width:${Math.min(100, x.uso * 100).toFixed(1)}%;--bc:${x.sit === 'passou' ? 'var(--neg)' : PAL[i % 6]}"></i></span>`).join('')}</div><ul class="lim-leg">${L.map((x, i) => `<li><i style="--bc:${x.sit === 'passou' ? 'var(--neg)' : PAL[i % 6]}"></i>${esc(x.area)} (${pct(x.uso)})</li>`).join('')}</ul>` : '';
     add('limites', gCard('limites', 'Limites por área', L.length ? seg + `<ul class="g-areas">${L.map((x) => `<li><button class="g-area g-lim ${x.sit}" data-act="g-limite" data-area="${esc(x.area)}" title="Alterar o limite de ${esc(x.area)}"><span class="g-area-n"><b>${esc(x.area)}</b><small>${x.sit === 'passou' ? `${brl0(-x.falta)} acima` : `restam ${brl0(x.falta)}`}</small></span>
         <span class="g-area-t"><i style="width:${Math.min(100, x.uso * 100).toFixed(1)}%;--bc:${cor[x.sit]}"></i></span><span class="g-area-v"><b>${brl0(x.gasto)}</b><small>de ${brl0(x.limite)}</small></span></button></li>`).join('')}</ul>`
-      : gVazio('Defina um limite por mês para as áreas que pesam mais, como Alimentação ou Lazer.'), `<button class="lnk strong" data-act="g-limite">${L.length ? 'Novo limite' : 'Definir limite'}</button>`)); }
+      : gVazio('Nenhum limite ainda.'), `<button class="lnk strong" data-act="g-limite">${L.length ? 'Novo limite' : 'Definir limite'}</button>`)); }
   return telaWidgetsHtml('gastos', html);
 }
 const gAcaoEnt = (e) => (e.tipo === 'real' ? `data-act="edit-lanc" data-id="${esc(e.id)}"` : e.herdado ? `data-act="year-pick" data-year="${e.herdado}"` : `data-act="edit-item" data-kind="desp" data-id="${esc(e.id)}"`);

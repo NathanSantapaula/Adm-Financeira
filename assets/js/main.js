@@ -6,8 +6,12 @@ const navItems = () => {
   return base;
 };
 // menu em grupos com título (como MAIN / FEATURES / TOOLS); aba que não estiver num grupo vai para o fim
-const GRUPOS_NAV = [['', ['geral']], ['Dinheiro', ['rendas', 'despesas']], ['Investir', ['inv', 'pro', 'cart']], ['Acompanhar', ['relatorio', 'clientes']]];
-const navAgrupado = (items, btn) => GRUPOS_NAV.map(([t, ks]) => { const its = items.filter((i) => ks.includes(i[0])); return its.length ? (t ? `<div class="nav-g" aria-hidden="true">${t}</div>` : '') + its.map(btn).join('') : ''; }).join('') + items.filter((i) => !GRUPOS_NAV.some((g) => g[1].includes(i[0]))).map(btn).join('');
+// as 5 áreas do produto (iguais no App): Hoje, Dinheiro, Futuro, Patrimônio e Você; Futuro abre Meus objetivos e Você o painel
+const GRUPOS_NAV = [['Hoje', ['geral']], ['Dinheiro', ['despesas', 'rendas']], ['Patrimônio', ['inv', 'pro', 'cart', 'relatorio']], ['', ['clientes']]];
+const AREAS_EXTRA = ['futuro', 'patrimonio']; // áreas que não são abas do perfil (sempre visíveis)
+const NAV_EXTRA = { Futuro: ['futuro', 'Futuro', '<path d="M5 21V4M5 4h12l-2.2 4L17 12H5"/>'] };
+const navExtra = (t) => { const x = NAV_EXTRA[t]; return x ? `<button data-act="nav" data-view="${x[0]}" ${S.view === x[0] ? 'aria-current="page"' : ''}>${S.view === x[0] ? '<i class="nav-ind" aria-hidden="true"></i>' : ''}${ic(x[2])}<span>${x[1]}</span></button>` : ''; };
+const navAgrupado = (items, btn) => GRUPOS_NAV.map(([t, ks]) => { let its = items.filter((i) => ks.includes(i[0])); if (t === 'Patrimônio' && its.length) { const k = PAT_ABAS.includes(S.view) ? S.view : (its.find((i) => i[0] === S.patUlt) || its[0])[0]; its = [[k, 'Patrimônio']]; } const ex = navExtra(t); return its.length || ex ? (t ? `<div class="nav-g" aria-hidden="true">${t}</div>` : '') + its.map(btn).join('') + ex : ''; }).join('') + items.filter((i) => !GRUPOS_NAV.some((g) => g[1].includes(i[0]))).map(btn).join('');
 // no plano gratuito o rodapé do menu convida a conhecer o Investidor (como o Upgrade Pro); nos pagos fica o cartão do assessor
 const cartaoPlanoHtml = () => `<div class="advisor plano"><span class="adv-ic" aria-hidden="true">${I.inv || '★'}</span><div class="adv-t"><b>Conheça o plano ${esc(nomePlano('investidor'))}</b><small>Investimentos, proventos e a carteira no mesmo painel, com o disponível para aportar todo mês.</small></div><button class="hp-btn sm" data-act="upgrade" data-plano="investidor">Conhecer</button><button class="lnk adv-lnk" data-act="contact">Falar com o ${esc(primeiroNome())}</button></div>`;
 function renderSide() {
@@ -35,6 +39,16 @@ function emptyState() { return `<div class="empty-state"><h2>Crie o planejamento
 function viewHtml() {
   if (modoBasico()) return basicoHtml();
   if (!S.plan) return emptyState();
+  if (PAT_ABAS.includes(S.view)) { S.patUlt = S.view; return patAbasHtml() + viewHtmlAba(); }
+  return viewHtmlAba();
+}
+// Patrimônio: Aportes, Proventos, Carteira e Relatório são abas internas de uma área só (cada uma continua sendo a tela de antes)
+const PAT_ABAS = ['inv', 'pro', 'cart', 'relatorio'];
+function patAbasHtml() {
+  const its = navItems().filter((i) => PAT_ABAS.includes(i[0])); if (its.length < 2) return '';
+  return `<nav class="pat-abas" aria-label="Patrimônio">${its.map(([k, l]) => `<button data-act="nav" data-view="${k}"${S.view === k ? ' aria-current="page"' : ''}>${esc(l)}</button>`).join('')}</nav>`;
+}
+function viewHtmlAba() {
   switch (S.view) {
     case 'rendas': return viewRendas();
     case 'despesas': return viewDespesas();
@@ -43,6 +57,7 @@ function viewHtml() {
     case 'cart': return viewCart();
     case 'relatorio': return viewRelatorio();
     case 'clientes': return viewClientes();
+    case 'futuro': return viewFuturo();
     default: return viewGeral();
   }
 }
@@ -51,10 +66,10 @@ function render(opts) {
   const soft = !!(opts && opts.soft);
   if (isEditing() || (soft && isTyping())) { S.needsRender = true; return; }
   const scr = S.screen;
-  if (scr === 'app' && !navItems().some((i) => i[0] === S.view)) S.view = 'geral';
+  if (scr === 'app' && !AREAS_EXTRA.includes(S.view) && !navItems().some((i) => i[0] === S.view)) S.view = 'geral';
   if (scr !== 'app' || !alvoDaTela() || S.view !== S.wgView) { S.wgEdit = false; S.wgAdd = false; }
   S.wgView = S.view; // organizar vale nas telas com widgets e sai ao trocar de tela
-  const key = scr + ':' + (scr === 'app' ? S.view : scr === 'onboarding' && S.ob ? S.ob.step + '.' + S.ob.q : scr === 'auth' ? S.authMode : '');
+  const key = scr + ':' + (scr === 'app' ? S.view : scr === 'onboarding' ? 'conversa' : scr === 'auth' ? S.authMode : '');
   const same = S.lastKey === key;
   if (soft && scr !== 'app' && same) return;
   S.needsRender = false; document.body.dataset.screen = scr; document.documentElement.dataset.icones = (S.profile && S.profile.instEstilo) || 'auto'; document.body.dataset.ui = modoBasico() ? 'basico' : 'completo'; aplicarFundo(); S.renderSeq = (S.renderSeq || 0) + 1;
@@ -66,7 +81,7 @@ function render(opts) {
   else {
     $('#side').innerHTML = ''; $('#tabbar').innerHTML = '';
     const h = { landing: landingHtml, auth: authHtml, onboarding: onboardingHtml, checkout: checkoutHtml }[scr];
-    $('#view').innerHTML = h ? h() : scr === 'erro' ? `<div class="empty-state"><h2>Sem conexão</h2><p>${esc(S.fatal)}</p><button class="btn primary" onclick="location.reload()">Tentar de novo</button></div>` : '<div class="loading">Carregando…</div>';
+    $('#view').innerHTML = h ? h() : scr === 'erro' ? `<div class="empty-state"><h2>Sem conexão</h2><p>${esc(S.fatal)}</p><button class="btn primary" data-act="recarregar">Tentar de novo</button></div>` : '<div class="loading">Carregando…</div>';
   }
   const tw2 = $('.tablewrap'); if (tw2 && tws && same) { tw2.scrollLeft = tws[0]; tw2.scrollTop = tws[1]; }
   window.scrollTo(window.scrollX, same ? y : 0); S.lastKey = key;
@@ -100,7 +115,9 @@ function onClick(e) {
   if (el) {
     const act = el.dataset.act; const p = S.plan; const ds = el.dataset;
     switch (act) {
+      case 'recarregar': location.reload(); break;
       case 'nav': { if (ds.view === 'geral' && S.view !== 'geral') S.titTrocar = true; /* voltou à Visão geral: frase nova no título */ const outra = S.view !== ds.view; S.view = ds.view; S.stale = false; S.maisOpen = false; S.notifOpen = false; closeAdmin(); if (outra) telaTroca(() => render(), 'aba'); else render(); break; }
+      case 'fut-reserva': futReserva(); break;
       case 'mais-toggle': S.maisOpen = !S.maisOpen; render(); break;
       case 'obj-sw-mover': objSwMover(+ds.d); break;
       case 'prov-cel': provCalSel(el); break;
@@ -186,21 +203,20 @@ function onClick(e) {
         onOk: (d, err) => { if (String(d.conf || '').trim().toUpperCase() !== 'EXCLUIR') { err('Escreva EXCLUIR para confirmar.'); return false; } closeAdmin(); excluirConta().catch((e) => toast(e && e.amigavel ? e.message : 'Não foi possível excluir a conta agora.')); } }); break;
       case 'as-passo': S.asPasso = +ds.p === 2 ? 2 : 1; S.authErr = ''; render(); break;
       case 'adm-sec': { S.admSec = S.admSec || {}; const sec = el.closest('.dr-acc'); const ab = sec.dataset.open !== 'true'; S.admSec[ds.id] = ab; sec.dataset.open = ab; el.setAttribute('aria-expanded', ab); break; }
-      case 'lp-confirma': case 'lp-set': case 'lp-tela': lpAcao(act, el); break;
+      case 'lp-confirma': case 'lp-set': case 'lp-tela': case 'lp-pl': lpAcao(act, el); break;
       // "Quero a assessoria" (data-pagar) vai direto ao pagamento: logado, na hora; sem conta, logo depois do cadastro
       case 'go-auth': S.asPasso = 1; S.authPagar = !!ds.pagar && (ds.plano === 'completo' || ds.plano === 'investidor'); if (S.user && S.authPagar && !S.isAdmin) { S.authPagar = false; iniciarCheckout(ds.plano); break; } if (S.user) { S.screen = S.profile.onboarded ? 'app' : 'onboarding'; if (S.screen === 'onboarding' && !S.ob) initOb(); render(); break; } S.authMode = ds.mode || 'signup'; S.authPlano = ds.plano === 'completo' || ds.plano === 'investidor' ? ds.plano : 'gratis'; S.authErr = ''; S.authDraft = null; S.screen = 'auth'; render(); break;
       case 'auth-mode': S.asPasso = 1; S.authMode = ds.mode; S.authErr = ''; S.authMsg = ''; render(); break;
       case 'goto-landing': closeAdmin(); S.screen = 'landing'; render(); break;
       case 'open-app': S.screen = S.profile.onboarded ? 'app' : 'onboarding'; if (S.screen === 'onboarding' && !S.ob) initOb(); render(); break;
       case 'scroll': { const t = document.getElementById(ds.to); if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' }); break; }
-      case 'ob-back': { const f = $('#f-ob'); if (f) readOb(f); obBack(); break; }
-      case 'quiz-pick': quizPick(+ds.i); break;
+      case 'ob-back': obBack(); break;
+      case 'ob-cv': obResponder(ds.v); break;
       case 'ob-finish': finishOb(); break;
       case 'ob-finish-pay': { const pl = ['investidor', 'completo'].includes(ds.plano) ? ds.plano : S.profile.planoSolicitado; if (pl) S.profile.planoSolicitado = pl; finishOb(); iniciarCheckout(pl); break; }
       case 'ob-plano': if (['gratis', 'investidor', 'completo'].includes(ds.plano)) { S.ob.plano = ds.plano; S.profile.planoSolicitado = ds.plano === 'gratis' ? null : ds.plano; touch('profile'); render(); } break;
       case 'ob-finish-talk': finishOb(); openContact(); break;
       case 'admin-open': S.maisOpen = false; openAdmin(); break;
-      case 'ob-obj-add': case 'ob-obj-del': obObjAcao(act, ds); break;
       case 'admin-close': closeAdmin(); break;
       case 'ab-quando': aberturaQuando(ds.v, el); break;
       case 'ab-ver': aberturaVer(); break;
@@ -235,7 +251,7 @@ function onSubmit(e) {
   if (f.id === 'f-auth') { e.preventDefault(); submitAuth(f); }
   else if (f.id === 'lp-comeco') { e.preventDefault(); lpComecar(); }
   else if (f.dataset.form === 'ia') { e.preventDefault(); iaSubmit(f); }
-  else if (f.id === 'f-ob') { e.preventDefault(); if (readOb(f)) { if (S.ob.step === OB_STEPS.length - 1) finishOb(); else obNext(); } }
+  else if (f.id === 'f-ob') { e.preventDefault(); obResponder(new FormData(f).get('v')); }
   else if (f.dataset.form === 'year') { e.preventDefault(); const v = parseInt(new FormData(f).get('ano'), 10); if (!anoValido(v)) { const m = $('.merr', f); if (m) { m.textContent = 'Informe um ano entre 1990 e 2100.'; m.classList.add('show'); } toast('Informe um ano entre 1990 e 2100.'); return; } S.yearOpen = false; abrirAno(v); }
 }
 
