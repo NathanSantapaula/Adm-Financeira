@@ -123,7 +123,7 @@ const OB_VALOR_SUG = { independencia: [1000000, 2000000, 5000000], aposentadoria
   filhos: [100000, 300000, 500000], educacao: [50000, 120000, 250000], reserva: [20000, 50000, 100000], casamento: [40000, 80000, 150000], negocio: [50000, 150000, 400000], outro: [10000, 50000, 100000] };
 const brlCurto = (v) => (S.privado ? brl0(v) : v >= 1e6 ? 'R$ ' + String(+(v / 1e6).toFixed(1)).replace('.', ',') + ' mi' : v >= 1000 ? 'R$ ' + Math.round(v / 1000) + ' mil' : brl0(v));
 const OB_CONV = [
-  { id: 'nome', tipo: 'texto', ph: 'Seu nome ou apelido', p: () => `Oi! Eu sou o assistente do ${CFG.marca}. Vou montar o seu diagnóstico em poucas perguntas, e cada resposta já libera uma parte do seu painel. Como posso te chamar?`,
+  { id: 'nome', tipo: 'texto', ph: 'Seu nome ou apelido', p: () => `Oi! Em poucas perguntas, seu painel fica pronto. Como posso te chamar?`,
     ok: (o, v) => { v = String(v || '').trim(); if (v.length < 2) return 'Me diga pelo menos duas letras.'; o.nome = v; return ''; }, r: (o) => o.nome },
   { id: 'patrimonio', tipo: 'valor', ph: 'Ex.: 150.000', chips: () => [['Ainda não invisto', '0'], ['Uns R$ 10 mil', '10000'], ['Uns R$ 100 mil', '100000']],
     p: (o) => `Prazer, ${obPn(o)}! Quanto você já tem guardado ou investido hoje? Somando reserva, renda fixa, ações e fundos. Uma estimativa serve.`,
