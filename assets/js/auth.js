@@ -10,7 +10,7 @@ function authHtml() {
   const ajuda = S.authErrEmail ? `<div class="auth-ajuda">${contactButtons(`Olá, ${primeiroNome()}! Tentei criar minha conta no ${CFG.marca}, mas o e-mail de confirmação não chegou.${S.authDraft && S.authDraft.email ? ` Meu e-mail: ${S.authDraft.email}.` : ''}`, `Cadastro no ${CFG.marca}`, { semXp: true })}</div>` : '';
   const err = S.authErr ? `<div class="merr show" role="alert">${esc(S.authErr)}</div>${ajuda}` : '<div class="merr" role="alert"></div>';
   const note = demo ? '<p class="as-demo">Demonstração: os dados ficam só neste aparelho.</p>' : '';
-  const back = '<button class="btn ghost back" data-act="goto-landing">Voltar</button>';
+  const back = `<button class="btn ghost back" data-act="goto-landing"><span class="back-seta" aria-hidden="true">${I.chev}</span>Voltar</button>`;
   let body = '';
   if (m === 'verify') {
     return `<div class="auth">${back}<div class="auth-card"><h2>Confirme seu e-mail</h2><p class="sub">Enviamos um link de confirmação para <b>${esc(S.authMsg)}</b>. Depois de confirmar, volte aqui e entre com seu e-mail e senha.</p><div class="btn-row"><button class="btn primary" data-act="auth-mode" data-mode="login">Já confirmei, quero entrar</button></div></div></div>`;
@@ -175,7 +175,6 @@ function obPremio(o, k) {
 }
 function onboardingHtml() {
   const o = S.ob; const N = OB_CONV.length; o.i = Math.max(0, Math.min(N, o.i || 0)); const fim = o.i >= N;
-  const feitos = OB_CONV.slice(0, o.i).map((p) => OB_PREMIO_DE[p.id]).filter(Boolean);
   const orb = typeof iaOrb === 'function' ? iaOrb('obc-orb') : '<span class="obc-orb" aria-hidden="true"></span>';
   const fala = (t, novo) => `<div class="obc-a${novo ? ' novo' : ''}">${orb}<p><span class="obc-dig" aria-hidden="true"><i></i><i></i><i></i></span><span class="obc-t">${esc(t)}</span></p></div>`;
   let hist = '';
@@ -200,8 +199,7 @@ function onboardingHtml() {
   return `<div class="obc"><header class="obc-top"><div class="obc-top-in">
       <button type="button" class="obc-volta" data-act="ob-back"${o.i ? '' : ' disabled'} aria-label="Voltar uma pergunta">${I.chev}</button>
       <div class="obc-prog"><div class="obc-prog-t"><b>Seu diagnóstico</b><span>${fim ? 'Completo' : `${o.i} de ${N} · cada resposta desbloqueia algo`}</span></div>
-        <span class="obc-barra" role="progressbar" aria-label="Progresso do diagnóstico" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></span></div></div>
-      <ul class="obc-conq" hidden aria-label="Conquistas">${OB_PREMIOS.map(([k, n]) => `<li class="${feitos.includes(k) ? 'on' : ''}"><i aria-hidden="true">${feitos.includes(k) ? '✦' : '○'}</i>${n}</li>`).join('')}</ul></header>
+        <span class="obc-barra" role="progressbar" aria-label="Progresso do diagnóstico" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></span></div></div></header>
     <div class="obc-chat" aria-live="polite">${hist}${atual}</div></div>`;
 }
 // leva a conversa até a pergunta nova e põe o cursor no campo (só com mouse: no celular o teclado cobriria a conversa)
