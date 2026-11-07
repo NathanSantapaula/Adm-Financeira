@@ -498,4 +498,11 @@ ok(E.interfaceDe('gratis', 'completo') === 'basico' && E.interfaceDe('qualquer')
   const et = E.etapasObjetivo({ valor: 10000, saldo: 3000, aporte: 1000, retorno: 0, hoje: { ano: 2026, mes: 9 } });
   ok(et.length === 5 && et[1].atingido && !et[2].atingido && et[2].meses === 2 && et[4].meses === 7 && et[4].previsto.ano === 2027 && et[4].previsto.mes === 4, 'etapasObjetivo: 5 etapas com data prevista');
 }
+const NV = (() => { const pl = { v: 2, year: 2026, settings: { orcPadrao: 4000, limites: { Lazer: 900 } }, rendaCats: E.CATS_RENDA(), catsDesp: E.CATS_DESP(),
+    rendas: [{ id: 'r', cat: 'fixa', nome: 'Salário', valores: new Array(12).fill(6000) }],
+    despesas: [{ id: 'd', cat: 'fixa', area: 'Moradia', nome: 'Aluguel', dia: 10, valores: new Array(12).fill(2000) }],
+    lancamentos: [{ id: 'a', data: '2026-10-05', desc: 'Mercado', valor: 600, cat: 'variavel', area: 'Alimentação' }, { id: 'b', data: '2026-10-08', desc: 'Restaurante', valor: 400, cat: 'variavel', area: 'Lazer' }], ativos: [] };
+    return { pl, C: E.compute(pl, {}), hoje: { ano: 2026, mes: 9, dia: 10 } }; })();
+{ const pa = E.previsaoAno({ C: NV.C, plan: NV.pl, hoje: NV.hoje });
+  ok(pa.meses.length === 12 && pa.meses[8].tipo === 'real' && pa.meses[9].tipo === 'agora' && Math.abs(pa.meses[9].sobra - 900) < 0.01 && pa.meses[11].tipo === 'previsto' && Math.abs(pa.total - (9 * 4000 + 900 + 2 * 4000)) < 0.01 && pa.piorMes.mes === 9, 'previsaoAno: mês a mês com o mês de hoje previsto e o acumulado'); }
 process.exit(bad ? 1 : 0);

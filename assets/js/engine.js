@@ -1252,6 +1252,13 @@
       return { pct, valor, atingido: saldo >= valor, falta: r2(Math.max(0, valor - saldo)), meses, previsto: meses == null ? null : { ano: h.ano + Math.floor((h.mes + meses) / 12), mes: (h.mes + meses) % 12 } }; });
   }
 
+  // sobra mês a mês até dezembro: meses passados realizados, o mês de hoje pela previsaoMes, os seguintes pelo previsto; com o acumulado
+  function previsaoAno(o) {
+    const C = o.C; const m = o.hoje.mes; const pm = previsaoMes(o); let ac = 0;
+    const meses = C.investAlocado.map((v, i) => { const sobra = i === m ? pm.mes.saldoFim : r2(+v || 0); ac = r2(ac + sobra); return { mes: i, sobra, tipo: i < m ? 'real' : i === m ? 'agora' : 'previsto', acumulado: ac }; });
+    return { meses, total: ac, piorMes: meses.slice(m).reduce((b, x) => (x.sobra < b.sobra ? x : b), meses[m]) };
+  }
+
   /* dias úteis no Brasil: fim de semana e feriados nacionais (fixos e os que dependem da Páscoa) não contam */
   function pascoa(y) { const a = y % 19, b = Math.floor(y / 100), c = y % 100, d = Math.floor(b / 4), e = b % 4, f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3), h = (19 * a + b - d - g + 15) % 30, i = Math.floor(c / 4), k = c % 4, l = (32 + 2 * e + 2 * i - h - k) % 7, m = Math.floor((a + 11 * h + 22 * l) / 451);
     const mes = Math.floor((h + l - 7 * m + 114) / 31); return Date.UTC(y, mes - 1, ((h + l - 7 * m + 114) % 31) + 1); }
@@ -1264,6 +1271,6 @@
     z, add, sub, sum, r2, norm, monthIndex, parseValor, distribuir, parcelaMeses, parcelaFim, parcelaIndice, itemValores, carryItems,
     ativoKey, buildAssetTree, rebalance, contasMes, gastosPorInst, variacao, janelaAnterior, analiseInvest, jurosCompostos, sequenciaMeses, disponivelAporte, analiseRenda, analiseGastos, analiseCarteira, nomeEstab, historico, ctxAno, OBJ_TIPOS, normObjetivos, analiseObjetivos, sugerirDivisao, aporteNecessario, notificacoes, scorePerfil, projetar, mesesAteMeta, simularObjetivo, migratePlan, compute, makeBackup, parseBackup,
     templateSheets, parseImport, applyImport, gastosAreaMes, gastosAreaPeriodo, saudeFinanceira, analiseLimites, repetirValores, acharFixo, feriadoBR, diaUtilBR, IA_INTENCOES, IA_FICHAS, IA_PRODUTOS, iaIntencao, iaProduto, iaValor, iaParcelas, iaResponder,
-    previsaoMes, livreHoje, detectarRecorrentes, planoDoMes, raioXMes, etapasObjetivo };
+    previsaoMes, livreHoje, detectarRecorrentes, planoDoMes, raioXMes, etapasObjetivo, previsaoAno };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.FPEngine = api;
 })(typeof window !== 'undefined' ? window : globalThis);
