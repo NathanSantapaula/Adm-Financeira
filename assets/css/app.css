@@ -3467,3 +3467,13 @@ body[data-screen="auth"] .main:has(.cad) { padding: 0; }
   body[data-ui="completo"][data-screen="app"] .kpi-k { font-size: 12.5px; color: var(--ink-3); font-weight: 500; }
   body[data-ui="completo"][data-screen="app"] .kpi-s { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 12.5px; color: var(--ink-3); }
 }
+/* v7, rodada 2 (crítica): título do Hoje numa linha, selo do assistente discreto, onda inteira no cartão, rodapé dos widgets num grupo */
+@media (min-width: 901px) {
+  body[data-ui="completo"][data-screen="app"] .welcome .wh { font-size: clamp(28px, 2.2vw, 32px); line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+  body[data-ui="completo"][data-screen="app"] .welcome > div:first-child { min-width: 0; flex: 1; }
+  body[data-ui="completo"][data-screen="app"] .ia-cmd .ia-btn, body[data-ui="completo"][data-screen="app"] .ia-cmd .ia-orb { transform: scale(.82); }
+  body[data-ui="completo"][data-screen="app"] .ia-cmd-n { background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent); }
+}
+.wg .ia-intro { overflow: hidden; } .wg .ia-intro .ia-onda { transform: scale(.72); transform-origin: 50% 40%; }
+.wg-foot { width: fit-content; margin: 22px auto 8px; padding: 6px 8px 6px 6px; border-radius: 999px; background: var(--glass); -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); box-shadow: var(--shadow); }
+.c-def { font-size: 20px; }

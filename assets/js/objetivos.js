@@ -135,7 +135,7 @@ function objCardHtml() {
       <div class="sonho-top"><span class="sonho-k">Seu próximo objetivo</span><span class="sonho-acts">${sim}<button class="sonho-ger" data-act="objetivos-abrir" aria-label="Meus objetivos" title="Meus objetivos">${OBJ_I_SETA}</button></span></div>
       <h3 class="sonho-t">${esc(objTitulo(g))}</h3>
       <div class="sonho-meio"><div class="sonho-prog"><div class="sonho-ring">${ring(g.progresso, { size: 84, stroke: 7, color: '#fff', label: pct(g.progresso), sub: 'concluído', aria: `Progresso de ${objNomeDe(g)}` })}</div>
-        <div class="sonho-v"><b>${brl0(g.saldo)}</b><small>de ${brl0(g.valor)}</small><span class="sonho-st ${st[1]}"><i aria-hidden="true"></i>${esc(stTxt)}</span></div></div>
+        <div class="sonho-v"><b>${g.valor > g.saldo ? 'Faltam ' + brl0(g.valor - g.saldo) : brl0(g.saldo)}</b><small>meta de ${brl0(g.valor)}</small><span class="sonho-st ${st[1]}"><i aria-hidden="true"></i>${esc(stTxt)}</span></div></div>
       <div class="sonho-pe">${g.ano ? `<span class="sonho-prazo">${OBJ_I_CAL}<span><b>${g.previsto && g.status !== 'concluido' ? esc(MES_LONGO[g.previsto.mes]) + ' de ' + g.previsto.ano : 'Até ' + g.ano}</b><small>${g.status === 'concluido' ? 'meta coberta' : 'previsão no ritmo atual'}</small></span></span>` : ''}</div></div>
       ${sw}
       <p class="cap">${esc(objFrase(g))} Patrimônio a custo dividido pelas fatias de cada objetivo; retorno hipotético de ${fmtTaxa(+S.profile.retornoAnual || 10)} ao ano, sem promessa de resultado.</p>

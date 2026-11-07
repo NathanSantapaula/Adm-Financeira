@@ -64,7 +64,7 @@ const G_WIDGETS = [
   { id: 'ritmo', nome: () => 'Ritmo do mês', desc: 'Gasto acumulado dia a dia contra o orçamento, com a projeção até o fim do mês. Só na visão de um mês.', tam: 3, tams: [3, 4, 6], padrao: () => true },
   { id: 'mensal', nome: () => 'Mês a mês', desc: 'Gastos fixos e variáveis de cada mês, com o orçamento marcado.', tam: 6, tams: [3, 4, 6], padrao: () => true },
   { id: 'contas', nome: () => 'Contas do mês', desc: 'Gastos fixos e parcelas que caem no mês, pagos ou previstos.', tam: 3, tams: [2, 3, 4, 6], padrao: () => true },
-  { id: 'top', nome: () => 'Maiores gastos', desc: 'Os lançamentos de maior valor do período.', tam: 3, tams: [2, 3, 4, 6], padrao: () => true },
+  { id: 'top', nome: () => 'Maiores gastos', desc: 'Os lançamentos de maior valor do período.', tam: 3, tams: [2, 3, 4, 6], padrao: () => false },
   { id: 'parc', nome: () => 'Parcelamentos em andamento', desc: 'Parcela do mês, quanto falta e quando termina.', tam: 3, tams: [2, 3, 4, 6], padrao: () => true },
   { id: 'mudou', nome: () => 'O que mudou', desc: 'Áreas que subiram ou caíram em relação à média dos meses anteriores. Só na visão de um mês.', tam: 3, tams: [2, 3, 4, 6], padrao: () => false },
   { id: 'estab', nome: () => 'Onde você mais compra', desc: 'Estabelecimentos agrupados pelo nome, com número de compras e total.', tam: 3, tams: [2, 3, 4, 6], padrao: () => false },
@@ -144,7 +144,7 @@ function gWidgets(G) {
     <p class="cap">Gastos previstos e parcelas entram no dia 1; os lançamentos reais, no dia em que aconteceram.</p>`));
   // mês a mês
   { const C = S.C; const lim = S.year === NOW_Y ? NOW_M : 11; const comOrc = MES.map((_, i) => i).filter((i) => i <= lim && C.orcamento[i] > 0); const dentro = comOrc.filter((i) => C.despesas[i] <= C.orcamento[i]).length;
-    add('mensal', gCard('mensal', 'Mês a mês', `${legenda(['pos', 'warn', 'neg', 'sem'].map((k) => ORC_SIT[k]).concat([['var(--ink-3)', 'Orçado']]))}<div class="chart" id="g-mensal"></div><p class="cap">Cada mês na cor do orçamento. Toque em um mês para abri-lo.</p>`,
+    add('mensal', gCard('mensal', 'Mês a mês', `${(() => { const tem = MES.map((_, i) => orcSit(i)); return legenda(['pos', 'warn', 'neg', 'sem'].filter((k) => tem.includes(k)).map((k) => ORC_SIT[k]).concat(S.C.orcamento.some((o) => o > 0) ? [['var(--ink-3)', 'Orçado']] : [])); })()}<div class="chart" id="g-mensal"></div><p class="cap">Cada mês na cor do orçamento. Toque em um mês para abri-lo.</p>`,
       comOrc.length ? `<small class="c-note">${dentro} de ${comOrc.length} ${comOrc.length === 1 ? 'mês' : 'meses'} dentro</small>` : '')); }
   // o que mudou
   if (!ano) add('mudou', gCard('mudou', 'O que mudou', G.baseMeses ? (G.mudou.length ? `<ul class="g-lista">${G.mudou.map((x) => `<li><button class="g-li" data-act="g-area" data-area="${esc(x.nome)}"><span><b>${esc(x.nome)}</b><small>${esc(x.catNome)} · média ${brl0(x.media)}</small></span><span class="g-li-v"><b>${brl0(x.agora)}</b><small class="${x.dif > 0 ? 'neg' : 'pos'}">${x.pct == null ? 'novo no período' : gSinal(x.pct)}</small></span></button></li>`).join('')}</ul>`

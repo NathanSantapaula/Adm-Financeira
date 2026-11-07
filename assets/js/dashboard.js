@@ -228,7 +228,8 @@ function drawPatr() {
   const curAbs = S.year === NOW_Y ? NOW_M : -1; const cur = curAbs >= de && curAbs <= ate ? curAbs - de : -1;
   const base = C.patrimonioBase; const ritmo = MES.map((_, i) => base + (meta * (i + 1)) / 12); const comMeta = !!(S.patrMeta && meta);
   const varia = (i) => { const ant = i ? C.patrimonio[i - 1] : base; const d = C.patrimonio[i] - ant; return Math.abs(d) < 0.5 ? 'sem variação' : `${d > 0 ? '+' : '−'} ${brl0(Math.abs(d))}${ant > 0 ? ` (${d > 0 ? '+' : '−'}${pct(Math.abs(d) / ant)})` : ''}`; };
-  const series = [{ color: 'var(--c1)', values: so(C.patrimonio), area: true, w: 3 }]; if (comMeta) series.push({ color: 'var(--c4)', values: so(ritmo), dashed: true, w: 2 });
+  const vals = so(C.patrimonio); const series = [{ color: 'var(--c1)', values: cur >= 0 ? vals.map((v, j) => (j <= cur ? v : null)) : vals, area: true, w: 3 }]; // meses que ainda não vieram: linha tracejada, sem pontos
+  if (cur >= 0 && cur < vals.length - 1) series.push({ color: 'var(--c1)', values: vals.map((v, j) => (j >= cur ? v : null)), dashed: true, w: 2 }); if (comMeta) series.push({ color: 'var(--c4)', values: so(ritmo), dashed: true, w: 2 });
   chartLine(el, { height: 170, suave: true, brilho: true, pontos: true, pontoFinal: true, teclado: true, cur, zoom: Math.min(...so(C.patrimonio)) > 0, labels: so(MES), aria: 'Evolução do patrimônio no período. Use as setas para percorrer os meses.', series,
     tip: (j) => { const i = ids[j]; const dif = C.patrimonio[i] - ritmo[i]; return `<b>${mesNome(i)}${i === curAbs ? ' · hoje' : ''}</b><br>Patrimônio: ${brl0(C.patrimonio[i])}<br>No mês: ${varia(i)}<br>Aportes no mês: ${brl0(C.aplicado[i])}${comMeta ? `<br>Ritmo da meta: ${brl0(ritmo[i])} (${Math.abs(dif) < 0.5 ? 'em dia' : (dif > 0 ? 'acima ' : 'abaixo ') + brl0(Math.abs(dif))})` : ''}`; } });
 }
@@ -494,7 +495,7 @@ function painel2Html() {
     const D = painel2Dados();
     const st = (k, v) => `<div class="p2-st"><small>${k}</small><b>${v}</b></div>`;
     const stats = D.meses <= 0 ? '' : D.meta > 0
-      ? `<div class="p2-sts">${st('Meses na meta', `${D.naMeta} de ${D.meses}`)}${st('Sequência atual', D.seq ? `${D.seq} ${D.seq === 1 ? 'mês' : 'meses'}` : '–')}${st('Média por mês', brl0(D.media))}</div>`
+      ? `<div class="p2-sts">${st('Meses na meta', `${D.naMeta} de ${D.meses}`)}${st('Sequência atual', D.seq ? `${D.seq} ${D.seq === 1 ? 'mês' : 'meses'}` : '0 meses')}${st('Média por mês', brl0(D.media))}</div>`
       : `<div class="p2-sts">${st('Meses com aporte', `${D.comAporte} de ${D.meses}`)}${st('Média por mês', brl0(D.media))}<div class="p2-st"><small>Meta mensal</small><button class="lnk strong" data-act="admin-open">Definir</button></div></div>`;
     return `<section class="card"><div class="c-h"><h3>Constância dos aportes</h3><div class="legend"><span><i style="background:var(--accent)"></i>Aporte</span>${D.meta > 0 ? '<span><i class="mk" style="background:var(--c4)"></i>Meta</span>' : ''}</div></div>
       <p class="cap">Quanto foi aportado em cada mês (do bolso e com dividendos reinvestidos), comparado com a meta do mês. Constância pesa mais que o valor de um mês isolado.</p>
