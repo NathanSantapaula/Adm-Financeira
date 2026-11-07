@@ -792,6 +792,18 @@
       if (x.sit === 'passou') push(id + ':100', 'orcamento', 'critico', 'n_lim_passou', { area: x.area, valor: x.gasto - x.limite, limite: x.limite }, nav('Ver gastos', 'despesas', m));
       else if (x.sit === 'perto') push(id + ':80', 'orcamento', 'alerta', 'n_lim_perto', { area: x.area, pct: x.uso, restante: x.falta, limite: x.limite }, nav('Ver gastos', 'despesas', m)); });
 
+    // antecipados: no ritmo de hoje o mês fecha no vermelho; o limite de uma área passa antes do fim do mês (dia provável)
+    if (dia >= 5 && faltam >= 3) {
+      const pm = previsaoMes({ C, plan, hoje: h });
+      if (!alertaOrc && pm.mes.saldoFim < 0 && (+C.investAlocado[m] || 0) >= 0) push(`prev:${per}:negativo`, 'orcamento', 'alerta', 'n_prev_negativo', { valor: -pm.mes.saldoFim }, nav('Ver gastos', 'despesas', m));
+      const lim = (plan.settings || {}).limites || {}; const fixA = {}; const reaA = {};
+      (plan.despesas || []).concat(o.carry || []).forEach((it) => { const k = it.area || 'Outros'; fixA[k] = (fixA[k] || 0) + (itemValores(it, plan.year)[m] || 0); });
+      (plan.lancamentos || []).forEach((l) => { const d = parseDataISO(l.data); if (d && d.ano === plan.year && d.mes === m && d.dia <= dia) { const k = l.area || 'Outros'; reaA[k] = (reaA[k] || 0) + (+l.valor || 0); } });
+      Object.keys(lim).forEach((k) => { const L = +lim[k] || 0; const rr = reaA[k] || 0; const f = fixA[k] || 0; if (!(L > 0) || !(rr > 0) || f + rr >= L * 0.8) return; // perto e passou já têm aviso
+        const proj = f + (rr / dia) * diasMes; if (proj <= L) return;
+        push(`limprev:${per}:${norm(k).replace(/[^a-z0-9]+/g, '-')}`, 'orcamento', 'alerta', 'n_lim_ritmo', { area: k, dia: Math.ceil((L - f) / (rr / dia)), limite: L, projecao: proj }, nav('Ver gastos', 'despesas', m)); });
+    }
+
     // 2) Lembretes do calendário
     const entradas = +C.receita[m] || 0;
     if (dia >= 5) {
