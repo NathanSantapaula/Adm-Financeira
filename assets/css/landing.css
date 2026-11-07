@@ -178,3 +178,19 @@
 @media (max-width: 900px) { .hm-pl-conf { grid-template-columns: 1fr; text-align: center; gap: 8px; } }
 @media (prefers-reduced-motion: reduce) { .hm-b { transition: none; } .hm-b:hover { transform: none; } }
 @media (prefers-reduced-transparency: reduce) { .hm-b, .hm-passos li, .hm .hp-faq { background: #121829; backdrop-filter: none; -webkit-backdrop-filter: none; } }
+.hm-b h3 { font-size: 24px; } .hm-b p { margin: 2px 0 18px; }
+.hm-hoje { display: grid; grid-template-columns: auto 1fr; gap: 24px; align-items: center; }
+.hm-ok { color: var(--pos); font-size: 13px; }
+.hm-plano { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 14px; }
+.hm-plano li { padding: 10px 12px; border-radius: 14px; background: rgba(255, 255, 255, .055); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .07); }
+.hm-plano em { display: block; font-style: normal; color: var(--ink-3); font-size: 12px; }
+.hm-contas em.pos { color: var(--pos); }
+.hm-etapas { list-style: none; margin: 8px 0 14px; padding: 0; display: flex; justify-content: space-between; font-size: 11px; color: var(--ink-3); position: relative; }
+.hm-etapas::before { content: ''; position: absolute; left: 6px; right: 6px; top: 6px; height: 2px; background: rgba(255, 255, 255, .1); }
+.hm-etapas li { position: relative; display: grid; justify-items: center; gap: 6px; }
+.hm-etapas i { width: 14px; height: 14px; border-radius: 50%; background: #1a2135; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .15); }
+.hm-etapas .ok i { background: var(--b-luz); box-shadow: 0 0 12px var(--b-luz); }
+.hm-patr { display: grid; grid-template-columns: 140px 1fr; gap: 20px; align-items: center; }
+.hm-voce { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.hm-voce li { padding: 10px 16px; border-radius: 980px; background: rgba(255, 255, 255, .06); font-size: 14px; }
+@media (max-width: 560px) { .hm-hoje, .hm-patr { grid-template-columns: 1fr; } }

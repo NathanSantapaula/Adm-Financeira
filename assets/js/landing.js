@@ -223,13 +223,13 @@ function landingHtml() {
   const tel = (cls, corpo) => `<div class="hm-tel ${cls}" aria-hidden="true"><span class="hm-tel-ilha"></span><div class="hm-tel-st"><b>9:41</b><i></i></div>${corpo}</div>`;
   const cats = [['Moradia', 2200, 'var(--c1)'], ['Alimentação', 1150, 'var(--c2)'], ['Transporte', 620, 'var(--c3)'], ['Lazer', 430, 'var(--c4)']];
   const totCat = cats.reduce((s, c) => s + c[1], 0);
+  // as 5 áreas do produto, cada uma com uma pergunta e um widget (valores ilustrativos)
   const bento = [
-    ['w2', 'Importa o extrato', 'CSV, OFX e relatórios da B3', `<div class="hm-noti"><span class="hm-noti-ic">${I.chev}</span><span><b>Extrato de ${mes}</b><small>42 lançamentos lidos</small></span></div><div class="hm-noti ok"><span class="hm-noti-ic">✓</span><span><b>Categorizados</b><small>você só confere</small></span></div>`],
-    ['', 'Orçamento do mês', 'Quanto foi, quanto resta', `<b class="hm-big">${brl0(1320)}</b><small class="hm-mut">restam em ${mes}</small><span class="hm-barra"><i style="width:78%"></i></span>`],
-    ['', 'Limites por área', 'Aviso antes de estourar', `<ul class="hm-lims">${[['Delivery', 92], ['Transporte', 46], ['Lazer', 71]].map(([n, p]) => `<li><span>${n}</span><span class="hm-barra"><i style="width:${p}%"${p > 85 ? ' class="alto"' : ''}></i></span><b>${p}%</b></li>`).join('')}</ul>`],
-    ['', 'Contas do mês', 'Fixos e parcelas achados', `<ul class="hm-contas"><li><b>Internet</b><small>vence em 3 dias</small><em>${brl(119.9)}</em></li><li><b>Notebook 4/10</b><small>parcela de ${mes}</small><em>${brl(389)}</em></li></ul>`],
-    ['', 'Carteira com alvo', 'Onde investir o próximo aporte', `<div class="donut" id="hm-donut"></div>`],
-    ['w2', 'Pergunte ao assistente', 'Resposta com os seus números', `<div class="hm-chat"><p class="eu">Posso comprar um celular de R$ 3 mil?</p><p>Cabe na sobra de ${mes}, mas adia em 1 mês o seu objetivo. Quer ver como dividir?</p></div>`],
+    ['w2', 'Hoje', 'Como estou e o que faço agora?', `<div class="hm-hoje"><div><small class="hm-mut">Pode gastar hoje</small><b class="hm-big">${brl0(86)}</b><span class="hm-ok">● No ritmo · sobra prevista de ${brl0(1320)}</span></div><ol class="hm-plano"><li>Pague a internet <em>vence amanhã</em></li><li>Aporte ${brl0(300)} no sonho</li><li>Segure o lazer <em>85% do limite</em></li></ol></div>`],
+    ['', 'Dinheiro', 'Para onde vai e de onde vem?', `<ul class="hm-contas"><li><b>Salário</b><small>dia 5</small><em class="pos">+${brl0(5750)}</em></li><li><b>Mercado</b><small>ontem</small><em>−${brl0(386)}</em></li></ul>`],
+    ['', 'Futuro', 'Vou chegar lá?', `<ul class="hm-etapas" aria-hidden="true">${[10, 25, 50, 75, 100].map((n) => `<li class="${n <= 50 ? 'ok' : ''}"><i></i>${n}%</li>`).join('')}</ul><small class="hm-mut">Próxima etapa em março</small>`],
+    ['w2', 'Patrimônio', 'Quanto tenho e como cresce?', `<div class="hm-patr"><div class="donut" id="hm-donut"></div><div><b class="hm-big">${brl0(487320)}</b><small class="hm-mut">aportes, proventos e carteira com alvo</small></div></div>`],
+    ['w2', 'Você', 'Seu jeito, seus dados', `<ul class="hm-voce"><li>Sem senha do banco</li><li>Backup quando quiser</li><li>Assessor a um toque</li></ul>`],
   ];
   const passos = ['Envie o extrato', `O ${esc(CFG.marca)} organiza`, 'Você confere'];
 
@@ -247,15 +247,15 @@ function landingHtml() {
     <p class="hm-garantia hp-in">Grátis para começar · sem cartão · sem senha do banco</p>
     <div class="hm-fone hp-in">
       ${tel('esq', `<div class="hm-tel-c"><p class="hm-tel-t">Assistente</p><div class="hm-chat"><p class="eu">Quanto sobrou em ${mes}?</p><p>Sobraram ${brl0(1840)}. Já dá para o aporte do mês e ainda fica uma folga.</p></div></div>`)}
-      <div class="hm-meio" aria-hidden="true"><small>● Disponível para aportar</small><b>${brl0(1840)}</b><span>de ${brl0(5750)} que entraram em ${mes}</span></div>
+      <div class="hm-meio" aria-hidden="true"><small>● Pode gastar hoje</small><b>${brl0(86)}</b><span>e o mês ainda fecha no azul</span></div>
       ${tel('dir', `<div class="hm-tel-c"><p class="hm-tel-t">Gastos por categoria</p><small class="hm-mut">${MES_LONGO[NOW_M]} ${NOW_Y}</small><b class="hm-big">${brl0(totCat)}</b><ul class="hm-cats">${cats.map(([n, v, c]) => `<li><i style="background:${c}"></i><span>${n}<small>${Math.round((v / totCat) * 100)}% dos gastos</small></span><b>${brl0(v)}</b></li>`).join('')}</ul></div>`)}
     </div>
     <p class="hp-cap">Telas ilustrativas, com valores fictícios.</p>
   </div></section>
 
   <section class="hp-sec" id="produto"><div class="hp-w">
-    <div class="hp-head" data-rv><p class="hp-k">Tudo num painel só</p><h2 class="hp-h2">Organiza, avisa e aponta o caminho.</h2></div>
-    <div class="hm-bento">${bento.map(([w, t, s, v]) => `<article class="hm-b ${w}" data-rv><div class="hm-b-v">${v}</div><h3>${t}</h3></article>`).join('')}</div>
+    <div class="hp-head" data-rv><p class="hp-k">Cinco áreas, nada a mais</p><h2 class="hp-h2">Cada tela responde uma pergunta.</h2></div>
+    <div class="hm-bento">${bento.map(([w, t, q, v]) => `<article class="hm-b ${w}" data-rv><h3>${t}</h3><p>${q}</p><div class="hm-b-v">${v}</div></article>`).join('')}</div>
   </div></section>
 
   <section class="hp-sec" id="como"><div class="hp-w">
