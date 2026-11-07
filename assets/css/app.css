@@ -3461,3 +3461,9 @@ body[data-screen="auth"] .main:has(.cad) { padding: 0; }
   body[data-ui="completo"][data-screen="app"] .c-h h3, body[data-ui="completo"][data-screen="app"] .wg h3 { font-size: 15px; font-weight: 600; letter-spacing: -.01em; }
   body[data-ui="completo"][data-screen="app"] .page-h h1 { letter-spacing: -.03em; }
 }
+/* v7: indicadores com o número em destaque e a legenda curta (o texto inteiro fica no título ao passar o mouse) */
+@media (min-width: 901px) {
+  body[data-ui="completo"][data-screen="app"] .kpi-v { font-size: 34px; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+  body[data-ui="completo"][data-screen="app"] .kpi-k { font-size: 12.5px; color: var(--muted); font-weight: 500; }
+  body[data-ui="completo"][data-screen="app"] .kpi-s { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 12.5px; color: var(--muted); }
+}

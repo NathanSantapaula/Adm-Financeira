@@ -166,7 +166,7 @@ function gWidgets(G) {
   { const meses = new Set(G.mes >= 0 ? [G.mes] : perIds()); const soma = {}; let tot = 0;
     gastosDados().ents.forEach((e) => { if (!meses.has(e.m) || !(e.valor > 0)) return; const k = instDe(e.inst) ? e.inst : ''; soma[k] = (soma[k] || 0) + e.valor; tot += e.valor; });
     const L = Object.keys(soma).map((k) => ({ k, v: soma[k] })).sort((a, b) => b.v - a.v); const mx = L.length ? L[0].v : 1;
-    add('inst', gCard('inst', 'Por instituição', L.length ? `<ul class="g-areas">${L.map((x) => { const nome = x.k ? instDe(x.k)[1] : 'Sem instituição';
+    if (L.some((x) => x.k)) add('inst', gCard('inst', 'Por instituição', L.length ? `<ul class="g-areas">${L.map((x) => { const nome = x.k ? instDe(x.k)[1] : 'Sem instituição';
       return `<li><button class="g-area g-inst" ${x.k ? `data-act="g-busca" data-q="${esc(nome)}"` : 'disabled'}>${instIcone(x.k)}<span class="g-area-n"><b>${esc(nome)}</b></span>
         <span class="g-area-t"><i style="width:${((x.v / mx) * 100).toFixed(1)}%;--bc:${x.k ? instDe(x.k)[2] : 'var(--ink-3)'}"></i></span><span class="g-area-v"><b>${brl0(x.v)}</b><small>${pct(x.v / tot)}</small></span></button></li>`; }).join('')}</ul>
       ${soma[''] ? '<p class="cap">Marque "Pago com" nos lançamentos para separar o que está sem instituição.</p>' : ''}` : gVazio('Sem gastos neste período.')));
@@ -174,7 +174,7 @@ function gWidgets(G) {
     const C2 = L.filter((x) => x.k); const quando = G.mes >= 0 ? 'em ' + MES_LONGO[G.mes] : perFrase();
     // carteira que guarda os cartões (modelo e cor do App por basCcEstilo): passar o mouse levanta os cartões; tocar abre a vitrine (ccCarteira) e, nela, cada cartão abre a sua janela (ccAbrir)
     S.ccCart = { L: C2, tot, quando }; const somaC = C2.reduce((t, x) => t + x.v, 0);
-    add('cartoes', gCard('cartoes', 'Meus cartões', C2.length ? `<div class="cw"><button type="button" class="cw-b" style="--n:${Math.min(4, C2.length)}" data-act="cc-carteira" aria-label="Abrir os seus ${C2.length} cartões">
+    if (C2.length) add('cartoes', gCard('cartoes', 'Meus cartões', C2.length ? `<div class="cw"><button type="button" class="cw-b" style="--n:${Math.min(4, C2.length)}" data-act="cc-carteira" aria-label="Abrir os seus ${C2.length} cartões">
       <span class="cw-cs" aria-hidden="true">${C2.slice(0, 4).reverse().map((x, k) => { const i = instDe(x.k); return `<span class="bas-cc-c cw-c" ${basCcEstilo(x.k).attr.replace('style="', `style="--k:${k};`)}><span class="cw-c-n">${esc(i[1])}</span><span class="cw-c-v">${brl0(x.v)}</span></span>`; }).join('')}</span>
       <span class="cw-bolso"><span class="cw-qt">${C2.length} ${C2.length === 1 ? 'cartão' : 'cartões'}</span><small>Gasto ${esc(quando)} <em>${pct(somaC / (tot || 1))} dos gastos</em></small><b>${brl(somaC)}</b></span></button>
       <button type="button" class="cw-mais" data-act="add-lanc" aria-label="Novo gasto" title="Novo gasto">${I.plus || '+'}</button></div>` : gVazio('Marque "Pago com" ao lançar um gasto para ver um cartão por banco ou carteira.'))); }
@@ -184,7 +184,7 @@ function gWidgets(G) {
     const seg = L.length ? `<div class="lim-seg-h"><b>${brl0(segG)}</b><small>de ${brl0(segL)} somando os limites</small></div><div class="lim-seg" role="img" aria-label="Uso de cada limite">${L.map((x, i) => `<span style="flex:${x.limite}" title="${esc(x.area)}: ${pct(x.uso)}"><i style="width:${Math.min(100, x.uso * 100).toFixed(1)}%;--bc:${x.sit === 'passou' ? 'var(--neg)' : PAL[i % 6]}"></i></span>`).join('')}</div><ul class="lim-leg">${L.map((x, i) => `<li><i style="--bc:${x.sit === 'passou' ? 'var(--neg)' : PAL[i % 6]}"></i>${esc(x.area)} (${pct(x.uso)})</li>`).join('')}</ul>` : '';
     add('limites', gCard('limites', 'Limites por área', L.length ? seg + `<ul class="g-areas">${L.map((x) => `<li><button class="g-area g-lim ${x.sit}" data-act="g-limite" data-area="${esc(x.area)}" title="Alterar o limite de ${esc(x.area)}"><span class="g-area-n"><b>${esc(x.area)}</b><small>${x.sit === 'passou' ? `${brl0(-x.falta)} acima` : `restam ${brl0(x.falta)}`}</small></span>
         <span class="g-area-t"><i style="width:${Math.min(100, x.uso * 100).toFixed(1)}%;--bc:${cor[x.sit]}"></i></span><span class="g-area-v"><b>${brl0(x.gasto)}</b><small>de ${brl0(x.limite)}</small></span></button></li>`).join('')}</ul>`
-      : gVazio('Defina um limite por mês para as áreas que pesam mais, como Alimentação ou Lazer.'), `<button class="lnk strong" data-act="g-limite">${L.length ? 'Novo limite' : 'Definir limite'}</button>`)); }
+      : gVazio('Nenhum limite ainda.'), `<button class="lnk strong" data-act="g-limite">${L.length ? 'Novo limite' : 'Definir limite'}</button>`)); }
   return telaWidgetsHtml('gastos', html);
 }
 const gAcaoEnt = (e) => (e.tipo === 'real' ? `data-act="edit-lanc" data-id="${esc(e.id)}"` : e.herdado ? `data-act="year-pick" data-year="${e.herdado}"` : `data-act="edit-item" data-kind="desp" data-id="${esc(e.id)}"`);
