@@ -27,7 +27,7 @@ function analiseAtual() {
   return E.analiseInvest({ C: S.C, ...perJanela(), metaAporte: +S.plan.settings.metaAporte || 0, metaMes: S.C.metaAporteMes,
     itens: M.items.map((i) => ({ nome: i.a.nome, tipo: i.a.tipo, classe: i.a.classe, valor: i.valor, ap: i.a.ap, pr: i.a.pr })) });
 }
-const kpi = (rot, val, sub, extra, cls) => `<section class="kpi${cls ? ' ' + cls : ''}"><small class="kpi-k">${rot}</small><div class="kpi-v">${val}</div>${extra || ''}<p class="kpi-s">${sub}</p></section>`;
+const kpi = (rot, val, sub, extra, cls) => `<section class="kpi${cls ? ' ' + cls : ''}"><small class="kpi-k">${rot}</small><div class="kpi-v">${val}</div>${extra || ''}<p class="kpi-s" title="${esc(String(sub).replace(/<[^>]*>/g, ''))}">${sub}</p></section>`;
 const barra = (f, tom) => `<span class="kbar${tom ? ' ' + tom : ''}" aria-hidden="true"><i style="width:${(Math.max(0, Math.min(1, f || 0)) * 100).toFixed(1)}%"></i></span>`;
 const legenda = (itens) => `<ul class="leg">${itens.map(([c, l]) => `<li><i style="background:${c}"></i>${esc(l)}</li>`).join('')}</ul>`;
 const ateMes = () => (S.year === NOW_Y && !S.periodo ? ` até ${MES_LONGO[NOW_M]}` : ''); // com período, o texto já diz quais meses (perFrase)

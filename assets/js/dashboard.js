@@ -185,7 +185,32 @@ document.addEventListener('visibilitychange', () => {
 function viewGeral() {
   const p = S.plan; const pr = S.profile; const nome = (pr.apelido || (pr.nome || '').split(' ')[0]) || 'por aqui';
   const cab = `<div class="welcome"><div><p class="greet">${esc(voz('saudacao', { saud: saudacaoHora(), nome }))}</p>${(() => { const f = tituloAtual(); return `<h1 class="wh${visualAtual() === '3d' ? ' wh-conversa' : ''}" aria-label="${esc(f)}"><span class="wh-t" aria-hidden="true">${esc(f)}</span>${visualAtual() === '3d' ? '<span class="wh-cur" aria-hidden="true"></span>' : ''}</h1>`; })()}</div>${yearControl()}</div>`;
-  return cab + widgetsHtml(); // widgets na ordem e no tamanho escolhidos pelo cliente (widgets.js)
+  return cab + hojeHtml() + widgetsHtml(); // widgets na ordem e no tamanho escolhidos pelo cliente (widgets.js)
+}
+
+/* Hoje: responde em segundos "como estou e o que faço agora". Só lê o que já é calculado (S.C, E.disponivelAporte, E.contasMes). */
+function hojeHtml() {
+  const C = S.C; if (!C) return ''; const m = mesRef(); const mn = MES_LONGO[m];
+  const sobra = C.investAlocado[m] || 0; const orc = C.orcamento[m] > 0; const uso = orc ? C.usoOrc[m] : 0;
+  const D = E.disponivelAporte({ C, mes: m, metaMes: C.metaAporteMes });
+  const K = E.contasMes({ despesas: S.plan.despesas, carry: E.carryItems(S.plans, S.year), ano: S.year, mes: m });
+  // mês corrente: previsão no ritmo de hoje e quanto dá para gastar por dia (E.previsaoMes / E.livreHoje)
+  const agora = S.year === NOW_Y && m === NOW_M && E.previsaoMes; const hj = agora ? { ano: S.year, mes: m, dia: new Date().getDate() } : null;
+  const P = hj ? E.previsaoMes({ C, plan: S.plan, hoje: hj }) : null; const LV = hj ? E.livreHoje({ C, hoje: hj }) : null;
+  const fim = P ? P.mes.saldoFim : sobra;
+  const st = fim < 0 ? ['neg', `Atenção: ${mn} fecha no vermelho em ${brl0(-fim)}`] : uso > 1 ? ['warn', `Você passou do orçamento de ${mn}`] : uso > 0.85 ? ['warn', 'Perto do limite do orçamento'] : ['pos', 'Você está no ritmo'];
+  const passos = proximosPassos();
+  const acoes = (passos.length ? passos : [['Ver para onde foi o dinheiro', 'nav', 'despesas']]).map(([t, a, v]) =>
+    `<button class="hj-acao" data-act="${a}"${v ? ` data-view="${v}"` : ''}><span>${esc(t)}</span><i aria-hidden="true">→</i></button>`).join('');
+  const abertas = K.itens.filter((i) => !i.pago).slice(0, 3);
+  const contas = abertas.length ? `<ul class="hj-contas">${abertas.map((i) => `<li><span>${esc(i.nome)}</span><b>${brl0(i.valor)}</b></li>`).join('')}</ul>` : '<p class="hj-ok keep">Nenhuma conta em aberto neste mês.</p>';
+  return `<section class="hoje" aria-label="Hoje">
+    <div class="hj-placar"><p class="hj-st ${st[0]}"><i aria-hidden="true"></i>${esc(st[1])}</p>
+      ${LV ? `<p class="hj-rot">Pode gastar hoje</p><p class="hj-num">${brl0(LV.porDia)}</p>
+      <p class="hj-sub">Sobra prevista <b>${brl0(fim)}</b> · disponível para aportar <b>${brl0(D.disponivel)}</b>` : `<p class="hj-rot">Disponível para aportar em ${mn}</p><p class="hj-num">${brl0(D.disponivel)}</p>
+      <p class="hj-sub">Sobra do mês <b>${brl0(sobra)}</b>`}${K.falta > 0 ? ` · contas a pagar <b>${brl0(K.falta)}</b>` : ''}</p></div>
+    <div class="hj-col"><h3>Faça agora</h3><div class="hj-acoes">${acoes}</div></div>
+    <div class="hj-col"><h3>Contas de ${mn}</h3>${contas}</div></section>`;
 }
 
 /* Patrimônio estimado: linha do patrimônio (bolinha em cada mês, mês atual em destaque, ritmo da meta opcional).
@@ -203,7 +228,8 @@ function drawPatr() {
   const curAbs = S.year === NOW_Y ? NOW_M : -1; const cur = curAbs >= de && curAbs <= ate ? curAbs - de : -1;
   const base = C.patrimonioBase; const ritmo = MES.map((_, i) => base + (meta * (i + 1)) / 12); const comMeta = !!(S.patrMeta && meta);
   const varia = (i) => { const ant = i ? C.patrimonio[i - 1] : base; const d = C.patrimonio[i] - ant; return Math.abs(d) < 0.5 ? 'sem variação' : `${d > 0 ? '+' : '−'} ${brl0(Math.abs(d))}${ant > 0 ? ` (${d > 0 ? '+' : '−'}${pct(Math.abs(d) / ant)})` : ''}`; };
-  const series = [{ color: 'var(--c1)', values: so(C.patrimonio), area: true, w: 3 }]; if (comMeta) series.push({ color: 'var(--c4)', values: so(ritmo), dashed: true, w: 2 });
+  const vals = so(C.patrimonio); const series = [{ color: 'var(--c1)', values: cur >= 0 ? vals.map((v, j) => (j <= cur ? v : null)) : vals, area: true, w: 3 }]; // meses que ainda não vieram: linha tracejada, sem pontos
+  if (cur >= 0 && cur < vals.length - 1) series.push({ color: 'var(--c1)', values: vals.map((v, j) => (j >= cur ? v : null)), dashed: true, w: 2 }); if (comMeta) series.push({ color: 'var(--c4)', values: so(ritmo), dashed: true, w: 2 });
   chartLine(el, { height: 170, suave: true, brilho: true, pontos: true, pontoFinal: true, teclado: true, cur, zoom: Math.min(...so(C.patrimonio)) > 0, labels: so(MES), aria: 'Evolução do patrimônio no período. Use as setas para percorrer os meses.', series,
     tip: (j) => { const i = ids[j]; const dif = C.patrimonio[i] - ritmo[i]; return `<b>${mesNome(i)}${i === curAbs ? ' · hoje' : ''}</b><br>Patrimônio: ${brl0(C.patrimonio[i])}<br>No mês: ${varia(i)}<br>Aportes no mês: ${brl0(C.aplicado[i])}${comMeta ? `<br>Ritmo da meta: ${brl0(ritmo[i])} (${Math.abs(dif) < 0.5 ? 'em dia' : (dif > 0 ? 'acima ' : 'abaixo ') + brl0(Math.abs(dif))})` : ''}`; } });
 }
@@ -469,7 +495,7 @@ function painel2Html() {
     const D = painel2Dados();
     const st = (k, v) => `<div class="p2-st"><small>${k}</small><b>${v}</b></div>`;
     const stats = D.meses <= 0 ? '' : D.meta > 0
-      ? `<div class="p2-sts">${st('Meses na meta', `${D.naMeta} de ${D.meses}`)}${st('Sequência atual', D.seq ? `${D.seq} ${D.seq === 1 ? 'mês' : 'meses'}` : '–')}${st('Média por mês', brl0(D.media))}</div>`
+      ? `<div class="p2-sts">${st('Meses na meta', `${D.naMeta} de ${D.meses}`)}${st('Sequência atual', D.seq ? `${D.seq} ${D.seq === 1 ? 'mês' : 'meses'}` : '0 meses')}${st('Média por mês', brl0(D.media))}</div>`
       : `<div class="p2-sts">${st('Meses com aporte', `${D.comAporte} de ${D.meses}`)}${st('Média por mês', brl0(D.media))}<div class="p2-st"><small>Meta mensal</small><button class="lnk strong" data-act="admin-open">Definir</button></div></div>`;
     return `<section class="card"><div class="c-h"><h3>Constância dos aportes</h3><div class="legend"><span><i style="background:var(--accent)"></i>Aporte</span>${D.meta > 0 ? '<span><i class="mk" style="background:var(--c4)"></i>Meta</span>' : ''}</div></div>
       <p class="cap">Quanto foi aportado em cada mês (do bolso e com dividendos reinvestidos), comparado com a meta do mês. Constância pesa mais que o valor de um mês isolado.</p>

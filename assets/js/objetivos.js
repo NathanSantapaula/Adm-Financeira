@@ -135,7 +135,7 @@ function objCardHtml() {
       <div class="sonho-top"><span class="sonho-k">Seu próximo objetivo</span><span class="sonho-acts">${sim}<button class="sonho-ger" data-act="objetivos-abrir" aria-label="Meus objetivos" title="Meus objetivos">${OBJ_I_SETA}</button></span></div>
       <h3 class="sonho-t">${esc(objTitulo(g))}</h3>
       <div class="sonho-meio"><div class="sonho-prog"><div class="sonho-ring">${ring(g.progresso, { size: 84, stroke: 7, color: '#fff', label: pct(g.progresso), sub: 'concluído', aria: `Progresso de ${objNomeDe(g)}` })}</div>
-        <div class="sonho-v"><b>${brl0(g.saldo)}</b><small>de ${brl0(g.valor)}</small><span class="sonho-st ${st[1]}"><i aria-hidden="true"></i>${esc(stTxt)}</span></div></div>
+        <div class="sonho-v"><b>${g.valor > g.saldo ? 'Faltam ' + brl0(g.valor - g.saldo) : brl0(g.saldo)}</b><small>meta de ${brl0(g.valor)}</small><span class="sonho-st ${st[1]}"><i aria-hidden="true"></i>${esc(stTxt)}</span></div></div>
       <div class="sonho-pe">${g.ano ? `<span class="sonho-prazo">${OBJ_I_CAL}<span><b>${g.previsto && g.status !== 'concluido' ? esc(MES_LONGO[g.previsto.mes]) + ' de ' + g.previsto.ano : 'Até ' + g.ano}</b><small>${g.status === 'concluido' ? 'meta coberta' : 'previsão no ritmo atual'}</small></span></span>` : ''}</div></div>
       ${sw}
       <p class="cap">${esc(objFrase(g))} Patrimônio a custo dividido pelas fatias de cada objetivo; retorno hipotético de ${fmtTaxa(+S.profile.retornoAnual || 10)} ao ano, sem promessa de resultado.</p>
@@ -253,4 +253,41 @@ function objCampo(t) {
 function objResumoCliente(d) {
   const L = E.normObjetivos(d || {}); if (!L.length) return '–';
   return L.length === 1 ? objNomeDe(L[0]) : `${objNomeDe(L[0])} +${L.length - 1}`;
+}
+
+/* ---------- Futuro (área do menu): sonhos com etapas, reserva guiada e previsão do ano. Só lê o engine
+   (E.analiseObjetivos, E.etapasObjetivo, E.metaReserva, E.previsaoAno); gravar sonho continua por objSalvar. ---------- */
+function futHoje() { return { ano: NOW_Y, mes: NOW_M, dia: new Date().getDate() }; }
+function viewFuturo() {
+  const A = objAnalise(); const B = objBase(); const C = S.C; const hj = futHoje();
+  const quando = (p) => (p ? MES[p.mes] + ' de ' + p.ano : 'sem previsão');
+  const sonhos = A.itens.map((g) => {
+    const et = g.valor > 0 ? E.etapasObjetivo({ valor: g.valor, saldo: g.saldo, aporte: g.aporte, retorno: B.retorno, hoje: { ano: hj.ano, mes: hj.mes }, prazo: g.prazo }) : [];
+    const prox = et.find((e) => !e.atingido); const at = prox && prox.atraso;
+    const tag = at == null ? '' : at > 0 ? `<span class="ft-tag warn">${at} ${at === 1 ? 'mês' : 'meses'} atrasado</span>` : at < 0 ? `<span class="ft-tag pos">${-at} ${at === -1 ? 'mês' : 'meses'} adiantado</span>` : '<span class="ft-tag pos">No ritmo</span>';
+    const passos = et.map((e) => `<li class="${e.atingido ? 'ok' : e === prox ? 'agora' : ''}" title="${pct(e.pct)}: ${brl0(e.valor)}${e.atingido ? ' · alcançada' : ' · ' + quando(e.previsto)}"><i></i><small>${pct(e.pct)}</small></li>`).join('');
+    return `<article class="ft-sonho"><header><h3>${esc(objNomeDe(g))}</h3>${tag}</header>
+      <p class="ft-num">${pct(g.progresso)}</p><p class="ft-sub">${brl0(g.saldo)} de ${brl0(g.valor)} · previsão <b>${esc(quando(g.previsto))}</b></p>
+      ${passos ? `<ol class="ft-etapas" aria-label="Etapas do sonho">${passos}</ol>` : ''}
+      ${prox ? `<p class="ft-prox">Próxima etapa: <b>${brl0(prox.valor)}</b> em ${esc(quando(prox.previsto))}</p>` : ''}</article>`;
+  }).join('');
+  const R = E.metaReserva({ C, patrimonio: C.patrimonio[S.year === NOW_Y ? NOW_M : 11], hoje: { ano: hj.ano, mes: hj.mes } });
+  const temRes = objLista().some((g) => g.tipo === 'reserva');
+  const res = R && R.meta > 0 ? `<section class="card ft-res"><div class="c-h"><h3>Reserva de emergência</h3></div>
+    <p class="ft-num">${R.cobertos >= 6 ? '6+' : (R.cobertos || 0).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} <small>${R.cobertos >= 6 ? 'meses cobertos: reserva completa' : 'de 6 meses cobertos'}</small></p>
+    <div class="bar"><i style="width:${Math.min(100, (R.pct || 0) * 100)}%"></i></div>
+    <p class="ft-sub">Meta ${brl0(R.meta)}${R.falta > 0 ? ` · faltam <b>${brl0(R.falta)}</b>` : ' · completa'}</p>
+    ${!temRes && R.falta > 0 ? '<button class="btn sm" data-act="fut-reserva">Criar como sonho</button>' : ''}</section>` : '';
+  const P = S.year === NOW_Y ? E.previsaoAno({ C, plan: S.plan, hoje: hj }) : null;
+  const mx = P ? Math.max(1, ...P.meses.map((x) => Math.abs(x.sobra))) : 1;
+  const ano = P ? `<section class="card ft-ano"><div class="c-h"><h3>Previsão de ${S.year}</h3></div>
+    <p class="ft-num">${brl0(P.total)} <small>de sobra no ano</small></p>
+    <div class="ft-barras" role="img" aria-label="Sobra de cada mês: real, agora e prevista">${P.meses.map((x) => `<span class="${x.tipo}${x.sobra < 0 ? ' neg' : ''}" title="${MES[x.mes]}: ${brl0(x.sobra)}"><i style="height:${Math.max(3, Math.abs(x.sobra) / mx * 100)}%"></i><small>${MES[x.mes]}</small></span>`).join('')}</div></section>` : '';
+  return `<div class="page-h"><div><h1>Futuro</h1></div><div class="page-act"><button class="btn ghost" data-act="objetivos-abrir">Gerenciar sonhos</button></div></div>
+    <div class="ft-grid">${sonhos || '<section class="card"><p class="keep">Nenhum sonho ainda.</p><button class="btn" data-act="objetivos-abrir">Criar o primeiro</button></section>'}</div>
+    <div class="ft-duo">${res}${ano}</div>`;
+}
+function futReserva() {
+  const R = E.metaReserva({ C: S.C, patrimonio: S.C.patrimonio[S.year === NOW_Y ? NOW_M : 11], hoje: { ano: NOW_Y, mes: NOW_M } }); if (!R || !R.objetivo) return;
+  S.profile.objetivos = (S.profile.objetivos || []).concat([R.objetivo]); objSalvar(); touch('profile'); render(); toast('Reserva criada como sonho.');
 }

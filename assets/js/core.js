@@ -13,10 +13,10 @@ const NOW = new Date(); const NOW_M = NOW.getMonth(); const NOW_Y = NOW.getFullY
 const primeiroNome = () => (CFG.consultorCurto || CFG.consultor.split(' ')[0]);
 
 const ABAS = [
-  ['geral', 'Visão geral', 'Boas-vindas, patrimônio e estatísticas do seu planejamento.'],
-  ['rendas', 'Rendas', 'Suas fontes de renda, em categorias que você define.'],
+  ['geral', 'Hoje', 'Boas-vindas, patrimônio e estatísticas do seu planejamento.'],
+  ['rendas', 'Entradas', 'Suas fontes de renda, em categorias que você define.'],
   ['despesas', 'Gastos', 'Orçamento, análises e todos os lançamentos do mês ou do ano.'],
-  ['inv', 'Investimentos', 'Quanto você aplica em cada ativo.'],
+  ['inv', 'Aportes', 'Quanto você aplica em cada ativo.'],
   ['pro', 'Proventos', 'Dividendos e rendimentos recebidos.'],
   ['cart', 'Carteira', 'Alocação-alvo e onde investir a cada aporte.'],
   ['relatorio', 'Relatório', 'Resumo para imprimir ou levar à reunião com o assessor.'],

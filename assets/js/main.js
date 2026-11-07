@@ -6,8 +6,12 @@ const navItems = () => {
   return base;
 };
 // menu em grupos com título (como MAIN / FEATURES / TOOLS); aba que não estiver num grupo vai para o fim
-const GRUPOS_NAV = [['', ['geral']], ['Dinheiro', ['rendas', 'despesas']], ['Investir', ['inv', 'pro', 'cart']], ['Acompanhar', ['relatorio', 'clientes']]];
-const navAgrupado = (items, btn) => GRUPOS_NAV.map(([t, ks]) => { const its = items.filter((i) => ks.includes(i[0])); return its.length ? (t ? `<div class="nav-g" aria-hidden="true">${t}</div>` : '') + its.map(btn).join('') : ''; }).join('') + items.filter((i) => !GRUPOS_NAV.some((g) => g[1].includes(i[0]))).map(btn).join('');
+// as 5 áreas do produto (iguais no App): Hoje, Dinheiro, Futuro, Patrimônio e Você; Futuro abre Meus objetivos e Você o painel
+const GRUPOS_NAV = [['Hoje', ['geral']], ['Dinheiro', ['despesas', 'rendas']], ['Futuro', []], ['Patrimônio', ['inv', 'pro', 'cart', 'relatorio']], ['', ['clientes']]];
+const AREAS_EXTRA = ['futuro', 'patrimonio']; // áreas que não são abas do perfil (sempre visíveis)
+const NAV_EXTRA = { Futuro: ['futuro', 'Futuro', '<path d="M5 21V4M5 4h12l-2.2 4L17 12H5"/>'] };
+const navExtra = (t) => { const x = NAV_EXTRA[t]; return x ? `<button data-act="nav" data-view="${x[0]}" ${S.view === x[0] ? 'aria-current="page"' : ''}>${S.view === x[0] ? '<i class="nav-ind" aria-hidden="true"></i>' : ''}${ic(x[2])}<span>${x[1]}</span></button>` : ''; };
+const navAgrupado = (items, btn) => GRUPOS_NAV.map(([t, ks]) => { let its = items.filter((i) => ks.includes(i[0])); if (t === 'Patrimônio' && its.length) { const k = PAT_ABAS.includes(S.view) ? S.view : (its.find((i) => i[0] === S.patUlt) || its[0])[0]; its = [[k, 'Patrimônio']]; } const ex = navExtra(t); return its.length || ex ? (t ? `<div class="nav-g" aria-hidden="true">${t}</div>` : '') + its.map(btn).join('') + ex : ''; }).join('') + items.filter((i) => !GRUPOS_NAV.some((g) => g[1].includes(i[0]))).map(btn).join('') + `<div class="nav-g" aria-hidden="true">Você</div><button data-act="admin-open">${ic('<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>')}<span>Você</span></button>`;
 // no plano gratuito o rodapé do menu convida a conhecer o Investidor (como o Upgrade Pro); nos pagos fica o cartão do assessor
 const cartaoPlanoHtml = () => `<div class="advisor plano"><span class="adv-ic" aria-hidden="true">${I.inv || '★'}</span><div class="adv-t"><b>Conheça o plano ${esc(nomePlano('investidor'))}</b><small>Investimentos, proventos e a carteira no mesmo painel, com o disponível para aportar todo mês.</small></div><button class="hp-btn sm" data-act="upgrade" data-plano="investidor">Conhecer</button><button class="lnk adv-lnk" data-act="contact">Falar com o ${esc(primeiroNome())}</button></div>`;
 function renderSide() {
@@ -35,6 +39,16 @@ function emptyState() { return `<div class="empty-state"><h2>Crie o planejamento
 function viewHtml() {
   if (modoBasico()) return basicoHtml();
   if (!S.plan) return emptyState();
+  if (PAT_ABAS.includes(S.view)) { S.patUlt = S.view; return patAbasHtml() + viewHtmlAba(); }
+  return viewHtmlAba();
+}
+// Patrimônio: Aportes, Proventos, Carteira e Relatório são abas internas de uma área só (cada uma continua sendo a tela de antes)
+const PAT_ABAS = ['inv', 'pro', 'cart', 'relatorio'];
+function patAbasHtml() {
+  const its = navItems().filter((i) => PAT_ABAS.includes(i[0])); if (its.length < 2) return '';
+  return `<nav class="pat-abas" aria-label="Patrimônio">${its.map(([k, l]) => `<button data-act="nav" data-view="${k}"${S.view === k ? ' aria-current="page"' : ''}>${esc(l)}</button>`).join('')}</nav>`;
+}
+function viewHtmlAba() {
   switch (S.view) {
     case 'rendas': return viewRendas();
     case 'despesas': return viewDespesas();
@@ -43,6 +57,7 @@ function viewHtml() {
     case 'cart': return viewCart();
     case 'relatorio': return viewRelatorio();
     case 'clientes': return viewClientes();
+    case 'futuro': return viewFuturo();
     default: return viewGeral();
   }
 }
@@ -51,7 +66,7 @@ function render(opts) {
   const soft = !!(opts && opts.soft);
   if (isEditing() || (soft && isTyping())) { S.needsRender = true; return; }
   const scr = S.screen;
-  if (scr === 'app' && !navItems().some((i) => i[0] === S.view)) S.view = 'geral';
+  if (scr === 'app' && !AREAS_EXTRA.includes(S.view) && !navItems().some((i) => i[0] === S.view)) S.view = 'geral';
   if (scr !== 'app' || !alvoDaTela() || S.view !== S.wgView) { S.wgEdit = false; S.wgAdd = false; }
   S.wgView = S.view; // organizar vale nas telas com widgets e sai ao trocar de tela
   const key = scr + ':' + (scr === 'app' ? S.view : scr === 'onboarding' ? 'conversa' : scr === 'auth' ? S.authMode : '');
@@ -102,6 +117,7 @@ function onClick(e) {
     switch (act) {
       case 'recarregar': location.reload(); break;
       case 'nav': { if (ds.view === 'geral' && S.view !== 'geral') S.titTrocar = true; /* voltou à Visão geral: frase nova no título */ const outra = S.view !== ds.view; S.view = ds.view; S.stale = false; S.maisOpen = false; S.notifOpen = false; closeAdmin(); if (outra) telaTroca(() => render(), 'aba'); else render(); break; }
+      case 'fut-reserva': futReserva(); break;
       case 'mais-toggle': S.maisOpen = !S.maisOpen; render(); break;
       case 'obj-sw-mover': objSwMover(+ds.d); break;
       case 'prov-cel': provCalSel(el); break;
