@@ -517,4 +517,6 @@ const NV = (() => { const pl = { v: 2, year: 2026, settings: { orcPadrao: 4000, 
   const pv = JSON.parse(JSON.stringify(NV.pl)); pv.rendas[0].valores = new Array(12).fill(3000); pv.settings.limites = {}; pv.settings.orcPadrao = 0;
   const np = rodarN(pv).find((n) => n.chave === 'n_prev_negativo');
   ok(np && np.id === 'prev:2026-10:negativo' && Math.abs(np.vars.valor - 2100) < 0.01, 'notificações: no ritmo de hoje o mês fecha no vermelho'); }
+{ const ri = E.iaResponder(E.iaIntencao('Quanto posso gastar hoje?'), { C: NV.C, mes: 9, dia: 10, ano: 2026, recursos: {} });
+  ok(ri.chave === 'ia_livre_hoje' && Math.abs(ri.vars.porDia - 45.45) < 0.01 && ri.vars.dias === 22, 'assistente: posso_gastar responde com o livre de hoje'); }
 process.exit(bad ? 1 : 0);

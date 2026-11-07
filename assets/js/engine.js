@@ -1017,6 +1017,7 @@
     proventos: ['provento', 'dividendo', 'rendimento', 'jcp', 'juros sobre', 'renda passiva', 'pagaram', 'yield', 'renda dos investimentos', 'renderam'],
     patrimonio: ['patrimonio', 'quanto tenho', 'quanto ja tenho', 'quanto acumulei', 'meu total', 'investido', 'meu dinheiro investido', 'saldo investido', 'riqueza'],
     objetivos: ['objetivo', 'sonho', 'aposentadoria', 'aposentar', 'quando vou', 'quando consigo', 'quando chego', 'viagem', 'casa propria', 'carro novo', 'meta de vida', 'casamento', 'intercambio', 'faculdade', 'quanto falta'],
+    posso_gastar: ['posso gastar hoje', 'quanto posso gastar hoje', 'gastar hoje', 'livre hoje', 'quanto posso gastar por dia', 'gastar por dia'],
     orcamento: ['orcamento', 'quanto posso gastar', 'quanto ainda posso', 'posso gastar', 'quanto resta', 'quanto sobra para gastar', 'gastar ate', 'por dia', 'limite', 'estourei', 'estourar', 'cabe no mes'],
     gastos: ['gasto', 'gastei', 'gastando', 'despesa', 'onde mais gasto', 'maior gasto', 'para onde vai', 'conta', 'compras', 'cartao', 'categoria', 'restaurante', 'mercado', 'delivery', 'ifood', 'uber', 'lazer'],
     renda: ['renda', 'salario', 'entrada', 'ganhei', 'recebi', 'entrou', 'receita', 'quanto ganho'],
@@ -1035,7 +1036,7 @@
     acoes: ['acao', 'acoes', 'bolsa'], previdencia: ['previdencia', 'pgbl', 'vgbl'], cripto: ['bitcoin', 'cripto', 'ethereum'], fundos: ['fundo de investimento', 'fundos de investimento', 'multimercado'],
     exterior: ['dolar', 'exterior', 'etf', 'etfs', 'bdr', 'bdrs', 'stocks'] };
   // perguntas prontas das fichas (cada uma é reconhecida como a sua intenção, testado)
-  const IA_FICHAS = { resumo: 'Como estou neste mês?', orcamento: 'Quanto ainda posso gastar?', compra: 'Posso comprar algo de R$ 2.000?', investir: 'Quero começar a investir', aporte: 'Quanto posso investir?',
+  const IA_FICHAS = { resumo: 'Como estou neste mês?', orcamento: 'Quanto ainda posso gastar?', posso_gastar: 'Quanto posso gastar hoje?', compra: 'Posso comprar algo de R$ 2.000?', investir: 'Quero começar a investir', aporte: 'Quanto posso investir?',
     previsao: 'Vou fechar o mês no azul?', gastos: 'Onde mais gastei?', fixos: 'Quanto são meus gastos fixos?', renda: 'Quanto entrou?', sobra: 'Quanto sobrou?', mes_passado: 'Como foi o mês passado?', ano: 'E no ano todo?',
     meta: 'Bati a meta de aporte?', carteira: 'Onde aportar na carteira?', proventos: 'Quanto recebi de proventos?', patrimonio: 'Qual o meu patrimônio?', objetivos: 'E os meus objetivos?',
     reserva: 'Qual a reserva de emergência ideal?', guardar: 'Quanto devo guardar por mês?', produto: 'O que é CDB?', perfil: 'Qual é o meu perfil?', divida: 'Como sair das dívidas?', renda_extra: 'Como ter uma renda extra?',
@@ -1135,6 +1136,11 @@
     }
     switch (id) {
       case 'resumo': return r(sobra >= 0 ? 'ia_resumo' : 'ia_resumo_neg', { receita, gasto, sobra: Math.abs(sobra), n: d.avisos || 0 }, null, ['gastos', 'aporte', 'dicas']);
+      case 'posso_gastar': { // livreHoje: orçamento (ou renda menos a meta) menos o já gasto, pelos dias que faltam
+        const L = livreHoje({ C, hoje: { ano: d.ano || 2001, mes: m, dia: d.dia || 1 } });
+        if (!(L.restante > 0)) return r('ia_livre_zero', { valor: -L.restante }, nav('Ver gastos', 'despesas'), ['gastos', 'dicas']);
+        return r('ia_livre_hoje', { porDia: L.porDia, restante: L.restante, dias: L.diasRestantes }, nav('Ver gastos', 'despesas'), ['orcamento', 'previsao']);
+      }
       case 'orcamento': {
         const o = +C.orcamento[m] || 0; if (!(o > 0)) return r('ia_orc_sem', { gasto }, nav('Definir orçamento', 'despesas'), ['gastos', 'dicas']);
         const resto = o - gasto; if (resto < 0) return r('ia_orc_passou', { valor: -resto, pct: gasto / o }, nav('Ver gastos', 'despesas'), ['gastos', 'dicas']);
