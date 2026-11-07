@@ -378,9 +378,9 @@ function basPerfil() {
     <span class="bas-pj-res"><span><small>Investir</small><b>${+st.metaAporte > 0 ? brl0(st.metaAporte) : '–'}</b></span><span><small>Gastar até</small><b>${+st.orcPadrao > 0 ? brl0(st.orcPadrao) : '–'}</b></span><span><small>Instituições</small><b>${instMinhas().length}</b></span></span></button>`;
   const cli = S.isAdmin && Store.mode === 'cloud' ? basSecao('Consultor', '', `<ul class="bas-ativ">${basRow(basIr('clientes'), I.clientes, 'Clientes', 'Cadastros e planos', I.chev)}</ul>`) : '';
   return `<div class="bas-pg bas-pg-p">${basCab('Você')}${membro}
-    ${basSecao('Sua cor', `<button class="bas-tg" data-act="bas-cores" aria-expanded="${!!S.basCores}" aria-label="${S.basCores ? 'Recolher' : 'Abrir'} as cores">${I.down}</button>`, !S.basCores ? '' : `<div class="card bas-aparencia">${cores}<div class="seg bas-temas" role="group" aria-label="Tema">${temas}</div><label class="bas-op bas-sw">${basNome('Sons', 'Um toque curto ao salvar, pagar e trocar de tela.')}<span class="wg-sw"><input type="checkbox" data-act="bas-sons" ${basSomLigado() ? 'checked' : ''} aria-label="Sons"><span></span></span></label></div>`)}
+    ${basSecao('Aparência', `<button class="bas-tg" data-act="bas-cores" aria-expanded="${!!S.basCores}" aria-label="${S.basCores ? 'Recolher' : 'Abrir'} as cores">${I.down}</button>`, !S.basCores ? '' : `<div class="card bas-aparencia">${cores}<div class="seg bas-temas" role="group" aria-label="Tema">${temas}</div><label class="bas-op bas-sw">${basNome('Sons', 'Um toque curto ao salvar, pagar e trocar de tela.')}<span class="wg-sw"><input type="checkbox" data-act="bas-sons" ${basSomLigado() ? 'checked' : ''} aria-label="Sons"><span></span></span></label></div>`)}
     ${plano}${conq}
-    ${basSecao('Jeito de falar', '', `<div class="seg bas-temas" role="group" aria-label="Jeito de falar">${vozes}</div>`)}${modo ? basSecao('Versão', '', modo) : ''}
+    ${basSecao('Jeito de falar', '', `<div class="seg bas-temas" role="group" aria-label="Jeito de falar">${vozes}</div>`)}${modo}
     ${cli}${basSecao('Seus dados', '', `<ul class="bas-ativ">${basRow('data-act="backup"', I_IMPORTAR, 'Baixar meus dados', '', I.chev)}${basRow(basIr('privacidade'), I.lock, 'Privacidade e termos', '', I.chev)}${basRow(basIr('excluir'), I.x, 'Excluir minha conta', '', I.chev)}</ul>`)}<ul class="bas-ativ bas-sair"><li><button data-act="bas-sair">${basNome('Sair')}</button></li></ul></div>`;
 }
 
@@ -531,7 +531,7 @@ function basCartoes3d() {
 function basSurpresas() {
   if (S.basSurpresa || (typeof AB !== 'undefined' && AB) || (S.basPilha || []).length || basAba() !== 'inicio' || !S.profile || S.year !== NOW_Y) return; S.basSurpresa = true;
   const chave = `${NOW_Y}-${NOW_M}`; const dia = new Date().getDate();
-  if (NOW_M > 0 && dia <= 7 && S.profile.retroVista !== chave) { S.profile.retroVista = chave; touch('profile'); setTimeout(() => basAbrir('retro', { id: NOW_M - 1 }), 900); return; }
+  if (NOW_M > 0 && dia <= 7 && S.profile.retroVista !== chave && S.year === NOW_Y && S.plan.lancamentos.some((l) => basMesDe(l.data) === NOW_M - 1)) { /* só com gastos anotados no mês que passou */ S.profile.retroVista = chave; touch('profile'); setTimeout(() => basAbrir('retro', { id: NOW_M - 1 }), 900); return; }
   const n = basSeqDados().Q.atual; const marco = BAS_SEQ_MARCOS.filter((x) => x[0] <= n).pop();
   if (marco && marco[0] > (+S.profile.seqCelebrado || 0)) { S.profile.seqCelebrado = marco[0]; touch('profile'); setTimeout(() => basAbrir('conquista', { id: marco[0] }), 900); }
 }
