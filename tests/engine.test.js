@@ -511,4 +511,10 @@ const NV = (() => { const pl = { v: 2, year: 2026, settings: { orcPadrao: 4000, 
   ok(fh.min === 100 && fh.max === 400 && fh.mediana === 250 && fh.faixa === 'alto' && Math.abs(fh.pos - 0.8333) < 0.001 && E.faixaHistorica({ serie: [1, 2], atual: 1 }) === null && E.faixaHistorica({ serie: [1, 2, 3], atual: 9 }).faixa === 'acima', 'faixaHistorica: mínimo, mediana, máximo e onde o mês cai'); }
 { const mr = E.metaReserva({ C: NV.C, patrimonio: 6000, hoje: NV.hoje });
   ok(mr.gastoMedio === 2000 && mr.meta === 12000 && mr.cobertos === 3 && mr.falta === 6000 && mr.pct === 0.5 && mr.objetivo.modo === 'marco', 'metaReserva: 6 meses do gasto fixo médio e meses cobertos'); }
+{ const rodarN = (pl) => E.notificacoes({ C: E.compute(pl, {}), plan: pl, hoje: { ano: 2026, mes: 9, dia: 10 }, recursos: {} });
+  const nl = rodarN(NV.pl).find((n) => n.chave === 'n_lim_ritmo');
+  ok(nl && nl.id === 'limprev:2026-10:lazer' && nl.vars.dia === 23 && nl.vars.limite === 900, 'notificações: limite da área passa antes do fim do mês, com o dia provável');
+  const pv = JSON.parse(JSON.stringify(NV.pl)); pv.rendas[0].valores = new Array(12).fill(3000); pv.settings.limites = {}; pv.settings.orcPadrao = 0;
+  const np = rodarN(pv).find((n) => n.chave === 'n_prev_negativo');
+  ok(np && np.id === 'prev:2026-10:negativo' && Math.abs(np.vars.valor - 2100) < 0.01, 'notificações: no ritmo de hoje o mês fecha no vermelho'); }
 process.exit(bad ? 1 : 0);
