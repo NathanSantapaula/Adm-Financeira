@@ -626,7 +626,7 @@ html[data-vt="aba"]::view-transition-new(root) { animation: 260ms cubic-bezier(.
 /* abas do assistente */
 .seg.bas-ia-abas { display: grid; grid-template-columns: 1fr 1fr; margin: 6px 0 12px; }
 .bas-ia-abas button { min-height: 40px; } .bas-ia-abas em { font-style: normal; margin-left: 4px; padding: 0 7px; border-radius: var(--r-pill); background: var(--accent); color: var(--on-accent); font-size: 12px; }
-.bas-noite .bell.ia-btn .bell-n { box-shadow: 0 0 0 2px var(--bas-noite); }
+.bas-noite .bell.ia-btn .bell-n { z-index: 5; box-shadow: 0 0 0 2px var(--bas-noite); }
 @media (prefers-reduced-motion: reduce) {
   .bas-arco, .bas-ev-l { animation: none; } .bas-arco, .bas-roda-c > div, .bas-ev-p, .bas-ev-guia, .bas-membro-in, .bas-per-m { transition: none; }
 }
