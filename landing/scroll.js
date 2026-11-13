@@ -8,12 +8,15 @@
   const actual = () => Math.max(0, window.scrollY);
   history.scrollRestoration = 'manual';
   function startOver() {
-    const reloaded = performance.getEntriesByType?.('navigation')[0]?.type === 'reload';
-    if (location.hash && !reloaded || window.scrollY <= 0) return;
+    // A página é uma história: sempre começa do topo, mesmo se o navegador guardou a posição ou o endereço tem #.
+    if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+    if (window.scrollY <= 0) return;
     const root = document.documentElement, b = root.style.scrollBehavior;
     root.style.scrollBehavior = 'auto'; window.scrollTo({ top: 0, behavior: 'auto' }); root.style.scrollBehavior = b;
   }
   startOver();
+  addEventListener('load', startOver, { once: true });
+  addEventListener('pageshow', (e) => { if (e.persisted) startOver(); });
   let value = actual(), target = value, speed = 0, frame = null, prevT = 0, response = coarse.matches ? TOUCH : STEPPED, layout = null;
   function viewport() {
     const width = innerWidth, height = innerHeight, keepsH = width <= 760 || coarse.matches;
