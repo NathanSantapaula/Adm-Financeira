@@ -635,3 +635,10 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; background: 
   .tb-cartoes .cc em { font-size: 10px; }
   .tudo .tb-cartoes { min-height: 250px; }
 }
+/* Celular: leque logo abaixo do texto, cartões maiores e o bloco do tamanho deles */
+@media (max-width: 600px) {
+  .tudo .tb-cartoes { height: auto !important; min-height: 0; padding-bottom: 14px; }
+  .tb-cartoes .leque { position: relative; inset: auto; height: calc(min(188px, 46vw) / 1.586 + 50px); margin-top: 6px; }
+  .tb-cartoes .cc, .tb-cartoes.is-in .cc, .tb-cartoes:hover .cc { width: min(188px, 46vw); top: 16px; bottom: auto; transform-origin: 50% 50%; border-radius: 11px; }
+  .tb-cartoes.is-in .cc, .tb-cartoes.is-in:hover .cc { transform: translateX(calc(-50% + (var(--n) - 1) * 42%)) translateY(calc((var(--n) - 1) * (var(--n) - 1) * 14px)) rotate(calc((var(--n) - 1) * 9deg)); }
+}
