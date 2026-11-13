@@ -620,3 +620,4 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; background: 
 .ix[data-lay="cel"] .ix-toque { fill: #ffffffb3; stroke: #0A84FF; stroke-width: 1.4; transform: scale(1.7); filter: drop-shadow(0 2px 6px #0006); transition: transform .2s, fill .2s; }
 .ix[data-lay="cel"] .ix-cursor.pega .ix-toque { transform: scale(1.4); fill: #fff; stroke-width: 3; }
 .ix[data-lay="cel"] .ix-cursor::after { content: none; }
+.pv-aloc { margin-top: 14px; } .pv .story-plan-note, .story-plan-note { margin-top: 10px; }
