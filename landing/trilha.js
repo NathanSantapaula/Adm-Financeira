@@ -25,11 +25,21 @@
       const r = el.getBoundingClientRect();
       const k = em !== undefined ? topo(sec) + (sec.offsetHeight - vh) * +em : r.top + window.scrollY + r.height / 2 - vh * .55;
       // O último pouso precisa ser alcançável: a chave nunca passa do fim da página.
-      pts.push({ el, k: Math.min(Math.max(k, pts[pts.length - 1].k + 240), document.documentElement.scrollHeight - vh - 2), tam: +(el.dataset.tam || 60), tema: el.dataset.tema || '', expr: el.dataset.expr || '', fim: el.hasAttribute('data-fim') });
+      pts.push({ el, k: Math.min(Math.max(k, pts[pts.length - 1].k + 240), document.documentElement.scrollHeight - vh - 2), tam: +(el.dataset.tam || 60), tema: el.dataset.tema || '', expr: el.dataset.expr || '', fim: el.hasAttribute('data-fim'),
+        // Pouso numa seção presa (data-em): ele só sai quando a seção termina de rolar.
+        ate: em !== undefined ? topo(sec) + sec.offsetHeight - vh : 0 });
     }
     render();
   }
-  const centro = (el, shift) => { const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 + shift }; };
+  // Onde o pouso estaria na rolagem suavizada. Dentro de um palco preso (sticky), o palco só anda quando
+  // entra ou sai: somar a diferença inteira de rolagem fazia o Cifrão pular e voltar enquanto o palco estava parado.
+  const presoTopo = (sec, palco, y) => { const top = sec.getBoundingClientRect().top + window.scrollY, hh = parseFloat(getComputedStyle(palco).top) || 0;
+    return Math.max(top - y, Math.min(hh, top + sec.offsetHeight - y - palco.offsetHeight)); };
+  const centro = (el, shift) => {
+    const r = el.getBoundingClientRect(), palco = el.closest('.ix-stage');
+    if (palco && getComputedStyle(palco).position === 'sticky') { const sec = palco.parentElement, y = window.scrollY; shift = presoTopo(sec, palco, y - shift) - presoTopo(sec, palco, y); }
+    return { x: r.left + r.width / 2, y: r.top + r.height / 2 + shift };
+  };
   function tema(t) {
     if (t === 'escuro') { traveler.style.setProperty('--cif-body', CLARO); traveler.style.setProperty('--cif-eyes', NAVY); }
     else { traveler.style.removeProperty('--cif-body'); traveler.style.removeProperty('--cif-eyes'); }
@@ -46,7 +56,7 @@
     const A = pts[i], B = pts[i + 1];
     let a = centro(A.el, shift), x = a.x, y = a.y, tam = A.tam, t = 0, op = A.fim ? 0 : 1;
     if (B) {
-      const d = B.k - A.k, partida = A.k + Math.min(d * .35, vh * .3);
+      const d = B.k - A.k, partida = Math.min(B.k - 120, Math.max(A.k + Math.min(d * .35, vh * .3), A.ate || 0));
       t = range(s, partida, B.k);
       if (t > 0) {
         const b = centro(B.el, shift), e = ease(t);

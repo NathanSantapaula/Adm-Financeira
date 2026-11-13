@@ -42,7 +42,7 @@
     const light = startsLight !== inv, theme = light ? 'light' : 'dark';
     if (root.dataset.theme === theme) return;
     root.dataset.theme = theme;
-    themeColor?.setAttribute('content', light ? '#F7F4ED' : '#06122A');
+    themeColor?.setAttribute('content', light ? '#F7F4ED' : '#0A84FF');
     window.dispatchEvent(new CustomEvent('aven:theme-changed'));
   }
   const heroSection = document.querySelector('.hero'), heroContent = heroSection.querySelector('.hero-content'), header = document.querySelector('.header');
@@ -113,6 +113,7 @@
   }
   function render() {
     if (!enabled) {
+      answer.classList.add('aberta');
       const answerTop = answer.getBoundingClientRect().top + window.scrollY - visualScroll();
       setPageInverted(visualScroll() > 0 && answerTop < innerHeight * .5);
       return;
@@ -222,6 +223,7 @@
     });
     thinking.style.opacity = String(ease(range(p, .49, .53)) * (1 - merge));
     answer.style.opacity = String(ease(range(opening, .30, .48)));
+    answer.classList.toggle('aberta', opening > .42);
     answer.setAttribute('aria-hidden', String(opening < .30));
     hint.style.opacity = opening > 0 ? '0' : '1';
   }

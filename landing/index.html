@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#06122A">
+  <meta name="theme-color" content="#0A84FF">
   <meta name="description" content="Sua vida financeira. Uma conversa. Conheça a AVEN: planejamento financeiro, investimentos e assessoria, no seu celular.">
   <meta property="og:title" content="AVEN — Sua vida financeira. Uma conversa.">
   <meta property="og:description" content="Planejamento, investimentos e assessoria, juntos em um só lugar.">
@@ -11,16 +11,17 @@
   <meta property="og:locale" content="pt_BR">
   <title>AVEN — Sua vida financeira. Uma conversa.</title>
   <link rel="icon" href="../assets/img/icon-192.png">
-  <link rel="stylesheet" href="./landing.css?v=20261112k">
-  <link rel="stylesheet" href="./cenas.css?v=20261112k">
-  <script src="../assets/js/config.js?v=20261112k" defer></script>
-  <script src="./cifrao.js?v=20261112k" defer></script>
-  <script src="./scroll.js?v=20261112k" defer></script>
-  <script src="./story.js?v=20261112k" defer></script>
-  <script src="./mes.js?v=20261112k" defer></script>
-  <script src="./trilha.js?v=20261112k" defer></script>
-  <script src="./cenas.js?v=20261112k" defer></script>
-  <script src="./landing.js?v=20261112k" defer></script>
+  <link rel="stylesheet" href="./landing.css?v=20261114c">
+  <link rel="stylesheet" href="./cenas.css?v=20261114c">
+  <script src="../assets/js/config.js?v=20261114c" defer></script>
+  <script src="./cifrao.js?v=20261114c" defer></script>
+  <script src="./scroll.js?v=20261114c" defer></script>
+  <script src="./story.js?v=20261114c" defer></script>
+  <script src="./mes.js?v=20261114c" defer></script>
+  <script src="./imp.js?v=20261114c" defer></script>
+  <script src="./trilha.js?v=20261114c" defer></script>
+  <script src="./cenas.js?v=20261114c" defer></script>
+  <script src="./landing.js?v=20261114c" defer></script>
 </head>
 <body>
   <svg class="icon-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -38,13 +39,13 @@
       <a class="header-logo" href="../" aria-label="Ir para o app da AVEN">
         <svg class="marca" viewBox="0 0 331 100" fill="currentColor" aria-hidden="true"><path d="M0 100 33 0h26l33 100H67L46 34 25 100Z"/><path d="M46 56 61 100H31Z" fill="#0A84FF"/><path transform="translate(69 0)" d="M0 0h25l21 66L67 0h25L59 100H33Z"/><path transform="translate(171 0)" d="M0 0h66v21H24v19h36v20H24v19h42v21H0Z"/><path transform="translate(247 0)" d="M0 100V0h23l38 58V0h23v100H61L23 42v58Z"/></svg>
       </a>
-      <nav class="desktop-nav" aria-label="Navegação principal"><a href="#como-funciona">Como funciona</a><a href="#seu-mes">Controle</a><a href="#plataforma">Plataforma</a><a href="#simulador">Simulador</a><a href="#assessoria">Assessor</a></nav>
+      <nav class="desktop-nav" aria-label="Navegação principal"><a href="#como-funciona">Como funciona</a><a href="#seu-mes">Controle</a><a href="#plataforma">Plataforma</a><a href="#importar">Importação</a><a href="#assessoria">Assessor</a></nav>
       <div class="header-actions">
         <a class="button button-small" data-cta href="../">Criar conta</a>
         <button class="menu-toggle icon-button" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="mobile-nav"><svg class="icon"><use href="#menu"/></svg></button>
       </div>
     </div>
-    <nav class="mobile-nav" id="mobile-nav" aria-label="Navegação móvel" hidden><a href="#como-funciona">Como funciona</a><a href="#seu-mes">Controle</a><a href="#plataforma">Plataforma</a><a href="#simulador">Simulador</a><a href="#assessoria">Assessor</a></nav>
+    <nav class="mobile-nav" id="mobile-nav" aria-label="Navegação móvel" hidden><a href="#como-funciona">Como funciona</a><a href="#seu-mes">Controle</a><a href="#plataforma">Plataforma</a><a href="#importar">Importação</a><a href="#assessoria">Assessor</a></nav>
   </header>
 
   <main id="main">
@@ -72,19 +73,21 @@
           </div>
           <div class="story-thinking" aria-hidden="true"><span class="story-dot-anchor"></span><span class="story-thinking-label">Pensando<span>…</span></span></div>
           <article class="story-answer" aria-label="Exemplo de resposta da AVEN com um plano de aportes">
-            <div class="story-answer-intro"><p>Claro! Com a sua sobra de hoje, numa simulação conservadora, você chega lá em 22 meses.</p></div>
-            <div class="story-plan">
-              <div class="story-plan-heading"><p>6 passos <span>·</span> R$ 1.900 por mês <span>·</span> Perfil moderado</p></div>
-              <ol class="story-steps">
-                <li><span class="story-step-number">01</span><div><strong>Reserva de emergência</strong><span>Tesouro Selic, 3 meses de gastos</span></div><p>R$ 9.600<small>primeiro</small></p></li>
-                <li><span class="story-step-number">02</span><div><strong>Aporte automático</strong><span>Todo dia 5, depois do salário</span></div><p>R$ 1.900<small>por mês</small></p></li>
-                <li><span class="story-step-number">03</span><div><strong>Renda fixa pós-fixada</strong><span>CDB com liquidez diária</span></div><p>40%<small>do aporte</small></p></li>
-                <li><span class="story-step-number">04</span><div><strong>Tesouro IPCA+ 2029</strong><span>Protege o objetivo da inflação</span></div><p>40%<small>do aporte</small></p></li>
-                <li><span class="story-step-number">05</span><div><strong>Fundos imobiliários</strong><span>Renda mensal, reinvestida</span></div><p>20%<small>do aporte</small></p></li>
-                <li><span class="story-step-number">06</span><div><strong>Revisão com o assessor</strong><span>A cada 3 meses, ou quando a vida mudar</span></div><p>15 min<small>trimestral</small></p></li>
-              </ol>
-              <p class="story-plan-note">A simulação usa a taxa que você escolher. Nada aqui é promessa de rentabilidade.</p>
+            <div class="story-answer-intro"><p>Claro! Guardando <b>R$ 1.900 por mês</b>, você chega aos <b>R$ 50 mil em 22 meses</b>.</p></div>
+            <div class="pv">
+              <svg class="pv-graf" viewBox="0 0 520 150" role="img" aria-label="Quanto você terá mês a mês: R$ 9,6 mil no mês 5, quando a reserva fica pronta, e R$ 50 mil no mês 22" focusable="false">
+                <line class="pv-alvo" x1="0" y1="20" x2="504" y2="20"/>
+                <path class="pv-area" d="M0 120 C156 106 338 66 504 20 L504 126 L0 126 Z"/><path class="pv-linha" d="M0 120 C156 106 338 66 504 20"/>
+                <line class="pv-base" x1="0" y1="126" x2="520" y2="126"/>
+                <circle class="pv-marco" cx="121" cy="105" r="6"/><g class="pv-tm"><rect x="72" y="66" width="98" height="26" rx="13"/><text x="121" y="83" text-anchor="middle">R$ 9,6 mil</text></g>
+                <circle class="pv-meta" cx="504" cy="20" r="10"/><path class="pv-ok" d="M499 20.3l3.4 3.4 6-6.6"/><g class="pv-tm"><rect x="388" y="34" width="104" height="26" rx="13" class="az"/><text x="440" y="51" text-anchor="middle" class="az">R$ 50 mil</text></g>
+                <text class="pv-x" x="0" y="146">hoje</text><text class="pv-x" x="121" y="146" text-anchor="middle">mês 5 · reserva pronta</text><text class="pv-x" x="504" y="146" text-anchor="end">mês 22</text>
+              </svg>
+              <p class="pv-rot">Para onde vai cada aporte de R$ 1.900</p>
+              <div class="pv-aloc" aria-label="40% renda fixa, 40% Tesouro IPCA+, 20% fundos imobiliários"><i style="--f:40;--c:#0A84FF"><span>Renda fixa · R$ 760</span></i><i style="--f:40;--c:#5AC8FA"><span>IPCA+ · R$ 760</span></i><i style="--f:20;--c:#0B2A5C"><span>FIIs · R$ 380</span></i></div>
+              <p class="pv-nota-ass">Todo dia 5, automático. A cada 3 meses, revisão com o assessor.</p>
             </div>
+            <p class="story-plan-note">Simulação ilustrativa. Não é promessa de rentabilidade.</p>
           </article>
         </div>
         <div class="story-footer" hidden aria-hidden="true"><p class="story-scroll-hint"></p></div>
@@ -101,15 +104,15 @@
           </div>
           <div class="fx-cena">
             <article class="fx-card fx-mes" aria-label="Seu mês: entrou 8.000 reais, gastos por área e sobra de 1.900 reais">
-              <h3>Seu mês <span>novembro</span></h3>
+              <h3>Seu mês <span data-mes>novembro</span></h3>
               <p class="fx-n"><small>Entrou</small>R$ 8.000</p>
-              <div class="fx-barra" aria-hidden="true"><i data-seg="2400" style="--c:#0B0B0C"></i><i data-seg="1500" style="--c:#4A4A4D"></i><i data-seg="700" style="--c:#7C7C80"></i><i data-seg="500" style="--c:#A9A9AD"></i><i data-seg="1000" style="--c:#CFCFD2"></i><i class="sobra" data-seg-sobra></i></div>
+              <div class="fx-barra" aria-hidden="true"><i data-seg="2400" style="--c:#0B3FA8"></i><i data-seg="1500" style="--c:#2F6FE0"></i><i data-seg="700" style="--c:#5B9BF0"></i><i data-seg="500" style="--c:#93BFF5"></i><i data-seg="1000" style="--c:#C7DCF8"></i><i class="sobra" data-seg-sobra></i></div>
               <ul class="fx-lista">
-                <li><i style="--c:#0B0B0C"></i>Moradia<b>R$ 2.400</b></li>
-                <li><i style="--c:#4A4A4D"></i>Mercado<b>R$ 1.500</b></li>
-                <li><i style="--c:#7C7C80"></i>Transporte<b>R$ 700</b></li>
-                <li><i style="--c:#A9A9AD"></i>Lazer<b>R$ 500</b></li>
-                <li><i style="--c:#CFCFD2"></i>Outros<b>R$ 1.000</b></li>
+                <li><i style="--c:#0B3FA8"></i><span>Moradia</span><u style="--p:96%" title="96% do limite"></u><b>R$ 2.400</b></li>
+                <li><i style="--c:#2F6FE0"></i><span>Mercado</span><u class="w" style="--p:80%" title="80% do limite"></u><b>R$ 1.500</b></li>
+                <li><i style="--c:#5B9BF0"></i><span>Transporte</span><u style="--p:70%" title="70% do limite"></u><b>R$ 700</b></li>
+                <li><i style="--c:#93BFF5"></i><span>Lazer</span><u style="--p:50%" title="50% do limite"></u><b>R$ 500</b></li>
+                <li><i style="--c:#C7DCF8"></i><span>Outros</span><u style="--p:62%" title="62% do limite"></u><b>R$ 1.000</b></li>
               </ul>
               <p class="fx-sobra-l"><span>Sobrou</span><b>R$ 1.900</b></p>
             </article>
@@ -130,88 +133,102 @@
       <p class="eyebrow" data-rev>A plataforma</p>
       <h2 id="tudo-titulo" data-rev>Tudo o que é seu,<br>em uma tela.</h2>
       <div class="tudo-grid">
-        <article class="tb tb-globo" data-rev aria-label="Globo do patrimônio: ilustração da tela do app com o patrimônio no centro e as classes de investimento em órbita">
-          <div class="fone">
+        <article class="tb tb-globo" data-rev aria-label="Globo do patrimônio: o seu patrimônio como um planeta, com cada classe de investimento em órbita">
+          <div class="fone" data-fone>
             <span class="ancora ancora-fone" data-ancora data-tam="62" data-expr="curioso" aria-hidden="true"></span>
             <div class="fone-tela">
               <i class="fone-ilha" aria-hidden="true"></i>
+              <div class="fone-nav"><p class="fone-st"><b>9:41</b><span><i></i><i></i><i></i><u></u></span></p><p class="fone-tit"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7"/></svg><span>Globo do patrimônio</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3"/></svg></p></div>
               <div class="globo">
                 <canvas data-globo aria-hidden="true"></canvas>
-                <div class="globo-centro"><span>Seu patrimônio</span><strong>R$ 98.715</strong><em>+ R$ 34.215 em 2026</em></div>
+                <div class="globo-centro"><span data-g-rot>Seu patrimônio</span><strong data-g-val>R$ 98.715</strong><em data-g-sub>+ R$ 34.215 em 2026</em></div>
               </div>
-              <ul class="fone-classes">
-                <li><i style="--c:#0A84FF"></i>Renda fixa<b>48%</b></li>
-                <li><i style="--c:#5AC8FA"></i>Ações<b>27%</b></li>
-                <li><i style="--c:#F7F4ED"></i>Fundos imobiliários<b>25%</b></li>
-              </ul>
+              <p class="globo-info" data-g-info aria-live="polite">Cada esfera é uma classe da sua carteira.</p>
             </div>
           </div>
-          <h3 class="tb-rotulo">Globo do patrimônio</h3>
+          <div class="tb-rotulo"><p>Seu patrimônio vira um planeta. Gire e toque para explorar.</p></div>
         </article>
         <article class="tb tb-voce" data-rev style="--i:1">
           <h3 class="tb-tit">Com você.</h3>
           <div class="avisos">
-            <div class="aviso"><span class="cifrao bento-notification-icon" aria-hidden="true"></span><div><p><b>AVEN</b><span>agora</span></p><p>Mercado chegou a 80% do limite.</p><small>Faltam R$ 260 até o fim do mês.</small></div></div>
-            <div class="aviso"><span class="cifrao bento-notification-icon" aria-hidden="true"></span><div><p><b>AVEN</b><span>agora</span></p><p>Sobrou R$ 1.900 este mês.</p><small>Falta renda fixa na carteira. Quer ver?</small></div></div>
+            <div class="aviso"><img class="ico3d" src="./assets/cifrao-3d.webp" width="493" height="640" alt="" loading="lazy" aria-hidden="true"><div><p><b>AVEN</b><span>agora</span></p><p>Mercado chegou a 80% do limite.</p><small>Faltam R$ 260 até o fim do mês.</small></div></div>
+            <div class="aviso"><img class="ico3d" src="./assets/cifrao-3d.webp" width="493" height="640" alt="" loading="lazy" aria-hidden="true"><div><p><b>AVEN</b><span>agora</span></p><p>Sobrou R$ 1.900 este mês.</p><small>Falta renda fixa na carteira. Quer ver?</small></div></div>
           </div>
           <div class="deitado" aria-hidden="true"><div class="deitado-tela"><i class="fone-ilha"></i><p class="deitado-pill"><span class="cifrao"></span>AVEN</p><p class="deitado-b">Constância se constrói aporte por aporte. Este mês: Tesouro IPCA+ e mais 2 itens.</p><ul><li>Tesouro IPCA+ 2029<b>R$ 760</b></li><li>CDB liquidez diária<b>R$ 760</b></li><li>Fundos imobiliários<b>R$ 380</b></li></ul></div></div>
         </article>
-        <article class="tb tb-mini" data-rev style="--i:2">
-          <h3 class="tb-tit">Sequência de aportes</h3>
-          <p class="tb-n">14 meses <small>seguidos</small></p>
-          <ol class="meses" data-meses aria-label="Meses com aporte"></ol>
-        </article>
-        <article class="tb tb-mini tb-patr" data-rev style="--i:3">
+        <article class="tb tb-mini tb-pat1" data-rev style="--i:2">
           <h3 class="tb-tit">Patrimônio</h3>
           <p class="tb-n">R$ 98,7 <small>mil</small></p>
           <p class="tb-s">+4,1% no mês</p>
           <span class="ancora ancora-chart" data-ancora data-tam="46" data-expr="confiante" aria-hidden="true"></span>
           <svg class="curva" viewBox="0 0 280 100" preserveAspectRatio="none" role="img" aria-label="Curva do patrimônio subindo ao longo do ano" focusable="false"><path class="curva-area" d="M4 88 C20 88 22 80 40 78 S60 70 78 66 S100 62 114 56 S136 48 152 44 S173 36 192 30 S217 24 234 20 S260 12 276 12 L276 100 L4 100 Z"/><path class="curva-linha" d="M4 88 C20 88 22 80 40 78 S60 70 78 66 S100 62 114 56 S136 48 152 44 S173 36 192 30 S217 24 234 20 S260 12 276 12" fill="none" vector-effect="non-scaling-stroke"/></svg>
         </article>
-        <article class="tb tb-mini tb-obj" data-rev style="--i:4">
-          <h3 class="tb-tit">Onde aportar</h3>
-          <p class="tb-n">Renda fixa</p>
-          <p class="tb-s">faltam R$ 760 para o alvo</p>
-          <ul class="alvos alvos-mini" aria-hidden="true"><li style="--a:44;--b:6;--t:50"><span></span><i><u></u></i><em></em></li><li style="--a:27;--b:0;--t:30"><span></span><i><u></u></i><em></em></li><li style="--a:19;--b:0;--t:20"><span></span><i><u></u></i><em></em></li></ul>
+        <article class="tb tb-mini tb-patr tb-div" data-rev style="--i:3" aria-label="Dividendos dos últimos seis meses, subindo mês a mês">
+          <h3 class="tb-tit">Dividendos</h3>
+          <p class="tb-n">R$ 640 <small>em <span data-mes>novembro</span></small></p>
+          <ol class="colunas" aria-hidden="true"><li style="--h:59%;--d:0ms"><i></i><b>R$ 380</b><span data-mes-col="-5">jun</span></li><li style="--h:64%;--d:70ms"><i></i><b>R$ 410</b><span data-mes-col="-4">jul</span></li><li style="--h:70%;--d:140ms"><i></i><b>R$ 450</b><span data-mes-col="-3">ago</span></li><li style="--h:81%;--d:210ms"><i></i><b>R$ 520</b><span data-mes-col="-2">set</span></li><li style="--h:88%;--d:280ms"><i></i><b>R$ 560</b><span data-mes-col="-1">out</span></li><li style="--h:100%;--d:350ms"><i></i><b>R$ 640</b><span data-mes-col="0">nov</span></li></ol>
         </article>
-        <article class="tb tb-contas" data-rev style="--i:5">
-          <div><h3>Suas contas,<br>conectadas.</h3><p>Extratos, corretora e planilha.<br>Tudo lido pela AVEN.</p></div>
-          <ul aria-label="Fontes aceitas"><li>CSV</li><li>OFX</li><li>B3</li><li>Pix</li><li>XLS</li><li>PDF</li></ul>
+        <article class="tb tb-mini tb-obj tb-cartoes" data-rev style="--i:4" aria-label="Cartões e gastos: três cartões, 2.140 reais nas faturas do mês">
+          <h3 class="tb-tit">Cartões e gastos</h3>
+          <p class="tb-n">R$ 2.140 <small>nas faturas do mês</small></p>
+          <div class="leque" aria-hidden="true"><span class="cc" style="--c:#1C1C1E;--n:0"><i style="--m:url(../assets/img/inst/c6.svg)"></i><em>•••• 3310</em></span><span class="cc" style="--c:#FF7A00;--n:1"><i style="--m:url(../assets/img/inst/inter.svg)"></i><em>•••• 5128</em></span><span class="cc" style="--c:#820AD1;--n:2"><i style="--m:url(../assets/img/inst/nubank.svg)"></i><em>•••• 7702</em></span></div>
         </article>
-        <article class="tb tb-dock" data-rev style="--i:6" aria-hidden="true">
-          <div class="dock"><span class="app app-cif"><span class="cifrao"></span></span><span class="app app-av"><svg viewBox="0 0 161 100" fill="#F7F4ED"><path d="M0 100 33 0h26l33 100H67L46 34 25 100Z"/><path d="M46 56 61 100H31Z" fill="#0A84FF"/><path transform="translate(69 0)" d="M0 0h25l21 66L67 0h25L59 100H33Z"/></svg></span><span class="app app-az"><svg class="icon"><use href="#arrow-up"/></svg></span></div>
+        <article class="tb tb-contas tb-saude" data-rev style="--i:5" aria-label="Saúde financeira: nota 82 de 100">
+          <svg class="saude-anel" viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="50"/><circle class="saude-v" cx="60" cy="60" r="50" pathLength="100"/><text x="60" y="58" text-anchor="middle">82</text><text class="de" x="60" y="80" text-anchor="middle">de 100</text></svg>
+          <div class="saude-c"><h3>Saúde financeira</h3><p>Uma nota de 0 a 100 e o que cuidar primeiro.</p>
+            <ul><li>Reserva de 4 meses</li><li>Sobra no ano</li><li class="at">Contas fixas em 38%</li></ul></div>
+        </article>
+        <article class="tb tb-dock tb-sonhos" data-rev style="--i:6" aria-label="Seus sonhos e o quanto falta para cada um">
+          <h3 class="tb-tit">Seus sonhos</h3>
+          <ul><li style="--p:100%"><span>Reserva<b>pronta</b></span><i></i></li><li style="--p:62%"><span>Apartamento<b data-mes-off="9">ago 2027</b></span><i></i></li><li style="--p:34%"><span>Viagem ao Japão<b data-mes-off="16">mar 2028</b></span><i></i></li></ul>
         </article>
       </div>
       <p class="tudo-nota">Telas ilustrativas, com valores de exemplo.</p>
     </section>
 
-    <section class="sim" id="simulador" aria-labelledby="sim-t">
-      <div class="sim-painel" data-sim-painel>
-        <p class="eyebrow">Simulador de objetivos</p>
-        <h2 id="sim-t">E se você investisse<br>um pouco mais?</h2>
-        <div class="sim-corpo">
-          <div class="sim-ctl">
-            <p class="sim-rot">O seu objetivo</p>
-            <div class="sim-chips" role="group" aria-label="Objetivo"><button type="button" data-sim-meta="50000">Reserva · R$ 50 mil</button><button type="button" data-sim-meta="150000" aria-pressed="true">Entrada do imóvel · R$ 150 mil</button><button type="button" data-sim-meta="1000000">Primeiro milhão</button></div>
-            <label class="sim-rot" for="sim-aporte">Aporte por mês<output data-sim-out for="sim-aporte">R$ 1.900</output></label>
-            <input id="sim-aporte" type="range" min="200" max="10000" step="100" value="1900">
-            <p class="sim-rot">Taxa ao ano da simulação</p>
-            <div class="sim-chips sim-taxas" role="group" aria-label="Taxa ao ano da simulação"><button type="button" data-sim-taxa="6">6%</button><button type="button" data-sim-taxa="8" aria-pressed="true">8%</button><button type="button" data-sim-taxa="10">10%</button></div>
-          </div>
-          <div class="sim-res" aria-live="polite">
-            <span class="ancora ancora-sim" data-ancora data-tam="76" data-tema="escuro" data-expr="curioso" aria-hidden="true"></span>
-            <p class="sim-quando"><small>Você chega lá em</small><strong data-sim-data>…</strong><em data-sim-prazo></em></p>
-            <svg class="sim-graf" viewBox="0 0 400 150" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path data-sim-area/><path data-sim-inv fill="none" vector-effect="non-scaling-stroke"/><path data-sim-linha fill="none" vector-effect="non-scaling-stroke"/></svg>
-            <p class="sim-partes"><span><i></i>Você investe <b data-sim-v-inv></b></span><span><i class="j"></i>Os juros somam <b data-sim-v-jur></b></span></p>
+    <section class="ix" id="importar" aria-labelledby="ix-t">
+      <div class="ix-stage">
+        <div class="ix-head">
+          <p class="eyebrow">Importação inteligente</p>
+          <h2 id="ix-t">Do extrato ao mês, sem digitar nada.</h2>
+          <ol class="ix-passos" aria-label="Etapas"><li data-ix-passo>Arraste</li><li data-ix-passo>Leitura</li><li data-ix-passo>Você confere</li><li data-ix-passo>Pronto</li></ol>
+        </div>
+        <div class="ix-palco" data-ix-palco>
+          <div class="ix-art" data-ix-art aria-label="Animação de exemplo: um extrato é arrastado para a AVEN, lido linha a linha, conferido e importado">
+            <div class="ix-leg" data-ix-leg aria-live="polite"><strong data-ix-leg-t></strong><span data-ix-leg-s></span></div>
+            <div class="ix-app" data-ix-app>
+              <p class="ix-app-h"><span class="ix-app-t">Importar extrato</span><span class="ix-arq" data-ix-arq><svg viewBox="0 0 16 16" aria-hidden="true"><path d="m4 8.5 2.6 2.6L12 5.5"/></svg>extrato-<span data-mes>novembro</span>.pdf</span></p>
+              <div class="ix-solta" data-ix-solta><svg class="icon" aria-hidden="true"><use href="#plus"/></svg><b>Solte o extrato aqui</b><span>PDF, OFX, CSV ou planilha</span></div>
+              <ol class="ix-cards"><li class="ix-card ok" data-ix-card><i class="ix-check" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 8.5 2.6 2.6L12 5.5"/></svg></i><span>Mercado Bom Preço</span><em>Mercado</em><b>− 312,40</b></li><li class="ix-card ok" data-ix-card><i class="ix-check" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 8.5 2.6 2.6L12 5.5"/></svg></i><span>Enel SP</span><em>Moradia</em><b>− 184,90</b></li><li class="ix-card ok" data-ix-card><i class="ix-check" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 8.5 2.6 2.6L12 5.5"/></svg></i><span>Uber</span><em>Transporte</em><b>− 27,80</b></li><li class="ix-card neutro" data-ix-card><i class="ix-check" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 8.5 2.6 2.6L12 5.5"/></svg></i><span>Fatura do cartão</span><em>Não é gasto</em><b>− 2.140,00</b></li><li class="ix-card ok" data-ix-card><i class="ix-check" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 8.5 2.6 2.6L12 5.5"/></svg></i><span>Salário</span><em>Renda</em><b>+ 8.000,00</b></li><li class="ix-card neutro" data-ix-card><i class="ix-check" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 8.5 2.6 2.6L12 5.5"/></svg></i><span>Mercado Bom Preço</span><em>Duplicado</em><b>− 312,40</b></li></ol>
+              <button class="ix-btn" type="button" data-ix-btn tabindex="-1" aria-hidden="true">Importar 4 lançamentos</button>
+              <div class="ix-ok" data-ix-ok><i aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 8.5 2.6 2.6L12 5.5"/></svg></i><strong>Pronto, está no seu mês.</strong><span>4 lançamentos importados · 2 ignorados</span><ul><li>Mercado</li><li>Moradia</li><li>Transporte</li><li>Renda</li></ul></div>
+              <span class="ancora ancora-ix" data-ancora data-em=".03" data-tam="56" data-expr="curioso" aria-hidden="true"></span>
+            </div>
+            <div class="ix-doc" data-ix-doc aria-hidden="true">
+              <div class="ix-doc-topo"><span class="ix-nu"></span><span class="ix-doc-tit">Extrato da conta<small>1 a <span data-dias>30</span> de <span data-mes>novembro</span> de <span data-ano>2026</span></small></span></div>
+              <dl class="ix-doc-res"><div><dt>Entradas</dt><dd class="pos">R$ 8.000,00</dd></div><div><dt>Saídas</dt><dd>R$ 2.977,50</dd></div><div><dt>Saldo final</dt><dd class="nu">R$ 13.022,50</dd></div></dl>
+              <p class="ix-doc-c">Movimentações</p>
+              <ol><li data-ix-row><i>03 <span data-mes-ab>NOV</span></i><span>Pix enviado<small>Mercado Bom Preço</small></span><b class="neg">− 312,40</b></li><li data-ix-row><i>05 <span data-mes-ab>NOV</span></i><span>Débito automático<small>Enel SP</small></span><b class="neg">− 184,90</b></li><li data-ix-row><i>06 <span data-mes-ab>NOV</span></i><span>Compra no débito<small>Uber *Trip</small></span><b class="neg">− 27,80</b></li><li data-ix-row><i>10 <span data-mes-ab>NOV</span></i><span>Pagamento de fatura<small>Cartão de crédito</small></span><b class="neg">− 2.140,00</b></li><li data-ix-row><i>10 <span data-mes-ab>NOV</span></i><span>Transferência recebida<small>Salário</small></span><b class="pos">+ 8.000,00</b></li><li data-ix-row><i>12 <span data-mes-ab>NOV</span></i><span>Pix enviado<small>Mercado Bom Preço</small></span><b class="neg">− 312,40</b></li></ol>
+              <p class="ix-doc-p"><span>Documento de exemplo</span><small>1 de 1</small></p>
+              <span class="ix-scan" data-ix-scan></span>
+              <span class="ix-mira" aria-hidden="true"></span>
+            </div>
+            <svg class="ix-cursor" data-ix-cursor viewBox="0 0 24 24" aria-hidden="true"><circle class="ix-toque" cx="5" cy="4" r="9"/><path d="M5 2.5v15.2l4.2-4.1 2.9 6.6 2.6-1.1-2.9-6.5H18L5 2.5Z"/></svg>
           </div>
         </div>
-        <p class="sim-nota">Simulação com a taxa que você escolher, sem impostos nem inflação. Não é promessa de rentabilidade.</p>
+        <p class="ix-nota">Arquivo de exemplo. Nada é gravado antes de você conferir a prévia.</p>
       </div>
     </section>
 
     <section class="ass" id="assessoria" aria-labelledby="ass-titulo">
       <div class="ass-cartao" data-rev>
-        <div class="ass-foto"><span class="ancora ancora-nathan" data-ancora data-tam="68" data-expr="animado" aria-hidden="true"></span><img data-nathan-foto src="../assets/img/nathan.jpg" width="843" height="1131" loading="lazy" alt="Foto do assessor"><p><b data-nathan-nome>Nathan Santapaula</b><span>Assessor de investimentos · XP Inc.</span></p></div>
+        <div class="ass-foto" data-nathan-comp>
+          <span class="ancora ancora-nathan" data-ancora data-tam="68" data-expr="animado" aria-hidden="true"></span>
+          <span class="ass-luz" aria-hidden="true"></span>
+          <div class="ass-quadro"><img class="ass-q" data-nathan-foto src="../assets/img/nathan.jpg" width="843" height="1131" loading="lazy" alt="Foto do assessor"></div>
+          <div class="ass-cabeca" aria-hidden="true"><img class="ass-c" data-nathan-cab src="../assets/img/nathan.jpg" width="843" height="1131" loading="lazy" alt=""></div>
+          <p class="ass-nome"><b data-nathan-nome>Nathan Santapaula</b><span>Assessor de investimentos · XP Inc.</span></p>
+        </div>
         <div class="ass-texto">
           <p class="eyebrow">Gente + tecnologia</p>
           <h2 id="ass-titulo">Atrás do app,<br>uma pessoa.</h2>
@@ -220,7 +237,7 @@
             <p class="bolha b-cif" data-rev style="--i:2">Essa decisão é grande. Chamo o Nathan?</p>
             <p class="bolha b-nat" data-rev style="--i:5">Oi! Vamos olhar isso juntos.</p>
           </div>
-          <a class="button" data-whatsapp href="#">Falar com o Nathan <svg class="icon" aria-hidden="true"><use href="#arrow-up"/></svg></a>
+          <a class="nat-btn" data-whatsapp data-rev style="--i:7" href="#"><span>Falar com o Nathan</span><i aria-hidden="true"><svg class="icon"><use href="#arrow-up"/></svg></i></a>
         </div>
       </div>
     </section>
