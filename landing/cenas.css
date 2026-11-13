@@ -605,8 +605,9 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; background: 
   .fx-cart .alvos li:first-child { display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; } .fx-cart .alvos li:first-child span, .fx-cart .alvos li:first-child em { display: block; font-size: 13px; } .fx-cart .alvos li:first-child i { grid-column: 1 / -1; order: 2; }
 }
 @media (max-width: 600px) {
-  .tudo .tb-cartoes { min-height: 260px; }
-  .tb-cartoes .leque { top: auto; height: 130px; bottom: 22px; }
+  .tudo .tb-cartoes { min-height: 236px; }
+  .tb-cartoes .leque { top: auto; height: 120px; bottom: 20px; }
+  .tb-cartoes .cc, .tb-cartoes.is-in .cc, .tb-cartoes:hover .cc { width: min(150px, 40%); }
 }
 /* Importação no celular: título numa linha e o selo do arquivo embaixo dele */
 .ix[data-lay="cel"] .ix-app-h { flex-direction: column; align-items: flex-start; gap: 6px; left: 16px; right: 16px; top: 16px; }
