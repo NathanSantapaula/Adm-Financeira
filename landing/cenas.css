@@ -642,3 +642,8 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; background: 
   .tb-cartoes .cc, .tb-cartoes.is-in .cc, .tb-cartoes:hover .cc { width: min(188px, 46vw); top: 16px; bottom: auto; transform-origin: 50% 50%; border-radius: 11px; }
   .tb-cartoes.is-in .cc, .tb-cartoes.is-in:hover .cc { transform: translateX(calc(-50% + (var(--n) - 1) * 42%)) translateY(calc((var(--n) - 1) * (var(--n) - 1) * 14px)) rotate(calc((var(--n) - 1) * 9deg)); }
 }
+/* Celular: "Com você" só com os dois avisos, sem o celular deitado */
+@media (max-width: 720px) {
+  .tb-voce .deitado { display: none; }
+  .tudo .tb-voce { height: auto !important; padding-bottom: 20px; }
+}
