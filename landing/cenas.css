@@ -597,3 +597,19 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; background: 
 /* Com você: de volta à versão original (pedido do Nathan). */
 .tb-voce .deitado { top: 30px; transform: rotate(-30deg) translateY(8%); }
 .deitado-b, .deitado ul { background: var(--cartao); } .deitado-pill { background: var(--cartao); color: inherit; }
+
+/* ───── Celular: Mercado sem laranja, carteira com uma linha, leque abaixo do texto ───── */
+@media (max-width: 900px) {
+  .fx-lista li:nth-child(2) u::after { background: #5E6878; opacity: .7; }
+  .fx-cart .alvos li + li { display: none; }
+  .fx-cart .alvos li:first-child { display: grid; grid-template-columns: 1fr auto; gap: 6px 10px; } .fx-cart .alvos li:first-child span, .fx-cart .alvos li:first-child em { display: block; font-size: 13px; } .fx-cart .alvos li:first-child i { grid-column: 1 / -1; order: 2; }
+}
+@media (max-width: 600px) {
+  .tudo .tb-cartoes { min-height: 260px; }
+  .tb-cartoes .leque { top: auto; height: 130px; bottom: 22px; }
+}
+/* Importação no celular: título numa linha e o selo do arquivo embaixo dele */
+.ix[data-lay="cel"] .ix-app-h { flex-direction: column; align-items: flex-start; gap: 6px; left: 16px; right: 16px; top: 16px; }
+.ix[data-lay="cel"] .ix-app-t { white-space: nowrap; font-size: 16px; font-weight: 600; }
+.ix[data-lay="cel"] .ancora-ix { top: -18px; right: 18px; }
+.ix[data-lay="cel"] .ix-card span { font-size: 11.5px; }

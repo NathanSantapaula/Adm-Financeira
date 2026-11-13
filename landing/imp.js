@@ -18,7 +18,7 @@
   /* Pranchetas. doc0: onde o extrato descansa; doc1: dentro da AVEN, já menor. */
   const L = {
     pc: { W: 1000, H: 560, app: [520, 0, 480, 560], doc0: [60, 28, 360, 504, -5], doc1: [632, 84, 252, 353, 0], leg: [40, 150, 400], lista: [540, 76, 440, 52, 8], btn: [540, 470, 440, 50] },
-    cel: { W: 360, H: 640, app: [0, 228, 360, 412], doc0: [40, 0, 280, 392, -4], doc1: [110, 280, 140, 196, 0], leg: [10, 30, 340], lista: [12, 280, 336, 40, 6], btn: [12, 576, 336, 46] },
+    cel: { W: 360, H: 640, app: [0, 228, 360, 412], doc0: [40, 0, 280, 392, -4], doc1: [70, 312, 220, 308, 0], leg: [10, 30, 340], lista: [12, 312, 336, 41, 6], btn: [12, 594, 336, 38] },
   };
   // Linhas da tabela do PDF: onde começam e a altura de cada uma (iguais ao CSS).
   const R0 = 168, RH = 36;
