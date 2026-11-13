@@ -621,3 +621,17 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; background: 
 .ix[data-lay="cel"] .ix-cursor.pega .ix-toque { transform: scale(1.4); fill: #fff; stroke-width: 3; }
 .ix[data-lay="cel"] .ix-cursor::after { content: none; }
 .pv-aloc { margin-top: 14px; } .pv .story-plan-note, .story-plan-note { margin-top: 10px; }
+
+/* Cartões: XP no lugar do C6 e um brilho de cartão de verdade */
+.cc i.xp { background: #fff; -webkit-mask: url(assets/xp-logo.png) left center / contain no-repeat; mask: url(assets/xp-logo.png) left center / contain no-repeat; width: 20%; height: auto; aspect-ratio: 1.85; }
+.cc { overflow: hidden; background: radial-gradient(120% 90% at 0% 0%, #ffffff26, transparent 55%), var(--c); box-shadow: 0 14px 26px -14px #000a, 0 2px 6px -3px #0005, inset 0 1px 0 #ffffff40, inset 0 0 0 1px #ffffff14; }
+.cc::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(115deg, transparent 30%, #ffffff2e 45%, transparent 60%); background-size: 250% 100%; background-position: 100% 0; transition: background-position 1.1s ease; pointer-events: none; }
+.tb-cartoes.is-in .cc::after { background-position: 0 0; }
+.cc-xp { --c: #121212; }
+/* Celular: sem mouse, o leque já fica aberto e cada logo aparece inteira */
+@media (max-width: 600px) {
+  .tb-cartoes .cc, .tb-cartoes.is-in .cc, .tb-cartoes:hover .cc { width: min(156px, 42%); border-radius: 10px; }
+  .tb-cartoes.is-in .cc, .tb-cartoes.is-in:hover .cc { transform: translateX(calc(-50% + (var(--n) - 1) * 46%)) translateY(calc((var(--n) - 1) * (var(--n) - 1) * 10px)) rotate(calc((var(--n) - 1) * 11deg)); }
+  .tb-cartoes .cc em { font-size: 10px; }
+  .tudo .tb-cartoes { min-height: 250px; }
+}
