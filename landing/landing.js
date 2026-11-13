@@ -19,3 +19,5 @@
   const io = new IntersectionObserver((es) => es.forEach((e) => { if (!e.isIntersecting) return; window.Cifrao?.expressao(e.target, e.target.dataset.expr); io.unobserve(e.target); }), { threshold: .6 });
   document.querySelectorAll('.bento-notification-icon').forEach((el, i) => { el.dataset.expr = i ? 'curioso' : 'animado'; io.observe(el); });
 })();
+// Some o convite para rolar assim que a pessoa começa a rolar.
+addEventListener('scroll', () => document.documentElement.classList.toggle('rolou', scrollY > 40), { passive: true });
