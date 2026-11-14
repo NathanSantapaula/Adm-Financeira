@@ -669,3 +669,17 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; background: 
 .tb-globo.toque .fone { animation: fone-balanca .8s cubic-bezier(.2, 1.2, .4, 1); }
 @keyframes fone-balanca { 25% { rotate: -2.5deg; } 55% { rotate: 1.8deg; } 100% { rotate: 0deg; } }
 @media (prefers-reduced-motion: reduce) { .tudo .tb.toque, .tudo .tb.toque * { animation: none !important; } }
+/* "Avisos na hora certa": os dois avisos chegam como notificações do celular, um depois do outro. */
+.tb-voce .aviso { opacity: 0; transform-origin: 50% 0; }
+.tb-voce.is-in .aviso { animation: notif-chega .75s cubic-bezier(.2, 1.25, .35, 1) .35s both; }
+.tb-voce.is-in .aviso + .aviso { animation-delay: 1.45s; }
+.tb-voce.toque .aviso { animation: notif-chega2 .75s cubic-bezier(.2, 1.25, .35, 1) both; }
+.tb-voce.toque .aviso + .aviso { animation-delay: .7s; }
+@keyframes notif-chega { 0% { opacity: 0; translate: 0 -46px; scale: .9; filter: blur(4px); } 60% { opacity: 1; filter: blur(0); } 100% { opacity: 1; translate: 0 0; scale: 1; filter: none; } }
+@keyframes notif-chega2 { 0% { opacity: 0; translate: 0 -46px; scale: .9; filter: blur(4px); } 60% { opacity: 1; filter: blur(0); } 100% { opacity: 1; translate: 0 0; scale: 1; filter: none; } }
+/* O Cifrão do aviso dá um pulinho quando a notificação chega. */
+.tb-voce.is-in .aviso .ico3d { animation: ico-pula .5s cubic-bezier(.2, 1.6, .4, 1) .9s both; } .tb-voce.is-in .aviso + .aviso .ico3d { animation-delay: 2s; }
+.tb-voce.toque .aviso .ico3d { animation: ico-pula2 .5s cubic-bezier(.2, 1.6, .4, 1) .55s both; } .tb-voce.toque .aviso + .aviso .ico3d { animation-delay: 1.25s; }
+@keyframes ico-pula { 40% { scale: 1.2; rotate: -8deg; } 100% { scale: 1; rotate: 0deg; } }
+@keyframes ico-pula2 { 40% { scale: 1.2; rotate: -8deg; } 100% { scale: 1; rotate: 0deg; } }
+@media (prefers-reduced-motion: reduce) { .tb-voce .aviso { opacity: 1; animation: none !important; } }
