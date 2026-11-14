@@ -706,3 +706,14 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; background: 
 /* Sonhos só com o brilho; Globo balança bem pouco. */
 .tb-sonhos.toque i { animation: none; }
 @keyframes fone-balanca { 30% { rotate: -1deg; } 65% { rotate: .6deg; } 100% { rotate: 0deg; } }
+/* ───── Rodapé em colunas: marca pequena em cinza, Produto / Contato / Legal e a linha final ───── */
+.fim .finale-pe.pe { --muted: #6B6B66; --muted-strong: #45453F; --text: #0B0B0C; --line-strong: #0B0B0C1f; display: block; max-width: 1080px; margin: 0 auto; padding: 44px 24px 34px; color: var(--muted); font-size: 13px; }
+.pe-topo { display: flex; justify-content: space-between; gap: 40px; flex-wrap: wrap; }
+.pe-marca { max-width: 280px; } .pe-logo { display: block; width: 74px; height: auto; color: var(--muted); opacity: .8; }
+.pe-marca p { margin-top: 10px; line-height: 1.5; }
+.pe-cols { display: grid; grid-template-columns: repeat(3, minmax(110px, auto)); gap: 28px 48px; }
+.pe-cols h3 { margin: 0 0 10px; font-size: 12px; font-weight: 600; letter-spacing: .02em; color: var(--muted-strong); }
+.fim .pe-cols a { display: block; padding: 4px 0; color: var(--muted); text-decoration: none; transition: color .2s; } .fim .pe-cols a:hover { color: var(--text); }
+.fim .pe .pe-base { width: auto; max-width: none; margin: 34px 0 0; padding-top: 18px; border-top: 1px solid var(--line-strong); display: flex; justify-content: space-between; gap: 8px 24px; flex-wrap: wrap; font-size: 11.5px; }
+.pe-base .footer-legal { max-width: 460px; margin: 0; }
+@media (max-width: 600px) { .pe-cols { grid-template-columns: 1fr 1fr; width: 100%; } .pe-topo { gap: 28px; } .pe-base { flex-direction: column; } }
