@@ -21,3 +21,9 @@
 })();
 // Some o convite para rolar assim que a pessoa começa a rolar.
 addEventListener('scroll', () => document.documentElement.classList.toggle('rolou', scrollY > 40), { passive: true });
+// Tocar num cartão da grade "Tudo o que é seu" dispara a animação própria dele (no celular não há hover).
+document.addEventListener('click', (e) => {
+  const tb = e.target.closest('.tudo .tb'); if (!tb || e.target.closest('a, button')) return;
+  tb.classList.remove('toque'); void tb.offsetWidth; tb.classList.add('toque');
+  clearTimeout(tb.toqueT); tb.toqueT = setTimeout(() => tb.classList.remove('toque'), 1400);
+});

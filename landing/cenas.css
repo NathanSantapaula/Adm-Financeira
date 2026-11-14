@@ -647,3 +647,25 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; background: 
   .tb-voce .deitado { display: none; }
   .tudo .tb-voce { height: auto !important; padding-bottom: 20px; }
 }
+/* ───── Toque nos cartões (celular): cada um reage do seu jeito ───── */
+.tudo .tb { -webkit-tap-highlight-color: transparent; cursor: pointer; }
+.tudo .tb.toque { animation: tb-aperta .45s cubic-bezier(.2, 1.4, .4, 1); }
+@keyframes tb-aperta { 30% { scale: .97; } 100% { scale: 1; } }
+.tb-cartoes.toque .cc { animation: cc-pula .7s cubic-bezier(.2, 1.3, .4, 1) calc(var(--n) * 80ms) both; }
+@keyframes cc-pula { 40% { translate: 0 -18px; } 100% { translate: 0 0; } }
+.tb-div.toque .colunas i { animation: col-sobe .7s cubic-bezier(.2, 1.4, .4, 1) var(--d) both; transform-origin: bottom; }
+@keyframes col-sobe { 0% { scale: 1 .2; } 100% { scale: 1 1; } }
+.tb-pat1.toque .curva-linha { animation: linha-pulsa .9s ease; } .tb-pat1.toque .tb-n { animation: num-pulsa .6s cubic-bezier(.2, 1.4, .4, 1); transform-origin: left center; }
+@keyframes linha-pulsa { 40% { stroke-width: 4.5; } }
+@keyframes num-pulsa { 35% { scale: 1.08; } 100% { scale: 1; } }
+.tb-saude.toque .saude-anel { animation: anel-gira .9s cubic-bezier(.2, 1, .3, 1); }
+@keyframes anel-gira { 0% { rotate: 0deg; scale: 1; } 40% { scale: 1.08; } 100% { rotate: 360deg; scale: 1; } }
+.tb-saude.toque li { animation: ficha-sobe .5s cubic-bezier(.2, 1.4, .4, 1) both; } .tb-saude.toque li:nth-child(2) { animation-delay: 70ms; } .tb-saude.toque li:nth-child(3) { animation-delay: 140ms; }
+@keyframes ficha-sobe { 40% { translate: 0 -5px; } 100% { translate: 0 0; } }
+.tb-voce.toque .aviso { animation: aviso-chega .6s cubic-bezier(.2, 1.3, .4, 1) both; } .tb-voce.toque .aviso + .aviso { animation-delay: 90ms; }
+@keyframes aviso-chega { 0% { translate: 24px 0; opacity: .3; } 100% { translate: 0 0; opacity: 1; } }
+.tb-sonhos.toque i::after { opacity: 1; animation: brilho-s 1.1s ease; }
+.tb-sonhos.toque i { animation: ficha-sobe .5s cubic-bezier(.2, 1.4, .4, 1); }
+.tb-globo.toque .fone { animation: fone-balanca .8s cubic-bezier(.2, 1.2, .4, 1); }
+@keyframes fone-balanca { 25% { rotate: -2.5deg; } 55% { rotate: 1.8deg; } 100% { rotate: 0deg; } }
+@media (prefers-reduced-motion: reduce) { .tudo .tb.toque, .tudo .tb.toque * { animation: none !important; } }
