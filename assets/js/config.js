@@ -34,7 +34,7 @@ window.FP_CONFIG = {
   // fotoCorte: altura (px da foto original) onde começa o quadro. Trocou a foto? Ajuste os dois ou apague para usar só o quadro.
   fotoTam: [843, 1131],
   fotoCorte: 118,
-  fotoRecorte: [[338, 126], [338, 124], [340, 116], [343, 108], [347, 103], [354, 92], [362, 86], [370, 80], [378, 74], [386, 73], [395, 67], [410, 66], [440, 65], [460, 65], [474, 64], [482, 65], [490, 67], [498, 69], [506, 72], [514, 76], [522, 81], [530, 87], [535, 92], [538, 97], [540, 101], [542, 104], [544, 108], [547, 112], [550, 116], [553, 120], [555, 124], [555, 126]],
+  fotoRecorte: [[336,128], [337,118], [341,108], [347,98], [355,90], [366,82], [378,74], [392,66], [408,60], [424,56], [440,54], [456,54], [472,55], [486,58], [499,62], [511,68], [522,75], [532,83], [541,93], [548,104], [553,115], [556,128]],
   // logos do Wikimedia Commons (domínio público), mostrados numa cor só. caixa: [x, y, largura, altura] do desenho dentro
   // do arquivo e [largura, altura] do arquivo, para cortar a margem vazia (opcional). altura: em px, para equilibrar logos (opcional). peso: engrossa o traço de um logo fino, em px (opcional).
   empresas: [
