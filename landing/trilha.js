@@ -15,9 +15,11 @@
     on = mes.classList.contains('is-animated') && getComputedStyle(traveler).position === 'fixed';
     if (!on) {
       // Sem a história rolável (tela baixa ou menos movimento): um Cifrão vivo em cada pouso.
-      if (!estatico) { estatico = true; els.forEach((el) => { if (el.hasAttribute('data-fim')) return; const c = document.createElement('span'); c.className = 'cifrao'; c.style.setProperty('--cif-size', `${el.dataset.tam || 56}px`); if (el.dataset.tema === 'escuro') { c.style.setProperty('--cif-body', CLARO); c.style.setProperty('--cif-eyes', NAVY); } el.append(c); }); }
+      if (!estatico) { estatico = true; els.forEach((el) => { if (el.hasAttribute('data-fim')) return; const c = document.createElement('span'); c.className = 'cifrao cif-pouso'; c.style.setProperty('--cif-size', `${el.dataset.tam || 56}px`); if (el.dataset.tema === 'escuro') { c.style.setProperty('--cif-body', CLARO); c.style.setProperty('--cif-eyes', NAVY); } el.append(c); }); }
       return;
     }
+    // A história voltou (a primeira medida às vezes chega antes dela, no celular): some com os Cifrões parados, senão aparecem dois.
+    if (estatico) { estatico = false; document.querySelectorAll('.cif-pouso').forEach((c) => c.remove()); }
     const vh = motion.viewport().height, topo = (el) => el.getBoundingClientRect().top + window.scrollY;
     pts = [{ el: dock, k: topo(mes) + mes.offsetHeight - vh, tam: dock.offsetWidth, tema: '', expr: '' }];
     for (const el of els) {
