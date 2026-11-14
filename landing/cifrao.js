@@ -7,10 +7,10 @@ const REPOUSO = {
   x: 0, y: 0, rotation: 0, yaw: 0, pitch: 0, scaleX: 1, scaleY: 1,
   gazeX: 0, gazeY: 0, leftWink: 0, rightWink: 0, leftEyeSmile: 0, rightEyeSmile: 0,
   eyeScaleX: 1, leftEyeScaleY: 1, rightEyeScaleY: 1, eyeSpacing: 1, eyeTilt: 0,
-  marcas: 0, duvida: 0, dot: 0,
+  marcas: 0, duvida: 0, dot: 0, skew: 0, brilho: 0,
 };
 const FOCO = { ...REPOUSO, x: -.022, y: -.022, rotation: -.08, yaw: -.18, pitch: -.05, gazeX: -.04, gazeY: .05, scaleY: 1.03, eyeScaleX: 1.2, leftEyeScaleY: .78, rightEyeScaleY: .9, eyeTilt: -.06 };
-const DURACAO = { notice: 1160, focus: 960, acknowledge: 700, hop: 960, wink: 900, proud: 1120, milestone: 1760, 'glance-left': 1580, 'glance-right': 1580, spin: 1800, flip: 1880, sonolento: 2400, confuso: 1700, irritado: 1300, erro: 1500 };
+const DURACAO = { notice: 1160, focus: 960, acknowledge: 700, hop: 960, wink: 900, proud: 1120, milestone: 1760, 'glance-left': 1580, 'glance-right': 1580, spin: 1800, flip: 1880, sonolento: 2400, confuso: 1700, irritado: 1300, erro: 1500, gelatina: 1100, cocegas: 1200, timido: 1500, espreguica: 1900, moeda: 2000, brilha: 1600, tonto: 2200 };
 const K = {
   'glance-left': [
     { at: 0, pose: {} },
@@ -149,8 +149,52 @@ K['glance-right'] = K['glance-left'].map(({ at, pose }) => {
   if ('leftEyeScaleY' in p || 'rightEyeScaleY' in p) [p.leftEyeScaleY, p.rightEyeScaleY] = [p.rightEyeScaleY ?? 1, p.leftEyeScaleY ?? 1];
   return { at, pose: p };
 });
+// Novas reações: forma que balança, cócegas, timidez, espreguiçar, virar moeda, brilhar e ficar tonto.
+const RISO = { leftEyeSmile: 1, rightEyeSmile: 1, leftEyeScaleY: .62, rightEyeScaleY: .62, eyeScaleX: 1.15 };
+Object.assign(K, {
+  gelatina: [
+    { at: 0, pose: {} },
+    { at: 120, pose: { y: .02, scaleX: 1.1, scaleY: .88, leftEyeScaleY: .7, rightEyeScaleY: .7 } },
+    { at: 260, pose: { y: -.02, skew: .22, scaleX: .95, scaleY: 1.06, eyeScaleX: 1.2, leftEyeSmile: .5, rightEyeSmile: .5 } },
+    { at: 400, pose: { skew: -.17, scaleX: 1.05, scaleY: .95, leftEyeSmile: .5, rightEyeSmile: .5 } },
+    { at: 540, pose: { skew: .11, scaleY: 1.02, leftEyeSmile: .4, rightEyeSmile: .4 } },
+    { at: 680, pose: { skew: -.06 } }, { at: 820, pose: { skew: .03 } }, { at: 1100, pose: {} },
+  ],
+  cocegas: [{ at: 0, pose: {} }, ...[0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => ({ at: 110 + i * 105, pose: { ...RISO, rotation: (i % 2 ? -.08 : .08) * (1 - i / 11), x: (i % 2 ? -.01 : .01), y: i % 2 ? -.012 : .006, scaleX: i % 2 ? .97 : 1.05, scaleY: i % 2 ? 1.04 : .95 } })), { at: 1200, pose: {} }],
+  timido: [
+    { at: 0, pose: {} },
+    { at: 220, pose: { y: .03, rotation: -.07, scaleX: 1.06, scaleY: .9, gazeX: -.02, gazeY: .05, leftEyeSmile: .7, rightEyeSmile: .7, leftEyeScaleY: .7, rightEyeScaleY: .7 } },
+    { at: 650, pose: { y: .032, rotation: -.1, scaleX: 1.07, scaleY: .89, gazeX: .025, gazeY: .045, leftEyeSmile: .8, rightEyeSmile: .8, leftEyeScaleY: .66, rightEyeScaleY: .66 } },
+    { at: 950, pose: { y: .03, rotation: -.09, scaleX: 1.06, scaleY: .9, gazeX: .03, gazeY: -.01, leftEyeSmile: .8, rightEyeSmile: .8, leftEyeScaleY: .7, rightEyeScaleY: .7 } },
+    { at: 1180, pose: { y: -.012, scaleY: 1.03 } }, { at: 1500, pose: {} },
+  ],
+  espreguica: [
+    { at: 0, pose: {} },
+    { at: 300, pose: { y: .022, scaleX: 1.08, scaleY: .88, leftEyeScaleY: .5, rightEyeScaleY: .5 } },
+    { at: 800, pose: { y: -.05, scaleX: .9, scaleY: 1.13, rotation: .05, leftWink: 1, rightWink: 1 } },
+    { at: 1120, pose: { y: -.05, scaleX: .9, scaleY: 1.13, rotation: -.05, leftWink: 1, rightWink: 1 } },
+    { at: 1400, pose: { y: .012, scaleX: 1.06, scaleY: .94, leftEyeSmile: .8, rightEyeSmile: .8 } }, { at: 1900, pose: {} },
+  ],
+  moeda: [
+    { at: 0, pose: {} },
+    { at: 200, pose: { y: .022, scaleX: 1.1, scaleY: .86, leftEyeScaleY: .6, rightEyeScaleY: .6 } },
+    { at: 430, pose: { y: -.07, dot: 1, yaw: Math.PI * .8 } },
+    { at: 800, pose: { y: -.11, dot: 1, yaw: Math.PI * 2 } },
+    { at: 1150, pose: { y: -.06, dot: 1, yaw: Math.PI * 3.3 } },
+    { at: 1420, pose: { y: .022, dot: 0, yaw: Math.PI * 4, scaleX: 1.1, scaleY: .86 } },
+    { at: 1650, pose: { y: -.02, yaw: Math.PI * 4, rightWink: 1, eyeScaleX: 1.2 } }, { at: 2000, pose: { yaw: Math.PI * 4 } },
+  ],
+  brilha: [
+    { at: 0, pose: {} },
+    { at: 200, pose: { y: .018, scaleX: 1.07, scaleY: .9, leftEyeScaleY: .75, rightEyeScaleY: .75 } },
+    { at: 450, pose: { y: -.05, rotation: .06, scaleX: 1.02, scaleY: 1.07, eyeScaleX: 1.2, leftEyeSmile: 1, rightEyeSmile: 1, leftEyeScaleY: .7, rightEyeScaleY: .7, brilho: 1 } },
+    { at: 1100, pose: { y: -.04, rotation: .04, scaleY: 1.05, eyeScaleX: 1.2, leftEyeSmile: 1, rightEyeSmile: 1, leftEyeScaleY: .7, rightEyeScaleY: .7, brilho: 1 } },
+    { at: 1350, pose: { y: .008, brilho: 0 } }, { at: 1600, pose: {} },
+  ],
+  tonto: [{ at: 0, pose: {} }, ...Array.from({ length: 9 }, (_, i) => ({ at: 160 + i * 190, pose: { gazeX: Math.cos(i * 1.4) * .045, gazeY: Math.sin(i * 1.4) * .04, rotation: Math.sin(i * .9) * .11, x: Math.sin(i * .9) * .012, skew: Math.sin(i * .9) * .06, eyeScaleX: .85, leftEyeScaleY: .75, rightEyeScaleY: .9, eyeTilt: Math.sin(i) * .1, duvida: i > 5 ? .7 : 0 } })), { at: 2200, pose: {} }],
+});
 // Nomes da cartilha → sequências.
-const EXPRESSOES = { neutro: null, curioso: 'glance-right', animado: 'hop', sonolento: 'sonolento', confuso: 'confuso', irritado: 'irritado', surpreso: 'notice', confiante: 'proud', comemorando: 'milestone', pensando: 'focus', espiando: 'glance-left', desorientado: 'erro', piscadela: 'wink', giro: 'spin', cambalhota: 'flip' };
+const EXPRESSOES = { neutro: null, curioso: 'glance-right', animado: 'hop', sonolento: 'sonolento', confuso: 'confuso', irritado: 'irritado', surpreso: 'notice', confiante: 'proud', comemorando: 'milestone', pensando: 'focus', espiando: 'glance-left', desorientado: 'erro', piscadela: 'wink', giro: 'spin', cambalhota: 'flip', gelatina: 'gelatina', cocegas: 'cocegas', timido: 'timido', espreguica: 'espreguica', moeda: 'moeda', brilha: 'brilha', tonto: 'tonto' };
 const CHAVES = Object.keys(REPOUSO);
 const ANG = (k) => k === 'yaw' || k === 'pitch';
 function seq(nome, t) {
@@ -310,9 +354,11 @@ function criar(host) {
   <g data-ator>
     <g data-marcas fill="none" stroke="var(--cif-body)" stroke-width="34" stroke-linecap="round" opacity="0"><path d="M760 215 815 150M815 275 890 245M700 165 712 95"/></g>
     <text data-duvida x="850" y="230" font-size="300" font-weight="800" font-family="-apple-system, Inter, sans-serif" fill="var(--cif-body)" text-anchor="middle" opacity="0">?</text>
+    <g data-brilhos fill="var(--cif-body)" opacity="0">${'<path d="M0 -60 L13 -13 L60 0 L13 13 L0 60 L-13 13 L-60 0 L-13 -13Z"/>'.repeat(3)}</g>
     <g data-volume>
       <g data-cifrao fill="var(--cif-body)">${CORPO}</g>
       <circle data-dot cx="500" cy="520" r="330" fill="var(--cif-body)" opacity="0"/>
+      <circle data-aro cx="500" cy="520" r="250" fill="none" stroke="var(--cif-eyes)" stroke-width="26" opacity="0"/>
       <g clip-path="url(#${id}-c)"><g data-face fill="var(--cif-eyes)"><g data-left><path data-le/></g><g data-right><path data-re/></g></g></g>
     </g>
   </g>`;
@@ -320,9 +366,22 @@ function criar(host) {
   const q = (s) => svg.querySelector(s);
   const ator = { host, svg, atencao: novaAtencao(20261111 + serial * 327), visivel: true, elapsed: 0, seq: 'notice', seqT: 0, gestoEm: 6500 + serial * 1700, gestoI: 0,
     atual: { ...REPOUSO }, origem: { ...REPOUSO }, grupo: q('[data-ator]'), volume: q('[data-volume]'), cifrao: q('[data-cifrao]'), dot: q('[data-dot]'), face: q('[data-face]'),
-    marcas: q('[data-marcas]'), duvida: q('[data-duvida]'), left: q('[data-left]'), right: q('[data-right]'), le: q('[data-le]'), re: q('[data-re]') };
-  const TOQUE = ['wink', 'hop', 'milestone', 'spin', 'confuso', 'flip', 'proud', 'irritado', 'sonolento', 'notice'];
-  host.addEventListener('click', () => ator.tocar(TOQUE[ator.gestoI++ % TOQUE.length]));
+    marcas: q('[data-marcas]'), aro: q('[data-aro]'), brilhos: q('[data-brilhos]'), duvida: q('[data-duvida]'), left: q('[data-left]'), right: q('[data-right]'), le: q('[data-le]'), re: q('[data-re]') };
+  const TOQUE = ['gelatina', 'wink', 'moeda', 'hop', 'brilha', 'spin', 'timido', 'milestone', 'flip', 'proud', 'confuso'];
+  let ultimo = 0, serie = 0;
+  // A reação depende do jeito do toque: vários seguidos, no topo da cabeça, depois de muito tempo parado ou com ele inclinado.
+  host.addEventListener('click', (e) => {
+    const agora = performance.now(), parado = ultimo > 0 && agora - ultimo > 15000;
+    serie = agora - ultimo < 650 ? serie + 1 : 1; ultimo = agora;
+    const r = host.getBoundingClientRect(), topo = r.height > 0 && (e.clientY - r.top) / r.height < .3;
+    let s;
+    if (serie >= 5) { s = 'tonto'; serie = 0; } else if (serie >= 3) s = 'cocegas';
+    else if (parado || ator.seq === 'sonolento') s = 'espreguica';
+    else if (topo) s = 'timido';
+    else if (Math.abs(ator.atual.rotation) > .07 || Math.abs(ator.atual.skew) > .05) s = 'gelatina';
+    else s = TOQUE[ator.toqueI = ((ator.toqueI ?? -1) + 1) % TOQUE.length];
+    ator.tocar(s);
+  });
   host.addEventListener('pointerenter', () => { ator.atencao = dirigeAtencao(ator.atencao, { x: 0, y: -.25, bodyFollow: .5 }); });
   ator.tocar = (nome) => { const s = EXPRESSOES[nome] ?? nome; if (!K[s]) return; ator.origem = { ...ator.atual }; ator.seq = s; ator.seqT = 0; };
   host.addEventListener('cifrao:expressao', (e) => ator.tocar(e.detail));
@@ -334,13 +393,17 @@ function criar(host) {
 }
 function desenhar(a, act) {
   const cy = Math.cos(act.yaw), cp = Math.cos(act.pitch), sy = Math.sin(act.yaw), sp = Math.sin(act.pitch), dot = act.dot || 0;
-  a.grupo.setAttribute('transform', `translate(${act.x * 1000} ${act.y * 1000}) translate(500 520) rotate(${act.rotation * 180 / Math.PI}) scale(${Math.min(1.13, act.scaleX)} ${Math.min(1.13, act.scaleY)}) translate(-500 -520)`);
+  a.grupo.setAttribute('transform', `translate(${act.x * 1000} ${act.y * 1000}) translate(500 520) rotate(${act.rotation * 180 / Math.PI}) skewX(${(act.skew || 0) * 57.3}) scale(${Math.min(1.13, act.scaleX)} ${Math.min(1.13, act.scaleY)}) translate(-500 -520)`);
   // Giro em torno do eixo vertical: a silhueta estreita até o perfil; de costas, os olhos somem.
   a.volume.setAttribute('transform', `translate(0 ${-90 * (1 - cp)}) translate(500 520) scale(${.3 + .7 * Math.abs(cy)} ${.94 + .06 * Math.abs(cp)}) translate(-500 -520)`);
   a.cifrao.setAttribute('opacity', String(1 - dot));
   a.cifrao.setAttribute('transform', dot ? `translate(500 520) scale(${1 - dot * .5}) translate(-500 -520)` : '');
   a.dot.setAttribute('opacity', String(dot));
   a.dot.setAttribute('r', String(330 * (.4 + .6 * dot)));
+  a.aro.setAttribute('opacity', String(dot)); a.aro.setAttribute('r', String(250 * (.4 + .6 * dot)));
+  const b = act.brilho || 0;
+  a.brilhos.setAttribute('opacity', String(Math.min(1, b * 1.4)));
+  if (b > .01) { const t = performance.now() / 1000; [[830, 250, 1], [170, 340, .7], [870, 720, .55]].forEach(([px, py, k], i) => a.brilhos.children[i].setAttribute('transform', `translate(${px} ${py}) rotate(${t * 60 + i * 30}) scale(${b * k * (.85 + .15 * Math.sin(t * 9 + i * 2))})`)); }
   const vis1 = Math.max(0, Math.min(1, cy * cp / .35));
   a.face.setAttribute('opacity', String(vis1 * vis1 * (3 - 2 * vis1) * (1 - dot)));
   a.face.setAttribute('transform', `translate(${sy * 200} ${-sp * 200}) translate(500 414) scale(${cy} ${cp}) translate(-500 -414)`);
@@ -360,7 +423,7 @@ function montar() {
 }
 montar();
 new MutationObserver((rs) => { if (rs.some((r) => [...r.addedNodes, ...r.removedNodes].some((n) => n.nodeType === 1 && (n.matches('.cifrao') || n.querySelector('.cifrao'))))) montar(); }).observe(document.body, { childList: true, subtree: true });
-const GESTOS = ['glance-left', 'wink', 'hop', 'glance-right', 'proud', 'spin', 'confuso', 'sonolento', 'notice', 'flip', 'irritado', 'milestone'];
+const GESTOS = ['glance-left', 'wink', 'gelatina', 'hop', 'glance-right', 'brilha', 'proud', 'spin', 'confuso', 'sonolento', 'espreguica', 'notice', 'moeda', 'flip', 'irritado', 'milestone'];
 // O olhar segue o ponteiro: cada ator olha na direção do cursor em relação ao próprio centro.
 let ultimoPonteiro = 0;
 addEventListener('pointermove', (e) => {
