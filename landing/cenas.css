@@ -683,3 +683,26 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; background: 
 @keyframes ico-pula { 40% { scale: 1.2; rotate: -8deg; } 100% { scale: 1; rotate: 0deg; } }
 @keyframes ico-pula2 { 40% { scale: 1.2; rotate: -8deg; } 100% { scale: 1; rotate: 0deg; } }
 @media (prefers-reduced-motion: reduce) { .tb-voce .aviso { opacity: 1; animation: none !important; } }
+/* ───── Toque mais suave: nada de pulo forte, cada cartão com um gesto pequeno e próprio ───── */
+.tudo .tb.toque { animation: tb-aperta .5s ease; }
+@keyframes tb-aperta { 40% { scale: .992; } 100% { scale: 1; } }
+/* Cartões: sobem um pouco, abrem de leve e crescem, depois voltam. */
+.tb-cartoes.toque .cc { animation: cc-troca .9s cubic-bezier(.45, 0, .25, 1) both; }
+.tb-cartoes.toque .cc[style*="--n:0"] { --dx: -10px; } .tb-cartoes.toque .cc[style*="--n:2"] { --dx: 10px; }
+@keyframes cc-troca { 45% { translate: var(--dx, 0) -8px; scale: 1.05; } 100% { translate: 0 0; scale: 1; } }
+/* Dividendos e Patrimônio: menos intensos. */
+@keyframes col-sobe { 0% { scale: 1 .85; } 100% { scale: 1 1; } }
+.tb-div.toque .colunas i { animation-timing-function: cubic-bezier(.3, 0, .2, 1); }
+@keyframes num-pulsa { 40% { scale: 1.03; } 100% { scale: 1; } }
+.tb-pat1.toque .tb-n { animation-timing-function: ease; }
+/* Saúde: sem volta e sem fichas pulando. O anel se completa de novo até 82 e as bolinhas acendem. */
+.tb-saude.toque .saude-anel, .tb-saude.toque li { animation: none; }
+.tb-saude.toque .saude-v { animation: anel-enche 1.1s cubic-bezier(.3, 0, .2, 1); }
+@keyframes anel-enche { 0% { stroke-dasharray: 60 100; } 100% { stroke-dasharray: 82 100; } }
+.tudo .tb-saude.toque .saude-c li::before { animation: bolinha-acende 1s ease; }
+@keyframes bolinha-acende { 40% { box-shadow: 0 0 0 4px #30D15833; } }
+.tudo .tb-saude.toque .saude-c li.at::before { animation-name: bolinha-acende-at; }
+@keyframes bolinha-acende-at { 40% { box-shadow: 0 0 0 4px #FFB34033; } }
+/* Sonhos só com o brilho; Globo balança bem pouco. */
+.tb-sonhos.toque i { animation: none; }
+@keyframes fone-balanca { 30% { rotate: -1deg; } 65% { rotate: .6deg; } 100% { rotate: 0deg; } }
