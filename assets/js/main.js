@@ -16,6 +16,7 @@ const navAgrupado = (items, btn) => GRUPOS_NAV.map(([t, ks]) => { let its = item
 const cartaoPlanoHtml = () => `<div class="advisor plano"><span class="adv-ic" aria-hidden="true">${I.inv || '★'}</span><div class="adv-t"><b>Conheça o plano ${esc(nomePlano('investidor'))}</b><small>Investimentos, proventos e a carteira no mesmo painel, com o disponível para aportar todo mês.</small></div><button class="hp-btn sm" data-act="upgrade" data-plano="investidor">Conhecer</button><button class="lnk adv-lnk" data-act="contact">Falar com o ${esc(primeiroNome())}</button></div>`;
 function renderSide() {
   if (modoBasico()) { basicoBarra(); return; } // modo Básico (basico.js): abas embaixo, sem menu lateral nem topo
+  if (typeof basTelaPequena === 'function' && basTelaPequena() && S.screen === 'app') { const tb = document.getElementById('tabbar'); if (tb) tb.innerHTML = ''; return; } // celular: nunca o menu do painel antigo
   const items = navItems(); const nome = (S.profile && S.profile.nome) || 'Minha conta';
   const btn = ([k, l]) => `<button data-act="nav" data-view="${k}" ${S.view === k ? 'aria-current="page"' : ''}>${S.view === k ? '<i class="nav-ind" aria-hidden="true"></i>' : ''}${I[k] || I.geral}<span>${l}</span>${k !== 'clientes' && !abaLiberada(k) ? `<em class="lk" title="Plano ${esc(nomePlano(planoMinimoDe(E.ABA_RECURSO[k] || 'fluxo')))}">${I.lock}</em>` : ''}</button>`;
   // no computador o menu recolhe para só o ícone "AV" e os ícones das abas (estado guardado no aparelho: html.side-mini)
@@ -37,6 +38,8 @@ function renderSide() {
 function emptyState() { return `<div class="empty-state"><h2>Crie o planejamento de ${S.year || NOW_Y}</h2><p>Comece com a estrutura: rendas, categorias de gastos, investimentos e proventos. Também é possível importar uma planilha .xlsx pelo painel administrativo.</p><div class="btn-row"><button class="btn primary lg" data-act="create-plan">Começar planejamento de ${S.year || NOW_Y}</button></div></div>`; }
 
 function viewHtml() {
+  // celular nunca desenha o painel antigo: se ainda não deu para entrar no App (perfil carregando), espera
+  if (!modoBasico() && typeof basTelaPequena === 'function' && basTelaPequena() && S.screen === 'app') return '<div class="bas-falha"><b>Carregando…</b></div>';
   if (modoBasico()) { try { return basicoHtml(); } catch (e) { console.error(e); S.basPilha = []; S.basAba = 'inicio'; return '<div class="bas-falha"><b>Algo não carregou direito</b><p>Seus dados estão salvos. Toque para voltar ao Início.</p><button class="btn primary lg" data-act="bas-aba" data-v="inicio">Voltar ao Início</button></div>'; } }
   if (!S.plan) return emptyState();
   if (PAT_ABAS.includes(S.view)) { S.patUlt = S.view; return patAbasHtml() + viewHtmlAba(); }
@@ -96,7 +99,7 @@ function render(opts) {
   if (S.pendingFocus) { const c = findCell(S.pendingFocus.ri, S.pendingFocus.m); if (c) c.focus(); S.pendingFocus = null; }
   const ad = $('#admin'); if (S.adminOpen && ad && ad.open) { const ae = document.activeElement; if (!(ae && ad.contains(ae) && /INPUT|SELECT|TEXTAREA/.test(ae.tagName))) renderAdmin(); }
 }
-function drawAll() { if (S.screen === 'landing') drawLanding(); else if (S.screen === 'app') { if (modoBasico()) { basDesenhar(); return; } drawDashboard(); drawLedger(); drawAssets(); drawRelatorio(); } }
+function drawAll() { if (S.screen === 'landing') drawLanding(); else if (S.screen === 'app') { if (modoBasico()) { basDesenhar(); return; } if (typeof basTelaPequena === 'function' && basTelaPequena()) return; drawDashboard(); drawLedger(); drawAssets(); drawRelatorio(); } }
 function renderLater() { S.stale = true; clearTimeout(S.staleT); S.staleT = setTimeout(() => { if (S.stale) { S.stale = false; render(); } }, 450); }
 
 /* ---------- eventos ---------- */
