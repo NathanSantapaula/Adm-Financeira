@@ -408,6 +408,8 @@ function criar(host) {
   host.addEventListener('pointerenter', () => { ator.atencao = dirigeAtencao(ator.atencao, { x: 0, y: -.25, bodyFollow: .5 }); });
   ator.tocar = (nome) => { const s = EXPRESSOES[nome] ?? nome; if (!K[s]) return; ator.origem = { ...ator.atual }; ator.seq = s; ator.seqT = 0; };
   host.addEventListener('cifrao:expressao', (e) => ator.tocar(e.detail));
+  // olhar um ponto da tela: detail = { x, y } em pixels da janela (o olhar e o corpo viram para lá)
+  host.addEventListener('cifrao:olhar', (e) => { const r = host.getBoundingClientRect(); const d = e.detail || {}; ator.atencao = dirigeAtencao(ator.atencao, { x: lim(((d.x - r.left - r.width / 2) / (innerWidth / 2)) * 1.6), y: lim(((d.y - r.top - r.height / 2) / (innerHeight / 2)) * 1.6), bodyFollow: d.corpo ?? .75 }); });
   host.addEventListener('cifrao:read-pose', (e) => { e.detail.pose = { ...ator.atual }; });
   host.addEventListener('cifrao:scroll-pose', (e) => { ator.atual = { ...REPOUSO, ...e.detail }; ator.seq = null; desenhar(ator, ator.atual); });
   host.cifrao = ator;

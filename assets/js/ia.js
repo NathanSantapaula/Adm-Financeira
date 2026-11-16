@@ -511,6 +511,7 @@ function iaRefresh() {
   document.querySelectorAll('[data-ia-log]').forEach((el) => { el.innerHTML = iaLogHtml(el.dataset.iaLog); });
   document.querySelectorAll('[data-ia-fichas]').forEach((el) => { el.innerHTML = iaFichasHtml(); });
   iaRolar();
+  if (typeof basCifConversa === 'function') basCifConversa();
 }
 // a conversa sempre mostra a última mensagem (também depois de um render())
 const iaRolar = () => document.querySelectorAll('[data-ia-log]').forEach((el) => { el.scrollTop = el.scrollHeight; });
