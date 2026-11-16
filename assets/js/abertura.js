@@ -29,7 +29,8 @@ function abTemaApp() {
   const bgT = k('--bg'); const noite = (0.2126 * bgT[0] + 0.7152 * bgT[1] + 0.0722 * bgT[2]) / 255 < 0.45;
   A.T = { escuro: false, app: true, noite, bg: noite ? [2, 4, 14] : branco, ink: noite ? branco : navy, ink2: noite ? [200, 210, 235] : [70, 84, 130], acc: ceu, acc2: [56, 214, 255], pos: [22, 160, 110], neg: k('--neg'), ouro: [230, 160, 30], cls,
     luz: branco, terra: branco, soma: 'source-over',
-    esfera: { brilho: [120, 170, 255], meio: azul, borda: [4, 12, 70] },
+    // no escuro, o miolo do planeta é preto e a luz fica no aro azul; no claro, a esfera azul da marca
+    esfera: noite ? { brilho: [18, 30, 90], meio: [3, 6, 20], borda: [1, 2, 8] } : { brilho: [120, 170, 255], meio: azul, borda: [4, 12, 70] },
     pts: cls, poeira: noite ? [branco, [184, 220, 255], [200, 210, 255], branco] : [ceu, [56, 214, 255], [138, 180, 255], azul], texto: branco, texto2: [210, 225, 255], sobe: [150, 245, 210] };
 }
 function abTema() {
@@ -304,7 +305,7 @@ function abQuadro(agora) {
   else { g.addColorStop(0, abRgba(T.esfera.brilho, 1)); g.addColorStop(0.5, abRgba(T.esfera.meio, 1)); g.addColorStop(1, abRgba(T.esfera.borda, 1)); }
   // a esfera do tema claro tem uma sombra larga (a operação mais cara do canvas): depois da entrada, ela é desenhada
   // uma vez numa camada do tamanho da tela e só copiada nos quadros seguintes
-  const esfera = (c) => { if (!T.escuro) { c.shadowColor = T.app ? 'rgba(20, 40, 245, .45)' : abRgba(T.acc, 0.55); c.shadowBlur = T.app ? 80 : 60; c.shadowOffsetY = T.app ? 24 : 18; }
+  const esfera = (c) => { if (!T.escuro) { c.shadowColor = T.app ? (T.noite ? 'rgba(47, 107, 255, .7)' : 'rgba(20, 40, 245, .45)') : abRgba(T.acc, 0.55); c.shadowBlur = T.app ? 80 : 60; c.shadowOffsetY = T.app ? 24 : 18; }
     c.globalAlpha = T.escuro ? 1 : e; c.fillStyle = g; c.beginPath(); c.arc(cx, cy, R * e, 0, 7); c.fill(); c.globalAlpha = 1; c.shadowBlur = 0; c.shadowOffsetY = 0; };
   if (T.escuro || e < 1) esfera(ctx); else camada('esfera', esfera);
   if (T.escuro && A.km) { ctx.fillStyle = abRgba(T.bg, 0.88); ctx.beginPath(); ctx.arc(cx, cy, R * e, 0, 7); ctx.fill(); } // mapa: miolo escuro, a luz fica no aro
@@ -339,7 +340,7 @@ function abQuadro(agora) {
   const focos = []; if (A.km) { const m = A.mapa; const km = e;
     for (let j = 0; j < m.length; j += 4) { const x2 = m[j] * cY - m[j + 2] * sY, z2 = m[j] * sY + m[j + 2] * cY; const z = m[j + 1] * sX + z2 * cX; if (z <= 0) continue;
       const sx = cx + x2 * R, sy = cy + (m[j + 1] * cX - z2 * sX) * R; const tam = T.app ? (1.2 + z * 1.8) * Math.max(0.5, Math.min(1.3, R / 300)) : 1.1 + z * 1.3;
-      abBalde(abEstilo(T.app ? T.terra : T.luz, (T.app ? 0.22 + z * 0.78 : 0.2 + z * 0.75) * km * lente(sx, sy))).push(sx - tam / 2, sy - tam / 2, tam); if (m[j + 3] && z > 0.1) focos.push(sx, sy, z, j); }
+      abBalde(abEstilo(T.app ? T.terra : T.luz, (T.app ? (T.noite ? 0.3 + z * 0.7 : 0.22 + z * 0.78) : 0.2 + z * 0.75) * km * lente(sx, sy))).push(sx - tam / 2, sy - tam / 2, tam); if (m[j + 3] && z > 0.1) focos.push(sx, sy, z, j); }
     abDespejar(ctx); }
   // mapa: luzes acesas sobre os continentes, pulsando devagar
   if (focos.length) { ctx.globalCompositeOperation = T.soma; for (let j = 0; j < focos.length; j += 4) { const [fx, fy, fz, fi] = focos.slice(j, j + 4);
