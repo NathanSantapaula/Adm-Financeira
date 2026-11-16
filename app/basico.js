@@ -850,8 +850,8 @@ const CC_BAND = {
   // Mastercard em branco: os dois círculos na proporção real; a sobreposição mais clara mantém o sentido do símbolo
   master: '<svg class="bas-band" viewBox="0 0 256 158" role="img" aria-label="Mastercard"><circle cx="79" cy="79" r="79" fill="currentColor" opacity=".55"/><circle cx="177" cy="79" r="79" fill="currentColor" opacity=".55"/></svg>' };
 const basBand = (k) => { const b = ((S.profile.cartaoEstilo || {})[k] || {}).b; if (CC_BAND[b]) return b; let h = 0; for (const c of k) h += c.charCodeAt(0); return h % 2 ? 'master' : 'visa'; };
-// o cartão "de verdade", em pé, na proporção de um cartão: logo do banco, aproximação, chip e bandeira
-const basCartaoFace = (k) => { const st = basCcEstilo(k); return `<span class="bas-cc-c bas-cc-mini bas-rc" data-m="${st.m}" style="--cb:${st.c}" aria-hidden="true"><span class="bas-rc-t">${instIcone(k)}<span class="bas-rc-nfc">${CC_NFC}</span></span><span class="bas-rc-chip"></span><span class="bas-rc-b">${CC_BAND[basBand(k)]}</span></span>`; };
+// o cartão "de verdade" em pé: é um cartão deitado (logo, chip, aproximação e bandeira nos lugares de sempre) girado 90°, como na mão
+const basCartaoFace = (k) => { const st = basCcEstilo(k); return `<span class="bas-cc-c bas-cc-mini bas-rc" data-m="${st.m}" style="--cb:${st.c}" aria-hidden="true"><span class="bas-rc-in"><span class="bas-rc-t">${instIcone(k)}</span><span class="bas-rc-chip"></span><span class="bas-rc-nfc">${CC_NFC}</span><span class="bas-rc-b">${CC_BAND[basBand(k)]}</span></span></span>`; };
 function basCcVer() {
   const p = document.querySelector('.bas-gt-pilha'); basSom('toque');
   if (!p || matchMedia('(prefers-reduced-motion: reduce)').matches) { basAbrir('cartoes'); return; }

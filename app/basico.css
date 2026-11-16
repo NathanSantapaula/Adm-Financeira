@@ -1820,3 +1820,16 @@ body[data-ui="basico"] :is(.bas-inv-pl, .btn.primary):active { transform: scale(
 /* na pilha do início de Gastos a bandeira fica quase transparente, sem a logo do banco */
 .bas-gt-d .bas-band { margin-left: auto; height: 18px; color: rgba(255, 255, 255, .32); }
 .bas-band { color: rgba(255, 255, 255, .85); }
+
+/* cartão em pé = cartão deitado girado 90° no sentido horário: o chip fica no alto, a aproximação embaixo dele,
+   a logo do banco no canto de cima à direita e a bandeira embaixo à esquerda, lendo de cima para baixo */
+.bas-cc-c.bas-rc { container-type: inline-size; padding: 0; }
+.bas-rc-in { position: absolute; left: 50%; top: 50%; width: calc(100cqw / .63); height: 100cqw; transform: translate(-50%, -50%) rotate(90deg); }
+.bas-rc-in .bas-rc-t { position: absolute; left: 7%; top: 9%; }
+.bas-rc-in .bas-rc-t .inst-ic { width: 13cqw; height: 13cqw; }
+.bas-rc-in .bas-rc-chip { left: 9%; top: 38%; width: 16%; height: 21%; }
+.bas-rc-in .bas-rc-nfc { position: absolute; left: 28%; top: 41%; }
+.bas-rc-in .bas-rc-nfc svg { width: 11cqw; height: 11cqw; }
+.bas-rc-in .bas-rc-b { right: 6%; bottom: 8%; }
+.bas-rc-in .bas-band { display: block; height: auto; width: 24%; }
+.bas-rc-in .bas-rc-b .bas-band { width: 30cqw; height: auto; }
