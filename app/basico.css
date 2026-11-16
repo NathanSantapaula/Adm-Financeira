@@ -2839,3 +2839,8 @@ html[data-vt="cc"]::view-transition-group(bas-cc-oficial) { animation-duration: 
 .bas-ccv-p i { width: 7px; background: color-mix(in srgb, var(--ink-3) 45%, transparent); }
 .bas-ccv-p i.on { width: 22px; background: var(--accent); }
 @media (prefers-reduced-motion: reduce) { .bas-ccv-p i { transition: none; } }
+/* fim de Gastos sem o vão: só o respiro da barra de abas */
+.bas-pg.bas-pg-g { padding-bottom: 0; }
+/* aviso quando uma tela do App não carrega */
+.bas-falha { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 30vh 24px 0; text-align: center; }
+.bas-falha b { font-size: 20px; } .bas-falha p { margin: 0 0 8px; color: var(--ink-3); }
