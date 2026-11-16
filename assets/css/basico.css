@@ -3238,3 +3238,23 @@ body[data-ui="basico"][data-screen="app"] .tabbar { bottom: max(8px, calc(env(sa
 @media (prefers-reduced-motion: reduce) { .bas-ctw-s, .bas-ctw-tx.troca { animation: none; transition: none; } }
 .bas-ctw { --ctw-a: color-mix(in srgb, var(--surface) 90%, #fff); --ctw-b: color-mix(in srgb, var(--ink) 16%, var(--surface)); }
 .bas-ctw-lb { display: block; font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); }
+/* anel da carteira, acabamento: cantos arredondados, partes fora da seleção em azul translúcido com listras finas, a escolhida em vidro com brilho */
+.bas-ctw-s .c { fill: url(#ctw-off); stroke: url(#ctw-off); stroke-width: 6; stroke-linejoin: round; filter: none; }
+.bas-ctw-s .l { fill: url(#ctw-lis); stroke: url(#ctw-lis); stroke-width: 6; stroke-linejoin: round; transition: opacity 300ms; }
+.bas-ctw-s .g { fill: url(#ctw-gl); stroke: none; opacity: 0; transition: opacity 300ms; pointer-events: none; }
+.bas-ctw-s .b { opacity: 0; }
+.bas-ctw-s.on .c { fill: url(#ctw-on); stroke: url(#ctw-on); stroke-width: 6; filter: drop-shadow(0 12px 18px color-mix(in srgb, var(--accent) 45%, transparent)); }
+.bas-ctw-s.on .l { opacity: 0; } .bas-ctw-s.on .g { opacity: 1; }
+.bas-ctw-s.on .b { opacity: .9; stroke: rgba(255, 255, 255, .7); stroke-width: 2; }
+.bas-ctw-s:focus-visible .c { stroke: var(--accent); }
+/* anel enxuto: listras só no preenchimento, borda fina que não come as frestas; etiqueta curta e pontinhos no lugar das fichas */
+.bas-ctw-s .c { stroke-width: 3; } .bas-ctw-s .l { stroke: none; } .bas-ctw-s.on .c { stroke-width: 3; }
+.bas-ctw-hr { display: flex; gap: 8px; } .bas-ctw-h { grid-template-columns: 92px 1fr 92px; } .bas-ctw-hr { justify-content: flex-end; }
+.bas-ctw-hr svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+.bas-ctw-tx { gap: 2px; } .bas-ctw-tx span { font-size: 15px; }
+.bas-ctw-tx em { justify-self: center; margin-top: 8px; padding: 5px 12px; border-radius: 999px; font-style: normal; font-size: 13px; font-weight: 700; color: var(--ink-2); background: color-mix(in srgb, var(--ink) 6%, transparent); }
+.bas-ctw-tx em.ok { color: var(--pos); background: color-mix(in srgb, var(--pos) 12%, transparent); } .bas-ctw-tx em.acima { color: var(--warn); background: color-mix(in srgb, var(--warn) 14%, transparent); } .bas-ctw-tx em.abaixo { color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.bas-ctw-pt { display: flex; justify-content: center; gap: 7px; margin: 16px 0 4px; }
+.bas-ctw-pt button { width: 7px; height: 7px; padding: 0; border: 0; border-radius: 999px; background: color-mix(in srgb, var(--ink) 18%, transparent); cursor: pointer; transition: width 250ms, background 250ms; }
+.bas-ctw-pt button.on { width: 20px; background: var(--accent); }
+.bas-ctw-pt button::after { content: ""; display: block; margin: -12px; width: 31px; height: 31px; }
