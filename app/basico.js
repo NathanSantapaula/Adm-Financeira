@@ -569,7 +569,7 @@ function basIaTela() {
   const card = (q, rot, val, ic0) => `<button class="bas-iax-c" data-act="ia-perg" data-q="${esc(q)}"><small>${esc(rot)}</small><b>${val}</b><span class="bas-iax-cr"><span class="bas-iax-ci" aria-hidden="true">${ic0}</span><span class="bas-iax-ca" aria-hidden="true">${I.chev}</span></span></button>`;
   return `<div class="bas-iax"><span class="bas-iax-brilho" aria-hidden="true"></span>
     <header class="bas-iax-h"><button class="bas-iax-b" data-act="bas-voltar" aria-label="Voltar">${I_VOLTA}</button><span class="bas-iax-hr"><button class="bas-iax-b" ${basIr('duvidas')} aria-label="Dúvidas">?</button><button class="bas-iax-b" ${basIr('avisos-tela')} aria-label="Avisos${av ? `: ${av} novos` : ''}">${I_IA_SINO}${av ? '<i class="bas-iax-pt"></i>' : ''}</button></span></header>
-    <div class="bas-iax-topo"><span class="bas-iax-orb" aria-hidden="true"><span class="cifrao"></span></span><p class="bas-iax-st"><span class="ok">Como posso ajudar?</span><span class="pe">Pensando…</span></p></div>
+    <div class="bas-iax-topo"><span class="bas-iax-orb" aria-hidden="true"><span class="cifrao" data-sem-giro></span></span><p class="bas-iax-st"><span class="ok">Como posso ajudar?</span><span class="pe">Pensando…</span></p></div>
     <div class="ia-log bas-iax-log" data-ia-log="b" role="log" aria-live="polite">${st.msgs.length ? iaLogHtml('b') : ''}</div>
     <div class="bas-iax-cs">${card(E.IA_FICHAS.aporte, 'Dá para investir', basCent(D.disponivel), I.inv)}${card(E.IA_FICHAS.gastos, `Gastou ${basJanFrase()}`, basCent(sai), I.despesas)}</div>
     <div class="ia-fichas bas-iax-fi" data-ia-fichas role="group" aria-label="Sugestões de perguntas">${iaFichasHtml()}</div>

@@ -423,7 +423,7 @@ function criar(host) {
     ator.tocar(s);
   });
   host.addEventListener('pointerenter', () => { ator.atencao = dirigeAtencao(ator.atencao, { x: 0, y: -.25, bodyFollow: .5 }); });
-  ator.tocar = (nome) => { const s = EXPRESSOES[nome] ?? nome; if (!K[s]) return; ator.origem = { ...ator.atual }; ator.seq = s; ator.seqT = 0; };
+  ator.tocar = (nome) => { const s = EXPRESSOES[nome] ?? nome; if (!K[s] || (host.hasAttribute('data-sem-giro') && GIROS.has(s))) return; ator.origem = { ...ator.atual }; ator.seq = s; ator.seqT = 0; };
   host.addEventListener('cifrao:expressao', (e) => ator.tocar(e.detail));
   // olhar um ponto da tela: detail = { x, y } em pixels da janela (o olhar e o corpo viram para lá)
   host.addEventListener('cifrao:olhar', (e) => { const r = host.getBoundingClientRect(); const d = e.detail || {}; ator.atencao = dirigeAtencao(ator.atencao, { x: lim(((d.x - r.left - r.width / 2) / (innerWidth / 2)) * 1.6), y: lim(((d.y - r.top - r.height / 2) / (innerHeight / 2)) * 1.6), bodyFollow: d.corpo ?? .75 }); });
@@ -467,6 +467,7 @@ function montar() {
 }
 montar();
 new MutationObserver((rs) => { if (rs.some((r) => [...r.addedNodes, ...r.removedNodes].some((n) => n.nodeType === 1 && (n.matches('.cifrao') || n.querySelector('.cifrao'))))) montar(); }).observe(document.body, { childList: true, subtree: true });
+const GIROS = new Set(['spin', 'flip', 'derrete', 'tonto', 'erro']);
 const GESTOS = ['glance-left', 'wink', 'gelatina', 'hop', 'glance-right', 'brilha', 'proud', 'spin', 'confuso', 'sonolento', 'espreguica', 'notice', 'danca', 'flip', 'derrete', 'irritado', 'milestone'];
 // O olhar segue o ponteiro: cada ator olha na direção do cursor em relação ao próprio centro.
 let ultimoPonteiro = 0;
@@ -490,7 +491,10 @@ function quadro(t) {
     a.reduzido = false; a.elapsed += dt;
     a.atencao = passoAtencao(a.atencao, dt);
     let act = a.atencao.pose;
-    if (!a.seq && a.elapsed >= a.gestoEm) { a.origem = { ...a.atual }; a.seq = GESTOS[a.gestoI++ % GESTOS.length]; a.seqT = 0; }
+    if (!a.seq && a.elapsed >= a.gestoEm) { a.origem = { ...a.atual }; let g = GESTOS[a.gestoI++ % GESTOS.length];
+      // data-sem-giro: o Cifrão fica de pé (sem giros, cambalhota ou derreter), como no selo do assistente
+      if (a.host.hasAttribute('data-sem-giro')) while (GIROS.has(g)) g = GESTOS[a.gestoI++ % GESTOS.length];
+      a.seq = g; a.seqT = 0; }
     if (a.seq) {
       a.seqT += dt;
       const dur = DURACAO[a.seq], l = a.seqT, cena = seq(a.seq, l);
