@@ -2093,3 +2093,24 @@ body[data-ui="basico"] { --bas-ciano: #4fd1ff; }
 #bas-ev-ln stop:nth-child(1) { stop-color: var(--bas-ciano); stop-opacity: 1; }
 #bas-ev-ln stop:nth-child(2) { stop-color: color-mix(in srgb, var(--bas-ciano) 45%, #fff); stop-opacity: 1; }
 #bas-ev-ln stop:nth-child(3) { stop-color: #fff; stop-opacity: 1; }
+
+/* ===== Correções do teste no iPhone ===== */
+/* Seus cartões: sem 3D (no Safari o z-index se perde dentro do 3D e o vizinho cobria o cartão do meio); só escala e transparência */
+.bas-rc-fila { perspective: none; }
+.bas-rc-i { transform: scale(calc(1 - var(--a, 0) * .2)); opacity: calc(1 - var(--a, 0) * .35); }
+.bas-rc-n em { font-style: normal; }
+/* o cartão "+": vidro com borda tracejada, na proporção dos outros */
+.bas-rc-novo { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; width: 100%; aspect-ratio: .63; border-radius: 20px;
+  border: 2px dashed color-mix(in srgb, var(--ink) 22%, transparent); background: var(--lg-bg); -webkit-backdrop-filter: var(--lg-desfoque); backdrop-filter: var(--lg-desfoque); color: var(--ink); }
+.bas-rc-novo i { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; color: var(--bg); background: color-mix(in srgb, var(--ink) 86%, transparent); }
+.bas-rc-novo i svg { width: 26px; height: 26px; } .bas-rc-novo b { font-size: 18px; } .bas-rc-novo small { font-size: 14px; color: var(--ink-3); }
+.bas-rc-add .bas-rc-n { visibility: hidden; }
+/* Gastos sem cartões: o botão de limite não fica escondido pela folha */
+.bas-gt:not(:has(.bas-gt-pilha)) { padding-bottom: 48px; }
+/* variação do Início: menor e simples; texto branco, só o círculo do ícone em verde ou vermelho */
+.bas-var-p, .bas-var-p.pos, .bas-var-p.neg { color: #fff !important; font-size: 13px; padding: 4px 12px 4px 4px; gap: 7px; max-width: 100%; white-space: nowrap; }
+.bas-var-p i { width: 20px; height: 20px; font-size: 12px; color: #fff; }
+.bas-var-p.pos i { background: var(--bas-noite-pos, #30d158); } .bas-var-p.neg i { background: var(--bas-noite-neg, #ff453a); }
+/* Entradas e + Gasto do mesmo tamanho e peso dos botões de Patrimônio */
+.bas-gt-acoes > button { height: 50px; font-size: 14px; font-weight: 600; gap: 5px; }
+.bas-gt-acoes > button svg { width: 17px; height: 17px; }
