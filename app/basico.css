@@ -3274,3 +3274,7 @@ body[data-ui="basico"][data-screen="app"] .tabbar { bottom: max(8px, calc(env(sa
 .bas-ctw-bg .bas-ctw-pt button { background: rgba(255, 255, 255, .3); } .bas-ctw-bg .bas-ctw-pt button.on { background: #fff; }
 .bas-ctw-bg .bas-ctw-pt { margin-bottom: 8px; }
 .bas-ctw-bg .bas-ctw-s.on .l { opacity: 0; }
+/* anel maior e o nome da classe subindo para a abertura de baixo do anel */
+.bas-ctw-bg .bas-ctw-r { width: calc(100% + 24px); max-width: 400px; margin: 0 -12px; margin-inline: auto; left: 50%; translate: -50% 0; position: relative; }
+.bas-ctw-bg .bas-ctw-c b { font-size: 30px; }
+.bas-ctw-bg .bas-ctw-tx { position: relative; margin-top: -52px; }
