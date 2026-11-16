@@ -2736,3 +2736,37 @@ html[data-vt="cc"]::view-transition-group(bas-cc-oficial) { animation-duration: 
 .bas-gv-l span { color: var(--ink-3); } .bas-gv-l b { display: inline-flex; align-items: center; gap: 8px; text-align: right; font-weight: 600; }
 .bas-gv-l b .inst-ic { width: 22px; height: 22px; border-radius: 7px; }
 .bas-gv-ok { color: var(--pos) !important; font-weight: 700; }
+/* ===== Gasto em pop-up, visual de comprovante: folha escura que sobe, comprovante branco saindo de uma fenda com borda serrilhada ===== */
+.bas-gp { position: fixed; inset: 0; z-index: 200; display: flex; align-items: flex-end; justify-content: center; }
+.bas-gp-fundo { position: absolute; inset: 0; border: 0; background: rgba(0, 0, 0, .45); opacity: 0; transition: opacity 280ms ease; cursor: pointer; -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); }
+.bas-gp.on .bas-gp-fundo { opacity: 1; }
+.bas-gp-f { position: relative; width: 100%; max-width: 520px; max-height: calc(100dvh - 24px - env(safe-area-inset-top, 0px)); overflow-y: auto; overscroll-behavior: contain;
+  padding: 10px 18px calc(20px + env(safe-area-inset-bottom, 0px)); border-radius: 34px 34px 0 0; color: #fff; background: #2A2A2E;
+  box-shadow: 0 -20px 60px -20px rgba(0, 0, 0, .6); transform: translateY(105%); transition: transform 460ms cubic-bezier(.2, .9, .2, 1); }
+.bas-gp.on .bas-gp-f { transform: none; } .bas-gp.sai .bas-gp-f { transition-duration: 300ms; }
+.bas-gp-alca { display: block; width: 40px; height: 5px; margin: 0 auto 8px; border-radius: 999px; background: rgba(255, 255, 255, .25); }
+.bas-gp-h { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; } .bas-gp-h b { font-size: 20px; font-weight: 700; padding-left: 10px; }
+.bas-gp-x { width: 44px; height: 44px; border: 0; border-radius: 50%; display: grid; place-items: center; color: #fff; background: rgba(255, 255, 255, .1); cursor: pointer; }
+.bas-gp-x svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.bas-gp-ic { display: grid; place-items: center; width: 76px; height: 76px; margin: 14px auto 10px; border-radius: 50%; background: #1C1C1F; overflow: hidden; }
+.bas-gp-ic .inst-ic { width: 76px; height: 76px; border-radius: 50%; } .bas-gp-ic i { font-style: normal; font-size: 24px; font-weight: 700; }
+.bas-gp-q { margin: 0; text-align: center; font-size: 16px; color: rgba(255, 255, 255, .78); }
+.bas-gp-v { margin: 4px 0 16px; text-align: center; font-size: 46px; font-weight: 700; letter-spacing: -.03em; font-variant-numeric: tabular-nums; } .bas-gp-v .bas-cent { opacity: .5; font-size: .62em; }
+/* a fenda (barra preta) e o papel que sai dela */
+.bas-gp-fenda { position: relative; padding: 0 14px; overflow: hidden; }
+.bas-gp-fenda::before { content: ""; position: absolute; left: 0; right: 0; top: 0; z-index: 2; height: 22px; border-radius: 999px; background: #050506; box-shadow: inset 0 -3px 6px rgba(255, 255, 255, .06); }
+.bas-gp-papel { position: relative; margin-top: 11px; padding: 20px 18px 30px; color: #111; background: #fff; box-shadow: inset 0 10px 10px -8px rgba(0, 0, 0, .25);
+  -webkit-mask: linear-gradient(#000 0 0) top / 100% calc(100% - 10px) no-repeat, conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / 16px 10px repeat-x;
+  mask: linear-gradient(#000 0 0) top / 100% calc(100% - 10px) no-repeat, conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / 16px 10px repeat-x;
+  transform: translateY(-104%); transition: transform 900ms 260ms cubic-bezier(.2, .8, .2, 1); }
+.bas-gp.on .bas-gp-papel { transform: none; }
+.bas-gp-t { display: flex; justify-content: space-between; gap: 10px; padding-bottom: 14px; border-bottom: 1px solid #E8E8EC; font-size: 16px; }
+.bas-gp-papel ul { list-style: none; margin: 0; padding: 0; } .bas-gp-papel li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 0; font-size: 15px; }
+.bas-gp-papel li span { color: #6B6B75; } .bas-gp-papel li b { display: inline-flex; align-items: center; gap: 7px; text-align: right; font-weight: 600; }
+.bas-gp-papel li b .inst-ic { width: 20px; height: 20px; border-radius: 6px; } .bas-gp-papel li b.pos { color: #22A45D; }
+.bas-gp-as { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 16px 0 12px; }
+.bas-gp-as button { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 14px; font-weight: 600; color: #fff; background: #1C1C1F; cursor: pointer; }
+.bas-gp-as svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.bas-gp-ok { width: 100%; min-height: 56px; border: 0; border-radius: 18px; font: inherit; font-size: 17px; font-weight: 700; color: #fff; cursor: pointer;
+  background: linear-gradient(155deg, var(--bas-azul-1), var(--bas-azul-2)); box-shadow: 0 14px 30px -14px color-mix(in srgb, var(--bas-azul-2) 80%, transparent); }
+@media (prefers-reduced-motion: reduce) { .bas-gp-f, .bas-gp-papel, .bas-gp-fundo { transition: none; } }

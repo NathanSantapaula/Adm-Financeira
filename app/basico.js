@@ -143,6 +143,8 @@ const basSumiu = () => basDet('Não encontrado', basCard(basVazio('Este item nã
 
 /* ---------- navegação: pilha de telas ligada ao histórico do navegador ---------- */
 function basAbrir(t, o) {
+  if (t === 'gasto-ver' && o && o.id) { basGastoPop(o.id); return; }
+  if (document.querySelector('.bas-gp')) { document.querySelector('.bas-gp').remove(); }
   basPilha().push(Object.assign({ t, volta: window.scrollY }, o)); history.pushState({ bas: basPilha().length }, ''); basSom('toque');
   basTransicao(t === 'ia' ? 'ia' : t === 'cartao-estilo' ? 'cc' : 'vai', () => { render(); window.scrollTo(0, 0); const f = $('#view [data-foco]'); if (f && matchMedia('(pointer: coarse)').matches === false) f.focus({ preventScroll: true }); });
 }
@@ -764,6 +766,39 @@ function basGastoLembra(f, x, valor) {
   const d = f.querySelector('.bas-lembra'); if (d) { d.hidden = false; d.textContent = `Da última vez: ${brl(x.valor)} em ${x.area || 'Outros'}${x.inst && instDe(x.inst) ? ' · ' + instDe(x.inst)[1] : ''}.`; }
 }
 document.addEventListener('input', (e) => { const t = e.target; if (!t.matches || !t.matches('form[data-t="gasto"] input[name="desc"]')) return; const x = basMemGastos().get(E.norm(t.value)); if (x) basGastoLembra(t.form, x, false); });
+// Gasto em pop-up (visual de comprovante): folha escura que sobe sobre a tela atual, o comprovante sai de uma fenda.
+// Mesmas funções da tela do gasto: fechar, editar, lançar de novo, categoria, detalhes e números.
+function basGastoPop(id) {
+  const p = S.plan; const l = p.lancamentos.find((x) => x.id === id); if (!l) return;
+  document.querySelector('.bas-gp')?.remove();
+  const dt = l.data ? new Date(l.data + 'T12:00:00') : null; const ok = dt && !isNaN(dt);
+  const data = ok ? dt.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }) : 'Sem data';
+  const nome = l.desc || l.area || 'Gasto'; const inst = l.inst && instDe(l.inst);
+  const m = ok ? dt.getMonth() : S.mes; const totMes = +(S.C.despesas[m] || 0); const parte = totMes > 0 ? (+l.valor / totMes) : 0;
+  const chave = basSemAcento(nome); const iguais = p.lancamentos.filter((x) => basSemAcento(x.desc || x.area || '') === chave); const somaIg = iguais.reduce((t, x) => t + (+x.valor || 0), 0);
+  const fixo = l.itemId && p.despesas.find((x) => x.id === l.itemId);
+  const lin = (k, v, cls) => `<li><span>${k}</span><b${cls ? ` class="${cls}"` : ''}>${v}</b></li>`;
+  const w = document.createElement('div'); w.className = 'bas-gp'; w.setAttribute('role', 'dialog'); w.setAttribute('aria-modal', 'true'); w.setAttribute('aria-label', `Gasto: ${nome}`);
+  w.innerHTML = `<button class="bas-gp-fundo" data-act="bas-gp-fechar" aria-label="Fechar"></button>
+    <div class="bas-gp-f"><i class="bas-gp-alca" aria-hidden="true"></i>
+      <header class="bas-gp-h"><button class="bas-gp-x" data-act="bas-gp-fechar" aria-label="Fechar">${I.x}</button><b>Seu gasto</b><button class="bas-gp-x" ${basIr('gasto', { id: l.id })} aria-label="Editar gasto">${I.edit}</button></header>
+      <span class="bas-gp-ic" aria-hidden="true">${inst ? instIcone(l.inst) : `<i>${esc(basIniciais(nome))}</i>`}</span>
+      <p class="bas-gp-q">${esc(nome)} · ${esc(l.area || 'Sem categoria')}</p>
+      <p class="bas-gp-v">${basCent(+l.valor || 0)}</p>
+      <div class="bas-gp-fenda"><div class="bas-gp-papel">
+        <div class="bas-gp-t"><b>Comprovante</b><b>Total ${basCent(+l.valor || 0)}</b></div>
+        <ul>${lin('Data', esc(cap(data)))}${lin('Pago com', inst ? `${instIcone(l.inst)} ${esc(inst[1])}` : 'Não informado')}${lin('Tipo', fixo ? 'Conta do mês' : 'Gasto do dia')}${lin('Origem', l.origem === 'manual' ? 'Anotado por você' : 'Extrato')}${lin(`Do total de ${MES_LONGO[m]}`, `${Math.round(parte * 100)}%`)}${iguais.length > 1 ? lin(`Vezes com ${esc(nome)}`, `${iguais.length} · ${basCent(somaIg)}`) : ''}${lin('Status', 'Pago', 'pos')}</ul>
+      </div></div>
+      <div class="bas-gp-as"><button ${basIr('gasto', { area: l.area })}>${I_REC}Lançar de novo</button><button ${basIr('categoria', { area: l.area })}>${I_RAIOX}Ver a categoria</button></div>
+      <button class="bas-gp-ok" ${basIr('gasto', { id: l.id })}>Editar gasto</button>
+    </div>`;
+  document.body.appendChild(w); basSom('toque');
+  const esc0 = (e) => { if (e.key === 'Escape') basGastoFechar(); }; w._esc = esc0; addEventListener('keydown', esc0);
+  requestAnimationFrame(() => w.classList.add('on'));
+}
+function basGastoFechar() {
+  const w = document.querySelector('.bas-gp'); if (!w) return; removeEventListener('keydown', w._esc); w.classList.remove('on'); w.classList.add('sai'); setTimeout(() => w.remove(), 320);
+}
 // A tela do gasto: quem recebeu (logo do banco ou iniciais), o valor grande, a data, três atalhos e os detalhes;
 // o lápis no alto abre o formulário de edição (a tela "gasto" de sempre)
 function basTelaGastoVer(o) {
@@ -2031,6 +2066,7 @@ function basAcao(act, ds, el) {
     case 'bas-cq-share': basConquistaPng(+ds.q).then((b) => basEnviaPng(b, `${(CFG.marca || 'aven').toLowerCase()}-conquista-${ds.q}-meses.png`, 'Minha conquista')); return true;
     case 'bas-ah-ano': { const t = basTopoPilha(); if (t && t.t === 'ano-hist') { t.id = String(ds.y); basSom('toque'); render(); } return true; }
     case 'bas-cc-mod': if (instDe(ds.id) && CC_MODELOS.some((x) => x[0] === ds.m)) basCcGrava(ds.id, 'm', ds.m); return true;
+    case 'bas-gp-fechar': basGastoFechar(); return true;
     case 'bas-cc-band': if (instDe(ds.id) && CC_BAND[ds.v]) basCcGrava(ds.id, 'b', ds.v); return true;
     case 'bas-cc-cor': if (instDe(ds.id) && /^#[0-9a-f]{6}$/i.test(ds.v || '')) basCcGrava(ds.id, 'c', ds.v); return true;
     case 'bas-gasto-rec': { const f = el.closest('form'); const x = basMemGastos().get(ds.k); if (f && x) { f.querySelector('[name="desc"]').value = x.desc; basGastoLembra(f, x, true); basSom('toque'); } return true; }
