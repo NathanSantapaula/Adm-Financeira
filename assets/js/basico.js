@@ -62,7 +62,7 @@ function basCat(fixa) {
 // abas embaixo (no lugar do menu lateral e do topo); some nas telas de formulário
 function basicoBarra() {
   $('#topo').innerHTML = ''; $('#side').innerHTML = ''; const a = basAba(); const t = basTopoPilha();
-  document.body.dataset.basFolha = t && BAS_FORMS.has(t.t) ? '1' : ''; document.body.dataset.basPerfil = a === 'perfil' && !t ? '1' : ''; document.body.dataset.basIa = t && (t.t === 'duvidas' || t.t === 'avisos-tela' || t.t === 'cartao-estilo' || (t.t === 'ia' && (S.basIaAba || 'conversa') === 'conversa')) ? '1' : '';
+  document.body.dataset.basFolha = t && BAS_FORMS.has(t.t) ? '1' : ''; document.body.dataset.basPerfil = a === 'perfil' && !t ? '1' : ''; document.body.dataset.basIa = t && (t.t === 'duvidas' || t.t === 'avisos-tela' || t.t === 'gasto-ver' || t.t === 'cartao-estilo' || (t.t === 'ia' && (S.basIaAba || 'conversa') === 'conversa')) ? '1' : '';
   const av = basAvisosNovos();
   // botão da IA separado, à esquerda da barra: fundo em degradê neon que se move, vidro por cima e o Cifrão dentro
   $('#tabbar').innerHTML = `<button class="bas-ia-fab${av ? ' alerta' : ''}${document.querySelector('.bas-cif-solto') ? ' vazia' : ''}" data-act="bas-ia-fab" aria-label="Assistente${av ? `: ${av} avisos novos` : ''}. Segure e arraste para o Cifrão andar pela tela."><span class="cifrao" aria-hidden="true"></span></button><div class="bas-tabs"><span class="bas-tab-lente" aria-hidden="true"></span>${basAbas().map(([k, l, i]) => `<button data-act="bas-aba" data-v="${k}" ${a === k ? 'aria-current="page"' : ''}>${i}<span>${l}</span></button>`).join('')}</div>`;
@@ -319,7 +319,7 @@ const basContas = (m) => E.contasMes({ despesas: S.plan.despesas, carry: E.carry
 const basContaLinha = (x) => basRow(basIr('conta', { id: x.id }), x.inst ? instIcone(x.inst) : I_CONTA, esc(x.nome), x.parcela ? `parcela ${x.parcela.i} de ${x.parcela.n}` : 'todo mês',
   `<span class="bas-v"><b>${basCent(x.valor)}</b><em class="bas-st${x.pago ? ' ok' : ''}">${x.pago ? 'Pago' : 'A pagar'}</em></span>`);
 const basLancLinha = (l) => { const d = E.parseDataISO(l.data);
-  return basRow(basIr('gasto', { id: l.id }), l.inst ? instIcone(l.inst) : esc(basIniciais(l.desc || l.area)), esc(l.desc || l.area), `${esc(l.area)} · ${pad2(d.dia)}/${pad2(d.mes + 1)}`, `<b${l.valor < 0 ? ' class="pos"' : ''}>${l.valor < 0 ? '+' : '−'}${basCent(Math.abs(l.valor))}</b>`); };
+  return basRow(basIr('gasto-ver', { id: l.id }), l.inst ? instIcone(l.inst) : esc(basIniciais(l.desc || l.area)), esc(l.desc || l.area), `${esc(l.area)} · ${pad2(d.dia)}/${pad2(d.mes + 1)}`, `<b${l.valor < 0 ? ' class="pos"' : ''}>${l.valor < 0 ? '+' : '−'}${basCent(Math.abs(l.valor))}</b>`); };
 
 /* ---- Gastos: "Para onde foi". Anel interativo (tocar destaca a categoria e mostra o valor; tocar de novo abre),
    anel fino de fora com o uso do limite, cartões por banco, contas numa linha do tempo e o + flutuante ---- */
@@ -332,7 +332,7 @@ function basGastos() {
   // últimos gastos numa lista simples (ícone redondo, nome, quando e valor); "Ver tudo" mostra o período inteiro
   const todos = basLancJan(); const quando = (l) => { const d = E.parseDataISO(l.data); const hj = new Date(); const ont = new Date(hj - 864e5);
     return d.ano === hj.getFullYear() && d.mes === hj.getMonth() && d.dia === hj.getDate() ? 'Hoje' : d.ano === ont.getFullYear() && d.mes === ont.getMonth() && d.dia === ont.getDate() ? 'Ontem' : `${d.dia} ${MES[d.mes].toLowerCase()}`; };
-  const linha = (l) => `<li><button class="bas-ult-l" ${basIr('gasto', { id: l.id })}><span class="bas-ult-ic">${l.inst && instDe(l.inst) ? instIcone(l.inst) : `<b>${esc(basIniciais(l.desc || l.area))}</b>`}</span><span class="bas-ult-n"><b>${esc(l.desc || l.area)}</b><small>${esc(quando(l))} · ${esc(l.area)}</small></span><b class="bas-ult-v${l.valor < 0 ? ' pos' : ''}">${l.valor < 0 ? '+' : '−'}${brl(Math.abs(l.valor))}</b></button></li>`;
+  const linha = (l) => `<li><button class="bas-ult-l" ${basIr('gasto-ver', { id: l.id })}><span class="bas-ult-ic">${l.inst && instDe(l.inst) ? instIcone(l.inst) : `<b>${esc(basIniciais(l.desc || l.area))}</b>`}</span><span class="bas-ult-n"><b>${esc(l.desc || l.area)}</b><small>${esc(quando(l))} · ${esc(l.area)}</small></span><b class="bas-ult-v${l.valor < 0 ? ' pos' : ''}">${l.valor < 0 ? '+' : '−'}${brl(Math.abs(l.valor))}</b></button></li>`;
   secs.ultimos = todos.length ? basSecao('Últimos gastos', todos.length > 5 ? `<button class="bas-ult-ver" data-act="bas-ult-todos">Ver tudo</button>` : '',
     `<ul class="card bas-ult">${todos.slice(0, 5).map(linha).join('')}</ul>${todos.length > 5 ? `<template id="bas-ult-tpl"><ul class="bas-ult">${todos.map(linha).join('')}</ul></template>` : ''}`) : '';
   return `<div class="bas-pg bas-pg-g"><div class="bas-gt-bg">${basTopo()}
@@ -764,6 +764,28 @@ function basGastoLembra(f, x, valor) {
   const d = f.querySelector('.bas-lembra'); if (d) { d.hidden = false; d.textContent = `Da última vez: ${brl(x.valor)} em ${x.area || 'Outros'}${x.inst && instDe(x.inst) ? ' · ' + instDe(x.inst)[1] : ''}.`; }
 }
 document.addEventListener('input', (e) => { const t = e.target; if (!t.matches || !t.matches('form[data-t="gasto"] input[name="desc"]')) return; const x = basMemGastos().get(E.norm(t.value)); if (x) basGastoLembra(t.form, x, false); });
+// A tela do gasto: quem recebeu (logo do banco ou iniciais), o valor grande, a data, três atalhos e os detalhes;
+// o lápis no alto abre o formulário de edição (a tela "gasto" de sempre)
+function basTelaGastoVer(o) {
+  const p = S.plan; const l = p.lancamentos.find((x) => x.id === o.id);
+  if (!l) return basSumiu();
+  const dt = l.data ? new Date(l.data + 'T12:00:00') : null; const ok = dt && !isNaN(dt);
+  const data = ok ? dt.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : 'Sem data';
+  const nome = l.desc || l.area || 'Gasto'; const inst = l.inst && instDe(l.inst);
+  const m = ok ? dt.getMonth() : S.mes; const totMes = +(S.C.despesas[m] || 0); const parte = totMes > 0 ? (+l.valor / totMes) : 0;
+  const chave = basSemAcento(nome); const iguais = p.lancamentos.filter((x) => basSemAcento(x.desc || x.area || '') === chave); const somaIg = iguais.reduce((t, x) => t + (+x.valor || 0), 0);
+  const fixo = l.itemId && p.despesas.find((x) => x.id === l.itemId);
+  const lin = (k, v) => `<li><span>${k}</span><b>${v}</b></li>`;
+  const atalho = (attrs, ic, t) => `<button class="bas-gv-a" ${attrs}>${ic}<span>${t}</span></button>`;
+  return `<div class="bas-gv"><header class="bas-gv-h"><button class="bas-circ" data-act="bas-voltar" aria-label="Fechar">${I.x}</button><button class="bas-circ" ${basIr('gasto', { id: l.id })} aria-label="Editar gasto">${I.edit}</button></header>
+    <div class="bas-gv-id"><span class="bas-gv-ic" aria-hidden="true">${inst ? instIcone(l.inst) : `<i>${esc(basIniciais(nome))}</i>`}</span><span><b>${esc(nome)}</b><small>${esc(l.area || 'Sem categoria')}</small></span></div>
+    <p class="bas-gv-v">−${basCent(+l.valor || 0)}</p><p class="bas-gv-d">${esc(cap(data))}</p>
+    <div class="bas-gv-as">${atalho(basIr('gasto', { id: l.id }), I.edit, 'Editar')}${atalho(basIr('gasto', { area: l.area }), I_REC, 'Lançar de novo')}${atalho(basIr('categoria', { area: l.area }), I_RAIOX, 'Categoria')}</div>
+    <h2 class="bas-gv-g">Detalhes</h2>
+    <ul class="card bas-gv-l">${lin('Pago com', inst ? `${instIcone(l.inst)} ${esc(inst[1])}` : 'Não informado')}${lin('Categoria', esc(l.area || '–'))}${lin('Tipo', fixo ? `Conta do mês · ${esc(fixo.nome || '')}` : 'Gasto do dia')}${lin('Origem', l.origem === 'manual' ? 'Anotado por você' : 'Importado do extrato')}${lin('Status', '<span class="bas-gv-ok">Pago</span>')}</ul>
+    <h2 class="bas-gv-g">Em números</h2>
+    <ul class="card bas-gv-l">${lin(`Do total de ${MES_LONGO[m]}`, `${Math.round(parte * 100)}%`)}${iguais.length > 1 ? lin(`Vezes com ${esc(nome)}`, `${iguais.length} · ${basCent(somaIg)}`) : ''}</ul></div>`;
+}
 function basTelaGasto(o, it) {
   const p = S.plan; const l = !it && o.id ? p.lancamentos.find((x) => x.id === o.id) : null; if (o.id && !l && !it) return basSumiu();
   const a0 = l ? l.area : it ? it.area : o.area || ''; const usadas = p.despesas.map((x) => x.area).concat(p.lancamentos.map((x) => x.area));
@@ -1589,7 +1611,7 @@ function basWidgetsInicio(secs) {
   if (sem.some((v) => v > 0)) secs.semana = basCard(`<div class="bas-ch"><h2 class="bas-h2">Dia que mais gasta</h2><small>${BAS_SEM[top]}</small></div><div class="bas-w-sem">${sem.map((v, i) => `<span class="${i === top ? 'on' : ''}" style="--h:${Math.max(4, (v / mxS) * 100).toFixed(1)}%"><i></i><b>${BAS_SEM[i][0]}</b></span>`).join('')}</div>`);
   // o maior gasto do período
   const maior = basLancJan().filter((l) => l.valor > 0).sort((a, b) => b.valor - a.valor)[0];
-  if (maior) secs.maior = `<button class="card bas-w-maior" ${basIr('gasto', { id: maior.id })}><small class="bas-k">Maior gasto ${esc(basJanFrase())}</small><b class="bas-big md">${basCent(maior.valor)}</b><span class="bas-p bas-p0">${esc(maior.desc || maior.area)} · ${esc(maior.area)}</span></button>`;
+  if (maior) secs.maior = `<button class="card bas-w-maior" ${basIr('gasto-ver', { id: maior.id })}><small class="bas-k">Maior gasto ${esc(basJanFrase())}</small><b class="bas-big md">${basCent(maior.valor)}</b><span class="bas-p bas-p0">${esc(maior.desc || maior.area)} · ${esc(maior.area)}</span></button>`;
 }
 const r2Bas = (v) => Math.round((+v || 0) * 100) / 100;
 // Meus sonhos: escolher o principal tocando no carrossel; o palco mostra o principal; os detalhes ficam num toque
@@ -1657,7 +1679,7 @@ function basTelaCartao(o) {
   // a lista por dia, do mais recente; contas e parcelas sem dia ficam juntas no fim de cada mês
   const ord = ents.slice().sort((a, b) => b.m - a.m || (b.dia || 0) - (a.dia || 0)); let ult = ''; const lis = [];
   ord.forEach((e) => { const g = e.dia ? `${e.dia} de ${MES_LONGO[e.m].toLowerCase()}` : `Contas de ${MES_LONGO[e.m].toLowerCase()}`; if (g !== ult) { ult = g; lis.push(`<li class="bas-tx-g">${esc(g)}</li>`); }
-    lis.push(`<li><button class="bas-tx" ${e.tipo === 'real' ? basIr('gasto', { id: e.id }) : basIr('conta', { id: e.id })}><span class="bas-tx-ic" style="--bc:${cor(e.area)}">${esc(basIniciais(e.area || e.nome))}</span><span class="bas-tx-n"><b>${esc(e.nome || e.area)}</b><small>${esc(e.area)}${e.parcela ? ` · parcela ${esc(String(e.parcela))}` : ''}</small></span><b class="bas-tx-v">−${basCent(e.valor)}</b></button></li>`); });
+    lis.push(`<li><button class="bas-tx" ${e.tipo === 'real' ? basIr('gasto-ver', { id: e.id }) : basIr('conta', { id: e.id })}><span class="bas-tx-ic" style="--bc:${cor(e.area)}">${esc(basIniciais(e.area || e.nome))}</span><span class="bas-tx-n"><b>${esc(e.nome || e.area)}</b><small>${esc(e.area)}${e.parcela ? ` · parcela ${esc(String(e.parcela))}` : ''}</small></span><b class="bas-tx-v">−${basCent(e.valor)}</b></button></li>`); });
   return basDet(esc(i[1]), `<div class="bas-ct2" style="--cb:${basCcEstilo(o.id).c}"><div class="bas-ct2-lado">${lado}</div><div class="bas-ct2-card${S.basCtDir ? (S.basCtDir > 0 ? ' vem-d' : ' vem-e') : ''}" data-id="${esc(o.id)}">${basCartaoFace(o.id)}</div></div>
     <div class="bas-ct2-folha">
       <div class="bas-ct2-res"><div class="card bas-ct2-t g"><small>Gastou ${esc(basJanFrase())}</small><b>${basCent(tot)}</b><span>${pct(tot / (sai || 1))} de todos os seus gastos</span></div>
@@ -1857,7 +1879,7 @@ const basTelaClientes = () => basDet('Clientes', `<div class="bas-clientes">${vi
 document.addEventListener('change', (e) => { const t = e.target; if (!t.matches || !t.matches('input[data-bas-inst]')) return; instMinhaAlternar(t.dataset.basInst, t.checked); basSom('toque');
   const n = instMinhas().length; const c = document.querySelector('.bas-pj-n'); if (c) c.textContent = n ? `${n} ${n === 1 ? 'marcada' : 'marcadas'}` : 'Nenhuma'; });
 const BAS_TELAS = { gasto: basTelaGasto, conta: basTelaConta, 'conta-f': basTelaContaF, entrada: basTelaEntrada, aporte: basTelaAporte, meta: basTelaMeta,
-  objetivos: basTelaObjetivos, objetivo: basTelaObjetivo, categoria: basTelaCategoria, perfil: basTelaPerfil, contato: basTelaContato, ano: basTelaAno, ia: basTelaIa, saude: basTelaSaude, periodo: basTelaPeriodo, organizar: basTelaOrganizar, entradas: basTelaEntradas, sonhos: basTelaSonhos, 'sonho-det': basTelaSonhoDet, cartoes: basTelaCartoes, 'avisos-tela': basTelaAvisosNova, 'perfil-inv': basTelaPerfilInv, duvidas: () => basDet('Dúvidas', basDuvidasHtml()).replace(olhoHtml(), ''), cartao: basTelaCartao, retro: basTelaRetro, conquista: basTelaConquista, sequencia: basTelaSequencia, constelacao: basTelaConstelacao, 'ano-hist': basTelaAnoHist, 'cartao-estilo': basTelaCartaoEstilo, 'ano-resumo': basTelaAnoResumo, historico: basTelaHistorico, raiox: basTelaRaioX, resumo: basTelaResumo, limite: basTelaLimite, avisos: basTelaAvisos, simular: basTelaSimular, alvos: basTelaAlvos, proventos: basTelaProventos, provento: basTelaProvento, carteira: basTelaCarteira, planejamento: basTelaPlanejamento, privacidade: () => basDet('Privacidade e termos', `<div class="card bas-pol">${politicaHtml(CFG, Store.mode === 'cloud')}</div>`), excluir: basTelaExcluir, ponto: basTelaPonto, clientes: basTelaClientes };
+  objetivos: basTelaObjetivos, objetivo: basTelaObjetivo, categoria: basTelaCategoria, perfil: basTelaPerfil, contato: basTelaContato, ano: basTelaAno, ia: basTelaIa, saude: basTelaSaude, periodo: basTelaPeriodo, organizar: basTelaOrganizar, entradas: basTelaEntradas, sonhos: basTelaSonhos, 'sonho-det': basTelaSonhoDet, cartoes: basTelaCartoes, 'avisos-tela': basTelaAvisosNova, 'gasto-ver': basTelaGastoVer, 'perfil-inv': basTelaPerfilInv, duvidas: () => basDet('Dúvidas', basDuvidasHtml()).replace(olhoHtml(), ''), cartao: basTelaCartao, retro: basTelaRetro, conquista: basTelaConquista, sequencia: basTelaSequencia, constelacao: basTelaConstelacao, 'ano-hist': basTelaAnoHist, 'cartao-estilo': basTelaCartaoEstilo, 'ano-resumo': basTelaAnoResumo, historico: basTelaHistorico, raiox: basTelaRaioX, resumo: basTelaResumo, limite: basTelaLimite, avisos: basTelaAvisos, simular: basTelaSimular, alvos: basTelaAlvos, proventos: basTelaProventos, provento: basTelaProvento, carteira: basTelaCarteira, planejamento: basTelaPlanejamento, privacidade: () => basDet('Privacidade e termos', `<div class="card bas-pol">${politicaHtml(CFG, Store.mode === 'cloud')}</div>`), excluir: basTelaExcluir, ponto: basTelaPonto, clientes: basTelaClientes };
 
 /* ================= gravação (no mesmo formato do Completo) ================= */
 function basErro(f, msg) { const e = f.querySelector('.bas-err'); e.textContent = msg; e.hidden = false; return false; }
@@ -1961,7 +1983,9 @@ function basSalvar(f) {
 function basExcluir(el) {
   if (!el.dataset.ok) { el.dataset.ok = '1'; el.textContent = 'Toque de novo para excluir'; return; }
   const t = basTopoPilha(); const p = S.plan; const m = S.mes;
-  if (t.t === 'gasto') { const l = p.lancamentos.find((x) => x.id === t.id); if (l) { desfazerBaixa(l); p.lancamentos = p.lancamentos.filter((x) => x !== l); } }
+  if (t.t === 'gasto') { const l = p.lancamentos.find((x) => x.id === t.id); if (l) { desfazerBaixa(l); p.lancamentos = p.lancamentos.filter((x) => x !== l); }
+    // a tela do gasto (embaixo da edição) sai junto: ao fechar, volta direto para a lista
+    const pl = basPilha(); const ant = pl[pl.length - 2]; if (ant && ant.t === 'gasto-ver' && ant.id === t.id) pl.splice(pl.length - 2, 1); }
   else if (t.t === 'conta') { p.lancamentos.forEach((l) => { if (l.itemId === t.id) delete l.itemId; }); p.despesas = p.despesas.filter((x) => x.id !== t.id); }
   else if (t.t === 'entrada') p.rendas = p.rendas.filter((x) => x.id !== t.id);
   else if (t.t === 'aporte') { const a = p.ativos.find((x) => x.id === t.id); if (a) a.ap[m] = 0; }
