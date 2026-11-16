@@ -2395,3 +2395,8 @@ body[data-bas-ia="1"] .tabbar { display: none !important; }
 .bas-av2-vazio span { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; margin-bottom: 8px; font-size: 28px; color: #fff; background: var(--pos); }
 .bas-av2-vazio small { color: var(--ink-3); }
 .bas-av2-ic.neg, .bas-av2-ic.warn, .bas-av2-ic.pos, .bas-av2-ic.acc { color: #fff !important; }
+/* Gastos: o azul sobe até o topo do celular (área da hora e da bateria), como no Início e em Patrimônio */
+.bas-gt-bg { margin-top: calc(-16px - env(safe-area-inset-top, 0px)); padding-top: calc(16px + env(safe-area-inset-top, 0px)); }
+/* pílula da variação: o círculo do ícone com folga da borda */
+.bas-var-p, .bas-var-p.pos, .bas-var-p.neg { padding: 7px 16px 7px 7px; gap: 9px; }
+.bas-var-p i { width: 24px; height: 24px; font-size: 13px; }
