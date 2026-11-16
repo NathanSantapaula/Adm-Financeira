@@ -2506,3 +2506,6 @@ body[data-bas-ia="1"] .bas-ia-fab { display: none !important; }
 .bas-pi-vz p { margin: 0 0 8px; color: var(--ink-2); line-height: 1.45; } .bas-pi-vz b { font-size: 20px; }
 .bas-pi-ic { width: 56px; height: 56px; border-radius: 18px; display: grid; place-items: center; color: #fff; background: linear-gradient(155deg, var(--bas-azul-1), var(--bas-azul-2)); } .bas-pi-ic svg { width: 26px; height: 26px; }
 .bas-pi-ref { width: 100%; justify-content: center; }
+/* o Cifrão sai um pouco da bolinha (maior que ela e subindo pela borda de cima), para mostrar que ele não vive preso ali */
+.bas-iax-orb { --cif-size: 92px; }
+.bas-iax-orb .cifrao { position: relative; z-index: 1; margin: -26px -10px 0 0; filter: drop-shadow(0 10px 16px rgba(0, 10, 60, .35)); }
