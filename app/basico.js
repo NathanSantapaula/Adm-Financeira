@@ -144,6 +144,7 @@ const basSumiu = () => basDet('Não encontrado', basCard(basVazio('Este item nã
 
 /* ---------- navegação: pilha de telas ligada ao histórico do navegador ---------- */
 function basAbrir(t, o) {
+  if (t === 'periodo') { basPeriodoPop(); return; }
   if (t === 'gasto-ver' && o && o.id) { basGastoPop(o.id, o.op === 'conta', o.modo); return; }
   if (document.querySelector('.bas-gp')) { document.querySelector('.bas-gp').remove(); }
   basPilha().push(Object.assign({ t, volta: window.scrollY }, o)); history.pushState({ bas: basPilha().length }, ''); basSom('toque');
@@ -208,13 +209,23 @@ const basLancJan = () => { const j = basJan(); return S.plan.lancamentos.filter(
 const basVarChip = (V, rec) => { if (V.va == null) return ''; const z = Math.abs(V.dif) < 0.5; const up = V.dif >= 0;
   return `<p class="bas-var"><span class="bas-var-p${z ? '' : up ? ' pos' : ' neg'}"><i aria-hidden="true">${z ? '–' : up ? '↑' : '↓'}</i>${z ? `Sem variação ${esc(basJanFrase())}` : `${up ? '+' : '−'}${brl0(Math.abs(V.dif))} · ${pct(Math.abs(V.va), 1)} ${esc(basJanFrase())}`}</span></p>`; };
 const basVarPatr = (C) => { const j = basJan(); const base = j.de > 0 ? C.patrimonio[j.de - 1] : C.patrimonioBase; const fim = C.patrimonio[j.ate]; const va = E.variacao(fim, base); return { dif: fim - base, va }; };
-function basTelaPeriodo() {
+// Período num pop-up: sobe de baixo sobre a tela, com o ano, o calendário e os atalhos embaixo dele
+function basPeriodoPop() {
+  document.querySelector('.bas-pp')?.remove();
+  const w = document.createElement('div'); w.className = 'bas-pp'; w.setAttribute('role', 'dialog'); w.setAttribute('aria-modal', 'true'); w.setAttribute('aria-label', 'Período');
+  w.innerHTML = `<button class="bas-pp-fundo" data-act="bas-pp-fechar" aria-label="Fechar"></button><div class="bas-pp-f"><i class="bas-pp-alca" aria-hidden="true"></i><header class="bas-pp-h"><b>Período</b><button class="bas-pp-x" data-act="bas-pp-fechar" aria-label="Fechar">${I.x}</button></header><div class="bas-pp-c">${basPeriodoCorpo()}</div></div>`;
+  document.body.appendChild(w); basSom('toque'); w._esc = (e) => { if (e.key === 'Escape') basPeriodoFechar(); }; addEventListener('keydown', w._esc); requestAnimationFrame(() => w.classList.add('on'));
+}
+function basPeriodoFechar() { const w = document.querySelector('.bas-pp'); if (!w) return; S.basPerIni = null; removeEventListener('keydown', w._esc); w.classList.remove('on'); setTimeout(() => w.remove(), 300); }
+const basPeriodoRepinta = () => { const c = document.querySelector('.bas-pp .bas-pp-c'); if (c) c.innerHTML = basPeriodoCorpo(); };
+const basTelaPeriodo = () => basDet('Período', basPeriodoCorpo());
+function basPeriodoCorpo() {
   const anos = Object.keys(S.plans).map(Number).sort(); const j = basJan(); const ini = S.basPerIni; const ref = S.year === NOW_Y ? NOW_M : 11;
-  const ats = [[1, 'Este mês'], [3, '3 meses'], [6, '6 meses'], [12, 'Ano todo']].map(([n, l]) => { const on = ini == null && (n === 12 ? j.n === 12 : n === 1 ? j.n === 1 && j.de === ref : j.n === n && j.ate === ref); return `<button class="${on ? 'on' : ''}" data-act="bas-per-at" data-n="${n}" aria-pressed="${on}">${l}</button>`; }).join('');
+  const ats = [[3, '3 meses'], [6, '6 meses'], [1, 'Este mês'], [12, 'Ano todo']].map(([n, l]) => { const on = ini == null && (n === 12 ? j.n === 12 : n === 1 ? j.n === 1 && j.de === ref : j.n === n && j.ate === ref); return `<button class="${on ? 'on' : ''}" data-act="bas-per-at" data-n="${n}" aria-pressed="${on}">${l}</button>`; }).join('');
   const meses = MES.map((m, i) => { const c = ini != null ? (i === ini ? ' ponta' : '') : (i === j.de || i === j.ate ? ' ponta' : i > j.de && i < j.ate ? ' in' : ''); return `<button class="bas-per-m${c}${S.year === NOW_Y && i > NOW_M ? ' fut' : ''}" data-act="bas-per-mes" data-m="${i}" aria-pressed="${!!c}">${m}</button>`; }).join('');
-  return basDet('Período', `${basSecao('Ano', '', `<div class="bas-per-anos">${anos.map((y) => `<button class="${y === S.year ? 'on' : ''}" data-act="bas-ano" data-y="${y}" aria-pressed="${y === S.year}">${y}</button>`).join('')}${S.plans[Math.max(...anos) + 1] ? '' : `<button data-act="bas-ano" data-y="${Math.max(...anos) + 1}" aria-label="Abrir ${Math.max(...anos) + 1}">+</button>`}</div>`)}
-    ${basSecao('Atalhos', '', `<div class="seg bas-per-at">${ats}</div>`)}
-    ${basSecao('No calendário', '', `<div class="card bas-per-cal"><div class="bas-per-grade">${meses}</div><p class="bas-p">${ini != null ? `Início em ${MES_LONGO[ini]}. Toque no mês final, ou de novo em ${MES_LONGO[ini]} para ver só ele.` : 'Toque no mês inicial e depois no final. Para um mês só, toque nele duas vezes.'}</p></div>`)}`);
+  return `<div class="bas-pp-anos">${anos.map((y) => `<button class="${y === S.year ? 'on' : ''}" data-act="bas-ano" data-y="${y}" aria-pressed="${y === S.year}">${y}</button>`).join('')}${S.plans[Math.max(...anos) + 1] ? '' : `<button data-act="bas-ano" data-y="${Math.max(...anos) + 1}" aria-label="Abrir ${Math.max(...anos) + 1}">+</button>`}</div>
+    <div class="bas-pp-cal${ini != null ? ' esc' : ''}"><div class="bas-per-grade">${meses}</div></div>
+    <div class="seg bas-per-at bas-pp-at">${ats}</div>`;
 }
 
 /* ---- blocos que o cliente organiza (ordem e quais aparecem), salvos no perfil ---- */
@@ -745,7 +756,7 @@ function basIaxLigar() {
 function basDesenhar() {
   const st = document.getElementById('bas-o3');
   if (st) { const falhou = () => st.classList.add('sem-3d'); if (typeof o3Ligar === 'function') o3Ligar(st, st.dataset.tipo, falhou); else falhou(); }
-  basIaxLigar(); basCifVe(); basGfLigar(); { const f = document.querySelector('.bas-form'); if (f && f.querySelector('[name="areaIc"]') && !f.dataset.ic) { f.dataset.ic = '1'; f.addEventListener('change', (e) => { if (e.target.name !== 'area') return; const r = f.querySelector(`[name="areaIc"][value="${basCatIcId(e.target.value)}"]`); if (r) r.checked = true; }); } } { const on = document.querySelector('.bas-cce-m.on'); const col = on && on.parentElement; if (col && !col.dataset.vis) { col.dataset.vis = '1'; col.scrollTop = on.offsetTop - col.clientHeight / 2 + on.offsetHeight / 2; } } basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
+  basIaxLigar(); basCifVe(); basGfLigar(); basPeriodoRepinta(); { const f = document.querySelector('.bas-form'); if (f && f.querySelector('[name="areaIc"]') && !f.dataset.ic) { f.dataset.ic = '1'; f.addEventListener('change', (e) => { if (e.target.name !== 'area') return; const r = f.querySelector(`[name="areaIc"][value="${basCatIcId(e.target.value)}"]`); if (r) r.checked = true; }); } } { const on = document.querySelector('.bas-cce-m.on'); const col = on && on.parentElement; if (col && !col.dataset.vis) { col.dataset.vis = '1'; col.scrollTop = on.offsetTop - col.clientHeight / 2 + on.offsetHeight / 2; } } basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
   const wr = document.querySelector('.bas-wr'); if (wr && !wr.dataset.lig) { wr.dataset.lig = '1'; basWrIr(wr, 0); }
   const sq = document.querySelector('[data-sq-conta]'); if (sq && !sq.dataset.lig && !matchMedia('(prefers-reduced-motion: reduce)').matches) { sq.dataset.lig = '1'; const alvo = +sq.dataset.sqConta; const t0 = performance.now();
     const passo = (t) => { const k = Math.min(1, (t - t0) / 900); sq.textContent = Math.round(alvo * (1 - Math.pow(1 - k, 3))); if (k < 1 && sq.isConnected) requestAnimationFrame(passo); }; if (alvo > 0) requestAnimationFrame(passo); }
@@ -890,7 +901,7 @@ function basTelaGasto(o, it) {
     <input class="bas-gf-nome" name="desc" value="${esc(l ? l.desc : it ? it.nome : '')}" placeholder="Com o quê? Ex.: Mercado, Aluguel" list="bas-dl-desc" autocomplete="off" aria-label="Com o quê?"><datalist id="bas-dl-desc">${[...mem.values()].map((x) => `<option value="${esc(x.desc)}">`).join('')}</datalist>
     <p class="bas-p bas-lembra" aria-live="polite" hidden></p>
     <div class="bas-gf-seg" role="radiogroup" aria-label="Como é o gasto">${seg}</div>
-    <div class="bas-blk bas-gf-quando" data-blk="data"><button type="button" class="bas-gf-dia${d0 === hoje ? ' on' : ''}" data-gf-dia="${hoje}">Hoje</button><button type="button" class="bas-gf-dia${d0 === ontem ? ' on' : ''}" data-gf-dia="${ontem}">Ontem</button><input type="date" name="data" value="${esc(d0)}" min="${S.year}-01-01" max="${S.year}-12-31" aria-label="Data do gasto"></div>
+    <div class="bas-blk bas-gf-quando" data-blk="data"><button type="button" class="bas-gf-dia${d0 === hoje ? ' on' : ''}" data-gf-dia="${hoje}">Hoje</button><input type="date" name="data" value="${esc(d0)}" min="${S.year}-01-01" max="${S.year}-12-31" aria-label="Data do gasto"></div>
     <p class="bas-blk bas-gf-info" data-blk="mesp">Todo mês, de ${MES_LONGO[S.mes]} até dezembro.</p>
     <div class="bas-blk bas-gf-parc" data-blk="parc"><button type="button" data-gf-n="-1" aria-label="Menos parcelas">−</button><input name="n" inputmode="numeric" maxlength="3" value="${pc ? pc.n : 10}" aria-label="Número de parcelas"><button type="button" data-gf-n="1" aria-label="Mais parcelas">+</button><span class="bas-gf-pt" data-gf-pt></span></div>
     <p class="bas-gf-k">Categoria</p><div class="bas-gf-cs" role="radiogroup" aria-label="Categoria">${cat}</div>
@@ -2166,9 +2177,10 @@ function basAcao(act, ds, el) {
     case 'bas-en-mes': S.basPer = null; S.mes = Math.max(0, Math.min(11, +ds.m)); basSom('toque'); render(); return true;
     case 'bas-per-at': { const n = +ds.n; const ref = S.year === NOW_Y ? NOW_M : 11; S.basPerIni = null;
       if (n <= 1) { S.basPer = null; S.mes = ref; } else if (n >= 12) { S.basPer = { de: 0, ate: 11 }; S.mes = ref; } else { S.basPer = { de: Math.max(0, ref - n + 1), ate: ref }; S.mes = ref; }
-      basFechar(); return true; }
-    case 'bas-per-mes': { const m = +ds.m; if (S.basPerIni == null) { S.basPerIni = m; basSom('toque'); render(); return true; }
-      const de = Math.min(S.basPerIni, m); const ate = Math.max(S.basPerIni, m); S.basPerIni = null; S.basPer = de === ate ? null : { de, ate }; S.mes = ate; basFechar(); return true; }
+      if (document.querySelector('.bas-pp')) { basPeriodoFechar(); render(); } else basFechar(); return true; }
+    case 'bas-per-mes': { const m = +ds.m; const pop = !!document.querySelector('.bas-pp'); if (S.basPerIni == null) { S.basPerIni = m; basSom('toque'); if (pop) basPeriodoRepinta(); else render(); return true; }
+      const de = Math.min(S.basPerIni, m); const ate = Math.max(S.basPerIni, m); S.basPerIni = null; S.basPer = de === ate ? null : { de, ate }; S.mes = ate; if (pop) { basPeriodoFechar(); render(); } else basFechar(); return true; }
+    case 'bas-pp-fechar': basPeriodoFechar(); return true;
     case 'bas-ord': case 'bas-ord-vis': case 'bas-ord-pad': basOrdAcao(act, ds); return true;
     case 'bas-arco': basArco(el); return true;
     case 'bas-ccv': basCcVer(); return true;

@@ -2984,3 +2984,26 @@ body[data-ui="basico"] .bas-pg { padding-bottom: 0; }
 .bas-form .bas-gf-parc input { width: 3.2ch; height: auto; padding: 0; border: 0; box-shadow: none; background: none; font-size: 22px; font-weight: 700; text-align: center; }
 
 .bas-form .bas-gf-vin input { font-size: 48px !important; } .bas-form .bas-gf-parc input { font-size: 22px !important; }
+/* ===== Período em pop-up: folha que sobe de baixo; ano em fichas, o calendário e os atalhos embaixo dele ===== */
+.bas-pp { position: fixed; inset: 0; z-index: 200; display: flex; align-items: flex-end; justify-content: center; }
+.bas-pp-fundo { position: absolute; inset: 0; border: 0; background: rgba(10, 14, 30, .42); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); opacity: 0; transition: opacity 260ms ease; cursor: pointer; }
+.bas-pp.on .bas-pp-fundo { opacity: 1; }
+.bas-pp-f { position: relative; width: 100%; max-width: 520px; padding: 10px 18px calc(22px + env(safe-area-inset-bottom, 0px)); border-radius: 30px 30px 0 0; background: var(--bg);
+  box-shadow: 0 -20px 50px -20px rgba(0, 0, 0, .45); transform: translateY(105%); transition: transform 420ms cubic-bezier(.2, .9, .2, 1); }
+.bas-pp.on .bas-pp-f { transform: none; }
+.bas-pp-alca { display: block; width: 40px; height: 5px; margin: 0 auto 10px; border-radius: 999px; background: color-mix(in srgb, var(--ink) 18%, transparent); }
+.bas-pp-h { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; } .bas-pp-h b { font-size: 22px; font-weight: 700; letter-spacing: -.01em; }
+.bas-pp-x { width: 40px; height: 40px; border: 0; border-radius: 50%; display: grid; place-items: center; color: var(--ink); background: var(--surface-2); cursor: pointer; }
+.bas-pp-x svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.bas-pp-anos { display: flex; gap: 8px; overflow-x: auto; margin: 0 -18px 14px; padding: 2px 18px 6px; scrollbar-width: none; }
+.bas-pp-anos::-webkit-scrollbar { display: none; }
+.bas-pp-anos button { flex: none; height: 38px; padding: 0 16px; border: 0; border-radius: 999px; font: inherit; font-size: 15px; font-weight: 700; color: var(--ink-2); background: var(--surface); box-shadow: inset 0 0 0 .5px var(--line); cursor: pointer; }
+.bas-pp-anos button.on { color: var(--bg); background: var(--ink); box-shadow: none; }
+.bas-pp-cal { padding: 12px; border-radius: 22px; background: var(--surface); box-shadow: 0 10px 24px -18px rgba(20, 30, 80, .4), inset 0 0 0 .5px var(--line); }
+.bas-pp-cal .bas-per-grade { gap: 8px; }
+.bas-pp-at { margin-top: 12px; }
+@media (prefers-reduced-motion: reduce) { .bas-pp-f, .bas-pp-fundo { transition: none; } }
+/* barra de abas mais baixa, perto da borda do iPhone */
+body[data-ui="basico"][data-screen="app"] .tabbar { bottom: max(8px, calc(env(safe-area-inset-bottom, 0px) - 10px)) !important; }
+/* topo igual em todas as abas: o do Início ficava 4 px para dentro e 2 px abaixo (folga do painel escuro) */
+.bas-noite > .bas-topo { margin-left: -4px; margin-right: -4px; margin-top: -2px; }
