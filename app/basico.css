@@ -2140,3 +2140,25 @@ body[data-bas-perfil="1"] .tabbar { display: none !important; }
 .bas[data-aba="inicio"] .bas-noite-par > button { flex-direction: row; align-items: baseline; gap: 6px; padding: 7px 14px; min-height: 0; }
 .bas[data-aba="inicio"] .bas-noite-par > button small { font-size: 12.5px; margin: 0; }
 .bas[data-aba="inicio"] .bas-noite-par > button b { font-size: 14px; }
+
+/* ===== Perfil no jeito de app: degradê azul no alto, foto centrada com câmera, nome e "Editar perfil"; opções em lista na folha ===== */
+.bas-pf-bg { padding-bottom: 54px; margin-top: calc(-16px - env(safe-area-inset-top, 0px)); padding-top: calc(16px + env(safe-area-inset-top, 0px)); }
+.bas-pf-bg .bas-pf-h { padding-top: 4px; }
+.bas-pf-bg .bas-pf-volta { width: 46px; height: 46px; }
+.bas-pf-bg .bas-pf-eu { flex-direction: column; gap: 6px; margin: 4px 0 0; text-align: center; color: #fff; }
+.bas-pf-bg .bas-pf-av .av { width: 104px; height: 104px; font-size: 36px; box-shadow: 0 0 0 4px rgba(255, 255, 255, .85), 0 14px 30px -12px rgba(0, 0, 0, .5); }
+.bas-pf-bg .bas-pf-pen { right: -2px; bottom: 2px; width: 34px; height: 34px; color: #fff; background: rgba(15, 20, 60, .75); box-shadow: 0 0 0 2.5px rgba(255, 255, 255, .9); }
+.bas-pf-bg .bas-pf-eu > b { margin-top: 10px; font-size: 26px; } .bas-pf-bg .bas-pf-eu > small { font-size: 14px; color: rgba(255, 255, 255, .75); }
+.bas-pf-edit { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; height: 36px; padding: 0 16px; border: 0; border-radius: 999px; font: inherit; font-size: 14px; font-weight: 600; color: #fff; cursor: pointer;
+  background: rgba(255, 255, 255, .16); -webkit-backdrop-filter: blur(14px) saturate(180%); backdrop-filter: blur(14px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5), inset 0 0 0 .5px rgba(255, 255, 255, .18); }
+.bas-pf-edit svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+.bas-pf-l { list-style: none; margin: 0 0 14px; padding: 4px 16px; }
+.bas-pf-l > li + li { border-top: 1px solid var(--line); }
+.bas-pf-li, .bas-pf-tema { width: 100%; display: flex; align-items: center; gap: 14px; padding: 15px 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+.bas-pf-ic { flex: none; width: 22px; height: 22px; display: grid; place-items: center; color: var(--ink-2); } .bas-pf-ic svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.bas-pf-nm { flex: 1; font-size: 16px; font-weight: 500; } .bas-pf-li small { font-size: 14px; color: var(--ink-3); }
+.bas-pf-li > svg:last-child { width: 18px; height: 18px; color: var(--ink-3); }
+.bas-pf-tema { cursor: default; } .bas-pf-tema .seg { flex: none; }
+.bas-pf-tema .seg button { padding: 6px 10px; font-size: 13px; }
+.bas-pf-tema { flex-wrap: wrap; row-gap: 10px; } .bas-pf-tema .bas-pf-nm { flex: 1 1 auto; }
+.bas-pf-tema .seg { flex: 1 1 100%; width: auto; margin: 0 0 0 36px; }
