@@ -509,7 +509,7 @@ function basSurpresas() {
 function basDesenhar() {
   const st = document.getElementById('bas-o3');
   if (st) { const falhou = () => st.classList.add('sem-3d'); if (typeof o3Ligar === 'function') o3Ligar(st, st.dataset.tipo, falhou); else falhou(); }
-  basEvLigar(); basRcLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
+  basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
   const wr = document.querySelector('.bas-wr'); if (wr && !wr.dataset.lig) { wr.dataset.lig = '1'; basWrIr(wr, 0); }
   const sq = document.querySelector('[data-sq-conta]'); if (sq && !sq.dataset.lig && !matchMedia('(prefers-reduced-motion: reduce)').matches) { sq.dataset.lig = '1'; const alvo = +sq.dataset.sqConta; const t0 = performance.now();
     const passo = (t) => { const k = Math.min(1, (t - t0) / 900); sq.textContent = Math.round(alvo * (1 - Math.pow(1 - k, 3))); if (k < 1 && sq.isConnected) requestAnimationFrame(passo); }; if (alvo > 0) requestAnimationFrame(passo); }
@@ -851,7 +851,8 @@ const CC_BAND = {
   master: '<svg class="bas-band" viewBox="0 0 256 158" role="img" aria-label="Mastercard"><circle cx="79" cy="79" r="79" fill="currentColor" opacity=".55"/><circle cx="177" cy="79" r="79" fill="currentColor" opacity=".55"/></svg>' };
 const basBand = (k) => { const b = ((S.profile.cartaoEstilo || {})[k] || {}).b; if (CC_BAND[b]) return b; let h = 0; for (const c of k) h += c.charCodeAt(0); return h % 2 ? 'master' : 'visa'; };
 // o cartão "de verdade" em pé: é um cartão deitado (logo, chip, aproximação e bandeira nos lugares de sempre) girado 90°, como na mão
-const basCartaoFace = (k) => `<span class="bas-cr" style="--cb:${basCcEstilo(k).c}" aria-hidden="true"><span class="bas-cr-in"><span class="bas-cr-t">${instIcone(k)}</span><span class="bas-cr-chip"></span><span class="bas-cr-nfc">${CC_NFC}</span><span class="bas-cr-b ${basBand(k)}">${CC_BAND[basBand(k)]}</span></span></span>`;
+const CC_CHIP = '<svg class="bas-cr-chip" viewBox="0 0 40 30" aria-hidden="true"><path d="M0 9.5h12M0 20.5h12M28 9.5h12M28 20.5h12M20 0v6M20 24v6M12 6h16v18H12z"/></svg>';
+const basCartaoFace = (k) => { const st = basCcEstilo(k); return `<span class="bas-cc-c bas-cc-mini bas-cr" data-m="${st.m}" style="--cb:${st.c}" aria-hidden="true"><span class="bas-cr-in"><span class="bas-cr-t">${instIcone(k)}</span>${CC_CHIP}<span class="bas-cr-nfc">${CC_NFC}</span><span class="bas-cr-b ${basBand(k)}">${CC_BAND[basBand(k)]}</span></span></span>`; };
 function basCcVer() {
   const p = document.querySelector('.bas-gt-pilha'); basSom('toque');
   if (!p || matchMedia('(prefers-reduced-motion: reduce)').matches) { basAbrir('cartoes'); return; }
@@ -859,10 +860,20 @@ function basCcVer() {
 }
 function basTelaCartoes() {
   const insts = basGastoInsts(); const tot = insts.reduce((s, x) => s + x.v, 0);
-  return basDet('Seus cartões', insts.length ? `<div class="bas-rc-fila" role="list">${insts.map((x) => { const i = instDe(x.k); return `<button class="bas-rc-i" role="listitem" ${basIr('cartao', { id: x.k })} aria-label="${esc(i[1])}: ver os gastos">${basCartaoFace(x.k)}<span class="bas-rc-n"><b>${esc(i[1])}</b><small>${basCent(x.v)} ${esc(basJanFrase())} · ${pct(x.v / (tot || 1))}</small></span></button>`; }).join('')}</div>
-    ${insts.length > 1 ? `<div class="bas-ccv-p" aria-hidden="true">${insts.map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div>` : ''}<p class="bas-p bas-centro">Deslize para o lado e toque no cartão para ver os gastos dele.</p>` : basCard(basVazio('Nenhum cartão com gasto no período.')));
+  return basDet('Seus cartões', insts.length ? `<div class="bas-rc-fila" role="list">${insts.map((x) => { const i = instDe(x.k); return `<button class="bas-rc-i" role="listitem" ${basIr('cartao', { id: x.k })} aria-label="${esc(i[1])}: ver os gastos">${basCartaoFace(x.k)}<span class="bas-rc-n"><small>${esc(i[1])}</small><b>${basCent(x.v)}</b><em>${pct(x.v / (tot || 1))} dos gastos ${esc(basJanFrase())}</em></span></button>`; }).join('')}</div>
+    ${insts.length > 1 ? `<div class="bas-ccv-p" aria-hidden="true">${insts.map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div>` : ''}` : basCard(basVazio('Nenhum cartão com gasto no período.')));
 }
 // fila em leque: o cartão do meio fica de frente e os vizinhos giram e encolhem conforme a distância (--d, --a)
+// arrastar o cartão para o lado troca para o cartão vizinho (a mesma ordem de "Seus cartões"), sem empilhar outra tela
+function basCtLigar() {
+  const c = document.querySelector('.bas-ct2-card'); S.basCtDir = 0; if (!c || c.dataset.lig) return; c.dataset.lig = '1';
+  const ks = basGastoInsts().map((x) => x.k); const i = ks.indexOf(c.dataset.id); let x0 = null, dx = 0;
+  c.addEventListener('pointerdown', (e) => { x0 = e.clientX; dx = 0; c.setPointerCapture(e.pointerId); c.classList.add('arrasta'); });
+  c.addEventListener('pointermove', (e) => { if (x0 == null) return; dx = e.clientX - x0; const borda = (dx > 0 && i <= 0) || (dx < 0 && i >= ks.length - 1); c.style.setProperty('--dx', `${borda ? dx * 0.25 : dx}px`); });
+  const solta = () => { if (x0 == null) return; x0 = null; c.classList.remove('arrasta'); const n = dx < -70 ? i + 1 : dx > 70 ? i - 1 : -1;
+    if (n >= 0 && n < ks.length) { basSom('toque'); const t = basPilha()[basPilha().length - 1]; t.id = ks[n]; S.basCtDir = dx < 0 ? 1 : -1; render(); window.scrollTo(0, 0); } else c.style.setProperty('--dx', '0px'); };
+  c.addEventListener('pointerup', solta); c.addEventListener('pointercancel', solta);
+}
 function basRcLigar() {
   const f = document.querySelector('.bas-rc-fila'); if (!f || f.dataset.lig) return; f.dataset.lig = '1'; const pts = document.querySelectorAll('.bas-ccv-p i');
   const it = [...f.children]; const passo = () => { const c = f.scrollLeft + f.clientWidth / 2; let perto = 0, md = 9;
@@ -1352,14 +1363,14 @@ function basTelaCartao(o) {
   const tot = ents.reduce((s, e) => s + +e.valor, 0); const sai = basSomaJ(S.C.despesas); const areas = {}; ents.forEach((e) => { areas[e.area] = (areas[e.area] || 0) + +e.valor; });
   const la = Object.keys(areas).map((k) => [k, areas[k]]).sort((a, b) => b[1] - a[1]); const cor = (a) => PAL[Math.max(0, la.findIndex((x) => x[0] === a)) % 6];
   const maior = ents.slice().sort((a, b) => b.valor - a.valor)[0];
-  const lado = [[basIr('gasto', { inst: o.id }), I.plus, 'Novo gasto neste cartão'], [basIr('limite'), I_LIMITE_IC, 'Limite do mês'], [basIr('periodo'), typeof I_CAL !== 'undefined' ? I_CAL : '', 'Trocar o período'], [basIr('cartao-estilo', { id: o.id }), I_ENGRENAGEM, 'Personalizar o cartão']]
+  const lado = [[basIr('gasto', { inst: o.id }), I.plus, 'Novo gasto neste cartão'], [basIr('limite'), I_LIMITE_IC, 'Limite do mês'], [basIr('cartao-estilo', { id: o.id }), I_ENGRENAGEM, 'Personalizar o cartão']]
     .map(([a, ic, t]) => `<button class="bas-circ bas-ct2-b" ${a} aria-label="${t}" title="${t}">${ic}</button>`).join('');
   // a lista por dia, do mais recente; contas e parcelas sem dia ficam juntas no fim de cada mês
   const ord = ents.slice().sort((a, b) => b.m - a.m || (b.dia || 0) - (a.dia || 0)); let ult = ''; const lis = [];
   ord.forEach((e) => { const g = e.dia ? `${e.dia} de ${MES_LONGO[e.m].toLowerCase()}` : `Contas de ${MES_LONGO[e.m].toLowerCase()}`; if (g !== ult) { ult = g; lis.push(`<li class="bas-tx-g">${esc(g)}</li>`); }
     lis.push(`<li><button class="bas-tx" ${e.tipo === 'real' ? basIr('gasto', { id: e.id }) : basIr('conta', { id: e.id })}><span class="bas-tx-ic" style="--bc:${cor(e.area)}">${esc(basIniciais(e.area || e.nome))}</span><span class="bas-tx-n"><b>${esc(e.nome || e.area)}</b><small>${esc(e.area)}${e.parcela ? ` · parcela ${esc(String(e.parcela))}` : ''}</small></span><b class="bas-tx-v">−${basCent(e.valor)}</b></button></li>`); });
-  return basDet(esc(i[1]), `<div class="bas-ct2"><div class="bas-ct2-lado">${lado}</div><div class="bas-ct2-card">${basCartaoFace(o.id)}</div></div>
-    <div class="bas-ct2-folha"><div class="bas-pg-per">${basPerPill()}</div>
+  return basDet(esc(i[1]), `<div class="bas-ct2" style="--cb:${basCcEstilo(o.id).c}"><div class="bas-ct2-lado">${lado}</div><div class="bas-ct2-card${S.basCtDir ? (S.basCtDir > 0 ? ' vem-d' : ' vem-e') : ''}" data-id="${esc(o.id)}">${basCartaoFace(o.id)}</div></div>
+    <div class="bas-ct2-folha">
       <div class="bas-ct2-res"><div class="card bas-ct2-t g"><small>Gastou ${esc(basJanFrase())}</small><b>${basCent(tot)}</b><span>${pct(tot / (sai || 1))} de todos os seus gastos</span></div>
         <div class="card bas-ct2-t"><small>Maior gasto</small><b>${maior ? brl0(maior.valor) : '—'}</b><span>${maior ? esc(maior.nome || maior.area) : 'Nada ainda'}</span></div>
         <div class="card bas-ct2-t"><small>Lançamentos</small><b>${ents.length}</b><span>${la.length} ${la.length === 1 ? 'categoria' : 'categorias'}</span></div></div>

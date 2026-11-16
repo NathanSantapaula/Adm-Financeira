@@ -1872,3 +1872,40 @@ body[data-ui="basico"] :is(.bas-inv-pl, .btn.primary):active { transform: scale(
 .bas-band, .bas-band * { stroke: none !important; }
 /* o cartão passa só uma pontinha por cima da folha */
 .bas-ct2-card { margin-bottom: -26px; } .bas-ct2-folha { padding-top: 40px; }
+
+/* ===== Tela do cartão, rodada 3 ===== */
+/* o cartão usa o modelo escolhido; só o "Do banco" ganha o degradê limpo na cor do banco */
+.bas-cc-c.bas-cc-mini.bas-cr { display: block; width: 100%; aspect-ratio: .63; padding: 0; border-radius: 20px; flex: none; }
+.bas-cr[data-m="banco"] { background:
+    radial-gradient(130% 65% at 90% 0%, rgba(255, 255, 255, .26), transparent 55%),
+    radial-gradient(circle at 75% 62%, transparent 30%, rgba(255, 255, 255, .06) 30.5%, transparent 32%, transparent 46%, rgba(255, 255, 255, .05) 46.5%, transparent 48%),
+    radial-gradient(90% 55% at 0% 100%, rgba(0, 0, 0, .28), transparent 60%),
+    linear-gradient(160deg, color-mix(in srgb, var(--cb) 80%, #fff) 0%, var(--cb) 42%, color-mix(in srgb, var(--cb) 62%, #000) 100%); }
+.bas-cr .bas-cr-nfc svg { stroke: currentColor; opacity: .8; }
+.bas-cr:is([data-m="metal"], [data-m="holo"], [data-m="ouro"], [data-m="platina"]) .bas-cr-b .bas-band { color: rgba(0, 0, 0, .55); }
+/* chip: desenho com os contatos, metal champanhe suave */
+svg.bas-cr-chip { position: absolute; left: 8%; top: 37%; width: 15%; height: auto; aspect-ratio: 4 / 3; border-radius: 4px; overflow: visible;
+  background: linear-gradient(140deg, #f1e3bb 0%, #d4b56f 35%, #ecd9a5 55%, #b99550 100%); box-shadow: inset 0 0 0 .5px rgba(80, 58, 18, .45), 0 .5px 1px rgba(0, 0, 0, .3); }
+svg.bas-cr-chip path { fill: none; stroke: rgba(92, 66, 22, .55) !important; stroke-width: .8; }
+.bas-cr .bas-cr-chip::before, .bas-cr .bas-cr-chip::after { display: none; }
+/* maior, mais reto e um pouco por cima do primeiro bloco; arrasta para o lado */
+.bas-ct2-card { width: 258px; margin-bottom: -78px; transform: translateX(var(--dx, 0px)) rotate(calc(-3deg + var(--dx, 0px) / 40)); transition: transform 380ms cubic-bezier(.3, 1.3, .5, 1); touch-action: pan-y; cursor: grab; user-select: none; animation: bas-ct2-in3 520ms cubic-bezier(.2, .8, .2, 1); }
+.bas-ct2-card.arrasta { transition: none; cursor: grabbing; }
+.bas-ct2-card.vem-d { animation: bas-ct2-vd 420ms cubic-bezier(.2, .8, .2, 1); } .bas-ct2-card.vem-e { animation: bas-ct2-ve 420ms cubic-bezier(.2, .8, .2, 1); }
+@keyframes bas-ct2-in3 { from { transform: translateY(60px) rotate(-10deg); opacity: 0; } }
+@keyframes bas-ct2-vd { from { transform: translateX(120%) rotate(8deg); } } @keyframes bas-ct2-ve { from { transform: translateX(-120%) rotate(-12deg); } }
+.bas-ct2-folha { padding-top: 26px; }
+.bas-ct2-res { position: relative; z-index: 0; }
+/* botões da lateral: Liquid Glass que recebe a luz do cartão (a cor dele entra pelo lado de onde o cartão está) */
+body[data-ui="basico"] .bas-ct2 .bas-ct2-b {
+  background: color-mix(in srgb, var(--cb) 10%, var(--lg-bg)) !important;
+  box-shadow: inset 0 1px 0 var(--lg-aro), inset 0 -1px 0 var(--lg-aro-b), inset -10px 0 16px -10px color-mix(in srgb, var(--cb) 75%, transparent), inset 0 0 0 .5px color-mix(in srgb, var(--cb) 30%, var(--lg-aro-b)),
+    6px 0 22px -8px color-mix(in srgb, var(--cb) 55%, transparent), var(--lg-sombra) !important; }
+/* embaixo do cartão em Seus cartões: o banco pequeno, o valor em destaque e a parte dos gastos */
+.bas-rc-i .bas-rc-n { margin-top: 14px; gap: 0; } .bas-rc-n small { font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
+.bas-rc-n b { font-size: 34px; font-weight: 700; letter-spacing: -.03em; line-height: 1.15; } .bas-rc-n em { font-style: normal; font-size: 14px; color: var(--ink-3); }
+.bas-rc-fila + .bas-ccv-p { margin-top: 2px; }
+@media (prefers-reduced-motion: reduce) { .bas-ct2-card, .bas-ct2-card.vem-d, .bas-ct2-card.vem-e { animation: none; transition: none; } }
+.bas-ct2-card { margin-bottom: -44px; }
+/* o cartão entra só na borda da folha e para antes do primeiro bloco */
+.bas-ct2-card { margin-bottom: -30px; } .bas-ct2-folha { padding-top: 48px; }
