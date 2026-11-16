@@ -62,7 +62,7 @@ function basCat(fixa) {
 // abas embaixo (no lugar do menu lateral e do topo); some nas telas de formulário
 function basicoBarra() {
   $('#topo').innerHTML = ''; $('#side').innerHTML = ''; const a = basAba(); const t = basTopoPilha();
-  document.body.dataset.basFolha = t && BAS_FORMS.has(t.t) ? '1' : ''; document.body.dataset.basPerfil = a === 'perfil' && !t ? '1' : ''; document.body.dataset.basIa = t && (t.t === 'duvidas' || (t.t === 'ia' && (S.basIaAba || 'conversa') === 'conversa')) ? '1' : '';
+  document.body.dataset.basFolha = t && BAS_FORMS.has(t.t) ? '1' : ''; document.body.dataset.basPerfil = a === 'perfil' && !t ? '1' : ''; document.body.dataset.basIa = t && (t.t === 'duvidas' || t.t === 'avisos-tela' || (t.t === 'ia' && (S.basIaAba || 'conversa') === 'conversa')) ? '1' : '';
   const av = basAvisosNovos();
   // botão da IA separado, à esquerda da barra: fundo em degradê neon que se move, vidro por cima e o Cifrão dentro
   $('#tabbar').innerHTML = `<button class="bas-ia-fab${av ? ' alerta' : ''}${document.querySelector('.bas-cif-solto') ? ' vazia' : ''}" data-act="bas-ia-fab" aria-label="Assistente${av ? `: ${av} avisos novos` : ''}. Segure e arraste para o Cifrão andar pela tela."><span class="cifrao" aria-hidden="true"></span></button><div class="bas-tabs"><span class="bas-tab-lente" aria-hidden="true"></span>${basAbas().map(([k, l, i]) => `<button data-act="bas-aba" data-v="${k}" ${a === k ? 'aria-current="page"' : ''}>${i}<span>${l}</span></button>`).join('')}</div>`;
@@ -534,11 +534,16 @@ function basGuiaIniciar(id) {
   const g = basGuias().find((x) => x.id === id); if (!g || typeof tourIniciar !== 'function') return; basSom('toque');
   tourIniciar(g.passos.map((p) => Object.assign({}, p)), 'Entendi');
 }
+// Dúvidas: busca solta no alto e os guias numa lista agrupada, cada um com o ícone do assunto numa cor própria
+const basDvIc = () => ({ gasto: [I_GASTO, '#FF6B5E'], entrada: [I_ENTRADA, '#2FBF71'], investimento: [I_APLICAR, '#3D7BFF'], periodo: [I_ANO, '#7C5CFF'], olho: [I.lock, '#8E8E93'],
+  limite: [I_META, '#FF9F0A'], sonho: [I_REC, '#EC4899'], importar: [I_IMPORTAR, '#14B8A6'], ondefoi: [I_RAIOX, '#F97316'], sequencia: [I_REC, '#EAB308'], organizar: [I_ORDEM, '#6366F1'],
+  cor: [I_TEMA, '#A855F7'], saude: [I.check, '#22C55E'], globo: [I.geral, '#0EA5E9'], assistente: [I.chat, '#3D7BFF'], carteira: [I_CART, '#8B5CF6'], cartao: [I.despesas, '#64748B'], dados: [I.lock, '#475569'] });
 function basDuvidasHtml() {
-  return `<div class="card bas-dv"><label class="bas-dv-b">${typeof I_LUPA !== 'undefined' ? I_LUPA : ''}<input type="search" placeholder="Qual é a sua dúvida?" aria-label="Procurar uma dúvida" data-bas-dv></label>
-    <p class="bas-p bas-dv-p">Escolha uma e eu mostro o caminho na tela, passo a passo.</p>
-    <ul class="bas-ativ bas-dv-l">${basGuias().map((g) => `<li data-k="${esc(basSemAcento(g.t + ' ' + g.k.join(' ')))}"><button data-act="bas-guia" data-id="${g.id}"><span class="bas-ini" aria-hidden="true">${g.passos.length}</span><span class="bas-n"><b>${esc(g.t)}</b><small>${g.passos.length === 1 ? '1 passo' : `${g.passos.length} passos`}</small></span>${I.chev}</button></li>`).join('')}</ul>
-    <p class="bas-p bas-dv-nada" hidden>Nada com esse nome. Tente outra palavra ou pergunte na Conversa.</p></div>`;
+  const M = basDvIc(); const ic = (id) => { const [svg, cor] = M[id] || [I.chat, '#3D7BFF']; return `<span class="bas-dv-ic" style="--c:${cor}" aria-hidden="true">${svg}</span>`; };
+  return `<label class="bas-dv-b">${typeof I_LUPA !== 'undefined' ? I_LUPA : ''}<input type="search" placeholder="Qual é a sua dúvida?" aria-label="Procurar uma dúvida" data-bas-dv></label>
+    <p class="bas-dv-p">Escolha uma e eu mostro o caminho na tela, passo a passo.</p>
+    <ul class="card bas-dv-l">${basGuias().map((g) => `<li data-k="${esc(basSemAcento(g.t + ' ' + g.k.join(' ')))}"><button data-act="bas-guia" data-id="${g.id}">${ic(g.id)}<span class="bas-n"><b>${esc(g.t)}</b><small>${g.passos.length === 1 ? '1 passo' : `${g.passos.length} passos`}</small></span>${I.chev}</button></li>`).join('')}</ul>
+    <p class="bas-p bas-dv-nada" hidden>Nada com esse nome. Tente outra palavra ou pergunte na Conversa.</p>`;
 }
 // filtra a lista de dúvidas enquanto digita (sem render)
 function basDvLigar() {
