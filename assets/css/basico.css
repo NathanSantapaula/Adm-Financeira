@@ -2400,3 +2400,25 @@ body[data-bas-ia="1"] .tabbar { display: none !important; }
 /* pílula da variação: o círculo do ícone com folga da borda */
 .bas-var-p, .bas-var-p.pos, .bas-var-p.neg { padding: 7px 16px 7px 7px; gap: 9px; }
 .bas-var-p i { width: 24px; height: 24px; font-size: 13px; }
+
+/* ===== Mês dia a dia, refeito: grade compacta tipo mapa de calor; dias com gasto pintados pela intensidade,
+   sem gasto só o número, futuros apagados, hoje com anel; legenda menos → mais ===== */
+.bas-cal { gap: 6px; grid-auto-rows: auto; align-items: center; }
+.bas-cal-s { padding-bottom: 4px; font-size: 12px; }
+.bas-cal-d { position: relative; aspect-ratio: 1; display: grid; place-items: center; padding: 0; line-height: 1; border-radius: 12px; font-size: 13px; font-weight: 600;
+  color: var(--ink-2); background: color-mix(in srgb, var(--accent) calc(var(--a) * 100%), var(--surface-2)); box-shadow: none; transition: transform 160ms var(--ease-out); }
+.bas-cal-d[style*="--a:0;"], .bas-cal-d[style$="--a:0"] { background: var(--surface-2); color: var(--ink-3); }
+.bas-cal-d[style*="--a:0.5"], .bas-cal-d[style*="--a:0.6"], .bas-cal-d[style*="--a:0.7"], .bas-cal-d[style*="--a:0.8"], .bas-cal-d[style*="--a:0.9"], .bas-cal-d[style*="--a:1"] { color: #fff; }
+.bas-cal-d.fut { background: transparent !important; color: var(--ink-3); opacity: .5; }
+.bas-cal-d.hoje { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); }
+.bas-cal-d::before, .bas-cal-d::after { display: none !important; }
+.bas-cal-d.sel { transform: scale(1.1); box-shadow: 0 8px 18px -8px var(--accent), 0 0 0 2px var(--accent); }
+.bas-cal-leg { display: flex; align-items: center; justify-content: flex-end; gap: 5px; margin-top: 12px; }
+.bas-cal-leg small { font-size: 12px; color: var(--ink-3); } .bas-cal-leg i { width: 14px; height: 14px; border-radius: 4px; background: color-mix(in srgb, var(--accent) calc(var(--a) * 100%), var(--surface-2)); }
+/* ===== Resumo do mês, mais limpo: botões numa linha, a retrospectiva como link e o story menos inclinado ===== */
+.bas-w-res-bts { flex-wrap: nowrap; gap: 8px; } .bas-w-res-bts .bas-sn-bt { min-height: 40px; padding: 0 16px; font-size: 14px; }
+.bas-w-res-retro { align-self: flex-start; display: inline-flex; align-items: center; gap: 2px; margin-top: 10px; padding: 0; border: 0; background: none; font: inherit; font-size: 14px; font-weight: 600; color: var(--accent); cursor: pointer; }
+.bas-w-res-retro svg { width: 14px; height: 14px; }
+.bas-w-res-s { width: 92px; transform: rotate(4deg); background: linear-gradient(165deg, var(--bas-azul-1), var(--bas-azul-2) 55%, var(--bas-azul-3)) !important; box-shadow: 0 16px 30px -14px color-mix(in srgb, var(--bas-azul-2) 70%, transparent), inset 0 1px 0 rgba(255, 255, 255, .35) !important; }
+/* um estilo antigo dava margem embaixo ao dia de hoje e abria um buraco na grade */
+.bas-cal .bas-cal-d.hoje { margin: 0; }
