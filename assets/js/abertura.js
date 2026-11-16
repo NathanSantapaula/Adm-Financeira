@@ -339,8 +339,8 @@ function abQuadro(agora) {
   // mapa: pontos claros sobre a terra, com algumas luzes acesas
   const focos = []; if (A.km) { const m = A.mapa; const km = e;
     for (let j = 0; j < m.length; j += 4) { const x2 = m[j] * cY - m[j + 2] * sY, z2 = m[j] * sY + m[j + 2] * cY; const z = m[j + 1] * sX + z2 * cX; if (z <= 0) continue;
-      const sx = cx + x2 * R, sy = cy + (m[j + 1] * cX - z2 * sX) * R; const tam = T.app ? (1.2 + z * 1.8) * Math.max(0.5, Math.min(1.3, R / 300)) : 1.1 + z * 1.3;
-      abBalde(abEstilo(T.app ? T.terra : T.luz, (T.app ? (T.noite ? 0.3 + z * 0.7 : 0.22 + z * 0.78) : 0.2 + z * 0.75) * km * lente(sx, sy))).push(sx - tam / 2, sy - tam / 2, tam); if (m[j + 3] && z > 0.1) focos.push(sx, sy, z, j); }
+      const sx = cx + x2 * R, sy = cy + (m[j + 1] * cX - z2 * sX) * R; const tam = T.app ? (1.2 + z * 1.8) * (T.noite ? 1.18 : 1) * Math.max(0.5, Math.min(1.3, R / 300)) : 1.1 + z * 1.3;
+      abBalde(abEstilo(T.app ? T.terra : T.luz, (T.app ? (T.noite ? Math.min(1, 0.62 + z * 0.6) : 0.22 + z * 0.78) : 0.2 + z * 0.75) * km * lente(sx, sy))).push(sx - tam / 2, sy - tam / 2, tam); if (m[j + 3] && z > 0.1) focos.push(sx, sy, z, j); }
     abDespejar(ctx); }
   // mapa: luzes acesas sobre os continentes, pulsando devagar
   if (focos.length) { ctx.globalCompositeOperation = T.soma; for (let j = 0; j < focos.length; j += 4) { const [fx, fy, fz, fi] = focos.slice(j, j + 4);
