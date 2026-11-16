@@ -2587,3 +2587,6 @@ html[data-vt="ia-sai"]::view-transition-new(root) { animation: none; }
 /* o selo espera o Cifrão que vem voando */
 .bas-iax-orb.espera .cifrao { opacity: 0; }
 .bas-iax-orb .cifrao { transition: opacity 200ms ease; }
+/* bolinha sem o Cifrão: a sombra é só a silhueta, sem olhos e sem o volume */
+.bas-ia-fab.vazia .cifrao [data-face] { display: none !important; }
+.bas-ia-fab.vazia .cifrao [data-cifrao] { filter: none !important; }
