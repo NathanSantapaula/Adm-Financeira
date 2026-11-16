@@ -2135,3 +2135,8 @@ body[data-bas-perfil="1"] .tabbar { display: none !important; }
 .bas[data-aba="inicio"] .bas-noite-par > button { border-radius: 999px !important; border: 0 !important; color: #fff; background: rgba(255, 255, 255, .14) !important;
   -webkit-backdrop-filter: blur(14px) saturate(180%); backdrop-filter: blur(14px) saturate(180%);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55), inset 0 -1px 0 rgba(255, 255, 255, .15), inset 0 0 0 .5px rgba(255, 255, 255, .15), 0 8px 22px -10px rgba(0, 0, 0, .3) !important; padding: 10px 24px; }
+/* Entrou e Saiu achatados: rótulo e valor na mesma linha, menores */
+.bas[data-aba="inicio"] .bas-noite-par { gap: 8px; }
+.bas[data-aba="inicio"] .bas-noite-par > button { flex-direction: row; align-items: baseline; gap: 6px; padding: 7px 14px; min-height: 0; }
+.bas[data-aba="inicio"] .bas-noite-par > button small { font-size: 12.5px; margin: 0; }
+.bas[data-aba="inicio"] .bas-noite-par > button b { font-size: 14px; }
