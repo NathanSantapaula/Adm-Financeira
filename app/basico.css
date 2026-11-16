@@ -2078,3 +2078,7 @@ body[data-ui="basico"] .bas-gt-folha .bas-pt-acoes > :is(.bas-circ, .bas-inv-pl)
 .bas-ev-meses { position: relative; height: 18px; margin: 8px -16px 4px; }
 .bas-ev-meses span { position: absolute; translate: -50% 0; font-size: 13px; font-weight: 600; color: rgba(255, 255, 255, .55); }
 .bas-ev-meses span.on { color: #fff; }
+/* pílula da % na mesma curvatura e vidro dos botões; gráfico ainda mais colado ao valor */
+.bas-ev-pct { border-radius: 999px; padding: 5px 12px; color: var(--lg-txt); background: var(--lg-bg); -webkit-backdrop-filter: var(--lg-desfoque); backdrop-filter: var(--lg-desfoque);
+  box-shadow: inset 0 1px 0 var(--lg-aro), inset 0 -1px 0 var(--lg-aro-b), inset 0 0 0 .5px var(--lg-aro-b), var(--lg-sombra); }
+.bas-pt-bg > .bas-ev .bas-ev-g { margin-top: -22px; }
