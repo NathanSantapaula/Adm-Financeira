@@ -1216,31 +1216,29 @@ function basCtwHtml(cls, total, comAlvo, its) {
   const dados = vivas.map((c) => { const at = total > 0 ? c.valor / total : 0; const al = c.alvo / 100; const df = (at - al) * 100;
     const lista = its.filter((i) => (i.a.classe || '') === (c.classe || '') && i.valor > 0.005).sort((a, b) => b.valor - a.valor);
     const falta = Math.max(0, al * total - c.valor);
-    let frase;
-    if (!comAlvo || !(c.alvo > 0)) frase = lista.length ? `${pct(at, 1)} do que você tem, em ${lista.length} ${lista.length === 1 ? 'ativo' : 'ativos'}. O maior é ${lista[0].a.nome}.` : 'Sem ativos nesta classe ainda.';
-    else if (Math.abs(df) < 2) frase = 'Está no alvo que você escolheu. Siga aportando na mesma proporção.';
-    else if (df > 0) frase = `Está ${df.toFixed(1).replace('.', ',')} pontos acima do alvo. Deixe os próximos aportes para as outras classes, sem precisar vender.`;
-    else frase = `Faltam ${brl0(falta)} para chegar ao alvo. É por aqui que os próximos aportes devem começar.`;
-    return { n: nome(c), at: pct(at, 1), al: comAlvo && c.alvo > 0 ? pct(al) : '', v: basCent(c.valor), f: frase, q: lista.length, df: comAlvo && c.alvo > 0 ? df : 0 }; });
+    const tag = !comAlvo || !(c.alvo > 0) ? ['', `${lista.length} ${lista.length === 1 ? 'ativo' : 'ativos'}`] : Math.abs(df) < 2 ? ['ok', 'No alvo'] : df > 0 ? ['acima', 'Acima do alvo'] : ['abaixo', `Faltam ${brl0(falta)}`];
+    return { n: nome(c), at: pct(at, 1), al: comAlvo && c.alvo > 0 ? pct(al) : '', v: basCent(c.valor), t: tag[1], tk: tag[0], q: lista.length, df: comAlvo && c.alvo > 0 ? df : 0 }; });
   // começa na classe mais longe do alvo (ou na maior, sem alvos)
   let sel = 0; if (comAlvo) dados.forEach((d, i) => { if (Math.abs(d.df) > Math.abs(dados[sel].df)) sel = i; });
   const cx = 150, cy = 150, R = 124, r = 86, A0 = -135, A1 = 135, gap = 2.6; const pt = (rr, a) => [cx + rr * Math.sin((a * Math.PI) / 180), cy - rr * Math.cos((a * Math.PI) / 180)];
   const somaV = vivas.reduce((t, c) => t + Math.max(c.valor, 0), 0) || 1; let a = A0;
-  const segs = vivas.map((c, i) => { const span = Math.max(6, ((Math.max(c.valor, 0) / somaV) * (A1 - A0))); const s0 = a + gap / 2; const s1 = Math.min(A1, a + span) - gap / 2; a += span;
+  const segs = vivas.map((c, i) => { const span = Math.max(6, ((Math.max(c.valor, 0) / somaV) * (A1 - A0))); const s0 = a + gap; const s1 = Math.min(A1, a + span) - gap; a += span;
     const big = s1 - s0 > 180 ? 1 : 0; const [x0, y0] = pt(R, s0); const [x1, y1] = pt(R, s1); const [x2, y2] = pt(r, s1); const [x3, y3] = pt(r, s0); const [h0x, h0y] = pt(R - 5, s0 + 1); const [h1x, h1y] = pt(R - 5, s1 - 1);
     const meio = ((s0 + s1) / 2) * Math.PI / 180; const dx = (Math.sin(meio) * 9).toFixed(1); const dy = (-Math.cos(meio) * 9).toFixed(1);
     return `<g class="bas-ctw-s${i === sel ? ' on' : ''}" data-i="${i}" style="--dx:${dx}px;--dy:${dy}px;--d:${i * 70}ms" role="button" tabindex="0" aria-label="${esc(dados[i].n)}: ${esc(dados[i].at)}">
-      <path class="c" d="M${x0.toFixed(1)} ${y0.toFixed(1)} A${R} ${R} 0 ${big} 1 ${x1.toFixed(1)} ${y1.toFixed(1)} L${x2.toFixed(1)} ${y2.toFixed(1)} A${r} ${r} 0 ${big} 0 ${x3.toFixed(1)} ${y3.toFixed(1)} Z"/>
+      ${(() => { const dd = `M${x0.toFixed(1)} ${y0.toFixed(1)} A${R} ${R} 0 ${big} 1 ${x1.toFixed(1)} ${y1.toFixed(1)} L${x2.toFixed(1)} ${y2.toFixed(1)} A${r} ${r} 0 ${big} 0 ${x3.toFixed(1)} ${y3.toFixed(1)} Z`; return `<path class="c" d="${dd}"/><path class="l" d="${dd}"/><path class="g" d="${dd}"/>`; })()}
       <path class="b" d="M${h0x.toFixed(1)} ${h0y.toFixed(1)} A${R - 5} ${R - 5} 0 ${big} 1 ${h1x.toFixed(1)} ${h1y.toFixed(1)}"/></g>`; }).join('');
   const d0 = dados[sel];
   return `<section class="bas-ctw" data-ctw="${esc(JSON.stringify(dados))}" data-sel="${sel}">
-    <p class="bas-ctw-top" data-ctw-top>${d0.al ? `${d0.at} <span>→</span> ${d0.al}` : d0.at}</p><small class="bas-ctw-lb">${comAlvo ? 'hoje → alvo' : 'da carteira'}</small>
+    <p class="bas-ctw-top" data-ctw-top>${d0.al ? `${d0.at} <span>→</span> ${d0.al}` : d0.at}</p>
     <div class="bas-ctw-r"><svg viewBox="0 0 300 262" aria-label="Alocação por classe. Toque numa parte do anel."><defs>
         <linearGradient id="ctw-on" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:color-mix(in srgb, var(--accent) 45%, #fff)"/><stop offset=".55" style="stop-color:var(--accent)"/><stop offset="1" style="stop-color:color-mix(in srgb, var(--accent) 70%, #000)"/></linearGradient>
-        <linearGradient id="ctw-off" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--ctw-a)"/><stop offset="1" style="stop-color:var(--ctw-b)"/></linearGradient></defs>${segs}</svg>
-      <div class="bas-ctw-c"><small>Total investido</small><b>${basCent(total)}</b><em>${its.filter((i) => i.valor > 0.005).length} ativos · ${vivas.length} ${vivas.length === 1 ? 'classe' : 'classes'}</em></div></div>
-    <div class="bas-ctw-tx" aria-live="polite"><b data-ctw-n>${esc(d0.n)}</b><span data-ctw-v>${d0.v} · ${d0.q} ${d0.q === 1 ? 'ativo' : 'ativos'}</span><p data-ctw-f>${esc(d0.f)}</p></div>
-    <div class="bas-ctw-ch" role="group" aria-label="Classes">${dados.map((d, i) => `<button class="${i === sel ? 'on' : ''}" data-ctw-i="${i}">${esc(d.n)}</button>`).join('')}</div>
+        <linearGradient id="ctw-off" gradientUnits="userSpaceOnUse" x1="60" y1="20" x2="240" y2="262"><stop offset="0" style="stop-color:var(--accent);stop-opacity:.62"/><stop offset=".55" style="stop-color:var(--accent);stop-opacity:.28"/><stop offset="1" style="stop-color:var(--accent);stop-opacity:.06"/></linearGradient>
+        <pattern id="ctw-lis" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)"><line x1="1" y1="0" x2="1" y2="7" style="stroke:#fff;stroke-width:1.8;stroke-opacity:.92"/></pattern>
+        <radialGradient id="ctw-gl" gradientUnits="userSpaceOnUse" cx="110" cy="40" r="170"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".5" stop-color="#fff" stop-opacity=".08"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>${segs}</svg>
+      <div class="bas-ctw-c"><small>Total investido</small><b>${basCent(total)}</b></div></div>
+    <div class="bas-ctw-tx" aria-live="polite"><b data-ctw-n>${esc(d0.n)}</b><span data-ctw-v>${d0.v}</span><em class="${d0.tk}" data-ctw-t>${esc(d0.t)}</em></div>
+    <div class="bas-ctw-pt" role="group" aria-label="Classes">${dados.map((d, i) => `<button class="${i === sel ? 'on' : ''}" data-ctw-i="${i}" aria-label="${esc(d.n)}"></button>`).join('')}</div>
   </section>`;
 }
 function basCtwLigar() {
@@ -1248,8 +1246,8 @@ function basCtwLigar() {
   const vai = (i) => { i = (i + D.length) % D.length; if (i === sel) return; sel = i; const d = D[i];
     w.querySelectorAll('.bas-ctw-s').forEach((g) => g.classList.toggle('on', +g.dataset.i === i)); w.querySelectorAll('[data-ctw-i]').forEach((b) => b.classList.toggle('on', +b.dataset.ctwI === i));
     const tx = w.querySelector('.bas-ctw-tx'); tx.classList.remove('troca'); void tx.offsetWidth; tx.classList.add('troca');
-    w.querySelector('[data-ctw-top]').innerHTML = d.al ? `${d.at} <span>→</span> ${d.al}` : d.at; w.querySelector('[data-ctw-n]').textContent = d.n; w.querySelector('[data-ctw-v]').innerHTML = `${d.v} · ${d.q} ${d.q === 1 ? 'ativo' : 'ativos'}`; w.querySelector('[data-ctw-f]').textContent = d.f;
-    const b = w.querySelector(`[data-ctw-i="${i}"]`); if (b) b.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' }); if (typeof basSom === 'function') basSom('toque'); if (typeof basVibra === 'function') basVibra(8); };
+    w.querySelector('[data-ctw-top]').innerHTML = d.al ? `${d.at} <span>→</span> ${d.al}` : d.at; w.querySelector('[data-ctw-n]').textContent = d.n; w.querySelector('[data-ctw-v]').innerHTML = d.v; const t = w.querySelector('[data-ctw-t]'); t.textContent = d.t; t.className = d.tk;
+    if (typeof basSom === 'function') basSom('toque'); if (typeof basVibra === 'function') basVibra(8); };
   w.addEventListener('click', (e) => { const g = e.target.closest('.bas-ctw-s'); const b = e.target.closest('[data-ctw-i]'); if (g) vai(+g.dataset.i); else if (b) vai(+b.dataset.ctwI); });
   w.addEventListener('keydown', (e) => { if (e.key === 'ArrowRight') vai(sel + 1); else if (e.key === 'ArrowLeft') vai(sel - 1); else if (e.key === 'Enter' && e.target.matches('.bas-ctw-s')) vai(+e.target.dataset.i); });
   const anel = w.querySelector('.bas-ctw-r'); let x0 = null; anel.addEventListener('pointerdown', (e) => { x0 = e.clientX; }); anel.addEventListener('pointerup', (e) => { if (x0 != null && Math.abs(e.clientX - x0) > 40) vai(sel + (e.clientX < x0 ? 1 : -1)); x0 = null; });
@@ -1265,24 +1263,16 @@ function basTelaCarteira() {
   const linhaAt = (i) => { const s = series.get(i) || []; return `<li><button class="bas-ct-at" ${basIr('ativo', { id: i.a.id })}><span class="bas-ct-lg" style="--bc:${corDe(i.a.classe)}">${esc(basSigla(i.a.nome))}</span><span class="bas-ct-an"><b>${esc(i.a.nome)}</b><small>${pct(total > 0 ? i.valor / total : 0, 1)}</small></span>${basSpark(s.slice(-12).map((p) => p.c))}<b class="bas-ct-av">${basCent(i.valor)}</b></button></li>`; };
   const alocacao = total > 0 ? `<div class="card bas-ct-al">
     <ul class="bas-ct-cl">${cls.filter((c) => c.valor > 0).map((c) => { const ab = aberta === (c.classe || ''); const lista = its.filter((i) => (i.a.classe || '') === (c.classe || '') && i.valor > 0.005).sort((a, b) => b.valor - a.valor);
-      return `<li class="${ab ? 'on' : ''}"><button class="bas-ct-ch" data-act="bas-cart-cl" data-v="${esc(c.classe || '')}" aria-expanded="${ab}"><i style="--bc:${corC(c)}"></i><span><b>${esc(c.classe || 'Outros')}</b><small>${pct(c.valor / total, 1)} · ${lista.length} ${lista.length === 1 ? 'ativo' : 'ativos'}</small></span><b class="bas-ct-cv">${basCent(c.valor)}</b><svg class="bas-ct-sc" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
+      return `<li class="${ab ? 'on' : ''}"><button class="bas-ct-ch" data-act="bas-cart-cl" data-v="${esc(c.classe || '')}" aria-expanded="${ab}"><i style="--bc:${corC(c)}"></i><span><b>${esc(c.classe || 'Outros')}</b><small>${pct(c.valor / total, 1)}</small></span><b class="bas-ct-cv">${basCent(c.valor)}</b><svg class="bas-ct-sc" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
         ${ab ? `<ul class="bas-ct-ats">${lista.map(linhaAt).join('')}</ul>` : ''}</li>`; }).join('')}</ul></div>` : basCard(basVazio('Sua carteira aparece aqui quando você registrar o primeiro investimento.'));
-  // leitura única e discreta: concentração
-  const maior = its.slice().sort((a, b) => b.valor - a.valor)[0]; const pm = total > 0 && maior ? maior.valor / total : 0;
-  const nota = pm >= 0.4 ? `<p class="bas-ct-nota"><b>${esc(maior.a.nome)}</b> é ${pct(pm)} da carteira. Concentrar muito num ativo aumenta o risco.</p>` : '';
-  // plano contra o real: uma linha por classe, a barra de hoje e o marcador do alvo
-  const plano = comAlvo ? basSecao('Plano contra o real', `<button class="lnk strong" ${basIr('alvos')}>Editar alvos</button>`, `<div class="card bas-ct-pr">${K.aderencia != null ? `<div class="bas-ct-ad"><span>Seguindo o plano</span><b>${pct(K.aderencia)}</b></div>` : ''}
-      <ul>${cls.map((c) => { const df = c.atual - c.alvo; return `<li><div class="bas-ct-prh"><span>${esc(c.classe || 'Outros')}</span><small class="${Math.abs(df) < 2 ? 'ok' : ''}">${Math.abs(df) < 2 ? 'no alvo' : `${df > 0 ? '+' : '−'}${Math.abs(df).toFixed(1).replace('.', ',')} p.p.`}</small><b>${pct(c.atual / 100)} <em>/ ${pct(c.alvo / 100)}</em></b></div>
-        <div class="bas-ct-trk"><i style="width:${Math.min(100, c.atual).toFixed(1)}%;--bc:${corC(c)}"></i><span style="left:${Math.min(100, c.alvo).toFixed(1)}%" aria-hidden="true"></span></div></li>`; }).join('')}</ul></div>`)
-    : (its.length ? `<button class="card bas-ct-def" ${basIr('alvos')}><span class="bas-n"><b>Defina como quer dividir</b><small>Com os alvos, o app compara com o que você tem e mostra onde colocar cada aporte.</small></span>${I.chev}</button>` : '');
   const sug = M.items.filter((i) => i.sug > 0.004).sort((a, b) => b.sug - a.sug);
-  const prox = comAlvo && sug.length ? basSecao('Próximo aporte', `<small class="bas-pv2-q">${brl0(M.aporte)} disponíveis</small>`, `<div class="card bas-ct-px"><ul>${sug.map((i) => `<li><button ${basIr('ativo', { id: i.a.id })}><span class="bas-ct-lg sm" style="--bc:${corDe(i.a.classe)}">${esc(basSigla(i.a.nome))}</span><span class="bas-ct-an"><b>${esc(i.a.nome)}</b><small>${esc(i.a.classe || '')}${i.cotas ? ` · ${i.cotas} ${i.cotas === 1 ? 'cota' : 'cotas'}` : ''}</small></span><b class="bas-ct-pv">+${basCent(i.sug)}</b></button></li>`).join('')}</ul>
-      ${K.mesesEquilibrio > 0 ? `<p class="bas-ct-eq">Assim, a carteira chega ao alvo em ${K.mesesEquilibrio} ${K.mesesEquilibrio === 1 ? 'mês' : 'meses'}, sem vender nada.</p>` : ''}</div>`) : '';
+  const prox = comAlvo && sug.length ? basSecao('Próximo aporte', `<small class="bas-pv2-q">${brl0(M.aporte)} disponíveis</small>`, `<div class="card bas-ct-px"><ul>${sug.map((i) => `<li><button ${basIr('ativo', { id: i.a.id })}><span class="bas-ct-lg sm" style="--bc:${corDe(i.a.classe)}">${esc(basSigla(i.a.nome))}</span><span class="bas-ct-an"><b>${esc(i.a.nome)}</b></span><b class="bas-ct-pv">+${basCent(i.sug)}</b></button></li>`).join('')}</ul>
+</div>`) : '';
   return `<div class="bas-pg bas-pg-ctw">
-    <header class="bas-ctw-h"><button class="bas-circ" data-act="bas-voltar" aria-label="Voltar">${I_VOLTA}</button><b>Minha carteira</b><span>${olhoHtml()}</span></header>
+    <header class="bas-ctw-h"><button class="bas-circ" data-act="bas-voltar" aria-label="Voltar">${I_VOLTA}</button><b>Minha carteira</b><span class="bas-ctw-hr"><button class="bas-circ" ${basIr('alvos')} aria-label="Meus alvos" title="Meus alvos"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".8"/></svg></button>${olhoHtml()}</span></header>
     ${basCtwHtml(cls, total, comAlvo, its)}
-    ${basSecao('Seus ativos', '', alocacao)}${nota}${plano}${prox}${basRecHtml()}
-    <p class="bas-disc keep">Valores a custo, sem cotação de mercado. A divisão sugerida segue os alvos que você escolheu, sem indicar ativos nem prometer rentabilidade.</p></div>`;
+    ${basSecao('Seus ativos', '', alocacao)}${prox}${basRecHtml()}
+    <p class="bas-disc keep">Valores a custo. Sugestão pelos seus alvos, sem indicar ativos.</p></div>`;
 }
 /* ---- App completo: limites, avisos, simulador do sonho e alvos da carteira ---- */
 const I_SINO = ic('<path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2H4.5z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>');
