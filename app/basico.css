@@ -2240,3 +2240,18 @@ body[data-ui="basico"][data-screen="app"] .tabbar { left: calc(50% - 30px); widt
   color: var(--ink); background: var(--surface); box-shadow: 0 10px 26px -10px rgba(0, 0, 0, .45), inset 0 0 0 .5px var(--line); opacity: 0; transform: translateY(6px) scale(.9); transition: opacity 180ms, transform 220ms cubic-bezier(.3, 1.5, .5, 1); pointer-events: none; }
 .bas-cif-fala.dir { translate: -80% 0; } .bas-cif-fala.on { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) { .bas-ia-ondas i, .bas-ia-fab.alerta, .bas-cif-solto.andando .cifrao { animation: none; } }
+
+/* ===== Botão da IA, rodada 4: azul do ícone do app, sem ondas; o Cifrão grande, inclinado e cortado como no ícone ===== */
+.bas-ia-ondas { display: none; }
+.bas-ia-fab { touch-action: none; -webkit-user-select: none; user-select: none; --cif-size: 64px;
+  background: radial-gradient(90% 70% at 85% 20%, color-mix(in srgb, var(--bas-ciano) 45%, transparent), transparent 60%), linear-gradient(155deg, color-mix(in srgb, var(--bas-azul) 75%, #fff) 0%, var(--bas-azul) 45%, color-mix(in srgb, var(--bas-azul) 70%, #001a8c) 100%); }
+.bas-ia-fab .cifrao { position: absolute; left: 6px; top: 8px; width: var(--cif-size); height: var(--cif-size); rotate: -8deg; filter: drop-shadow(-2px 3px 4px rgba(0, 20, 90, .45)); }
+.bas-ia-fab::after { z-index: 1; background: radial-gradient(70% 45% at 30% 8%, rgba(255, 255, 255, .5), transparent 60%); }
+.bas-ia-duv { width: 44px; height: 44px; border-radius: 50%; font-size: 20px; font-weight: 700; display: grid; place-items: center; }
+.bas-ia-duv.on { color: #fff !important; background: var(--accent) !important; }
+.bas-cif-solto { touch-action: none; transition: none !important; }
+/* enquadramento como no ícone: os olhos perto do centro da bolinha, o corpo saindo pela borda de baixo à direita */
+.bas-ia-fab { --cif-size: 74px; }
+.bas-ia-fab .cifrao { left: -6px; top: -4px; }
+.bas-ia-fab .cifrao { left: -10px; top: -13px; }
+.bas-ia-fab { --cif-size: 90px; } .bas-ia-fab .cifrao { left: -17px; top: -13px; }

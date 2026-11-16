@@ -65,50 +65,40 @@ function basicoBarra() {
   document.body.dataset.basFolha = t && BAS_FORMS.has(t.t) ? '1' : ''; document.body.dataset.basPerfil = a === 'perfil' && !t ? '1' : '';
   const av = basAvisosNovos();
   // botão da IA separado, à esquerda da barra: fundo em degradê neon que se move, vidro por cima e o Cifrão dentro
-  $('#tabbar').innerHTML = `<button class="bas-ia-fab${av ? ' alerta' : ''}" data-act="bas-ia-fab" aria-label="Assistente${av ? `: ${av} avisos novos` : ''}. Segure para o Cifrão passear pela tela."><span class="bas-ia-ondas" aria-hidden="true"><i></i><i></i><i></i></span><span class="cifrao" aria-hidden="true"></span></button><div class="bas-tabs"><span class="bas-tab-lente" aria-hidden="true"></span>${basAbas().map(([k, l, i]) => `<button data-act="bas-aba" data-v="${k}" ${a === k ? 'aria-current="page"' : ''}>${i}<span>${l}</span></button>`).join('')}</div>`;
+  $('#tabbar').innerHTML = `<button class="bas-ia-fab${av ? ' alerta' : ''}" data-act="bas-ia-fab" aria-label="Assistente${av ? `: ${av} avisos novos` : ''}. Segure e arraste para o Cifrão andar pela tela."><span class="cifrao" aria-hidden="true"></span></button><div class="bas-tabs"><span class="bas-tab-lente" aria-hidden="true"></span>${basAbas().map(([k, l, i]) => `<button data-act="bas-aba" data-v="${k}" ${a === k ? 'aria-current="page"' : ''}>${i}<span>${l}</span></button>`).join('')}</div>`;
   basTabLigar(); basIaFabLigar();
 }
 // barra de abas no jeito do iPhone: uma lente de vidro marca a aba e desliza até a nova; segurar e arrastar leva a lente
 // com o dedo (ou o mouse) por cima das abas, e soltar abre a aba onde ela parou
 // botão da IA: tocar abre o assistente; segurar faz o Cifrão sair da bolinha e passear pela tela,
 // parando nas informações e comentando cada uma; tocar nele (ou na bolinha) o leva de volta
-const BAS_CIF_FALAS = [
-  ['.bas-noite-v', 'Esse é tudo o que você tem hoje.'], ['.bas-var', 'Aqui eu mostro quanto o patrimônio mudou.'], ['.bas-noite-par', 'Entrou e saiu no período, lado a lado.'],
-  ['.bas-gt-v', 'Isso é o que você gastou no período.'], ['.bas-gt-pilha', 'Toque nos cartões para ver cada um.'], ['.bas-gt-acoes', 'Anote um gasto ou veja as entradas por aqui.'],
-  ['.bas-onde', 'Veja para onde foi cada real.'], ['.bas-ult', 'Seus últimos gastos ficam aqui.'], ['.bas-ev-v', 'Seu patrimônio mês a mês. Arraste o dedo no gráfico!'],
-  ['.bas-sonho', 'Seu sonho! Cada aporte te aproxima dele.'], ['.bas-pt-acoes', 'Proventos, carteira e investir, tudo aqui.'], ['.bas-disp', 'Isso é o que dá para investir agora.'],
-];
 function basIaFabLigar() {
   const b = document.querySelector('.bas-ia-fab'); if (!b || b.dataset.lig) return; b.dataset.lig = '1'; let t = 0;
-  b.addEventListener('pointerdown', () => { clearTimeout(t); t = setTimeout(() => { S.basCifPasseio = true; basVibra && basVibra(20); basCifPasseio(b); }, 480); });
-  ['pointerup', 'pointercancel', 'pointerleave'].forEach((ev) => b.addEventListener(ev, () => clearTimeout(t)));
+  // na bolinha ele só pisca e mexe os olhos: sem os gestos grandes da landing
+  const calmo = () => { const h = b.querySelector('.cifrao'); if (h && h.cifrao) h.cifrao.gestoEm = 1e15; else setTimeout(calmo, 120); }; calmo();
+  b.addEventListener('pointerdown', (e) => { clearTimeout(t); const id = e.pointerId; t = setTimeout(() => { S.basCifPasseio = true; if (typeof basVibra === 'function') basVibra(20); b.setPointerCapture(id); basCifSolta(b, e.clientX, e.clientY, b); }, 420); });
+  ['pointerup', 'pointercancel'].forEach((ev) => b.addEventListener(ev, () => clearTimeout(t)));
   b.addEventListener('contextmenu', (e) => e.preventDefault());
 }
-function basCifPasseio(fab) {
+function basCifSolta(fab, px, py, alvo) {
   if (document.querySelector('.bas-cif-solto')) return;
-  const alvos = BAS_CIF_FALAS.flatMap(([q, f]) => [...document.querySelectorAll(`#view ${q}`)].slice(0, 1).map((el) => ({ el, f })))
-    .filter(({ el }) => { const r = el.getBoundingClientRect(); return r.width && r.bottom > 60 && r.top < innerHeight - 140; }).slice(0, 4);
-  const w = document.createElement('div'); w.className = 'bas-cif-solto'; w.setAttribute('aria-live', 'polite');
-  w.innerHTML = '<span class="bas-cif-corpo"><span class="cifrao"></span></span><span class="bas-cif-fala"></span>';
-  document.body.appendChild(w); fab.classList.add('vazia');
-  const corpo = w.querySelector('.bas-cif-corpo'); const fala = w.querySelector('.bas-cif-fala'); const host = () => w.querySelector('.cifrao');
-  const rf = fab.getBoundingClientRect(); let x = rf.left + rf.width / 2 - 32, y = rf.top + rf.height / 2 - 32; w.style.transform = `translate(${x}px, ${y}px)`;
-  const expr = (n) => { const h = host(); if (h) h.dispatchEvent(new CustomEvent('cifrao:expressao', { detail: n })); };
-  const anda = (nx, ny) => new Promise((ok) => { corpo.classList.toggle('esq', nx < x); w.classList.add('andando'); const d = Math.hypot(nx - x, ny - y); const ms = Math.max(500, Math.min(1500, d * 3));
-    w.style.transition = `transform ${ms}ms cubic-bezier(.45, .05, .35, 1)`; x = nx; y = ny; w.style.transform = `translate(${x}px, ${y}px)`; setTimeout(() => { w.classList.remove('andando'); ok(); }, ms); });
-  const espera = (ms) => new Promise((ok) => setTimeout(ok, ms));
-  let parar = false; const fim = async () => { if (parar) return; parar = true; fala.classList.remove('on'); const r = fab.getBoundingClientRect(); await anda(r.left + r.width / 2 - 32, r.top + r.height / 2 - 32);
-    w.classList.add('entra'); await espera(260); w.remove(); fab.classList.remove('vazia'); S.basCifPasseio = false; };
-  w.addEventListener('click', fim); setTimeout(() => fab.addEventListener('click', fim, { once: true }), 700); // espera passar o clique que solta o toque longo
-  (async () => {
-    await espera(150); expr('hop'); await espera(500);
-    for (const { el, f } of alvos) { if (parar) return; const r = el.getBoundingClientRect();
-      const nx = Math.max(8, Math.min(innerWidth - 72, r.left + Math.min(r.width - 64, 24))); const ny = Math.max(70, Math.min(innerHeight - 220, r.top - 58));
-      await anda(nx, ny); if (parar) return; expr(['wink', 'notice', 'proud', 'gelatina'][Math.floor(Math.random() * 4)]);
-      fala.textContent = f; fala.classList.toggle('dir', nx > innerWidth / 2); fala.classList.add('on'); await espera(2300); fala.classList.remove('on'); await espera(250); }
-    if (!alvos.length) { fala.textContent = 'Oi! Toque em mim para eu voltar.'; fala.classList.add('on'); await espera(2200); }
-    fim();
-  })();
+  const w = document.createElement('div'); w.className = 'bas-cif-solto'; w.innerHTML = '<span class="bas-cif-corpo"><span class="cifrao"></span></span>'; document.body.appendChild(w); fab.classList.add('vazia');
+  const corpo = w.querySelector('.bas-cif-corpo'); const T = 64;
+  const rf = fab.getBoundingClientRect(); let x = rf.left + rf.width / 2 - T / 2, y = rf.top + rf.height / 2 - T / 2; let tx = px - T / 2, ty = py - T - 18; let solto = true, vivo = true, parado = 0;
+  const lim = () => { tx = Math.max(4, Math.min(innerWidth - T - 4, tx)); ty = Math.max(4, Math.min(innerHeight - T - 4, ty)); };
+  const passo = () => { if (!vivo) return; const dx = tx - x, dy = ty - y; x += dx * 0.16; y += dy * 0.16; const mov = Math.hypot(dx, dy) > 1.5;
+    w.classList.toggle('andando', mov); if (Math.abs(dx) > 2) corpo.classList.toggle('esq', dx < 0); w.style.transform = `translate(${x}px, ${y}px)`; requestAnimationFrame(passo); };
+  requestAnimationFrame(passo);
+  // segue o dedo enquanto ele estiver na tela (primeiro o toque longo da bolinha, depois arrastando o próprio Cifrão)
+  const segue = (e) => { if (!solto) return; tx = e.clientX - T / 2; ty = e.clientY - T - 18; lim(); };
+  const larga = () => { solto = false; };
+  alvo.addEventListener('pointermove', segue); alvo.addEventListener('pointerup', larga, { once: true }); alvo.addEventListener('pointercancel', larga, { once: true });
+  let x0 = 0, y0 = 0, arrastou = false;
+  w.addEventListener('pointerdown', (e) => { w.setPointerCapture(e.pointerId); solto = true; arrastou = false; x0 = e.clientX; y0 = e.clientY; });
+  w.addEventListener('pointermove', (e) => { if (!solto) return; if (Math.hypot(e.clientX - x0, e.clientY - y0) > 6) arrastou = true; segue(e); });
+  w.addEventListener('pointerup', () => { solto = false; if (!arrastou) volta(); });
+  const volta = () => { const r = fab.getBoundingClientRect(); tx = r.left + r.width / 2 - T / 2; ty = r.top + r.height / 2 - T / 2; setTimeout(() => { vivo = false; w.remove(); fab.classList.remove('vazia'); S.basCifPasseio = false; }, 650); };
+  setTimeout(() => fab.addEventListener('click', () => { if (document.body.contains(w)) volta(); }, { once: true }), 700); // espera passar o clique que solta o toque longo
 }
 function basTabLigar() {
   { const b = document.querySelector('#tabbar .bas-tabs'); if (b && b.dataset.lig) return; }
@@ -553,8 +543,9 @@ function basDvLigar() {
 }
 function basTelaIa() {
   const aba = ['avisos', 'duvidas'].includes(S.basIaAba) ? S.basIaAba : 'conversa'; const av = basAvisosNovos();
-  const abas = `<div class="seg bas-ia-abas" role="tablist">${[['conversa', 'Conversa'], ['duvidas', 'Dúvidas'], ['avisos', `Avisos${av ? ` <em>${av}</em>` : ''}`]].map(([v, l]) => `<button role="tab" class="${aba === v ? 'on' : ''}" data-act="bas-ia-aba" data-v="${v}" aria-selected="${aba === v}">${l}</button>`).join('')}</div>`;
-  return basDet(`Assistente ${esc(CFG.marca || '')}`, `${abas}${aba === 'avisos' ? basAvisosLista() : aba === 'duvidas' ? basDuvidasHtml() : `<section class="card ia-card bas-ia">${S.iaComecou ? `${iaConversaHtml('b')}<p class="ia-disc disc">Respostas automáticas a partir do seu planejamento, sem indicação de investimentos.</p>` : iaIntroHtml()}</section>`}`);
+  const abas = `<div class="seg bas-ia-abas" role="tablist">${[['conversa', 'Conversa'], ['avisos', `Avisos${av ? ` <em>${av}</em>` : ''}`]].map(([v, l]) => `<button role="tab" class="${aba === v ? 'on' : ''}" data-act="bas-ia-aba" data-v="${v}" aria-selected="${aba === v}">${l}</button>`).join('')}</div>`;
+  const duv = `<button class="bas-circ bas-ia-duv${aba === 'duvidas' ? ' on' : ''}" data-act="bas-ia-aba" data-v="${aba === 'duvidas' ? 'conversa' : 'duvidas'}" aria-label="Dúvidas" aria-pressed="${aba === 'duvidas'}">?</button>`;
+  return basDet(`Assistente ${esc(CFG.marca || '')}`, `${aba === 'duvidas' ? '' : abas}${aba === 'avisos' ? basAvisosLista() : aba === 'duvidas' ? basDuvidasHtml() : `<section class="card ia-card bas-ia">${S.iaComecou ? `${iaConversaHtml('b')}<p class="ia-disc disc">Respostas automáticas a partir do seu planejamento, sem indicação de investimentos.</p>` : iaIntroHtml()}</section>`}`, duv).replace(olhoHtml(), '');
 }
 
 // depois de cada desenho do App (chamado no drawAll): objeto 3D, gráfico que segue o dedo e o cartão que inclina
