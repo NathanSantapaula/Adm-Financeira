@@ -2934,3 +2934,76 @@ body[data-ui="basico"] .bas-pg { padding-bottom: 0; }
 .bas-gp-f { height: 100dvh; max-height: none; border-radius: 0; padding-top: calc(10px + env(safe-area-inset-top, 0px)); }
 .bas-gp-fundo { -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); background: rgba(0, 0, 0, .55); }
 .bas-gp-alca { display: none; }
+/* ===== Gasto, refeito: valor grande, nome, tipo em segmentos, quando, categoria e banco em fichas que rolam de lado ===== */
+.bas-gf { display: flex; flex-direction: column; gap: 14px; }
+.bas-gf-v { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0 2px; }
+.bas-gf-rot b { display: none; font-size: 14px; font-weight: 600; color: var(--ink-3); }
+.bas-form:has([name="tipo"][value="uma"]:checked) .r-uma, .bas-form:has([name="tipo"][value="mes"]:checked) .r-mes, .bas-form:has([name="tipo"][value="parc"]:checked) .r-parc { display: inline; }
+.bas-gf-vin { display: flex; align-items: baseline; justify-content: center; gap: 6px; }
+.bas-gf-vin i { font-style: normal; font-size: 24px; font-weight: 600; color: var(--ink-3); }
+.bas-gf-vin input { width: 7ch; min-width: 0; border: 0; outline: 0; background: none; text-align: center; font: inherit; font-size: 48px; font-weight: 700; letter-spacing: -.03em; color: var(--ink); font-variant-numeric: tabular-nums; }
+.bas-gf-vin input::placeholder { color: color-mix(in srgb, var(--ink) 22%, transparent); }
+.bas-gf-nome { width: 100%; height: 52px; padding: 0 18px; border: 0; border-radius: 18px; font: inherit; font-size: 17px; color: var(--ink); background: var(--surface); box-shadow: 0 6px 18px -14px rgba(20, 30, 80, .35), inset 0 0 0 .5px var(--line); outline: 0; }
+.bas-gf-nome:focus { box-shadow: inset 0 0 0 1.5px var(--accent); }
+.bas-gf-seg { display: grid; grid-template-columns: repeat(3, 1fr); padding: 4px; border-radius: 16px; background: var(--surface-2); }
+.bas-gf-seg label { position: relative; } .bas-gf-seg input, .bas-gf-c input, .bas-gf-b input { position: absolute; opacity: 0; pointer-events: none; }
+.bas-gf-seg span { display: grid; place-items: center; height: 40px; border-radius: 12px; font-size: 15px; font-weight: 600; color: var(--ink-2); cursor: pointer; transition: background 200ms, color 200ms, box-shadow 200ms; }
+.bas-gf-seg input:checked + span { color: var(--ink); background: var(--surface); box-shadow: 0 4px 12px -6px rgba(20, 30, 80, .35); }
+.bas-gf-seg input:focus-visible + span { outline: 2px solid var(--accent); }
+.bas-gf-quando { display: flex; gap: 8px; align-items: center; }
+.bas-gf-dia { height: 40px; padding: 0 16px; border: 0; border-radius: 999px; font: inherit; font-size: 15px; font-weight: 600; color: var(--ink-2); background: var(--surface); box-shadow: inset 0 0 0 .5px var(--line); cursor: pointer; }
+.bas-gf-dia.on { color: #fff; background: var(--accent); box-shadow: none; }
+.bas-gf-quando input { flex: 1; min-width: 0; height: 40px; padding: 0 12px; border: 0; border-radius: 999px; font: inherit; font-size: 15px; color: var(--ink); background: var(--surface); box-shadow: inset 0 0 0 .5px var(--line); }
+.bas-gf-info { margin: 0; font-size: 14px; color: var(--ink-3); text-align: center; }
+.bas-gf-parc { display: flex; align-items: center; gap: 8px; }
+.bas-gf-parc button { width: 40px; height: 40px; border: 0; border-radius: 50%; font: inherit; font-size: 22px; color: var(--ink); background: var(--surface); box-shadow: inset 0 0 0 .5px var(--line); cursor: pointer; }
+.bas-gf-parc input { width: 3.2ch; border: 0; outline: 0; background: none; text-align: center; font: inherit; font-size: 22px; font-weight: 700; color: var(--ink); }
+.bas-gf-pt { margin-left: auto; font-size: 15px; font-weight: 600; color: var(--accent); }
+.bas-form:has([name="tipo"]:not([value="uma"]):checked) .bas-gf-quando, .bas-form:has([name="tipo"]:not([value="mes"]):checked) .bas-gf-info, .bas-form:has([name="tipo"]:not([value="parc"]):checked) .bas-gf-parc { display: none; }
+.bas-gf-k { margin: 4px 2px -4px; font-size: 13px; font-weight: 600; color: var(--ink-3); }
+.bas-gf-cs, .bas-gf-bs { display: flex; gap: 8px; overflow-x: auto; margin: 0 -16px; padding: 4px 16px 10px; scrollbar-width: none; scroll-padding-inline: 16px; }
+.bas-gf-cs::-webkit-scrollbar, .bas-gf-bs::-webkit-scrollbar { display: none; }
+.bas-gf-c, .bas-gf-b { flex: none; position: relative; }
+.bas-gf-c > span, .bas-gf-b > span { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 14px 0 6px; border-radius: 999px; font-size: 15px; font-weight: 600; color: var(--ink); background: var(--surface); box-shadow: 0 4px 12px -10px rgba(20, 30, 80, .4), inset 0 0 0 .5px var(--line); cursor: pointer; white-space: nowrap; transition: background 160ms, color 160ms; }
+.bas-gf-c i { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.bas-gf-c i svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.bas-gf-b > span { padding-left: 6px; } .bas-gf-b .inst-ic { width: 32px; height: 32px; border-radius: 50%; }
+.bas-gf-b input[value=""] + span { padding-left: 14px; }
+.bas-gf-c > input:checked + span, .bas-gf-b > input:checked + span { color: #fff; background: var(--accent); box-shadow: 0 8px 18px -10px var(--accent); }
+.bas-gf-c input:checked + span i { color: #fff; background: rgba(255, 255, 255, .2); }
+.bas-gf-novaq { display: none; flex-direction: column; gap: 10px; }
+.bas-form:has(.bas-gf-nova input:checked) .bas-gf-novaq { display: flex; }
+.bas-gf-novaq > input { height: 48px; padding: 0 16px; border: 0; border-radius: 16px; font: inherit; font-size: 16px; color: var(--ink); background: var(--surface); box-shadow: inset 0 0 0 .5px var(--line); outline: 0; }
+.bas-gf-imp { align-self: center; display: inline-flex; align-items: center; gap: 8px; margin-top: 4px; border: 0; background: none; font: inherit; font-size: 15px; font-weight: 600; color: var(--accent); cursor: pointer; }
+.bas-gf-imp svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+/* excluir vira um link discreto */
+.bas-form .bas-del { min-height: 44px !important; background: none !important; box-shadow: none !important; font-size: 15px !important; }
+.bas-form > *, .bas-gf, .bas-gf > * { min-width: 0; max-width: 100%; }
+.bas-form .bas-gf-vin input { width: 7ch; height: auto; padding: 0; border: 0; box-shadow: none; background: none; font-size: 48px; line-height: 1.1; font-weight: 700; text-align: center; }
+.bas-form .bas-gf-nome, .bas-form .bas-gf-quando input, .bas-form .bas-gf-novaq > input { max-width: none; }
+.bas-form .bas-gf-parc input { width: 3.2ch; height: auto; padding: 0; border: 0; box-shadow: none; background: none; font-size: 22px; font-weight: 700; text-align: center; }
+
+.bas-form .bas-gf-vin input { font-size: 48px !important; } .bas-form .bas-gf-parc input { font-size: 22px !important; }
+/* ===== Período em pop-up: folha que sobe de baixo; ano em fichas, o calendário e os atalhos embaixo dele ===== */
+.bas-pp { position: fixed; inset: 0; z-index: 200; display: flex; align-items: flex-end; justify-content: center; }
+.bas-pp-fundo { position: absolute; inset: 0; border: 0; background: rgba(10, 14, 30, .42); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); opacity: 0; transition: opacity 260ms ease; cursor: pointer; }
+.bas-pp.on .bas-pp-fundo { opacity: 1; }
+.bas-pp-f { position: relative; width: 100%; max-width: 520px; padding: 10px 18px calc(22px + env(safe-area-inset-bottom, 0px)); border-radius: 30px 30px 0 0; background: var(--bg);
+  box-shadow: 0 -20px 50px -20px rgba(0, 0, 0, .45); transform: translateY(105%); transition: transform 420ms cubic-bezier(.2, .9, .2, 1); }
+.bas-pp.on .bas-pp-f { transform: none; }
+.bas-pp-alca { display: block; width: 40px; height: 5px; margin: 0 auto 10px; border-radius: 999px; background: color-mix(in srgb, var(--ink) 18%, transparent); }
+.bas-pp-h { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; } .bas-pp-h b { font-size: 22px; font-weight: 700; letter-spacing: -.01em; }
+.bas-pp-x { width: 40px; height: 40px; border: 0; border-radius: 50%; display: grid; place-items: center; color: var(--ink); background: var(--surface-2); cursor: pointer; }
+.bas-pp-x svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.bas-pp-anos { display: flex; gap: 8px; overflow-x: auto; margin: 0 -18px 14px; padding: 2px 18px 6px; scrollbar-width: none; }
+.bas-pp-anos::-webkit-scrollbar { display: none; }
+.bas-pp-anos button { flex: none; height: 38px; padding: 0 16px; border: 0; border-radius: 999px; font: inherit; font-size: 15px; font-weight: 700; color: var(--ink-2); background: var(--surface); box-shadow: inset 0 0 0 .5px var(--line); cursor: pointer; }
+.bas-pp-anos button.on { color: var(--bg); background: var(--ink); box-shadow: none; }
+.bas-pp-cal { padding: 12px; border-radius: 22px; background: var(--surface); box-shadow: 0 10px 24px -18px rgba(20, 30, 80, .4), inset 0 0 0 .5px var(--line); }
+.bas-pp-cal .bas-per-grade { gap: 8px; }
+.bas-pp-at { margin-top: 12px; }
+@media (prefers-reduced-motion: reduce) { .bas-pp-f, .bas-pp-fundo { transition: none; } }
+/* barra de abas mais baixa, perto da borda do iPhone */
+body[data-ui="basico"][data-screen="app"] .tabbar { bottom: max(8px, calc(env(safe-area-inset-bottom, 0px) - 10px)) !important; }
+/* topo igual em todas as abas: o do Início ficava 4 px para dentro e 2 px abaixo (folga do painel escuro) */
+.bas-noite > .bas-topo { margin-left: -4px; margin-right: -4px; margin-top: -2px; }
