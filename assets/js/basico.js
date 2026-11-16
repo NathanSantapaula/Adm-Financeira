@@ -823,7 +823,7 @@ function basIaxLigar() {
 function basDesenhar() {
   const st = document.getElementById('bas-o3');
   if (st) { const falhou = () => st.classList.add('sem-3d'); if (typeof o3Ligar === 'function') o3Ligar(st, st.dataset.tipo, falhou); else falhou(); }
-  basIaxLigar(); basCifVe(); basGfLigar(); basPeriodoRepinta(); { const f = document.querySelector('.bas-form'); if (f && f.querySelector('[name="areaIc"]') && !f.dataset.ic) { f.dataset.ic = '1'; f.addEventListener('change', (e) => { if (e.target.name !== 'area') return; const r = f.querySelector(`[name="areaIc"][value="${basCatIcId(e.target.value)}"]`); if (r) r.checked = true; }); } } { const on = document.querySelector('.bas-cce-m.on'); const col = on && on.parentElement; if (col && !col.dataset.vis) { col.dataset.vis = '1'; col.scrollTop = on.offsetTop - col.clientHeight / 2 + on.offsetHeight / 2; } } basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basAtLigar(); basEfLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
+  basIaxLigar(); basCifVe(); basGfLigar(); basPeriodoRepinta(); { const f = document.querySelector('.bas-form'); if (f && f.querySelector('[name="areaIc"]') && !f.dataset.ic) { f.dataset.ic = '1'; f.addEventListener('change', (e) => { if (e.target.name !== 'area') return; const r = f.querySelector(`[name="areaIc"][value="${basCatIcId(e.target.value)}"]`); if (r) r.checked = true; }); } } { const on = document.querySelector('.bas-cce-m.on'); const col = on && on.parentElement; if (col && !col.dataset.vis) { col.dataset.vis = '1'; col.scrollTop = on.offsetTop - col.clientHeight / 2 + on.offsetHeight / 2; } } basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basAtLigar(); basEfLigar(); basCartLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
   const wr = document.querySelector('.bas-wr'); if (wr && !wr.dataset.lig) { wr.dataset.lig = '1'; basWrIr(wr, 0); }
   const sq = document.querySelector('[data-sq-conta]'); if (sq && !sq.dataset.lig && !matchMedia('(prefers-reduced-motion: reduce)').matches) { sq.dataset.lig = '1'; const alvo = +sq.dataset.sqConta; const t0 = performance.now();
     const passo = (t) => { const k = Math.min(1, (t - t0) / 900); sq.textContent = Math.round(alvo * (1 - Math.pow(1 - k, 3))); if (k < 1 && sq.isConnected) requestAnimationFrame(passo); }; if (alvo > 0) requestAnimationFrame(passo); }
@@ -1197,14 +1197,74 @@ function basTelaProvento(o) {
   if (a) return basForm('provento', esc(a.nome), basValor('valor', +a.pr[m] || 0, `Quanto pagou em ${MES_LONGO[m]}?`), { excluir: `Apagar o provento de ${MES_LONGO[m]}` });
   return basForm('provento', 'Registrar provento', `${basValor('valor', 0, 'Quanto recebeu?')}${basChips('ativo', p.ativos.map((x) => [x.id, x.nome]), (p.ativos[0] || {}).id, 'De qual investimento')}<p class="bas-p">Fica registrado em ${MES_LONGO[m]} de ${S.year}.</p>`, { ok: 'Registrar' });
 }
-// carteira: divisão por classe e, com alvos definidos, onde colocar o disponível do mês (E.analiseCarteira via cartAnalise)
+// Minha carteira, refeita: topo azul com o total, a rosca das classes (tocar mostra a classe no centro) e três abas
+// claras: Visão geral (saúde, classes e o mês), Ativos (cada um abre a tela dele) e Alocação (plano contra o real e onde
+// colocar o próximo aporte). Cálculo em cartAnalise (E.analiseCarteira); alvos editados na tela 'alvos'.
+const BAS_CART_ABAS = [['geral', 'Visão geral'], ['ativos', 'Ativos'], ['aloc', 'Alocação']];
+const basSigla = (n) => { n = String(n || '').trim(); return /\s/.test(n) ? basIniciais(n) : n.slice(0, 4).toUpperCase(); };
 function basTelaCarteira() {
-  const { M, K } = cartAnalise(); const total = K.classes.reduce((t, c) => t + c.valor, 0); const comAlvo = K.itens.some((i) => i.w > 0);
-  const sug = K.itens.filter((i) => i.sug > 0.004).sort((a, b) => b.sug - a.sug);
-  return basDet('Minha carteira', `${basCard(`<small class="bas-k">Total na carteira</small><b class="bas-big">${brl(total)}</b>${total > 0 ? `<ul class="bas-l bas-cats">${K.classes.slice().sort((a, b) => b.valor - a.valor).map((c, i) => `<li><span class="bas-cl bas-li">${basNome(esc(c.classe || 'Outros'), comAlvo ? `alvo ${pct(c.alvo / 100)}` : '')}<b>${pct(c.atual / 100)}</b><span class="bas-bar fina" aria-hidden="true"><i style="width:${Math.min(100, c.atual).toFixed(1)}%;--bc:${PAL[i % 6]}"></i></span></span></li>`).join('')}</ul>` : basVazio('Registre um investimento para ver a divisão.')}`, 'bas-hero')}
-    ${basCard(`<div class="bas-ch"><h2 class="bas-h2">Onde investir agora</h2><button class="lnk strong" ${basIr('alvos')}>Alvos</button></div>${!comAlvo ? `<p class="bas-p bas-p0">Diga quanto quer em cada investimento (combine com o ${esc(primeiroNome())}) e o app mostra onde colocar cada aporte.</p><button class="btn primary lg bas-cta bas-add" ${basIr('alvos')}>Definir os alvos</button>`
-      : sug.length ? `<p class="bas-p bas-p0">Para deixar a carteira mais perto do combinado com ${brl(M.aporte)} disponíveis:</p><ul class="bas-l">${sug.map((i) => `<li><span class="bas-cl bas-li">${basNome(esc(i.nome), esc(i.classe || ''))}<b class="pos">${brl(i.sug)}</b></span></li>`).join('')}</ul>` : basVazio('Sem valor disponível para investir neste mês.')}`)}
-    ${basRecHtml()}<p class="bas-disc keep">Sugestão de divisão pelo alvo combinado, sem indicação de ativos nem promessa de rentabilidade.</p>`);
+  const { M, K } = cartAnalise(); const total = M.total; const its = M.items.filter((i) => i.valor > 0.005 || i.alvo > 0);
+  const cls = K.classes.filter((c) => c.valor > 0.005 || c.alvo > 0).sort((a, b) => b.valor - a.valor); const cor = (c) => PAL[Math.max(0, cls.indexOf(c)) % 6];
+  const corDe = (classe) => { const c = cls.find((x) => x.classe === classe); return c ? cor(c) : PAL[0]; };
+  const comAlvo = M.sumAlvo > 0; const aba = S.basCartAba || 'geral';
+  const pr12 = its.reduce((t, i) => { const s = basAtSerie(i.a); return t + s.slice(-12).reduce((a, p) => a + p.pr, 0); }, 0);
+  // rosca: um arco por classe; o centro mostra o total ou a classe tocada
+  const R = 70; const C2 = 2 * Math.PI * R; let ac = 0;
+  const arcos = total > 0 ? cls.filter((c) => c.valor > 0).map((c, i) => { const f = c.valor / total; const len = Math.max(0, f * C2 - (cls.length > 1 ? 3 : 0)); const el = `<circle class="bas-ct-arc" r="${R}" cx="90" cy="90" style="--c:${cor(c)};--d:${(i * 90).toFixed(0)}ms" stroke-dasharray="${len.toFixed(2)} ${C2.toFixed(2)}" stroke-dashoffset="${(-ac).toFixed(2)}" data-ct-i="${i}" data-n="${esc(c.classe || 'Outros')}" data-v="${esc(brl0(c.valor))}" data-p="${esc(pct(f, 1))}" tabindex="0" role="button" aria-label="${esc(c.classe || 'Outros')}: ${esc(pct(f, 1))}"/>`; ac += f * C2; return el; }).join('') : '';
+  const rosca = total > 0 ? `<div class="bas-ct-r"><svg viewBox="0 0 180 180" aria-hidden="false"><circle r="${R}" cx="90" cy="90" class="bas-ct-trilho"/>${arcos}</svg>
+      <div class="bas-ct-c" data-ct-c><small data-ct-n>${cls.length} ${cls.length === 1 ? 'classe' : 'classes'}</small><b data-ct-p>${its.length}</b><em data-ct-v>${its.length === 1 ? 'ativo' : 'ativos'}</em></div></div>
+    <div class="bas-ct-leg">${cls.filter((c) => c.valor > 0).map((c) => `<span><i style="--bc:${cor(c)}"></i>${esc(c.classe || 'Outros')} <b>${pct(c.valor / total)}</b></span>`).join('')}</div>` : '';
+  const abas = `<div class="bas-ct-abas" role="tablist">${BAS_CART_ABAS.map(([k, n]) => `<button role="tab" class="${aba === k ? 'on' : ''}" aria-selected="${aba === k}" data-act="bas-cart-aba" data-v="${k}">${n}</button>`).join('')}</div>`;
+  const linhaAtivo = (i, semClasse) => `<li><button class="bas-ct-at" ${basIr('ativo', { id: i.a.id })}><span class="bas-ct-lg" style="--bc:${corDe(i.a.classe)}">${esc(basSigla(i.a.nome))}</span><span class="bas-pv2-n"><b>${esc(i.a.nome)}</b><small>${[semClasse ? '' : esc(i.a.classe || 'Outros'), comAlvo && i.alvo > 0 ? `alvo ${pct(i.pctAlvo / 100)}` : ''].filter(Boolean).join(' · ') || 'sem alvo'}</small><i style="--p:${Math.min(100, i.pctAtual).toFixed(1)}%;--bc:${corDe(i.a.classe)}"></i></span><span class="bas-ct-atv"><b>${basCent(i.valor)}</b><small>${pct(i.pctAtual / 100, 1)}</small></span></button></li>`;
+  const vazio = basCard(basVazio('Sua carteira aparece aqui quando você registrar o primeiro investimento.'));
+  let corpo = '';
+  if (!its.length) corpo = vazio;
+  else if (aba === 'ativos') {
+    corpo = cls.map((c) => { const lista = its.filter((i) => (i.a.classe || '') === (c.classe || '')).sort((a, b) => b.valor - a.valor); if (!lista.length) return '';
+      return basSecao(esc(c.classe || 'Outros'), `<small class="bas-pv2-q">${basCent(c.valor)} · ${pct(total > 0 ? c.valor / total : 0)}</small>`, `<ul class="card bas-pv2-ls">${lista.map((i) => linhaAtivo(i, true)).join('')}</ul>`); }).join('');
+  } else if (aba === 'aloc') {
+    const sit = (d) => (Math.abs(d) < 2 ? ['ok', 'No alvo'] : d > 0 ? ['acima', 'Acima'] : ['abaixo', 'Abaixo']);
+    const plano = comAlvo ? `<div class="card bas-ct-pl">${cls.map((c) => { const [k, t] = sit(c.atual - c.alvo); const mx = Math.max(c.atual, c.alvo, 1);
+      return `<div class="bas-ct-pli"><div class="bas-ct-plh"><span><i style="--bc:${cor(c)}"></i>${esc(c.classe || 'Outros')}</span><em class="${k}">${t}</em></div>
+        <div class="bas-ct-plb"><span><small>Hoje</small><i style="width:${(c.atual / Math.max(mx, 100) * 100).toFixed(1)}%;--bc:${cor(c)}"></i><b>${pct(c.atual / 100)}</b></span><span class="alvo"><small>Alvo</small><i style="width:${(c.alvo / Math.max(mx, 100) * 100).toFixed(1)}%"></i><b>${pct(c.alvo / 100)}</b></span></div></div>`; }).join('')}</div>`
+      : `<div class="card bas-ct-cta"><span class="bas-ct-cic" aria-hidden="true">${I_CART}</span><b>Diga como quer dividir o seu dinheiro</b><p>Escolha quanto quer em cada investimento (combine com o ${esc(primeiroNome())}). O app compara com o que você tem e mostra onde colocar cada aporte.</p><button class="btn primary bas-cta" ${basIr('alvos')}>Definir meus alvos</button></div>`;
+    const sug = M.items.filter((i) => i.sug > 0.004).sort((a, b) => b.sug - a.sug);
+    const prox = comAlvo ? basSecao('Onde colocar o próximo aporte', `<small class="bas-pv2-q">${brl0(M.aporte)} disponíveis</small>`, sug.length ? `<div class="card bas-ct-ap"><ul>${sug.map((i) => `<li><button ${basIr('ativo', { id: i.a.id })}><span class="bas-ct-lg sm" style="--bc:${corDe(i.a.classe)}">${esc(basSigla(i.a.nome))}</span><span class="bas-pv2-n"><b>${esc(i.a.nome)}</b><small>${esc(i.a.classe || '')}${i.cotas ? ` · ${i.cotas} ${i.cotas === 1 ? 'cota' : 'cotas'}` : ''}</small></span><b class="bas-ct-apv">+${basCent(i.sug)}</b></button></li>`).join('')}</ul>
+        ${K.mesesEquilibrio > 0 ? `<p class="bas-ct-eq">Com aportes assim, a carteira chega ao alvo em <b>${K.mesesEquilibrio} ${K.mesesEquilibrio === 1 ? 'mês' : 'meses'}</b>, sem vender nada.</p>` : ''}</div>`
+        : basCard(basVazio(M.aporte > 0.005 ? 'Sua carteira já está no alvo. Pode seguir aportando na mesma proporção.' : 'Sem dinheiro disponível para investir neste mês ainda.'))) : '';
+    corpo = `${basSecao('Seu plano contra o real', comAlvo ? `<button class="lnk strong" ${basIr('alvos')}>Editar alvos</button>` : '', plano)}${prox}${basRecHtml()}`;
+  } else {
+    // visão geral: saúde, concentração, classes e o que fazer no mês
+    const maior = its.slice().sort((a, b) => b.valor - a.valor)[0]; const pm = total > 0 && maior ? maior.valor / total : 0;
+    const ader = K.aderencia; const nota = ader == null ? null : Math.round(ader * 100);
+    const leit = [];
+    if (pm >= 0.4) leit.push(['atencao', `<b>${esc(maior.a.nome)}</b> é ${pct(pm)} da carteira. Concentrar muito num ativo aumenta o risco.`]);
+    else if (its.length >= 3) leit.push(['ok', `Nenhum ativo passa de ${pct(Math.max(pm, 0.01))} da carteira: o risco está bem espalhado.`]);
+    if (cls.length === 1 && its.length > 1) leit.push(['info', 'Todos os seus ativos são da mesma classe. Outras classes ajudam a equilibrar altos e baixos.']);
+    if (comAlvo && K.foraDoAlvo) leit.push(['atencao', `${K.foraDoAlvo} ${K.foraDoAlvo === 1 ? 'ativo está' : 'ativos estão'} a mais de 3 pontos do alvo.`]);
+    if (pr12 > 0) leit.push(['ok', `Seus ativos pagaram <b>${brl0(pr12)}</b> em proventos nos últimos 12 meses.`]);
+    const saude = `<div class="card bas-ct-sd"><div class="bas-ct-sdg" style="--p:${nota == null ? 0 : nota}">${nota == null ? '<b>–</b>' : `<b>${nota}</b><small>de 100</small>`}</div>
+      <div class="bas-ct-sdt"><b>${nota == null ? 'Defina seus alvos' : nota >= 90 ? 'Carteira no plano' : nota >= 70 ? 'Quase no plano' : 'Longe do plano'}</b><p>${nota == null ? 'Com os alvos, o app mede o quanto a sua carteira segue o que você combinou.' : 'O quanto a sua carteira segue a divisão que você combinou.'}</p>
+      <button class="lnk strong" ${nota == null ? basIr('alvos') : 'data-act="bas-cart-aba" data-v="aloc"'}>${nota == null ? 'Definir alvos' : 'Ver alocação'}</button></div></div>`;
+    const top = its.slice().sort((a, b) => b.valor - a.valor).slice(0, 4);
+    corpo = `${saude}${leit.length ? `<ul class="bas-ct-lt">${leit.slice(0, 3).map(([k, t]) => `<li class="${k}">${t}</li>`).join('')}</ul>` : ''}
+      ${basSecao('Maiores posições', `<button class="lnk strong" data-act="bas-cart-aba" data-v="ativos">Ver todos</button>`, `<ul class="card bas-pv2-ls">${top.map((i) => linhaAtivo(i)).join('')}</ul>`)}
+      ${comAlvo && M.aporte > 0.005 ? `<button class="card bas-ct-mes" data-act="bas-cart-aba" data-v="aloc"><span class="bas-ct-cic" aria-hidden="true">${I.plus}</span><span class="bas-pv2-n"><b>${brl0(M.aporte)} para investir</b><small>Veja em quais ativos colocar para seguir o plano</small></span>${I.chev}</button>` : ''}`;
+  }
+  return `<div class="bas-pg bas-pg-ct"><div class="bas-gt-bg bas-pt-bg bas-ct-bg">
+    <header class="bas-pv2-h"><button class="bell bas-cal-b" data-act="bas-voltar" aria-label="Voltar">${I_VOLTA}</button><b>Minha carteira</b><span class="bas-noite-r">${olhoHtml()}</span></header>
+    <small class="bas-pv2-k">Total investido</small><b class="bas-pv2-t">${basCent(total)}</b>
+    <p class="bas-pv2-var"><span>${its.length} ${its.length === 1 ? 'ativo' : 'ativos'} em ${cls.length} ${cls.length === 1 ? 'classe' : 'classes'}${pr12 > 0 ? ` · ${brl0(pr12)} em proventos em 12 meses` : ''}</span></p>
+    ${rosca}
+  </div><div class="bas-gt-folha">${its.length ? abas : ''}${corpo}<p class="bas-disc keep">Valores a custo, sem cotação de mercado. A divisão sugerida segue os alvos que você escolheu, sem indicar ativos nem prometer rentabilidade.</p></div></div>`;
+}
+function basCartLigar() {
+  const r = document.querySelector('.bas-ct-r'); if (!r || r.dataset.lig) return; r.dataset.lig = '1';
+  const n = r.querySelector('[data-ct-n]'); const p = r.querySelector('[data-ct-p]'); const v = r.querySelector('[data-ct-v]'); const n0 = n.textContent; const p0 = p.textContent; const v0 = v.textContent; let sel = null;
+  const marca = (a) => { sel = a; r.querySelectorAll('.bas-ct-arc').forEach((x) => x.classList.toggle('sel', x === a)); r.classList.toggle('tem-sel', !!a);
+    if (a) { n.textContent = a.dataset.n; p.textContent = a.dataset.p; v.textContent = a.dataset.v; } else { n.textContent = n0; p.textContent = p0; v.textContent = v0; } };
+  r.addEventListener('click', (e) => { const a = e.target.closest('.bas-ct-arc'); marca(a && a !== sel ? a : null); if (typeof basSom === 'function') basSom('toque'); });
+  r.addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.matches('.bas-ct-arc')) marca(e.target === sel ? null : e.target); });
 }
 /* ---- App completo: limites, avisos, simulador do sonho e alvos da carteira ---- */
 const I_SINO = ic('<path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2H4.5z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>');
@@ -2369,6 +2429,7 @@ function basAcao(act, ds, el) {
     case 'bas-aba': { if (ds.v === 'perfil' && S.basAba !== 'perfil') S.basAbaAntes = S.basAba; const l = document.querySelector('.bas-tab-lente'); if (l && l.style.transform) S.basTabX = parseFloat(l.style.transform.slice(11)) || S.basTabX; }
       if (S.basAba !== ds.v || basPilha().length) basSom('toque'); basTransicao('aba', () => { basLimpar(); S.basAba = ds.v; render(); window.scrollTo(0, 0); }); return true;
     case 'bas-mes': S.mes = Math.max(0, Math.min(11, S.mes + +ds.d)); render(); return true;
+    case 'bas-cart-aba': S.basCartAba = ds.v; basSom('toque'); render(); return true;
     case 'bas-at-r': S.basAtR = ds.v; render(); return true;
     case 'bas-at-modo': S.basAtModo = ds.v; render(); return true;
     case 'bas-abrir': basAbrir(ds.t, { id: ds.id, area: ds.area, op: ds.op, modo: ds.modo, mes: ds.mes, ativo: ds.ativo }); return true;
