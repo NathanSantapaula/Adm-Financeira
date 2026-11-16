@@ -3333,3 +3333,16 @@ body[data-ui="basico"][data-screen="app"] .tabbar { bottom: max(8px, calc(env(sa
 .bas-oi-tp { display: flex; gap: 8px; } .bas-oi-tp button { height: 34px; padding: 0 14px; border-radius: 999px; border: .5px solid var(--line); background: none; font: inherit; font-size: 13.5px; font-weight: 600; color: var(--ink-2); cursor: pointer; } .bas-oi-tp button.on { color: #fff; background: var(--accent); border-color: transparent; }
 .bas-oi-reg { margin-top: 16px; }
 .card.bas-oi-c, .bas-oi-v, .bas-oi-v span { min-width: 0; } .bas-oi-v input { width: 100%; min-width: 0; }
+/* ===== Globo no App: fundo branco com halos azuis e o planeta azul; textos em azul-marinho; botões como nas outras telas (azul sólido e vidro claro) ===== */
+body[data-ui="basico"] .ab, :root[data-theme] body[data-ui="basico"] .ab { --ab-ink: #0B1640; --ab-ink-2: #5B6487; --ab-ink-3: #8A92AE; color: #0B1640;
+  background: radial-gradient(70% 45% at 50% 70%, rgba(47, 107, 255, .18), transparent 70%), radial-gradient(60% 40% at 0% 0%, rgba(56, 214, 255, .14), transparent 70%), linear-gradient(180deg, #F7F9FF 0%, #EEF2FF 100%) !important; }
+body[data-ui="basico"] .ab-capa-k { color: #5B6487; }
+body[data-ui="basico"] .ab-capa-t { color: #0B1640; text-shadow: none; }
+body[data-ui="basico"] .ab-capa-s { color: #5B6487 !important; font-weight: 500; text-shadow: none !important; }
+body[data-ui="basico"] .ab-capa-n, body[data-ui="basico"] .ab-capa-n.neg { color: var(--bas-azul-2) !important; text-shadow: 0 0 20px rgba(47, 107, 255, .3) !important; }
+body[data-ui="basico"] .ab-capa-b { gap: 10px; }
+body[data-ui="basico"] .ab-capa-b .hp-btn { width: 100%; height: 54px; border-radius: 999px !important; font-size: 17px; font-weight: 700; }
+body[data-ui="basico"] :is(.ab-capa-entrar, .ab-entrar) { color: #fff !important; border: 0 !important; background: linear-gradient(170deg, #5B8CFF, #1F4FF5 60%, #1428C8) !important; box-shadow: 0 14px 28px -14px rgba(20, 40, 245, .75), inset 0 1px 0 rgba(255, 255, 255, .35) !important; }
+body[data-ui="basico"] .ab-capa-ver { color: #0B1640 !important; background: rgba(255, 255, 255, .72) !important; border: .5px solid rgba(11, 22, 64, .12) !important; box-shadow: 0 10px 24px -16px rgba(11, 22, 64, .5) !important; -webkit-backdrop-filter: blur(18px) saturate(1.6); backdrop-filter: blur(18px) saturate(1.6); }
+body[data-ui="basico"] .ab-tit { background: none !important; -webkit-text-fill-color: #0B1640 !important; color: #0B1640 !important; }
+body[data-ui="basico"] .ab-vivo { background: rgba(255, 255, 255, .72) !important; border: .5px solid rgba(11, 22, 64, .1) !important; color: #0B1640; -webkit-backdrop-filter: blur(18px) saturate(1.6); backdrop-filter: blur(18px) saturate(1.6); }
