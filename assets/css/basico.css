@@ -2860,3 +2860,14 @@ html[data-vt="cc"]::view-transition-group(bas-cc-oficial) { animation-duration: 
   background: linear-gradient(180deg, #CFFBFF 0%, rgba(140, 246, 255, .85) 45%, rgba(140, 246, 255, 0) 100%) !important;
   box-shadow: 0 0 8px rgba(140, 246, 255, .8), 0 0 18px rgba(56, 214, 255, .5) !important; }
 @media (prefers-reduced-motion: reduce) { :root .bas-pt-bg > .bas-ev .bas-ev-p { animation: none; } }
+/* ===== Patrimônio no jeito da referência: linha grossa com degradê bem marcado; a linha de pé é sólida da bolinha até o fim,
+   na cor do degradê no ponto em que a bolinha está (muda ao arrastar); a bolinha tem o centro no azul do fundo e o aro nessa cor ===== */
+.bas-pt-bg #bas-ev-ln stop:nth-child(1) { stop-color: rgb(61, 139, 255) !important; stop-opacity: 1 !important; }
+.bas-pt-bg #bas-ev-ln stop:nth-child(2) { stop-color: rgb(56, 214, 255) !important; stop-opacity: 1 !important; }
+.bas-pt-bg #bas-ev-ln stop:nth-child(3) { stop-color: rgb(150, 248, 255) !important; stop-opacity: 1 !important; }
+:root .bas-pt-bg > .bas-ev .bas-ev-l { stroke-width: 6 !important; filter: none !important; }
+:root .bas-pt-bg > .bas-ev .bas-ev-p { width: 30px !important; height: 30px !important; background: var(--bas-azul-2) !important; border: 6px solid var(--ev-cor, rgb(150, 248, 255)) !important;
+  box-shadow: 0 0 14px 2px color-mix(in srgb, var(--ev-cor, rgb(150, 248, 255)) 70%, transparent), 0 0 34px 8px color-mix(in srgb, var(--ev-cor, rgb(150, 248, 255)) 35%, transparent) !important;
+  animation: none !important; transition: left 120ms var(--ease-out), top 120ms var(--ease-out), border-color 200ms ease, box-shadow 200ms ease; }
+:root .bas-pt-bg > .bas-ev .bas-ev-guia { opacity: 1 !important; width: 3px !important; border-radius: 0; background: var(--ev-cor, rgb(150, 248, 255)) !important;
+  box-shadow: 0 0 6px color-mix(in srgb, var(--ev-cor, rgb(150, 248, 255)) 60%, transparent) !important; transition: left 120ms var(--ease-out), top 120ms var(--ease-out), background-color 200ms ease; }
