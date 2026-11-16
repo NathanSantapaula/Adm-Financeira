@@ -62,7 +62,7 @@ function basCat(fixa) {
 // abas embaixo (no lugar do menu lateral e do topo); some nas telas de formulário
 function basicoBarra() {
   $('#topo').innerHTML = ''; $('#side').innerHTML = ''; const a = basAba(); const t = basTopoPilha();
-  document.body.dataset.basFolha = t && BAS_FORMS.has(t.t) ? '1' : ''; document.body.dataset.basPerfil = a === 'perfil' && !t ? '1' : ''; document.body.dataset.basIa = t && (t.t === 'duvidas' || t.t === 'avisos-tela' || t.t === 'gasto-ver' || t.t === 'cartao-estilo' || (t.t === 'ia' && (S.basIaAba || 'conversa') === 'conversa')) ? '1' : '';
+  document.body.dataset.basFolha = t && BAS_FORMS.has(t.t) ? '1' : ''; document.body.dataset.basPerfil = a === 'perfil' && !t ? '1' : ''; document.body.dataset.basIa = t && (t.t === 'duvidas' || t.t === 'avisos-tela' || t.t === 'gasto-ver' || t.t === 'cartao-estilo' || t.t === 'cartao-novo' || t.t === 'cartao' || t.t === 'cartoes' || (t.t === 'ia' && (S.basIaAba || 'conversa') === 'conversa')) ? '1' : '';
   const av = basAvisosNovos();
   // botão da IA separado, à esquerda da barra: fundo em degradê neon que se move, vidro por cima e o Cifrão dentro
   $('#tabbar').innerHTML = `<button class="bas-ia-fab${av ? ' alerta' : ''}${document.querySelector('.bas-cif-solto') ? ' vazia' : ''}" data-act="bas-ia-fab" aria-label="Assistente${av ? `: ${av} avisos novos` : ''}. Segure e arraste para o Cifrão andar pela tela."><span class="cifrao" aria-hidden="true"></span></button><div class="bas-tabs"><span class="bas-tab-lente" aria-hidden="true"></span>${basAbas().map(([k, l, i]) => `<button data-act="bas-aba" data-v="${k}" ${a === k ? 'aria-current="page"' : ''}>${i}<span>${l}</span></button>`).join('')}</div>`;
@@ -1192,7 +1192,7 @@ function basGastoTopoHtml(sai, orc) {
     return `<span class="bas-gt-c" style="--i:${i};z-index:${3 - i};--cb:${st.c}"><span class="bas-cc-c bas-cc-mini bas-gt-tx" data-m="${st.m}" style="--cb:${st.c}" aria-hidden="true"></span>${i === 0 ? `<span class="bas-gt-d"><span class="bas-gt-nfc">${CC_NFC}</span>${CC_BAND[basBand(x.k)]}</span>` : ''}</span>`; }).join('');
   return `<section class="bas-gt"><small>Gastou ${esc(basJanFrase())}</small><b class="bas-gt-v">${basCent(sai)}</b>
     ${uso != null ? `<button class="bas-gt-chip${uso > 1 ? ' neg' : uso >= 0.8 ? ' warn' : ''}" ${basIr('limite')}>${pct(uso)} do limite do mês</button>` : `<button class="bas-gt-chip" ${basIr('limite')}>Definir limite do mês</button>`}
-    ${insts.length ? `<button class="bas-gt-pilha" data-act="bas-ccv" aria-label="Ver seus ${insts.length} cartões">${pilha}</button>` : `<button class="bas-gt-pilha bas-gt-vazia" ${basIr('planejamento')} aria-label="Adicionar um cartão"><span class="bas-gt-c bas-gt-novo" style="--i:0"><span class="bas-gt-d"><i aria-hidden="true">${I.plus}</i>Adicionar um cartão</span></span></button>`}</section>`;
+    ${insts.length ? `<button class="bas-gt-pilha" data-act="bas-ccv" aria-label="Ver seus ${insts.length} cartões">${pilha}</button>` : `<button class="bas-gt-pilha bas-gt-vazia" ${basIr('cartao-novo')} aria-label="Adicionar um cartão"><span class="bas-gt-c bas-gt-novo" style="--i:0"><span class="bas-gt-d"><i aria-hidden="true">${I.plus}</i>Adicionar um cartão</span></span></button>`}</section>`;
 }
 // bandeira do cartão: os símbolos reais da Visa (Simple Icons) e da Mastercard, em branco e translúcidos: Visa ou Mastercard em cartaoEstilo[inst].b; sem escolha, sai do nome do banco
 const CC_BAND = {
@@ -1211,7 +1211,7 @@ function basCcVer() {
 }
 function basTelaCartoes() {
   const insts = basGastoInsts(); const tot = insts.reduce((s, x) => s + x.v, 0);
-  return basDet('Seus cartões', insts.length ? `<div class="bas-rc-fila" role="list">${insts.map((x) => { const i = instDe(x.k); return `<button class="bas-rc-i" role="listitem" ${basIr('cartao', { id: x.k })} aria-label="${esc(i[1])}: ver os gastos">${basCartaoFace(x.k)}<span class="bas-rc-n"><small>${esc(i[1])}</small><b>${basCent(x.v)}</b><em>${x.v > 0 ? `${pct(x.v / (tot || 1))} dos gastos ${esc(basJanFrase())}` : `sem gastos ${esc(basJanFrase())}`}</em></span></button>`; }).join('')}<button class="bas-rc-i bas-rc-add" role="listitem" ${basIr('planejamento')} aria-label="Adicionar um cartão"><span class="bas-rc-novo" aria-hidden="true"><i>${I.plus}</i><b>Adicionar cartão</b><small>Escolha o seu banco</small></span><span class="bas-rc-n"><small>Novo</small><b>&nbsp;</b><em>&nbsp;</em></span></button></div>
+  return basDet('Seus cartões', insts.length ? `<div class="bas-rc-fila" role="list">${insts.map((x) => { const i = instDe(x.k); return `<button class="bas-rc-i" role="listitem" ${basIr('cartao', { id: x.k })} aria-label="${esc(i[1])}: ver os gastos">${basCartaoFace(x.k)}<span class="bas-rc-n"><small>${esc(i[1])}</small><b>${basCent(x.v)}</b><em>${x.v > 0 ? `${pct(x.v / (tot || 1))} dos gastos ${esc(basJanFrase())}` : `sem gastos ${esc(basJanFrase())}`}</em></span></button>`; }).join('')}<button class="bas-rc-i bas-rc-add" role="listitem" ${basIr('cartao-novo')} aria-label="Adicionar um cartão"><span class="bas-rc-novo" aria-hidden="true"><i>${I.plus}</i><b>Adicionar cartão</b><small>Escolha o seu banco</small></span><span class="bas-rc-n"><small>Novo</small><b>&nbsp;</b><em>&nbsp;</em></span></button></div>
     <div class="bas-ccv-p" aria-hidden="true">${insts.concat([0]).map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}<b class="bas-ccv-ind"></b></div>` : basCard(basVazio('Nenhum cartão com gasto no período.')));
 }
 // fila em leque: o cartão do meio fica de frente e os vizinhos giram e encolhem conforme a distância (--d, --a)
@@ -1712,17 +1712,26 @@ function basTelaSonhoDet(o) {
 const CC_DESC = { banco: 'As cores do seu banco, com um brilho suave.', black: 'Preto profundo com reflexo diagonal, o clássico dos cartões premium.', metal: 'Aço escovado em linhas finas, frio ao toque.',
   carbono: 'Trama de fibra de carbono, esportiva e discreta.', vidro: 'Vidro fosco translúcido na cor que você escolher.', holo: 'Reflexos de arco-íris que mudam com a luz.',
   fosco: 'Preto sem brilho, sóbrio e elegante.', ouro: 'Dourado polido, para quem gosta de destaque.', platina: 'Prata clara e luminosa.', aurora: 'Grafite com uma aurora de cor por cima.' };
+// Novo cartão: escolhe o banco (fichas com a logo), e o cartão inclinado no alto já mostra o banco; modelo, cor e bandeira como na edição
+function basTelaCartaoNovo() {
+  const livres = INSTITUICOES.filter((x) => x[0] !== 'dinheiro' && !instMinhas().includes(x[0]));
+  if (!livres.length) return basDet('Novo cartão', basCard(basVazio('Todos os bancos já estão nos seus cartões.')));
+  if (!livres.some((x) => x[0] === S.basCcNovo)) S.basCcNovo = livres[0][0];
+  const k = S.basCcNovo;
+  const bancos = `<div class="bas-ccn-bancos" role="group" aria-label="Banco do cartão">${livres.map((x) => `<button class="bas-ccn-b${x[0] === k ? ' on' : ''}" data-act="bas-ccn-banco" data-v="${esc(x[0])}" aria-pressed="${x[0] === k}">${instIcone(x[0])}<span>${esc(x[1])}</span></button>`).join('')}</div>`;
+  return basTelaCartaoEstilo({ id: k, novo: bancos });
+}
 function basTelaCartaoEstilo(o) {
   const i = instDe(o.id); if (!i) return basSumiu(); const E0 = basCcEstilo(o.id); const nome = (m) => (CC_MODELOS.find((x) => x[0] === m) || [, m])[1];
   const bola = (m, n) => `<button class="bas-cce-m${m === E0.m ? ' on' : ''} bas-ccm" data-act="bas-cc-mod" data-id="${esc(o.id)}" data-m="${m}" aria-pressed="${m === E0.m}" aria-label="${esc(n)}"><span class="bas-cc-c bas-cc-mini" data-m="${m}" style="--cb:${E0.c};--cf:${i[3]}" aria-hidden="true"></span></button>`;
   const cores = [[i[2], `Cor do ${i[1]}`]].concat(CORES_DESTAQUE);
-  return basDet('Personalizar cartão', `<div class="bas-cce-palco"><div class="bas-cce-card">${basCartaoFace(o.id).replace('class="bas-cc-c ', 'class="bas-cc-c bas-cc-prev ')}</div></div>
+  return basDet(o.novo ? 'Novo cartão' : 'Personalizar cartão', `${o.novo ? `<p class="bas-ccn-k">Banco</p>${o.novo}` : ''}<div class="bas-cce-palco"><div class="bas-cce-card">${basCartaoFace(o.id).replace('class="bas-cc-c ', 'class="bas-cc-c bas-cc-prev ')}</div></div>
     <div class="bas-cce">
       <div class="bas-cce-ms" role="group" aria-label="Modelo do cartão">${CC_MODELOS.map(([m, n]) => bola(m, n)).join('')}</div>
       <div class="bas-cce-t"><h2 data-cce-n>${esc(nome(E0.m))}</h2><p data-cce-d>${esc(CC_DESC[E0.m] || '')}</p>
         <div class="bas-cce-cores${CC_COM_COR.includes(E0.m) ? '' : ' fora'}" data-cce-cores><small>Cor</small><div class="bas-cores" role="group" aria-label="Cor do cartão">${cores.map(([c, n]) => `<button style="--c:${c}" data-act="bas-cc-cor" data-id="${esc(o.id)}" data-v="${c}" aria-label="${esc(n)}" aria-pressed="${c.toLowerCase() === E0.c.toLowerCase()}"></button>`).join('')}</div></div>
         <div class="bas-cce-bands" role="group" aria-label="Bandeira do cartão"><small>Bandeira</small><div>${[['visa', 'Visa'], ['master', 'Mastercard'], ['elo', 'Elo']].map(([b, n]) => `<button class="bas-cce-b${basBand(o.id) === b ? ' on' : ''} ${b}" data-act="bas-cc-band" data-id="${esc(o.id)}" data-v="${b}" aria-pressed="${basBand(o.id) === b}" aria-label="${n}">${CC_BAND[b]}</button>`).join('')}</div></div>
-        <button class="btn primary lg bas-cta bas-cce-ok" data-act="bas-voltar">Pronto</button></div>
+        ${o.novo ? `<button class="btn primary lg bas-cta bas-cce-ok" data-act="bas-ccn-ok" data-id="${esc(o.id)}">Adicionar cartão</button>` : '<button class="btn primary lg bas-cta bas-cce-ok" data-act="bas-voltar">Pronto</button>'}</div>
     </div>`).replace(olhoHtml(), '');
 }
 // escolha do modelo ou da cor: grava no perfil e troca só a prévia e as miniaturas, sem redesenhar
@@ -1950,7 +1959,7 @@ const basTelaClientes = () => basDet('Clientes', `<div class="bas-clientes">${vi
 document.addEventListener('change', (e) => { const t = e.target; if (!t.matches || !t.matches('input[data-bas-inst]')) return; instMinhaAlternar(t.dataset.basInst, t.checked); basSom('toque');
   const n = instMinhas().length; const c = document.querySelector('.bas-pj-n'); if (c) c.textContent = n ? `${n} ${n === 1 ? 'marcada' : 'marcadas'}` : 'Nenhuma'; });
 const BAS_TELAS = { gasto: basTelaGasto, conta: basTelaConta, 'conta-f': basTelaContaF, entrada: basTelaEntrada, aporte: basTelaAporte, meta: basTelaMeta,
-  objetivos: basTelaObjetivos, objetivo: basTelaObjetivo, categoria: basTelaCategoria, perfil: basTelaPerfil, contato: basTelaContato, ano: basTelaAno, ia: basTelaIa, saude: basTelaSaude, periodo: basTelaPeriodo, organizar: basTelaOrganizar, entradas: basTelaEntradas, sonhos: basTelaSonhos, 'sonho-det': basTelaSonhoDet, cartoes: basTelaCartoes, 'avisos-tela': basTelaAvisosNova, 'gasto-ver': basTelaGastoVer, 'perfil-inv': basTelaPerfilInv, duvidas: () => basDet('Dúvidas', basDuvidasHtml()).replace(olhoHtml(), ''), cartao: basTelaCartao, retro: basTelaRetro, conquista: basTelaConquista, sequencia: basTelaSequencia, constelacao: basTelaConstelacao, 'ano-hist': basTelaAnoHist, 'cartao-estilo': basTelaCartaoEstilo, 'ano-resumo': basTelaAnoResumo, historico: basTelaHistorico, raiox: basTelaRaioX, resumo: basTelaResumo, limite: basTelaLimite, avisos: basTelaAvisos, simular: basTelaSimular, alvos: basTelaAlvos, proventos: basTelaProventos, provento: basTelaProvento, carteira: basTelaCarteira, planejamento: basTelaPlanejamento, privacidade: () => basDet('Privacidade e termos', `<div class="card bas-pol">${politicaHtml(CFG, Store.mode === 'cloud')}</div>`), excluir: basTelaExcluir, ponto: basTelaPonto, clientes: basTelaClientes };
+  objetivos: basTelaObjetivos, objetivo: basTelaObjetivo, categoria: basTelaCategoria, perfil: basTelaPerfil, contato: basTelaContato, ano: basTelaAno, ia: basTelaIa, saude: basTelaSaude, periodo: basTelaPeriodo, organizar: basTelaOrganizar, entradas: basTelaEntradas, sonhos: basTelaSonhos, 'sonho-det': basTelaSonhoDet, cartoes: basTelaCartoes, 'avisos-tela': basTelaAvisosNova, 'gasto-ver': basTelaGastoVer, 'cartao-novo': basTelaCartaoNovo, 'perfil-inv': basTelaPerfilInv, duvidas: () => basDet('Dúvidas', basDuvidasHtml()).replace(olhoHtml(), ''), cartao: basTelaCartao, retro: basTelaRetro, conquista: basTelaConquista, sequencia: basTelaSequencia, constelacao: basTelaConstelacao, 'ano-hist': basTelaAnoHist, 'cartao-estilo': basTelaCartaoEstilo, 'ano-resumo': basTelaAnoResumo, historico: basTelaHistorico, raiox: basTelaRaioX, resumo: basTelaResumo, limite: basTelaLimite, avisos: basTelaAvisos, simular: basTelaSimular, alvos: basTelaAlvos, proventos: basTelaProventos, provento: basTelaProvento, carteira: basTelaCarteira, planejamento: basTelaPlanejamento, privacidade: () => basDet('Privacidade e termos', `<div class="card bas-pol">${politicaHtml(CFG, Store.mode === 'cloud')}</div>`), excluir: basTelaExcluir, ponto: basTelaPonto, clientes: basTelaClientes };
 
 /* ================= gravação (no mesmo formato do Completo) ================= */
 function basErro(f, msg) { const e = f.querySelector('.bas-err'); e.textContent = msg; e.hidden = false; return false; }
@@ -2104,6 +2113,8 @@ function basAcao(act, ds, el) {
     case 'bas-ah-ano': { const t = basTopoPilha(); if (t && t.t === 'ano-hist') { t.id = String(ds.y); basSom('toque'); render(); } return true; }
     case 'bas-cc-mod': if (instDe(ds.id) && CC_MODELOS.some((x) => x[0] === ds.m)) basCcGrava(ds.id, 'm', ds.m); return true;
     case 'bas-cat-ic': basCatIcGrava(ds.area, ds.v); basSom('toque'); render(); return true;
+    case 'bas-ccn-banco': if (instDe(ds.v)) { S.basCcNovo = ds.v; basSom('toque'); render(); } return true;
+    case 'bas-ccn-ok': if (instDe(ds.id)) { instMinhaAlternar(ds.id, true); S.basCcNovo = null; basRetorno('ok'); basFechar(); toast(`Cartão ${instDe(ds.id)[1]} adicionado.`); } return true;
     case 'bas-gp-fechar': basGastoFechar(); return true;
     case 'bas-cc-band': if (instDe(ds.id) && CC_BAND[ds.v]) basCcGrava(ds.id, 'b', ds.v); return true;
     case 'bas-cc-cor': if (instDe(ds.id) && /^#[0-9a-f]{6}$/i.test(ds.v || '')) basCcGrava(ds.id, 'c', ds.v); return true;
