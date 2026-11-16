@@ -144,10 +144,10 @@ const basSumiu = () => basDet('Não encontrado', basCard(basVazio('Este item nã
 /* ---------- navegação: pilha de telas ligada ao histórico do navegador ---------- */
 function basAbrir(t, o) {
   basPilha().push(Object.assign({ t, volta: window.scrollY }, o)); history.pushState({ bas: basPilha().length }, ''); basSom('toque');
-  basTransicao(t === 'ia' ? 'ia' : 'vai', () => { render(); window.scrollTo(0, 0); const f = $('#view [data-foco]'); if (f && matchMedia('(pointer: coarse)').matches === false) f.focus({ preventScroll: true }); });
+  basTransicao(t === 'ia' ? 'ia' : t === 'cartao-estilo' ? 'cc' : 'vai', () => { render(); window.scrollTo(0, 0); const f = $('#view [data-foco]'); if (f && matchMedia('(pointer: coarse)').matches === false) f.focus({ preventScroll: true }); });
 }
 function basFechar() {
-  const t = basPilha().pop(); basSom('volta'); basTransicao(t && t.t === 'ia' ? 'ia-sai' : 'volta', () => { render(); window.scrollTo(0, t ? t.volta || 0 : 0); });
+  const t = basPilha().pop(); basSom('volta'); basTransicao(t && t.t === 'ia' ? 'ia-sai' : t && t.t === 'cartao-estilo' ? 'cc' : 'volta', () => { render(); window.scrollTo(0, t ? t.volta || 0 : 0); });
   if (history.state && history.state.bas) history.back(); // o popstate vê a pilha já menor e não faz nada
 }
 function basLimpar() { const n = basPilha().length; S.basPilha = []; if (n && history.state && history.state.bas) history.go(-Math.min(n, history.state.bas)); }
@@ -730,7 +730,7 @@ function basIaxLigar() {
 function basDesenhar() {
   const st = document.getElementById('bas-o3');
   if (st) { const falhou = () => st.classList.add('sem-3d'); if (typeof o3Ligar === 'function') o3Ligar(st, st.dataset.tipo, falhou); else falhou(); }
-  basIaxLigar(); basCifVe(); basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
+  basIaxLigar(); basCifVe(); { const on = document.querySelector('.bas-cce-m.on'); const col = on && on.parentElement; if (col && !col.dataset.vis) { col.dataset.vis = '1'; col.scrollTop = on.offsetTop - col.clientHeight / 2 + on.offsetHeight / 2; } } basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
   const wr = document.querySelector('.bas-wr'); if (wr && !wr.dataset.lig) { wr.dataset.lig = '1'; basWrIr(wr, 0); }
   const sq = document.querySelector('[data-sq-conta]'); if (sq && !sq.dataset.lig && !matchMedia('(prefers-reduced-motion: reduce)').matches) { sq.dataset.lig = '1'; const alvo = +sq.dataset.sqConta; const t0 = performance.now();
     const passo = (t) => { const k = Math.min(1, (t - t0) / 900); sq.textContent = Math.round(alvo * (1 - Math.pow(1 - k, 3))); if (k < 1 && sq.isConnected) requestAnimationFrame(passo); }; if (alvo > 0) requestAnimationFrame(passo); }
@@ -1609,13 +1609,22 @@ function basTelaSonhoDet(o) {
     <div class="bas-salvar bas-sd-acoes">${principal ? '' : `<button class="btn primary lg bas-cta" data-act="bas-foco" data-id="${esc(g.id)}" data-volta="1">Tornar o principal</button>`}${basPago() ? `<button class="btn lg bas-cta" ${basIr('simular', { id: g.id })}>E se eu investir mais?</button>` : ''}<button class="btn lg bas-cta" ${basIr('objetivo', { id: g.id })}>Editar sonho</button></div>`);
 }
 // cada cartão: os gastos daquele banco no período, por categoria, e a lista
+// Personalizar cartão: o cartão oficial (o de chip) inclinado no alto, os modelos em bolinhas numa coluna à esquerda
+// e, ao lado, o nome, uma frase do modelo, a cor (nos modelos que aceitam) e Pronto. O cartão chega da tela anterior voando (View Transitions).
+const CC_DESC = { banco: 'As cores do seu banco, com um brilho suave.', black: 'Preto profundo com reflexo diagonal, o clássico dos cartões premium.', metal: 'Aço escovado em linhas finas, frio ao toque.',
+  carbono: 'Trama de fibra de carbono, esportiva e discreta.', vidro: 'Vidro fosco translúcido na cor que você escolher.', holo: 'Reflexos de arco-íris que mudam com a luz.',
+  fosco: 'Preto sem brilho, sóbrio e elegante.', ouro: 'Dourado polido, para quem gosta de destaque.', platina: 'Prata clara e luminosa.', aurora: 'Grafite com uma aurora de cor por cima.' };
 function basTelaCartaoEstilo(o) {
-  const i = instDe(o.id); if (!i) return basSumiu(); const E0 = basCcEstilo(o.id);
-  const mini = (m, n) => `<button class="bas-ccm${m === E0.m ? ' on' : ''}" data-act="bas-cc-mod" data-id="${esc(o.id)}" data-m="${m}" aria-pressed="${m === E0.m}"><span class="bas-cc-c bas-cc-mini" data-m="${m}" style="--cb:${E0.c};--cf:${i[3]}" aria-hidden="true"><span class="bas-cc-nfc">${CC_NFC}</span></span><small>${n}</small></button>`;
+  const i = instDe(o.id); if (!i) return basSumiu(); const E0 = basCcEstilo(o.id); const nome = (m) => (CC_MODELOS.find((x) => x[0] === m) || [, m])[1];
+  const bola = (m, n) => `<button class="bas-cce-m${m === E0.m ? ' on' : ''} bas-ccm" data-act="bas-cc-mod" data-id="${esc(o.id)}" data-m="${m}" aria-pressed="${m === E0.m}" aria-label="${esc(n)}"><span class="bas-cc-c bas-cc-mini" data-m="${m}" style="--cb:${E0.c};--cf:${i[3]}" aria-hidden="true"></span></button>`;
   const cores = [[i[2], `Cor do ${i[1]}`]].concat(CORES_DESTAQUE);
-  return basDet('Personalizar cartão', `<div class="bas-cc-c bas-cc-big bas-cc-prev" ${E0.attr}><span class="bas-cc-t"><span class="bas-cc-nfc" aria-hidden="true">${CC_NFC}</span>${instIcone(o.id)}</span><span class="bas-cc-n">${esc(i[1])}</span><span class="bas-cc-v"><small>${esc(cap(basJanFrase()))}</small><b>${esc(S.profile.nome || '')}</b></span></div>
-    ${basSecao('Modelo', '', `<div class="bas-ccms">${CC_MODELOS.map(([m, n]) => mini(m, n)).join('')}</div>`)}
-    ${basSecao('Cor', '', `<div class="card bas-aparencia"><div class="bas-cores" role="group" aria-label="Cor do cartão">${cores.map(([c, n]) => `<button style="--c:${c}" data-act="bas-cc-cor" data-id="${esc(o.id)}" data-v="${c}" aria-label="${esc(n)}" aria-pressed="${c.toLowerCase() === E0.c.toLowerCase()}"></button>`).join('')}</div><p class="bas-p bas-p0">A cor vale nos modelos Do banco, Vidro e Grafite aurora.</p></div>`)}`);
+  return basDet('Personalizar cartão', `<div class="bas-cce-palco"><div class="bas-cce-card">${basCartaoFace(o.id).replace('class="bas-cc-c ', 'class="bas-cc-c bas-cc-prev ')}</div></div>
+    <div class="bas-cce">
+      <div class="bas-cce-ms" role="group" aria-label="Modelo do cartão">${CC_MODELOS.map(([m, n]) => bola(m, n)).join('')}</div>
+      <div class="bas-cce-t"><h2 data-cce-n>${esc(nome(E0.m))}</h2><p data-cce-d>${esc(CC_DESC[E0.m] || '')}</p>
+        <div class="bas-cce-cores${CC_COM_COR.includes(E0.m) ? '' : ' fora'}" data-cce-cores><small>Cor</small><div class="bas-cores" role="group" aria-label="Cor do cartão">${cores.map(([c, n]) => `<button style="--c:${c}" data-act="bas-cc-cor" data-id="${esc(o.id)}" data-v="${c}" aria-label="${esc(n)}" aria-pressed="${c.toLowerCase() === E0.c.toLowerCase()}"></button>`).join('')}</div></div>
+        <button class="btn primary lg bas-cta bas-cce-ok" data-act="bas-voltar">Pronto</button></div>
+    </div>`).replace(olhoHtml(), '');
 }
 // escolha do modelo ou da cor: grava no perfil e troca só a prévia e as miniaturas, sem redesenhar
 function basCcGrava(k, campo, v) {
@@ -1623,6 +1632,10 @@ function basCcGrava(k, campo, v) {
   const E0 = basCcEstilo(k); const pv = document.querySelector('.bas-cc-prev'); if (pv) { pv.dataset.m = E0.m; pv.style.setProperty('--cb', E0.c); }
   document.querySelectorAll('.bas-ccm').forEach((b) => { const on = b.dataset.m === E0.m; b.classList.toggle('on', on); b.setAttribute('aria-pressed', on); const mm = b.querySelector('.bas-cc-mini'); if (mm) mm.style.setProperty('--cb', E0.c); });
   document.querySelectorAll('[data-act="bas-cc-cor"]').forEach((b) => b.setAttribute('aria-pressed', b.dataset.v.toLowerCase() === E0.c.toLowerCase()));
+  const n = document.querySelector('[data-cce-n]'); if (n) { n.textContent = (CC_MODELOS.find((x) => x[0] === E0.m) || [, ''])[1]; n.classList.remove('troca'); void n.offsetWidth; n.classList.add('troca'); }
+  const d = document.querySelector('[data-cce-d]'); if (d) d.textContent = CC_DESC[E0.m] || '';
+  const cs = document.querySelector('[data-cce-cores]'); if (cs) cs.classList.toggle('fora', !CC_COM_COR.includes(E0.m));
+  const card = document.querySelector('.bas-cce-card'); if (card && campo === 'm') { card.classList.remove('gira'); void card.offsetWidth; card.classList.add('gira'); }
   basSom('toque');
 }
 function basTelaCartao(o) {
