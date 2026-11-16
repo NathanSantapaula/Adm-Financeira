@@ -2652,3 +2652,31 @@ body[data-bas-ia="1"]:not(:has(.bas-iax)) #view { padding-bottom: calc(28px + en
 .bas-ccv-p i.on { opacity: 0; }
 .bas-ccv-ind { position: absolute; left: 0; top: 0; width: 20px; height: 7px; border-radius: 4px; background: var(--accent); transition: transform 320ms cubic-bezier(.2, .85, .2, 1); }
 @media (prefers-reduced-motion: reduce) { .bas-ccv-ind { transition: none; } }
+/* ===== Personalizar cartão, refeito (referência de cartão virtual): o cartão oficial inclinado e cortado à direita no alto,
+   modelos em bolinhas numa coluna à esquerda, nome e frase do modelo ao lado, cor e Pronto ===== */
+.bas-cce-palco { position: relative; height: 300px; margin: 4px -16px 8px; overflow: hidden; }
+.bas-cce-card { position: absolute; width: 196px; left: 50%; top: 50%; transform: translate(-36%, -50%) rotate(-66deg); }
+.bas-cce-card .bas-cr { box-shadow: 0 40px 60px -30px rgba(0, 0, 0, .55); }
+.bas-cce-card.gira { animation: bas-cce-gira 520ms cubic-bezier(.2, .85, .2, 1); }
+@keyframes bas-cce-gira { 40% { transform: translate(-36%, -50%) rotate(-60deg) scale(1.04); } }
+.bas-cce { display: grid; grid-template-columns: 64px 1fr; gap: 16px; align-items: start; }
+.bas-cce-ms { display: flex; flex-direction: column; gap: 12px; max-height: 340px; overflow-y: auto; padding: 6px; margin: -6px; scrollbar-width: none; scroll-snap-type: y proximity;
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 14px, #000 calc(100% - 22px), transparent); mask-image: linear-gradient(180deg, transparent, #000 14px, #000 calc(100% - 22px), transparent); }
+.bas-cce-ms::-webkit-scrollbar { display: none; }
+.bas-cce-m { flex: none; width: 52px; height: 52px; padding: 0; border: 0; border-radius: 50%; background: none; cursor: pointer; scroll-snap-align: center; transition: transform 200ms var(--ease-out); }
+.bas-cce-m .bas-cc-mini { display: block; width: 100%; height: 100%; border-radius: 50%; overflow: hidden; aspect-ratio: auto; min-height: 0; }
+.bas-cce-m.on { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent); transform: scale(1.06); }
+.bas-cce-m:active { transform: scale(.94); }
+.bas-cce-t { display: flex; flex-direction: column; gap: 10px; padding-top: 4px; }
+.bas-cce-t h2 { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -.02em; } .bas-cce-t h2.troca { animation: bas-st-troca 380ms cubic-bezier(.2, .85, .2, 1) both; }
+.bas-cce-t p { margin: 0; font-size: 15px; line-height: 1.45; color: var(--ink-2); min-height: 44px; }
+.bas-cce-cores { display: flex; flex-direction: column; gap: 8px; transition: opacity 200ms; } .bas-cce-cores small { font-size: 13px; color: var(--ink-3); }
+.bas-cce-cores.fora { opacity: .35; pointer-events: none; }
+.bas-cce-cores .bas-cores { flex-wrap: wrap; gap: 8px; } .bas-cce-cores .bas-cores button { width: 28px; height: 28px; }
+.bas-cce-ok { margin-top: 8px; width: 100%; justify-content: center; }
+/* o cartão voa da tela do cartão até a edição (e volta): os dois são o mesmo elemento para o navegador */
+.bas-ct2-card .bas-cr, .bas-cce-card .bas-cr { view-transition-name: bas-cc-oficial; }
+html[data-vt="cc"]::view-transition-old(root) { animation: 220ms ease both bas-vt-some; }
+html[data-vt="cc"]::view-transition-new(root) { animation: 360ms 120ms cubic-bezier(.2, .85, .2, 1) both bas-vt-surge; }
+html[data-vt="cc"]::view-transition-group(bas-cc-oficial) { animation-duration: 620ms; animation-timing-function: cubic-bezier(.3, .9, .2, 1); }
+@media (prefers-reduced-motion: reduce) { .bas-cce-card.gira { animation: none; } }
