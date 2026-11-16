@@ -2278,3 +2278,16 @@ body[data-ui="basico"][data-screen="app"] .tabbar { left: calc(50% - 30px); widt
 .bas-gt-acoes > button svg, .bas-pt-acoes > button svg { width: 17px; height: 17px; }
 /* Cifrão solto no tema claro: sem contorno, só uma sombra suave para destacar do branco */
 :root[data-theme="light"] .bas-cif-solto .cifrao { filter: drop-shadow(0 0 2px rgba(6, 18, 42, .28)) drop-shadow(0 6px 12px rgba(6, 18, 42, .3)); }
+
+/* "Seu ano" no visual do app: o mesmo degradê azul do alto das telas, texto branco e barras em cápsulas de vidro;
+   o mês atual em branco com brilho, os meses no vermelho com um tom suave */
+.card.bas-w-ano { color: #fff; border: 0; background: linear-gradient(180deg, var(--bas-azul-1) 0%, var(--bas-azul-2) 55%, var(--bas-azul-3) 100%) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35), 0 18px 36px -20px color-mix(in srgb, var(--bas-azul-2) 70%, transparent) !important; }
+.card.bas-w-ano .bas-w-ano-luz { display: none; }
+.card.bas-w-ano .bas-w-ano-h small, .card.bas-w-ano .bas-w-ano-h > span { color: rgba(255, 255, 255, .75); }
+.card.bas-w-ano .bas-w-ano-h em { color: #fff; }
+.card.bas-w-ano .bas-w-ano-g .pos i { background: rgba(255, 255, 255, .42); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .6); }
+.card.bas-w-ano .bas-w-ano-g .neg i { background: color-mix(in srgb, var(--bas-noite-neg, #ff6b7a) 70%, rgba(255, 255, 255, .2)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45); }
+.card.bas-w-ano .bas-w-ano-g .fut i { background: rgba(255, 255, 255, .14); }
+.card.bas-w-ano .bas-w-ano-g .on i { outline: 0; box-shadow: 0 0 0 2px rgba(255, 255, 255, .9), 0 0 14px rgba(255, 255, 255, .55); }
+.card.bas-w-ano .bas-w-ano-g b { color: rgba(255, 255, 255, .6); } .card.bas-w-ano .bas-w-ano-g .on b { color: #fff; }
