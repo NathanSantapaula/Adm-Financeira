@@ -37,7 +37,7 @@ function renderSide() {
 function emptyState() { return `<div class="empty-state"><h2>Crie o planejamento de ${S.year || NOW_Y}</h2><p>Comece com a estrutura: rendas, categorias de gastos, investimentos e proventos. Também é possível importar uma planilha .xlsx pelo painel administrativo.</p><div class="btn-row"><button class="btn primary lg" data-act="create-plan">Começar planejamento de ${S.year || NOW_Y}</button></div></div>`; }
 
 function viewHtml() {
-  if (modoBasico()) return basicoHtml();
+  if (modoBasico()) { try { return basicoHtml(); } catch (e) { console.error(e); S.basPilha = []; S.basAba = 'inicio'; return '<div class="bas-falha"><b>Algo não carregou direito</b><p>Seus dados estão salvos. Toque para voltar ao Início.</p><button class="btn primary lg" data-act="bas-aba" data-v="inicio">Voltar ao Início</button></div>'; } }
   if (!S.plan) return emptyState();
   if (PAT_ABAS.includes(S.view)) { S.patUlt = S.view; return patAbasHtml() + viewHtmlAba(); }
   return viewHtmlAba();

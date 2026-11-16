@@ -10,9 +10,10 @@ const basUiLocal = () => { try { const v = localStorage.getItem('fp:interface');
 // celular (toque e tela pequena, deitado ou em pé): sem escolha guardada no próprio aparelho, abre o App; a escolha do perfil (que o computador grava) não leva o celular ao SaaS
 const basCelular = () => { try { return matchMedia('(pointer: coarse)').matches && Math.min(screen.width, screen.height) < 600; } catch (e) { return false; } };
 const basSaasLiberado = () => planoAtual() === 'completo' || !!S.isAdmin; // o SaaS é do plano Assessoria (e do consultor)
-const basInterface = () => !basSaasLiberado() ? 'basico' : E.interfaceDe(planoAtual(), basUiLocal() || (basCelular() ? 'basico' : S.profile.interface), BASICO_PAGANTES);
+const basTelaPequena = () => { try { return basCelular() || Math.min(screen.width, screen.height) < 600 || innerWidth < 700; } catch (e) { return false; } };
+const basInterface = () => !basSaasLiberado() || basTelaPequena() ? 'basico' : E.interfaceDe(planoAtual(), basUiLocal() || (basCelular() ? 'basico' : S.profile.interface), BASICO_PAGANTES);
 const modoBasico = () => S.screen === 'app' && !!S.profile && basInterface() === 'basico';
-const basEscolhe = () => BASICO_PAGANTES && basSaasLiberado(); // pagantes e o consultor escolhem a versão
+const basEscolhe = () => BASICO_PAGANTES && basSaasLiberado() && !basTelaPequena(); // pagantes e o consultor escolhem a versão
 const BAS_NOMES = { basico: 'App', completo: 'SaaS' }; // nomes das duas versões na tela: App (celular; no gratuito, a única) e SaaS (o painel completo)
 // seletor dos dois modos: Perfil do Simples, página inicial do painel e o Mais do celular no Completo (só para quem pode escolher)
 const basTrocaHtml = () => { const v = basInterface();
@@ -332,9 +333,12 @@ function basGastos() {
   secs.onde = basOndeHtml();
   const lanc = basLancJan().slice(0, 8);
   // últimos gastos numa lista simples (ícone redondo, nome, quando e valor); "Ver tudo" mostra o período inteiro
-  const todos = basLancJan(); const quando = (l) => { const d = E.parseDataISO(l.data); const hj = new Date(); const ont = new Date(hj - 864e5);
+  // contas do mês e parcelas também são gastos: entram na lista com os lançamentos (as que já viraram lançamento não repetem)
+  const jj = basJan(); const contas = []; for (let mm = jj.de; mm <= jj.ate; mm++) basContas(mm).itens.filter((x) => !x.pago).forEach((x) => contas.push({ conta: true, id: x.id, desc: x.nome, area: x.area || 'Contas', valor: x.valor, data: `${S.year}-${String(mm + 1).padStart(2, '0')}-01`, mm, parcela: x.parcela }));
+  const todos = basLancJan().concat(contas).sort((x, y) => (x.data < y.data ? 1 : x.data > y.data ? -1 : x.conta ? 1 : -1));
+  const quando = (l) => { if (l.conta) return l.parcela ? `parcela ${l.parcela.i} de ${l.parcela.n}` : `todo mês · ${MES[l.mm].toLowerCase()}`; const d = E.parseDataISO(l.data); const hj = new Date(); const ont = new Date(hj - 864e5);
     return d.ano === hj.getFullYear() && d.mes === hj.getMonth() && d.dia === hj.getDate() ? 'Hoje' : d.ano === ont.getFullYear() && d.mes === ont.getMonth() && d.dia === ont.getDate() ? 'Ontem' : `${d.dia} ${MES[d.mes].toLowerCase()}`; };
-  const linha = (l) => `<li><button class="bas-ult-l" ${basIr('gasto-ver', { id: l.id })}><span class="bas-ult-ic bas-catic-i">${basCatIc(l.area)}</span><span class="bas-ult-n"><b>${esc(l.desc || l.area)}</b><small>${esc(quando(l))} · ${esc(l.area)}</small></span><b class="bas-ult-v${l.valor < 0 ? ' pos' : ''}">${l.valor < 0 ? '+' : '−'}${brl(Math.abs(l.valor))}</b></button></li>`;
+  const linha = (l) => `<li><button class="bas-ult-l" ${l.conta ? basIr('conta', { id: l.id }) : basIr('gasto-ver', { id: l.id })}><span class="bas-ult-ic bas-catic-i">${basCatIc(l.area)}</span><span class="bas-ult-n"><b>${esc(l.desc || l.area)}</b><small>${esc(quando(l))} · ${esc(l.area)}</small></span><b class="bas-ult-v${l.valor < 0 ? ' pos' : ''}">${l.valor < 0 ? '+' : '−'}${brl(Math.abs(l.valor))}</b></button></li>`;
   secs.ultimos = todos.length ? basSecao('Últimos gastos', todos.length > 5 ? `<button class="bas-ult-ver" data-act="bas-ult-todos">Ver tudo</button>` : '',
     `<ul class="card bas-ult">${todos.slice(0, 5).map(linha).join('')}</ul>${todos.length > 5 ? `<template id="bas-ult-tpl"><ul class="bas-ult">${todos.map(linha).join('')}</ul></template>` : ''}`) : '';
   return `<div class="bas-pg bas-pg-g"><div class="bas-gt-bg">${basTopo()}
@@ -352,7 +356,8 @@ function basArco(el) {
 /* ---- Investir: o quanto investiu. O patrimônio num gráfico que segue o dedo, a meta e o disponível, a carteira e o investido ---- */
 function basInvestir() {
   const C = S.C; const j = basJan(); const D = E.disponivelAporte({ C, mes: j.de, ate: j.ate, metaMes: C.metaAporteMes }); const pode = temRecurso('aporte_simples'); const V = basVarPatr(C); const secs = {};
-  const ult = S.year === NOW_Y ? NOW_M : 11; const jan = 12; const ini = Math.max(0, ult - (jan === 1 ? 1 : jan - 1)); const serie = C.patrimonio.slice(ini, ult + 1); const mn = Math.min(...serie); const mx = Math.max(...serie); const W = 320; const H = 170; const P = 16;
+  const ultAno = S.year === NOW_Y ? NOW_M : 11; const comPer = !!S.basPer; const jan = 12;
+  const ult = comPer ? Math.min(j.ate, ultAno) : ultAno; const ini = comPer ? Math.max(0, Math.min(ult, j.n === 1 ? j.de - 1 : j.de)) : 0; const serie = C.patrimonio.slice(ini, ult + 1); const mn = Math.min(...serie); const mx = Math.max(...serie); const W = 320; const H = 170; const P = 16;
   const xs = (i) => (serie.length > 1 ? P + (i / (serie.length - 1)) * (W - 2 * P) : W / 2); const ys = (v) => (mx > mn ? H - 26 - ((v - mn) / (mx - mn)) * (H - 40) : H * 0.4);
   const pts = serie.map((v, i) => [xs(i), ys(v)]);
   // curva suave (Catmull-Rom para Bézier), a área com degradê e a faixa do período escolhido
@@ -362,7 +367,7 @@ function basInvestir() {
   const area = `${curva} L${W} ${H} L0 ${H} Z`;
   const masc = `url("data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${W} ${H}' preserveAspectRatio='none'><path d='${area}'/></svg>`)}")`;
   const vF = C.patrimonio[ult]; const vI = ini > 0 ? C.patrimonio[ini - 1] : serie[0]; const dif = vF - vI; const va = vI ? dif / Math.abs(vI) : 0; const up = dif >= 0;
-  const janTxt = { 1: 'no mês', 3: 'em 3 meses', 6: 'em 6 meses', 12: `em ${S.year}` }[jan];
+  const janTxt = comPer ? basJanFrase() : `em ${S.year}`;
   secs.patr = `<section class="bas-ev" data-pts='${esc(JSON.stringify(pts.map((p) => [+p[0].toFixed(1), +p[1].toFixed(1)])))}' data-d='${esc(JSON.stringify(dados))}' data-w="${W}" data-h="${H}">
     <div class="bas-ev-h"><small class="bas-ev-k" data-ev="k">Patrimônio em ${MES_LONGO[ini + sel]}</small><b class="bas-ev-v" data-ev="v">${basCent(serie[sel])}</b>
       <p class="bas-ev-var"><span class="bas-ev-pct${up ? '' : ' neg'}">${up ? '↑' : '↓'} ${pct(Math.abs(va), 2)}</span><span>${up ? '+' : '−'}${brl(Math.abs(dif))} ${esc(janTxt)}</span></p></div>
