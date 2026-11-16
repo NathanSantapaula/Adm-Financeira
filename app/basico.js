@@ -337,7 +337,7 @@ function basInvestir() {
   secs.feitos = ativos.length ? basSecao(`Investido ${esc(basJanFrase())}`, '', `<ul class="bas-ativ">${ativos.map(([a, v], i) => basRow(pode && j.n === 1 ? basIr('aporte', { id: a.id }) : 'disabled', esc(basIniciais(a.nome)), esc(a.nome), v < 0 ? 'Resgate' : E.norm(a.classe) === E.norm(a.nome) ? '' : esc(a.classe || ''), `<b class="${v < 0 ? 'neg' : 'pos'}">${v < 0 ? '−' : '+'}${basCent(Math.abs(v))}</b>`, PAL[i % 6])).join('')}</ul>`) : '';
   // Investimento: pílula compacta na linha do período (aportar, resgatar ou importar ficam na tela que ela abre)
   const acoes = `<button class="bas-inv-pl" ${basIrInv()} aria-label="Investimento: aportar, resgatar ou importar">${I.plus}<span>Investir</span></button>`;
-  return `<div class="bas-pg bas-pg-i">${basTopo()}<div class="bas-pg-per">${extras}${acoes}</div>${basOrdenar('investir', secs)}${basOrganizarBtn('investir')}<p class="bas-disc keep">Valores a custo, sem cotação de mercado. Sem promessa de rentabilidade.</p></div>`;
+  return `<div class="bas-pg bas-pg-i"><div class="bas-gt-bg bas-pt-bg">${basTopo()}<div class="bas-pg-per">${extras}${acoes}</div></div><div class="bas-gt-folha">${basOrdenar('investir', secs)}${basOrganizarBtn('investir')}<p class="bas-disc keep">Valores a custo, sem cotação de mercado. Sem promessa de rentabilidade.</p></div></div>`;
 }
 // o gráfico do patrimônio segue o dedo (manipulação direta): o mês mais perto do toque aparece em cima, sem redesenhar
 function basEvLigar() {

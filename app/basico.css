@@ -1992,3 +1992,14 @@ body[data-ui="basico"] .bas-gt-folha .bas-gt-acoes > :is(.bas-en-bt, .bas-inv-pl
 /* o "+" da lateral do cartão em cor oposta (vidro escuro no claro, claro no escuro), para se destacar dos outros */
 body[data-ui="basico"] .bas-ct2-lado .bas-ct2-b:first-child { color: var(--bg) !important; background: color-mix(in srgb, var(--ink) 86%, transparent) !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), inset 0 -1px 0 rgba(0, 0, 0, .2), 0 1px 1.5px rgba(0, 0, 0, .1), 0 10px 22px -10px rgba(0, 0, 0, .45) !important; }
+
+/* ===== Início e Patrimônio no mesmo jeito de Gastos: degradê azul no alto e a folha por cima ===== */
+.bas[data-aba="inicio"] .bas-noite { border-radius: 0; padding-bottom: 64px; color: #fff;
+  background: linear-gradient(180deg, var(--bas-azul-1) 0%, var(--bas-azul-2) 42%, var(--bas-azul-3) 100%) !important; animation: none; }
+.bas[data-aba="inicio"] .bas-noite::before { opacity: .5; }
+.bas[data-aba="inicio"] .bas-noite .bas-topo .bas-eu-t small { color: rgba(255, 255, 255, .75); }
+.bas[data-aba="inicio"] .bas-noite { --lg-bg: rgba(255, 255, 255, .14); --lg-bg-on: rgba(255, 255, 255, .26); --lg-aro: rgba(255, 255, 255, .55); --lg-aro-b: rgba(255, 255, 255, .15); --lg-txt: #fff; }
+.bas[data-aba="inicio"] .bas-secs { position: relative; z-index: 2; margin: -32px -16px 0; padding: 20px 16px 16px; min-height: 50vh; background: var(--bg); border-radius: 28px 28px 0 0; box-shadow: 0 -8px 24px -12px rgba(0, 0, 0, .25); }
+.bas[data-aba="inicio"] .bas-secs.sobe > .bas-sec:first-child { margin: 0; }
+.bas-pt-bg { padding-bottom: 46px; margin-top: calc(-16px - env(safe-area-inset-top, 0px)); padding-top: calc(16px + env(safe-area-inset-top, 0px)); }
+.bas-pt-bg .bas-pg-per { margin: 14px 0 0; }
