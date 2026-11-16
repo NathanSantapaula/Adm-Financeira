@@ -269,8 +269,12 @@ function basInicio() {
   const g = objFoco(objAnalise());
   secs.sonho = `<button class="card bas-sonho" ${basIr('sonhos')}>${g ? `<span class="bas-sonho-l">${objIcone(g, 0)}${basNome(esc(objNomeDe(g)), `${brl0(g.saldo)} de ${brl0(g.valor)}`)}<b class="bas-pct">${pct(g.progresso)}</b></span>${basBarra(g.progresso)}`
     : `<span class="bas-sonho-l"><span class="obj-ic" aria-hidden="true">${I.plus}</span>${basNome('Qual é o seu sonho?', 'Dê um nome e acompanhe quanto falta')}${I.chev}</span>`}</button>`;
-  secs.disp = basCard(`<div class="bas-disp"><span class="bas-n"><small class="bas-k">Dá para investir ${j.n > 1 ? basJanFrase() : 'agora'}</small><b class="bas-big md">${basCent(D.disponivel)}</b></span>${D.disponivel > 0.005 ? `<button class="btn primary bas-cta" ${basIrInv()}>Aplicar</button>` : ''}</div>
-    <p class="bas-p">${voz(D.disponivel > 0.005 ? 'bas_disp_sim' : D.sobra > 0.005 ? 'bas_disp_tudo' : !(ent > 0) && !(sai > 0) ? 'bas_vazio' : 'bas_disp_nao')}</p>`);
+  // Dá para investir: uma linha só, com ícone, valor e uma ficha curta do estado (ou o botão Investir); a meta vira só uma barra fina
+  const dSit = D.disponivel > 0.005 ? '' : D.sobra > 0.005 ? ['ok', 'Tudo investido'] : !(ent > 0) && !(sai > 0) ? ['', 'Sem dados'] : ['', 'Sem sobra'];
+  const dMeta = D.meta > 0 ? Math.min(1, (D.aportado || 0) / D.meta) : null;
+  secs.disp = `<section class="card bas-card bas-dp3"><div class="bas-dp3-l"><span class="bas-dp3-ic" aria-hidden="true">${I_APLICAR}</span><span class="bas-dp3-t"><small>Dá para investir</small><b>${basCent(D.disponivel)}</b></span>
+      ${dSit ? `<span class="bas-dp3-st ${dSit[0]}">${dSit[1]}</span>` : `<button class="btn primary bas-dp3-bt" ${basIrInv()}>Investir</button>`}</div>
+    ${dMeta != null ? `<div class="bas-dp3-m" aria-label="Meta do mês: ${Math.round(dMeta * 100)}%"><i style="width:${(dMeta * 100).toFixed(1)}%"></i></div><small class="bas-dp3-mt">Meta do mês · ${Math.round(dMeta * 100)}%</small>` : ''}</section>`;
   const ents = j.n === 1 ? p.rendas.filter((r) => +r.valores[j.de] > 0.005).map((r) => basRow(basIr('entrada', { id: r.id }), I_ENTRADA, esc(r.nome), `Entrada · ${MES_LONGO[j.de]}`, `<b class="pos">+${basCent(r.valores[j.de])}</b>`)) : [];
   const ativ = ents.concat(basLancJan().slice(0, 6).map(basLancLinha)).slice(0, 7);
   secs.atividade = basSecao(j.n === 1 ? 'Atividade do mês' : 'Atividade do período', '<button class="lnk strong" data-act="bas-aba" data-v="gastos">Ver tudo</button>', ativ.length ? `<ul class="bas-ativ">${ativ.join('')}</ul>` : basCard(basVazio(voz('bas_vazio'))));
