@@ -2273,3 +2273,8 @@ body[data-ui="basico"][data-screen="app"] .tabbar { left: calc(50% - 30px); widt
 /* Cifrão solto sempre branco; no tema claro ganha um contorno escuro fino e sombra, para ficar nítido sobre o branco */
 :root[data-theme="light"] .bas-cif-solto { --cif-body: #fff; --cif-eyes: #06122A; }
 :root[data-theme="light"] .bas-cif-solto .cifrao { filter: drop-shadow(0 0 .6px #06122A) drop-shadow(0 0 .6px #06122A) drop-shadow(0 0 .6px #06122A) drop-shadow(0 6px 10px rgba(6, 18, 42, .35)); }
+/* Entradas e + Gasto com a mesma altura, letra e peso dos botões de Patrimônio */
+.bas-gt-acoes > button, .bas-pt-acoes > button { height: 46px; font-size: 14px; font-weight: 600; letter-spacing: 0; }
+.bas-gt-acoes > button svg, .bas-pt-acoes > button svg { width: 17px; height: 17px; }
+/* Cifrão solto no tema claro: sem contorno, só uma sombra suave para destacar do branco */
+:root[data-theme="light"] .bas-cif-solto .cifrao { filter: drop-shadow(0 0 2px rgba(6, 18, 42, .28)) drop-shadow(0 6px 12px rgba(6, 18, 42, .3)); }
