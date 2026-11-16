@@ -3278,3 +3278,24 @@ body[data-ui="basico"][data-screen="app"] .tabbar { bottom: max(8px, calc(env(sa
 .bas-ctw-bg .bas-ctw-r { width: calc(100% + 24px); max-width: 400px; margin: 0 -12px; margin-inline: auto; left: 50%; translate: -50% 0; position: relative; }
 .bas-ctw-bg .bas-ctw-c b { font-size: 30px; }
 .bas-ctw-bg .bas-ctw-tx { position: relative; margin-top: -52px; }
+/* anel: começa inteiro preenchido; com uma parte escolhida, as outras ficam em vidro com listras */
+.bas-ctw-bg .bas-ctw:not(.tem-sel) .bas-ctw-s .c { fill: url(#ctw-onw); stroke: url(#ctw-onw); filter: drop-shadow(0 0 10px rgba(160, 225, 255, .45)); }
+.bas-ctw-bg .bas-ctw:not(.tem-sel) .bas-ctw-s .l { opacity: 0; }
+.bas-ctw-bg .bas-ctw:not(.tem-sel) .bas-ctw-s .g { opacity: .8; }
+/* o texto da classe fica dentro da abertura do anel, sem encostar nele */
+.bas-ctw-bg .bas-ctw-tx { margin: -34px auto 0; max-width: 220px; padding: 0; }
+.bas-ctw-bg .bas-ctw-tx b { font-size: 20px; line-height: 1.15; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; text-wrap: balance; }
+.bas-ctw-bg .bas-ctw-tx span { font-size: 13.5px; }
+.bas-ctw-bg .bas-ctw-c small { font-size: 14px; font-weight: 600; }
+/* onde investir */
+.card.bas-oi-c { padding: 16px; border-radius: 24px; display: grid; gap: 10px; }
+.bas-oi-v { display: grid; gap: 4px; } .bas-oi-v small { font-size: 14px; color: var(--ink-3); }
+.bas-oi-v span { display: flex; align-items: baseline; gap: 6px; } .bas-oi-v i { font-style: normal; font-size: 22px; font-weight: 600; color: var(--ink-3); }
+.bas-form .bas-oi-v input, .bas-oi-v input { flex: 1; min-width: 0; height: auto; padding: 0; border: 0; background: none; box-shadow: none; font: inherit; font-size: 38px !important; font-weight: 800; letter-spacing: -.02em; color: var(--ink); outline: none; }
+.bas-oi-tudo { justify-self: start; height: 34px; padding: 0 14px; border-radius: 999px; border: 0; font: inherit; font-size: 13.5px; font-weight: 700; color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); cursor: pointer; }
+.card.bas-oi-l { list-style: none; margin: 14px 0; padding: 4px 16px; border-radius: 24px; }
+.bas-oi-l li { position: relative; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; padding: 12px 0 16px; }
+.bas-oi-l li + li { border-top: .5px solid var(--line); }
+.bas-oi-l li > i { position: absolute; left: 48px; right: 0; bottom: 7px; height: 3px; border-radius: 999px; background: linear-gradient(90deg, var(--accent) var(--p), color-mix(in srgb, var(--ink) 7%, transparent) var(--p)); }
+.bas-oi-l li.bas-oi-vz { display: block; padding: 16px 0; font-size: 14px; color: var(--ink-3); text-align: center; }
+.bas-oi-reg { width: 100%; } .bas-oi-sem { margin: 0 0 12px; cursor: default; }
