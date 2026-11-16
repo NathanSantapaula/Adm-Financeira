@@ -1755,3 +1755,53 @@ body[data-ui="basico"] :is(.bas-inv-pl, .btn.primary) {
     0 12px 28px -10px color-mix(in srgb, var(--accent) 80%, transparent), 0 0 0 4px color-mix(in srgb, var(--accent) 12%, transparent) !important; }
 body[data-ui="basico"] :is(.bas-per, .bas-circ, .olho, .bell, .bas-gt-chip, .bas-inv-pl, .btn, .bas-ccv-ver):active { transform: scale(.94); }
 @media (prefers-reduced-transparency: reduce) { body[data-ui="basico"] :is(.bas-per, .bas-circ, .olho, .bell, .bas-gt-chip, .bas-inv-pl, .btn) { -webkit-backdrop-filter: none; backdrop-filter: none; background-image: none !important; } }
+
+/* ===== Cartões: frente da pilha com aproximação, logo e bandeira; escolher o cartão; gastos do cartão ===== */
+.bas-gt-d { align-items: center; }
+.bas-gt-nfc svg { width: 24px; height: 24px; fill: none; stroke: rgba(255, 255, 255, .62); stroke-width: 2; stroke-linecap: round; }
+.bas-gt-d .inst-ic.bas-gt-logo { margin-left: auto; width: 46px; }
+.bas-gt-d .bas-band { height: 22px; width: auto; color: rgba(255, 255, 255, .6); }
+.bas-gt-c { transition: transform 320ms cubic-bezier(.2, .8, .2, 1); }
+.bas-gt-pilha.abre .bas-gt-c { transform: translateY(calc((3 - var(--i)) * -10px)) rotate(calc((var(--i) - 1) * -2.5deg)); }
+.bas-gt-pilha.abre .bas-gt-c[style*="--i:0"] { transform: translateY(-34px) scale(1.04); }
+/* o cartão em pé, na proporção de um cartão de verdade */
+.bas-cc-c.bas-rc { position: relative; display: block; width: 100%; aspect-ratio: .63; padding: 18px; border-radius: 22px; overflow: hidden; color: #fff; }
+.bas-rc-t { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; }
+.bas-rc-t .inst-ic { width: 40px; height: 40px; }
+.bas-rc-nfc svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; opacity: .75; }
+.bas-rc-chip { position: absolute; left: 20px; top: 44%; width: 44px; height: 34px; border-radius: 8px; background: linear-gradient(135deg, #f3dc94, #b8913f 45%, #f6e3a8 70%, #a37e33); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .18); }
+.bas-rc-chip::after { content: ""; position: absolute; inset: 8px 6px; border: 1px solid rgba(80, 55, 10, .35); border-radius: 4px; }
+.bas-rc-b { position: absolute; right: 18px; bottom: 16px; } .bas-rc-b .bas-band { height: 28px; width: auto; color: rgba(255, 255, 255, .72); }
+.bas-rc:is([data-m="metal"], [data-m="holo"], [data-m="ouro"], [data-m="platina"]) .bas-band { color: rgba(0, 0, 0, .45); }
+.bas-rc-fila { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 26px calc(50% - 105px) 14px; margin: 0 -16px; perspective: 1100px; }
+.bas-rc-fila::-webkit-scrollbar { display: none; }
+.bas-rc-i { flex: none; width: 210px; margin: 0 -14px; padding: 0; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; scroll-snap-align: center; display: flex; flex-direction: column; align-items: center; gap: 16px;
+  transform: rotateY(calc(var(--d, 0) * -32deg)) scale(calc(1 - var(--a, 0) * .18)); opacity: calc(1 - var(--a, 0) * .3); z-index: calc(10 - var(--a, 0) * 10); }
+.bas-rc-i .bas-rc { box-shadow: 0 30px 50px -24px rgba(0, 0, 0, .55); transition: transform 200ms var(--ease-out); }
+.bas-rc-i:active .bas-rc { transform: scale(.96); }
+.bas-rc-n { display: flex; flex-direction: column; align-items: center; gap: 2px; opacity: calc(1 - var(--a, 0) * 2.2); }
+.bas-rc-n b { font-size: 20px; } .bas-rc-n small { font-size: 15px; color: var(--ink-3); }
+/* tela do cartão: botões na lateral, o cartão em pé e a folha com os gastos */
+.bas-ct2 { display: grid; grid-template-columns: 52px 1fr; align-items: center; gap: 12px; padding: 6px 0 26px; }
+.bas-ct2-lado { display: flex; flex-direction: column; gap: 14px; }
+.bas-ct2-b { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; }
+.bas-ct2-b svg { width: 22px; height: 22px; }
+.bas-ct2-card { width: 190px; justify-self: center; transform: perspective(900px) rotateY(-10deg) rotate(-4deg); animation: bas-ct2-in 520ms cubic-bezier(.2, .8, .2, 1); }
+.bas-ct2-card .bas-rc { box-shadow: 0 34px 60px -26px rgba(0, 0, 0, .6); }
+@keyframes bas-ct2-in { from { transform: perspective(900px) translateY(40px) rotateY(-30deg) rotate(-10deg); opacity: 0; } }
+.bas-ct2-folha { margin: 0 -16px; padding: 22px 16px 16px; border-radius: 28px 28px 0 0; background: var(--surface); box-shadow: 0 -10px 30px -16px rgba(0, 0, 0, .3); min-height: 40vh; }
+.bas-ct2-folha > .bas-pg-per { margin: 0 0 14px; }
+.bas-ct2-res { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.bas-ct2-t { display: flex; flex-direction: column; gap: 2px; padding: 14px 16px; margin: 0; }
+.bas-ct2-t.g { grid-column: 1 / -1; } .bas-ct2-t small { font-size: 14px; color: var(--ink-3); font-weight: 600; }
+.bas-ct2-t b { font-size: 24px; font-weight: 700; letter-spacing: -.02em; } .bas-ct2-t.g b { font-size: 36px; }
+.bas-ct2-t span { font-size: 14px; color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bas-ct2-cat { padding: 14px 16px; margin: 0 0 6px; } .bas-ct2-cat .bas-onde-l button { border: 0; background: none; font: inherit; color: inherit; padding: 0; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.bas-tx-l { list-style: none; margin: 0; padding: 0; }
+.bas-tx-g { padding: 14px 4px 6px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-3); }
+.bas-tx { width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px 4px; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; border-radius: 14px; }
+.bas-tx:active { background: var(--surface-2); }
+.bas-tx-ic { flex: none; width: 44px; height: 44px; border-radius: 13px; display: grid; place-items: center; font-weight: 700; font-size: 15px; color: #fff; background: linear-gradient(145deg, color-mix(in srgb, var(--bc) 80%, #fff), var(--bc)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .4); }
+.bas-tx-n { flex: 1; min-width: 0; display: flex; flex-direction: column; } .bas-tx-n b { font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .bas-tx-n small { font-size: 14px; color: var(--ink-3); }
+.bas-tx-v { font-size: 16px; white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) { .bas-gt-c, .bas-rc-i .bas-rc { transition: none; } .bas-ct2-card { animation: none; } }
