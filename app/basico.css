@@ -2270,3 +2270,6 @@ body[data-ui="basico"][data-screen="app"] .tabbar { left: calc(50% - 30px); widt
 /* no tema claro, o Cifrão solto fica preto com olhos claros, para aparecer sobre o fundo claro */
 :root[data-theme="light"] .bas-cif-solto { --cif-body: #0B0B0C; --cif-eyes: #F7F4ED; }
 :root[data-theme="light"] .bas-cif-solto .cifrao { filter: drop-shadow(0 4px 8px rgba(0, 0, 0, .25)); }
+/* Cifrão solto sempre branco; no tema claro ganha um contorno escuro fino e sombra, para ficar nítido sobre o branco */
+:root[data-theme="light"] .bas-cif-solto { --cif-body: #fff; --cif-eyes: #06122A; }
+:root[data-theme="light"] .bas-cif-solto .cifrao { filter: drop-shadow(0 0 .6px #06122A) drop-shadow(0 0 .6px #06122A) drop-shadow(0 0 .6px #06122A) drop-shadow(0 6px 10px rgba(6, 18, 42, .35)); }
