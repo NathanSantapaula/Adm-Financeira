@@ -3346,3 +3346,12 @@ body[data-ui="basico"] :is(.ab-capa-entrar, .ab-entrar) { color: #fff !important
 body[data-ui="basico"] .ab-capa-ver { color: #0B1640 !important; background: rgba(255, 255, 255, .72) !important; border: .5px solid rgba(11, 22, 64, .12) !important; box-shadow: 0 10px 24px -16px rgba(11, 22, 64, .5) !important; -webkit-backdrop-filter: blur(18px) saturate(1.6); backdrop-filter: blur(18px) saturate(1.6); }
 body[data-ui="basico"] .ab-tit { background: none !important; -webkit-text-fill-color: #0B1640 !important; color: #0B1640 !important; }
 body[data-ui="basico"] .ab-vivo { background: rgba(255, 255, 255, .72) !important; border: .5px solid rgba(11, 22, 64, .1) !important; color: #0B1640; -webkit-backdrop-filter: blur(18px) saturate(1.6); backdrop-filter: blur(18px) saturate(1.6); }
+/* globo do App no tema escuro: fundo quase preto com um halo do azul da marca; textos brancos; botões no mesmo jeito */
+:root:not([data-theme="light"]) body[data-ui="basico"] .ab { --ab-ink: #fff; --ab-ink-2: rgba(255, 255, 255, .72); --ab-ink-3: rgba(255, 255, 255, .5); color: #fff;
+  background: radial-gradient(70% 45% at 50% 68%, rgba(20, 40, 245, .32), transparent 70%), radial-gradient(60% 40% at 0% 0%, rgba(47, 107, 255, .14), transparent 70%), linear-gradient(180deg, #05070F 0%, #000 100%) !important; }
+:root:not([data-theme="light"]) body[data-ui="basico"] :is(.ab-capa-t, .ab-tit) { color: #fff !important; -webkit-text-fill-color: #fff !important; }
+:root:not([data-theme="light"]) body[data-ui="basico"] :is(.ab-capa-k, .ab-capa-s) { color: rgba(255, 255, 255, .72) !important; }
+:root:not([data-theme="light"]) body[data-ui="basico"] :is(.ab-capa-n, .ab-capa-n.neg) { color: #8FB4FF !important; text-shadow: 0 0 22px rgba(47, 107, 255, .6) !important; }
+:root:not([data-theme="light"]) body[data-ui="basico"] .ab-marca, :root:not([data-theme="light"]) body[data-ui="basico"] .ab-marca .marca-s { color: #fff; }
+:root:not([data-theme="light"]) body[data-ui="basico"] .ab-capa-ver { color: #fff !important; background: rgba(255, 255, 255, .1) !important; border-color: rgba(255, 255, 255, .2) !important; }
+:root:not([data-theme="light"]) body[data-ui="basico"] .ab-vivo { background: rgba(255, 255, 255, .07) !important; border-color: rgba(255, 255, 255, .14) !important; color: #fff; }

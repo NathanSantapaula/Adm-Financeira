@@ -25,10 +25,12 @@ function abTemaApp() {
   const A = AB; const k = (n) => abCorToken(A.el, n); const branco = [255, 255, 255]; const azul = [20, 40, 245]; const navy = [8, 20, 90]; const ceu = [47, 107, 255];
   const cls = [[47, 107, 255], [56, 214, 255], [91, 91, 214], [255, 184, 64], [138, 180, 255], [27, 63, 168]];
   for (let i = cls.length; i < A.D.classes.length; i++) cls.push(abMix(cls[i % 6], branco, 0.3));
-  A.T = { escuro: false, app: true, bg: branco, ink: navy, ink2: [70, 84, 130], acc: ceu, acc2: [56, 214, 255], pos: [22, 160, 110], neg: k('--neg'), ouro: [230, 160, 30], cls,
+  // no tema escuro do aparelho: fundo quase preto, o mesmo planeta azul, textos e estrelas brancos
+  const bgT = k('--bg'); const noite = (0.2126 * bgT[0] + 0.7152 * bgT[1] + 0.0722 * bgT[2]) / 255 < 0.45;
+  A.T = { escuro: false, app: true, noite, bg: noite ? [2, 4, 14] : branco, ink: noite ? branco : navy, ink2: noite ? [200, 210, 235] : [70, 84, 130], acc: ceu, acc2: [56, 214, 255], pos: [22, 160, 110], neg: k('--neg'), ouro: [230, 160, 30], cls,
     luz: branco, terra: branco, soma: 'source-over',
     esfera: { brilho: [120, 170, 255], meio: azul, borda: [4, 12, 70] },
-    pts: cls, poeira: [ceu, [56, 214, 255], [138, 180, 255], azul], texto: branco, texto2: [210, 225, 255], sobe: [150, 245, 210] };
+    pts: cls, poeira: noite ? [branco, [184, 220, 255], [200, 210, 255], branco] : [ceu, [56, 214, 255], [138, 180, 255], azul], texto: branco, texto2: [210, 225, 255], sobe: [150, 245, 210] };
 }
 function abTema() {
   if (abApp()) return abTemaApp();
@@ -450,7 +452,7 @@ function abInfo(t, lente) { const A = AB; const ctx = A.ctx; const T = A.T; cons
   const x0 = A.cx + Math.cos(ang) * raio, y0 = A.cy + Math.sin(ang) * raio; const [x, y] = abFixo('i', x0, y0, 0); const dx = x - x0, dy = y - y0; // a cauda acompanha o "i" quando ele está preso
   ctx.globalAlpha = lente ? lente(x, y) : 1;
   for (let k = 1; k <= 14; k++) { const a = ang - k * 0.035; ctx.fillStyle = abRgba(T.acc, 0.5 - k * 0.033); ctx.beginPath(); ctx.arc(A.cx + Math.cos(a) * raio + dx, A.cy + Math.sin(a) * raio + dy, 2.4 - k * 0.12, 0, 7); ctx.fill(); }
-  ctx.shadowColor = abRgba(T.acc, 0.8); ctx.shadowBlur = 18; ctx.fillStyle = abRgba(T.escuro ? T.bg : T.luz, 0.92); ctx.beginPath(); ctx.arc(x, y, 16, 0, 7); ctx.fill(); ctx.shadowBlur = 0;
+  ctx.shadowColor = abRgba(T.acc, 0.8); ctx.shadowBlur = 18; ctx.fillStyle = abRgba(T.escuro || T.noite ? T.bg : T.luz, 0.92); ctx.beginPath(); ctx.arc(x, y, 16, 0, 7); ctx.fill(); ctx.shadowBlur = 0;
   ctx.strokeStyle = abRgba(T.acc, 0.8); ctx.lineWidth = 1.5; ctx.stroke(); ctx.fillStyle = abRgba(T.ink, 1); ctx.font = 'italic 700 17px Georgia, serif'; ctx.textAlign = 'center'; ctx.fillText('i', x, y + 6); ctx.globalAlpha = 1;
   A.alvos.push({ id: 'i', x, y, r: 22, tipo: 'info' }); }
 
