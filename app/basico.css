@@ -2680,3 +2680,10 @@ html[data-vt="cc"]::view-transition-old(root) { animation: 220ms ease both bas-v
 html[data-vt="cc"]::view-transition-new(root) { animation: 360ms 120ms cubic-bezier(.2, .85, .2, 1) both bas-vt-surge; }
 html[data-vt="cc"]::view-transition-group(bas-cc-oficial) { animation-duration: 620ms; animation-timing-function: cubic-bezier(.3, .9, .2, 1); }
 @media (prefers-reduced-motion: reduce) { .bas-cce-card.gira { animation: none; } }
+/* posição exata da referência: deitado na horizontal (o cartão de chip é em pé, por isso -90°), inclinado ~20° subindo para a direita,
+   grande e saindo pela borda direita */
+.bas-cce-palco { height: 372px; margin-top: -6px; }
+.bas-cce-card { width: 270px; left: 64%; top: 50%; transform: translate(-50%, -50%) rotate(-110deg); }
+@keyframes bas-cce-gira { 40% { transform: translate(-50%, -50%) rotate(-104deg) scale(1.04); } }
+.bas-cce-palco { height: 360px; } .bas-cce-card { top: 56%; width: 258px; }
+.bas-cce-palco { overflow: visible; overflow-x: clip; height: 370px; } .bas-cce-card { top: 54%; }
