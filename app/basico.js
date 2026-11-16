@@ -75,7 +75,10 @@ function basicoBarra() {
 function basIaFabLigar() {
   const b = document.querySelector('.bas-ia-fab'); if (!b || b.dataset.lig) return; b.dataset.lig = '1'; let t = 0;
   // na bolinha ele só pisca e mexe os olhos: sem os gestos grandes da landing
-  const calmo = () => { const h = b.querySelector('.cifrao'); if (h && h.cifrao) h.cifrao.gestoEm = 1e15; else setTimeout(calmo, 120); }; calmo();
+  // na bolinha ele fica quieto (sem seguir o dedo nem fazer gestos) e só pisca de vez em quando; as animações são do Cifrão solto
+  const calmo = () => { const h = b.querySelector('.cifrao'); if (!h || !h.cifrao) { setTimeout(calmo, 120); return; } h.cifrao.gestoEm = 1e15; h.setAttribute('data-scroll-suspended', '');
+    const pisca = () => { if (!h.isConnected) return; h.removeAttribute('data-scroll-suspended'); h.cifrao.tocar('wink'); setTimeout(() => { if (h.isConnected) h.setAttribute('data-scroll-suspended', ''); }, 1000); setTimeout(pisca, 6000 + Math.random() * 4000); };
+    setTimeout(pisca, 3000); }; calmo();
   b.addEventListener('pointerdown', (e) => { clearTimeout(t); const id = e.pointerId; t = setTimeout(() => { S.basCifPasseio = true; if (typeof basVibra === 'function') basVibra(20); b.setPointerCapture(id); basCifSolta(b, e.clientX, e.clientY, b); }, 420); });
   ['pointerup', 'pointercancel'].forEach((ev) => b.addEventListener(ev, () => clearTimeout(t)));
   b.addEventListener('contextmenu', (e) => e.preventDefault());
