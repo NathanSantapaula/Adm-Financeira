@@ -2003,3 +2003,19 @@ body[data-ui="basico"] .bas-ct2-lado .bas-ct2-b:first-child { color: var(--bg) !
 .bas[data-aba="inicio"] .bas-secs.sobe > .bas-sec:first-child { margin: 0; }
 .bas-pt-bg { padding-bottom: 46px; margin-top: calc(-16px - env(safe-area-inset-top, 0px)); padding-top: calc(16px + env(safe-area-inset-top, 0px)); }
 .bas-pt-bg .bas-pg-per { margin: 14px 0 0; }
+
+/* ===== Início: sem os pontinhos; variação em pílula de vidro ===== */
+.bas[data-aba="inicio"] .bas-noite::before { display: none; }
+.bas-var { margin: 10px 0 4px; display: flex; justify-content: center; }
+.bas-var-p { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px 6px 6px; border-radius: 999px; font-size: 14px; font-weight: 600; color: #fff;
+  background: rgba(255, 255, 255, .14); -webkit-backdrop-filter: blur(14px) saturate(180%); backdrop-filter: blur(14px) saturate(180%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5), inset 0 -1px 0 rgba(255, 255, 255, .14), inset 0 0 0 .5px rgba(255, 255, 255, .15); }
+.bas-var-p i { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 13px; font-weight: 800; background: rgba(255, 255, 255, .22); }
+.bas-var-p.pos i { background: color-mix(in srgb, var(--bas-noite-pos, #30d158) 75%, transparent); } .bas-var-p.neg i { background: color-mix(in srgb, var(--bas-noite-neg, #ff6b7a) 75%, transparent); }
+/* ===== Patrimônio: o gráfico direto no azul, sem cartão; as ações embaixo dele ===== */
+.bas-pt-bg > .bas-ev { margin: 8px 0 0; padding: 0; border: 0; border-radius: 0; background: none !important; box-shadow: none !important; color: #fff; }
+.bas-pt-bg > .bas-ev::before, .bas-pt-bg > .bas-ev::after { display: none; }
+.bas-pt-bg > .bas-ev .bas-ev-k { color: rgba(255, 255, 255, .75); }
+.bas-pt-bg > .bas-ev :is(text, .bas-ev-m, .bas-ev-x span) { color: rgba(255, 255, 255, .7); fill: rgba(255, 255, 255, .7); }
+.bas-pt-bg > .bas-ev .bas-ev-h { text-align: center; }
+.bas-pt-bg .bas-pg-per { justify-content: center; margin-top: 16px; }
