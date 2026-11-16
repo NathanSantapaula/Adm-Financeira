@@ -2820,3 +2820,15 @@ html[data-vt="cc"]::view-transition-group(bas-cc-oficial) { animation-duration: 
 @keyframes bas-gp-imprime { 0% { transform: translateY(-108%); } 22% { transform: translateY(-78%); } 26% { transform: translateY(-76%); } 48% { transform: translateY(-46%); } 52% { transform: translateY(-44%); } 76% { transform: translateY(-14%); } 80% { transform: translateY(-12%); } 100% { transform: none; } }
 .bas-gp-papel ul { margin-bottom: 4px; }
 @media (prefers-reduced-motion: reduce) { .bas-gp-papel { transform: none; } }
+/* ===== Novo cartão: fichas dos bancos rolando de lado no alto; o resto é a tela de edição ===== */
+.bas-ccn-k { margin: 4px 4px 8px; font-size: 13px; font-weight: 600; color: var(--ink-3); }
+.bas-ccn-bancos { display: flex; gap: 8px; overflow-x: auto; margin: 0 -16px; padding: 2px 16px 6px; scrollbar-width: none; scroll-snap-type: x proximity; }
+.bas-ccn-bancos::-webkit-scrollbar { display: none; }
+.bas-ccn-b { flex: none; display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 14px 0 6px; border: 0; border-radius: 999px; font: inherit; font-size: 14px; font-weight: 600; color: var(--ink); cursor: pointer; scroll-snap-align: start;
+  background: var(--surface); box-shadow: 0 6px 16px -12px rgba(20, 30, 80, .35), inset 0 0 0 .5px var(--line); transition: transform 160ms var(--ease-out); }
+.bas-ccn-b .inst-ic { width: 32px; height: 32px; border-radius: 50%; }
+.bas-ccn-b.on { color: #fff; background: var(--accent); box-shadow: 0 10px 22px -12px var(--accent); }
+.bas-ccn-b:active { transform: scale(.95); }
+.bas-ccn-bancos + .bas-cce-palco { margin-top: 10px; }
+/* o cartão "+" é opaco: o cartão do lado não aparece borrado através dele */
+.bas-rc-novo { background: var(--bg) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
