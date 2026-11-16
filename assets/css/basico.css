@@ -2911,3 +2911,26 @@ body[data-ui="basico"] .bas-pg { padding-bottom: 0; }
 :root[data-theme="light"] .bas-gp-x, :root[data-theme="light"] .bas-gp-as button { background: rgba(255, 255, 255, .72); box-shadow: 0 4px 12px -8px rgba(14, 20, 40, .4); }
 :root[data-theme="light"] .bas-gp-ic { background: #fff; }
 :root[data-theme="light"] .bas-gp-papel { background: #fff; filter: drop-shadow(0 16px 20px rgba(14, 20, 40, .32)) drop-shadow(0 0 1px rgba(14, 20, 40, .45)); }
+/* ===== Impressora de verdade: o papel sai de DENTRO da fenda.
+   boca = corpo escuro com a fenda no meio (atrás do papel); saída = janela que corta o papel na linha da fenda;
+   lábio = a frente da boca, por cima do papel, que joga sombra nele; o papel desce em trancos por baixo do lábio ===== */
+.bas-gp-fenda { position: relative; padding: 0; overflow: visible; }
+.bas-gp-fenda::before { display: none !important; }
+.bas-gp-boca { position: absolute; left: 0; right: 0; top: 0; z-index: 1; height: 30px; padding: 0; border-radius: 16px;
+  background: linear-gradient(180deg, #4C4F58 0%, #23252B 40%, #101114 100%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .18), 0 10px 18px -10px rgba(0, 0, 0, .7); }
+.bas-gp-boca i { position: absolute; left: 14px; right: 14px; top: 12px; height: 6px; border-radius: 999px; background: #000; box-shadow: inset 0 2px 3px rgba(0, 0, 0, .9), 0 1px 0 rgba(255, 255, 255, .08); }
+.bas-gp-boca i::after { display: none; }
+.bas-gp-saida { position: relative; z-index: 2; margin: 15px 0 0; padding: 0 16px 26px; overflow: hidden; }
+.bas-gp-saida .bas-gp-papel { margin-top: 0; }
+/* sombra do lábio no papel logo na saída */
+.bas-gp-saida::before { content: ""; position: absolute; left: 16px; right: 16px; top: 0; z-index: 3; height: 26px; pointer-events: none; background: linear-gradient(180deg, rgba(0, 0, 0, .38), rgba(0, 0, 0, 0)); }
+.bas-gp-labio { position: absolute; left: 6px; right: 6px; top: 15px; z-index: 4; height: 13px; border-radius: 0 0 14px 14px; pointer-events: none;
+  background: linear-gradient(180deg, #2B2D33 0%, #17181C 100%); box-shadow: 0 6px 10px -4px rgba(0, 0, 0, .65), inset 0 -1px 0 rgba(255, 255, 255, .1); }
+.bas-gp-labio::after { content: ""; position: absolute; left: 12%; right: 12%; bottom: 2px; height: 1px; background: linear-gradient(90deg, transparent, rgba(120, 170, 255, .45), transparent); }
+:root[data-theme="light"] .bas-gp-boca { background: linear-gradient(180deg, #6A6E79 0%, #353841 40%, #1A1C21 100%); }
+:root[data-theme="light"] .bas-gp-labio { background: linear-gradient(180deg, #3B3E47 0%, #22242A 100%); box-shadow: 0 6px 10px -4px rgba(14, 20, 40, .5), inset 0 -1px 0 rgba(255, 255, 255, .14); }
+.bas-gp-fenda { padding-top: 15px !important; } .bas-gp-saida { margin-top: 0 !important; }
+/* o pop-up do gasto cobre a tela toda (a tela de trás não aparece mais no alto); o fundo fica desfocado e escuro durante a entrada */
+.bas-gp-f { height: 100dvh; max-height: none; border-radius: 0; padding-top: calc(10px + env(safe-area-inset-top, 0px)); }
+.bas-gp-fundo { -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); background: rgba(0, 0, 0, .55); }
+.bas-gp-alca { display: none; }

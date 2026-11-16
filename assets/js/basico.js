@@ -144,7 +144,7 @@ const basSumiu = () => basDet('Não encontrado', basCard(basVazio('Este item nã
 
 /* ---------- navegação: pilha de telas ligada ao histórico do navegador ---------- */
 function basAbrir(t, o) {
-  if (t === 'gasto-ver' && o && o.id) { basGastoPop(o.id); return; }
+  if (t === 'gasto-ver' && o && o.id) { basGastoPop(o.id, o.op === 'conta', o.modo); return; }
   if (document.querySelector('.bas-gp')) { document.querySelector('.bas-gp').remove(); }
   basPilha().push(Object.assign({ t, volta: window.scrollY }, o)); history.pushState({ bas: basPilha().length }, ''); basSom('toque');
   basTransicao(t === 'ia' ? 'ia' : t === 'cartao-estilo' ? 'cc' : 'vai', () => { render(); window.scrollTo(0, 0); const f = $('#view [data-foco]'); if (f && matchMedia('(pointer: coarse)').matches === false) f.focus({ preventScroll: true }); });
@@ -319,7 +319,7 @@ function basTelaEntradas() {
 
 /* ---- peças compartilhadas pelas listas ---- */
 const basContas = (m) => E.contasMes({ despesas: S.plan.despesas, carry: E.carryItems(S.plans, S.year), ano: S.year, mes: m });
-const basContaLinha = (x) => basRow(basIr('conta', { id: x.id }), x.inst ? instIcone(x.inst) : I_CONTA, esc(x.nome), x.parcela ? `parcela ${x.parcela.i} de ${x.parcela.n}` : 'todo mês',
+const basContaLinha = (x) => basRow(basIr('gasto-ver', { id: x.id, op: 'conta', modo: S.mes }), x.inst ? instIcone(x.inst) : I_CONTA, esc(x.nome), x.parcela ? `parcela ${x.parcela.i} de ${x.parcela.n}` : 'todo mês',
   `<span class="bas-v"><b>${basCent(x.valor)}</b>${S.year > NOW_Y || (S.year === NOW_Y && S.mes > NOW_M) ? '<em class="bas-st">Previsto</em>' : ''}</span>`);
 const basLancLinha = (l) => { const d = E.parseDataISO(l.data);
   return basRow(basIr('gasto-ver', { id: l.id }), `<span class="bas-catic-i">${basCatIc(l.area)}</span>`, esc(l.desc || l.area), `${esc(l.area)} · ${pad2(d.dia)}/${pad2(d.mes + 1)}`, `<b${l.valor < 0 ? ' class="pos"' : ''}>${l.valor < 0 ? '+' : '−'}${basCent(Math.abs(l.valor))}</b>`); };
@@ -338,7 +338,7 @@ function basGastos() {
   const todos = basLancJan().concat(contas).sort((x, y) => (x.data < y.data ? 1 : x.data > y.data ? -1 : x.conta ? 1 : -1));
   const quando = (l) => { if (l.conta) return l.parcela ? `parcela ${l.parcela.i} de ${l.parcela.n}` : `todo mês · ${MES[l.mm].toLowerCase()}`; const d = E.parseDataISO(l.data); const hj = new Date(); const ont = new Date(hj - 864e5);
     return d.ano === hj.getFullYear() && d.mes === hj.getMonth() && d.dia === hj.getDate() ? 'Hoje' : d.ano === ont.getFullYear() && d.mes === ont.getMonth() && d.dia === ont.getDate() ? 'Ontem' : `${d.dia} ${MES[d.mes].toLowerCase()}`; };
-  const linha = (l) => `<li><button class="bas-ult-l" ${l.conta ? basIr('conta', { id: l.id }) : basIr('gasto-ver', { id: l.id })}><span class="bas-ult-ic bas-catic-i">${basCatIc(l.area)}</span><span class="bas-ult-n"><b>${esc(l.desc || l.area)}</b><small>${esc(quando(l))} · ${esc(l.area)}</small></span><b class="bas-ult-v${l.valor < 0 ? ' pos' : ''}">${l.valor < 0 ? '+' : '−'}${brl(Math.abs(l.valor))}</b></button></li>`;
+  const linha = (l) => `<li><button class="bas-ult-l" ${l.conta ? basIr('gasto-ver', { id: l.id, op: 'conta', modo: l.mm }) : basIr('gasto-ver', { id: l.id })}><span class="bas-ult-ic bas-catic-i">${basCatIc(l.area)}</span><span class="bas-ult-n"><b>${esc(l.desc || l.area)}</b><small>${esc(quando(l))} · ${esc(l.area)}</small></span><b class="bas-ult-v${l.valor < 0 ? ' pos' : ''}">${l.valor < 0 ? '+' : '−'}${brl(Math.abs(l.valor))}</b></button></li>`;
   secs.ultimos = todos.length ? basSecao('Últimos gastos', todos.length > 5 ? `<button class="bas-ult-ver" data-act="bas-ult-todos">Ver tudo</button>` : '',
     `<ul class="card bas-ult">${todos.slice(0, 5).map(linha).join('')}</ul>${todos.length > 5 ? `<template id="bas-ult-tpl"><ul class="bas-ult">${todos.map(linha).join('')}</ul></template>` : ''}`) : '';
   return `<div class="bas-pg bas-pg-g"><div class="bas-gt-bg">${basTopo()}
@@ -811,28 +811,32 @@ const basCatIcEscolha = (sel) => `<fieldset class="bas-fs bas-catic"><legend>Íc
 function basCatIcGrava(area, k) { if (!area || !BAS_CAT_IC[k]) return; S.profile.catIcones = Object.assign({}, S.profile.catIcones, { [area]: k }); touch('profile'); }
 // Gasto em pop-up (visual de comprovante): folha escura que sobe sobre a tela atual, o comprovante sai de uma fenda.
 // Mesmas funções da tela do gasto: fechar, editar, lançar de novo, categoria, detalhes e números.
-function basGastoPop(id) {
-  const p = S.plan; const l = p.lancamentos.find((x) => x.id === id); if (!l) return;
+function basGastoPop(id, conta, mm) {
+  const p = S.plan; let l;
+  if (conta) { const m0 = mm != null && mm !== '' ? +mm : S.mes; const x = basContas(m0).itens.find((i) => i.id === id); if (!x) return;
+    l = { id: x.id, desc: x.nome, area: x.area || 'Contas', valor: x.valor, inst: x.inst, data: `${S.year}-${String(m0 + 1).padStart(2, '0')}-01`, conta: true, parcela: x.parcela, mm: m0 }; }
+  else l = p.lancamentos.find((x) => x.id === id);
+  if (!l) return;
   document.querySelector('.bas-gp')?.remove();
   const dt = l.data ? new Date(l.data + 'T12:00:00') : null; const ok = dt && !isNaN(dt);
   const data = ok ? dt.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }) : 'Sem data';
   const nome = l.desc || l.area || 'Gasto'; const inst = l.inst && instDe(l.inst);
-  const m = ok ? dt.getMonth() : S.mes; const totMes = +(S.C.despesas[m] || 0); const parte = totMes > 0 ? (+l.valor / totMes) : 0;
+  const m = l.conta ? l.mm : ok ? dt.getMonth() : S.mes; const totMes = +(S.C.despesas[m] || 0); const parte = totMes > 0 ? (+l.valor / totMes) : 0;
   const chave = basSemAcento(nome); const iguais = p.lancamentos.filter((x) => basSemAcento(x.desc || x.area || '') === chave); const somaIg = iguais.reduce((t, x) => t + (+x.valor || 0), 0);
   const fixo = l.itemId && p.despesas.find((x) => x.id === l.itemId);
   const lin = (k, v, cls) => `<li><span>${k}</span><b${cls ? ` class="${cls}"` : ''}>${v}</b></li>`;
   const w = document.createElement('div'); w.className = 'bas-gp'; w.setAttribute('role', 'dialog'); w.setAttribute('aria-modal', 'true'); w.setAttribute('aria-label', `Gasto: ${nome}`);
   w.innerHTML = `<button class="bas-gp-fundo" data-act="bas-gp-fechar" aria-label="Fechar"></button>
     <div class="bas-gp-f"><i class="bas-gp-alca" aria-hidden="true"></i>
-      <header class="bas-gp-h"><button class="bas-gp-x" data-act="bas-gp-fechar" aria-label="Fechar">${I.x}</button><b>Seu gasto</b><button class="bas-gp-x" ${basIr('gasto', { id: l.id })} aria-label="Editar gasto">${I.edit}</button></header>
+      <header class="bas-gp-h"><button class="bas-gp-x" data-act="bas-gp-fechar" aria-label="Fechar">${I.x}</button><b>Seu gasto</b><button class="bas-gp-x" ${l.conta ? basIr('conta', { id: l.id }) : basIr('gasto', { id: l.id })} aria-label="Editar gasto">${I.edit}</button></header>
       <span class="bas-gp-ic" aria-hidden="true">${basCatIc(l.area)}</span>
       <p class="bas-gp-q">${esc(nome)} · ${esc(l.area || 'Sem categoria')}</p>
       <p class="bas-gp-v">${basCent(+l.valor || 0)}</p>
-      <div class="bas-gp-fenda"><span class="bas-gp-boca" aria-hidden="true"><i></i></span><div class="bas-gp-papel">
+      <div class="bas-gp-fenda"><span class="bas-gp-boca" aria-hidden="true"><i></i></span><div class="bas-gp-saida"><div class="bas-gp-papel">
         <div class="bas-gp-marca"><b>${esc(CFG.marca || '')}</b><small>Comprovante nº ${esc(String(l.id).replace(/\W/g, '').slice(-8).toUpperCase().padStart(8, '0'))}</small></div>
         <div class="bas-gp-t"><b>${esc(nome)}</b><b>Total ${basCent(+l.valor || 0)}</b></div>
-        <ul>${lin('Data', esc(cap(data)))}${lin('Pago com', inst ? `${instIcone(l.inst)} ${esc(inst[1])}` : 'Não informado')}${lin('Tipo', fixo ? 'Conta do mês' : 'Gasto do dia')}${lin('Origem', l.origem === 'manual' ? 'Anotado por você' : 'Extrato')}${lin(`Do total de ${MES_LONGO[m]}`, `${Math.round(parte * 100)}%`)}${iguais.length > 1 ? lin(`Vezes com ${esc(nome)}`, `${iguais.length} · ${basCent(somaIg)}`) : ''}</ul>
-      </div></div>
+        <ul>${lin(l.conta ? 'Mês' : 'Data', l.conta ? esc(cap(MES_LONGO[l.mm])) : esc(cap(data)))}${lin('Pago com', inst ? `${instIcone(l.inst)} ${esc(inst[1])}` : 'Não informado')}${lin('Tipo', l.conta ? (l.parcela ? `Parcela ${l.parcela.i} de ${l.parcela.n}` : 'Todo mês') : fixo ? 'Conta do mês' : 'Gasto do dia')}${lin('Origem', l.conta ? (l.parcela ? 'Compra parcelada' : 'Conta fixa') : l.origem === 'manual' ? 'Anotado por você' : 'Extrato')}${lin(`Do total de ${MES_LONGO[m]}`, `${Math.round(parte * 100)}%`)}${iguais.length > 1 ? lin(`Vezes com ${esc(nome)}`, `${iguais.length} · ${basCent(somaIg)}`) : ''}</ul>
+      </div></div><span class="bas-gp-labio" aria-hidden="true"></span></div>
       <div class="bas-gp-as"><button ${basIr('gasto', { area: l.area })}>${I_REC}Lançar de novo</button><button ${basIr('categoria', { area: l.area })}>${I_RAIOX}Ver a categoria</button></div>
     </div>`;
   document.body.appendChild(w); basSom('toque');
@@ -1767,7 +1771,7 @@ function basTelaCartao(o) {
   // a lista por dia, do mais recente; contas e parcelas sem dia ficam juntas no fim de cada mês
   const ord = ents.slice().sort((a, b) => b.m - a.m || (b.dia || 0) - (a.dia || 0)); let ult = ''; const lis = [];
   ord.forEach((e) => { const g = e.dia ? `${e.dia} de ${MES_LONGO[e.m].toLowerCase()}` : `Contas de ${MES_LONGO[e.m].toLowerCase()}`; if (g !== ult) { ult = g; lis.push(`<li class="bas-tx-g">${esc(g)}</li>`); }
-    lis.push(`<li><button class="bas-tx" ${e.tipo === 'real' ? basIr('gasto-ver', { id: e.id }) : basIr('conta', { id: e.id })}><span class="bas-tx-ic bas-catic-i" style="--bc:${cor(e.area)}">${basCatIc(e.area)}</span><span class="bas-tx-n"><b>${esc(e.nome || e.area)}</b><small>${esc(e.area)}${e.parcela ? ` · parcela ${esc(String(e.parcela))}` : ''}</small></span><b class="bas-tx-v">−${basCent(e.valor)}</b></button></li>`); });
+    lis.push(`<li><button class="bas-tx" ${e.tipo === 'real' ? basIr('gasto-ver', { id: e.id }) : basIr('gasto-ver', { id: e.id, op: 'conta', modo: e.m })}><span class="bas-tx-ic bas-catic-i" style="--bc:${cor(e.area)}">${basCatIc(e.area)}</span><span class="bas-tx-n"><b>${esc(e.nome || e.area)}</b><small>${esc(e.area)}${e.parcela ? ` · parcela ${esc(String(e.parcela))}` : ''}</small></span><b class="bas-tx-v">−${basCent(e.valor)}</b></button></li>`); });
   return basDet(esc(i[1]), `<div class="bas-ct2" style="--cb:${basCcEstilo(o.id).c}"><div class="bas-ct2-lado">${lado}</div><div class="bas-ct2-card${S.basCtDir ? (S.basCtDir > 0 ? ' vem-d' : ' vem-e') : ''}" data-id="${esc(o.id)}">${basCartaoFace(o.id)}</div></div>
     <div class="bas-ct2-folha">
       <div class="bas-ct2-res"><div class="card bas-ct2-t g"><small>Gastou ${esc(basJanFrase())}</small><b>${basCent(tot)}</b><span>${pct(tot / (sai || 1))} de todos os seus gastos</span></div>
