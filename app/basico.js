@@ -851,7 +851,7 @@ const CC_BAND = {
   master: '<svg class="bas-band" viewBox="0 0 256 158" role="img" aria-label="Mastercard"><circle cx="79" cy="79" r="79" fill="currentColor" opacity=".55"/><circle cx="177" cy="79" r="79" fill="currentColor" opacity=".55"/></svg>' };
 const basBand = (k) => { const b = ((S.profile.cartaoEstilo || {})[k] || {}).b; if (CC_BAND[b]) return b; let h = 0; for (const c of k) h += c.charCodeAt(0); return h % 2 ? 'master' : 'visa'; };
 // o cartão "de verdade" em pé: é um cartão deitado (logo, chip, aproximação e bandeira nos lugares de sempre) girado 90°, como na mão
-const basCartaoFace = (k) => { const st = basCcEstilo(k); return `<span class="bas-cc-c bas-cc-mini bas-rc" data-m="${st.m}" style="--cb:${st.c}" aria-hidden="true"><span class="bas-rc-in"><span class="bas-rc-t">${instIcone(k)}</span><span class="bas-rc-chip"></span><span class="bas-rc-nfc">${CC_NFC}</span><span class="bas-rc-b">${CC_BAND[basBand(k)]}</span></span></span>`; };
+const basCartaoFace = (k) => `<span class="bas-cr" style="--cb:${basCcEstilo(k).c}" aria-hidden="true"><span class="bas-cr-in"><span class="bas-cr-t">${instIcone(k)}</span><span class="bas-cr-chip"></span><span class="bas-cr-nfc">${CC_NFC}</span><span class="bas-cr-b ${basBand(k)}">${CC_BAND[basBand(k)]}</span></span></span>`;
 function basCcVer() {
   const p = document.querySelector('.bas-gt-pilha'); basSom('toque');
   if (!p || matchMedia('(prefers-reduced-motion: reduce)').matches) { basAbrir('cartoes'); return; }
@@ -866,9 +866,17 @@ function basTelaCartoes() {
 function basRcLigar() {
   const f = document.querySelector('.bas-rc-fila'); if (!f || f.dataset.lig) return; f.dataset.lig = '1'; const pts = document.querySelectorAll('.bas-ccv-p i');
   const it = [...f.children]; const passo = () => { const c = f.scrollLeft + f.clientWidth / 2; let perto = 0, md = 9;
-    it.forEach((e, i) => { const d = (e.offsetLeft + e.offsetWidth / 2 - c) / e.offsetWidth; e.style.setProperty('--d', Math.max(-1.5, Math.min(1.5, d)).toFixed(3)); e.style.setProperty('--a', Math.min(1.5, Math.abs(d)).toFixed(3)); if (Math.abs(d) < md) { md = Math.abs(d); perto = i; } });
+    it.forEach((e, i) => { const d = (e.offsetLeft + e.offsetWidth / 2 - c) / e.offsetWidth; e.style.setProperty('--d', Math.max(-1.5, Math.min(1.5, d)).toFixed(3)); e.style.setProperty('--a', Math.min(1.5, Math.abs(d)).toFixed(3)); e.style.zIndex = String(20 - Math.round(Math.abs(d) * 4)); if (Math.abs(d) < md) { md = Math.abs(d); perto = i; } });
     pts.forEach((p, i) => p.classList.toggle('on', i === perto)); };
   let q = 0; f.addEventListener('scroll', () => { if (!q) q = requestAnimationFrame(() => { q = 0; passo(); }); }, { passive: true }); passo();
+  const centro = (e) => f.scrollTo({ left: e.offsetLeft + e.offsetWidth / 2 - f.clientWidth / 2, behavior: 'smooth' });
+  let x0 = null, s0 = 0, mov = false;
+  f.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse') return; x0 = e.clientX; s0 = f.scrollLeft; mov = false; });
+  f.addEventListener('pointermove', (e) => { if (x0 == null) return; const dx = e.clientX - x0; if (!mov && Math.abs(dx) > 5) { mov = true; f.classList.add('arrasta'); f.setPointerCapture(e.pointerId); } if (mov) f.scrollLeft = s0 - dx; });
+  const solta = () => { if (x0 == null) return; x0 = null; f.classList.remove('arrasta'); if (mov) { const c = f.scrollLeft + f.clientWidth / 2; centro(it.reduce((b, e) => (Math.abs(e.offsetLeft + e.offsetWidth / 2 - c) < Math.abs(b.offsetLeft + b.offsetWidth / 2 - c) ? e : b))); } };
+  f.addEventListener('pointerup', solta); f.addEventListener('pointercancel', solta);
+  f.addEventListener('click', (e) => { const el = e.target.closest('.bas-rc-i'); if (mov) { mov = false; e.preventDefault(); e.stopPropagation(); return; }
+    if (el && +el.style.getPropertyValue('--a') > 0.4) { e.preventDefault(); e.stopPropagation(); centro(el); } }, true);
 }
 function basExtrasInicio(secs) {
   const C = S.C; const j = basJan(); const D = E.disponivelAporte({ C, mes: j.de, ate: j.ate, metaMes: C.metaAporteMes });

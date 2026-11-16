@@ -1833,3 +1833,42 @@ body[data-ui="basico"] :is(.bas-inv-pl, .btn.primary):active { transform: scale(
 .bas-rc-in .bas-rc-b { right: 6%; bottom: 8%; }
 .bas-rc-in .bas-band { display: block; height: auto; width: 24%; }
 .bas-rc-in .bas-rc-b .bas-band { width: 30cqw; height: auto; }
+
+/* ===== Cartão refeito: limpo, no jeito de um cartão de verdade (cor do banco em degradê suave, reflexo largo e anéis de luz bem leves) ===== */
+.bas-cr { position: relative; display: block; width: 100%; aspect-ratio: .63; container-type: inline-size; border-radius: 20px; overflow: hidden; color: #fff;
+  background:
+    radial-gradient(130% 65% at 90% 0%, rgba(255, 255, 255, .26), transparent 55%),
+    radial-gradient(circle at 75% 62%, transparent 30%, rgba(255, 255, 255, .06) 30.5%, transparent 32%, transparent 46%, rgba(255, 255, 255, .05) 46.5%, transparent 48%),
+    radial-gradient(90% 55% at 0% 100%, rgba(0, 0, 0, .28), transparent 60%),
+    linear-gradient(160deg, color-mix(in srgb, var(--cb) 80%, #fff) 0%, var(--cb) 42%, color-mix(in srgb, var(--cb) 62%, #000) 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .16), inset 0 1px 0 rgba(255, 255, 255, .35), 0 34px 60px -30px rgba(0, 0, 0, .6), 0 10px 22px -12px rgba(0, 0, 0, .35); }
+/* deitado e girado 90° no sentido horário: chip no alto, aproximação embaixo dele, logo no canto de cima, bandeira embaixo na lateral */
+.bas-cr-in { position: absolute; left: 50%; top: 50%; width: calc(100cqw / .63); height: 100cqw; transform: translate(-50%, -50%) rotate(90deg); }
+.bas-cr-t { position: absolute; left: 6%; top: 9%; } .bas-cr-t .inst-ic { width: 12cqw; height: 12cqw; border-radius: 26%; box-shadow: 0 0 0 1px rgba(255, 255, 255, .15); }
+.bas-cr-chip { position: absolute; left: 8%; top: 37%; width: 15%; height: 23%; border-radius: 6px; overflow: hidden;
+  background: linear-gradient(135deg, #efdcaa 0%, #c9a65a 38%, #f4e4b6 58%, #b8934b 100%); box-shadow: inset 0 0 0 1px rgba(90, 64, 18, .35), 0 1px 2px rgba(0, 0, 0, .25); }
+.bas-cr-chip::before { content: ""; position: absolute; left: 0; right: 0; top: 30%; bottom: 30%; border-top: 1px solid rgba(90, 64, 18, .45); border-bottom: 1px solid rgba(90, 64, 18, .45); }
+.bas-cr-chip::after { content: ""; position: absolute; top: 0; bottom: 0; left: 36%; right: 36%; border-left: 1px solid rgba(90, 64, 18, .45); border-right: 1px solid rgba(90, 64, 18, .45); }
+.bas-cr-nfc { position: absolute; left: 26.5%; top: 41%; } .bas-cr-nfc svg { display: block; width: 8cqw; height: 8cqw; fill: none; stroke: rgba(255, 255, 255, .85); stroke-width: 2; stroke-linecap: round; }
+.bas-cr-b { position: absolute; right: 6%; bottom: 9%; line-height: 0; } .bas-cr-b .bas-band { display: block; height: auto; color: #fff; filter: none; }
+.bas-cr-b.visa .bas-band { width: 30cqw; } .bas-cr-b.master .bas-band { width: 20cqw; }
+/* escolher o cartão: grandes, empilhados no meio como na foto; o do meio de frente, os outros atrás, girados e menores */
+.bas-rc-fila { padding: 26px calc(50% - 135px) 18px; perspective: 1300px; cursor: grab; }
+.bas-rc-fila.arrasta { cursor: grabbing; scroll-snap-type: none; } .bas-rc-fila.arrasta * { pointer-events: none; }
+.bas-rc-i { width: 270px; margin: 0 -78px; transform: rotateY(calc(var(--d, 0) * -36deg)) scale(calc(1 - var(--a, 0) * .16)); opacity: 1; transform-origin: 50% 50%; }
+.bas-rc-i .bas-cr { transition: transform 220ms var(--ease-out); } .bas-rc-i:active .bas-cr { transform: scale(.97); }
+.bas-rc-i .bas-rc-n { margin-top: 6px; }
+/* tela do cartão: maior, inclinado, passando um pouco por cima da folha de baixo */
+.bas-ct2 { position: relative; z-index: 2; grid-template-columns: 52px 1fr; padding: 4px 0 0; }
+.bas-ct2-card { width: 232px; margin-bottom: -96px; transform: rotate(-7deg); animation: bas-ct2-in2 560ms cubic-bezier(.2, .8, .2, 1); }
+@keyframes bas-ct2-in2 { from { transform: translateY(70px) rotate(-16deg); opacity: 0; } }
+.bas-ct2-folha { position: relative; z-index: 1; padding-top: 110px; }
+@media (prefers-reduced-motion: reduce) { .bas-ct2-card { animation: none; } .bas-rc-i .bas-cr { transition: none; } }
+/* as margens negativas encolhem a fila: a sobra lateral compensa, para o primeiro e o último cartão chegarem ao meio */
+.bas-rc-fila { padding-left: calc(50% - 57px); padding-right: calc(50% - 57px); }
+.bas-rc-i { transform: rotateY(calc(var(--d, 0) * -44deg)) scale(calc(1 - var(--a, 0) * .3)); }
+.bas-rc-i .bas-rc-n { opacity: calc(1 - var(--a, 0) * 3); }
+/* os ícones do app usam traço; nas bandeiras o desenho é só preenchimento (o traço engrossava as letras da Visa) */
+.bas-band, .bas-band * { stroke: none !important; }
+/* o cartão passa só uma pontinha por cima da folha */
+.bas-ct2-card { margin-bottom: -26px; } .bas-ct2-folha { padding-top: 40px; }
