@@ -3210,3 +3210,31 @@ body[data-ui="basico"][data-screen="app"] .tabbar { bottom: max(8px, calc(env(sa
 @media (prefers-reduced-motion: reduce) { .bas-ct-bar i, .bas-ct-trk i, .bas-ct-ats { animation: none; } }
 .bas-ct-ch { grid-template-columns: 10px 1fr auto 18px; }
 .bas-ct-at { grid-template-columns: auto 1fr 44px auto; gap: 10px; padding-left: 10px; } .bas-ct-at .bas-ct-sp { width: 44px; }
+/* ===== Carteira em branco: o anel de vidro por classe, "hoje → alvo", a frase e as fichas ===== */
+.bas-pg-ctw { padding-top: 6px; }
+.bas-ctw-h { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 8px; }
+.bas-ctw-h > b { text-align: center; font-size: 17px; font-weight: 700; }
+.bas-ctw-h .bas-circ, .bas-ctw-h .bell { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; padding: 0; }
+.bas-ctw { margin-top: 8px; text-align: center; }
+.bas-ctw-top { margin: 8px 0 0; font-size: 18px; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; letter-spacing: -.01em; } .bas-ctw-top span { opacity: .6; margin: 0 2px; }
+.bas-ctw-r { position: relative; width: min(330px, 100%); margin: 2px auto 0; touch-action: pan-y; }
+.bas-ctw-r svg { display: block; width: 100%; height: auto; overflow: visible; }
+.bas-ctw-s { cursor: pointer; outline: none; transform: translate(0, 0); transition: transform 380ms cubic-bezier(.2, 1.3, .3, 1); animation: bas-ctw-in 600ms cubic-bezier(.2, .9, .2, 1) var(--d) both; }
+@keyframes bas-ctw-in { from { opacity: 0; transform: scale(.94); } }
+.bas-ctw-s .c { fill: url(#ctw-off); stroke: rgba(255, 255, 255, .9); stroke-width: 1; stroke-linejoin: round; filter: drop-shadow(0 6px 10px rgba(30, 45, 90, .16)); transition: filter 300ms; }
+.bas-ctw-s .b { fill: none; stroke: rgba(255, 255, 255, .85); stroke-width: 2.5; stroke-linecap: round; opacity: .7; }
+.bas-ctw-s.on { transform: translate(var(--dx), var(--dy)); }
+.bas-ctw-s.on .c { fill: url(#ctw-on); stroke: color-mix(in srgb, var(--accent) 40%, #fff); filter: drop-shadow(0 10px 18px color-mix(in srgb, var(--accent) 45%, transparent)); }
+.bas-ctw-s.on .b { stroke: rgba(255, 255, 255, .55); opacity: 1; }
+.bas-ctw-s:focus-visible .c { stroke: var(--accent); stroke-width: 2; }
+.bas-ctw-c { position: absolute; left: 50%; top: 57%; translate: -50% -50%; display: flex; flex-direction: column; align-items: center; gap: 2px; pointer-events: none; }
+.bas-ctw-c small { font-size: 13px; color: var(--ink-3); } .bas-ctw-c b { font-size: 26px; font-weight: 800; letter-spacing: -.02em; font-variant-numeric: tabular-nums; white-space: nowrap; } .bas-ctw-c b .bas-cent { opacity: .45; font-size: .62em; } .bas-ctw-c em { font-style: normal; font-size: 12.5px; color: var(--ink-3); }
+.bas-ctw-tx { display: grid; gap: 4px; margin-top: 4px; padding: 0 12px; } .bas-ctw-tx.troca { animation: bas-ctw-tx 320ms ease both; } @keyframes bas-ctw-tx { from { opacity: 0; transform: translateY(6px); } }
+.bas-ctw-tx b { font-size: 21px; font-weight: 800; letter-spacing: -.01em; } .bas-ctw-tx span { font-size: 14px; color: var(--ink-3); font-variant-numeric: tabular-nums; } .bas-ctw-tx span .bas-cent { opacity: .55; }
+.bas-ctw-tx p { margin: 6px auto 0; max-width: 320px; font-size: 15px; line-height: 1.45; color: var(--ink-2); }
+.bas-ctw-ch { display: flex; gap: 8px; margin: 18px -16px 0; padding: 2px 16px 6px; overflow-x: auto; scrollbar-width: none; justify-content: safe center; } .bas-ctw-ch::-webkit-scrollbar { display: none; }
+.bas-ctw-ch button { flex: none; height: 36px; padding: 0 14px; border-radius: 999px; border: .5px solid var(--line); background: var(--surface); font: inherit; font-size: 13.5px; font-weight: 600; color: var(--ink-2); cursor: pointer; transition: background 200ms, color 200ms; }
+.bas-ctw-ch button.on { color: #fff; border-color: transparent; background: var(--accent); box-shadow: 0 8px 16px -10px var(--accent); }
+@media (prefers-reduced-motion: reduce) { .bas-ctw-s, .bas-ctw-tx.troca { animation: none; transition: none; } }
+.bas-ctw { --ctw-a: color-mix(in srgb, var(--surface) 90%, #fff); --ctw-b: color-mix(in srgb, var(--ink) 16%, var(--surface)); }
+.bas-ctw-lb { display: block; font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); }

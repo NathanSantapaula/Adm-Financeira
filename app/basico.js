@@ -823,7 +823,7 @@ function basIaxLigar() {
 function basDesenhar() {
   const st = document.getElementById('bas-o3');
   if (st) { const falhou = () => st.classList.add('sem-3d'); if (typeof o3Ligar === 'function') o3Ligar(st, st.dataset.tipo, falhou); else falhou(); }
-  basIaxLigar(); basCifVe(); basGfLigar(); basPeriodoRepinta(); { const f = document.querySelector('.bas-form'); if (f && f.querySelector('[name="areaIc"]') && !f.dataset.ic) { f.dataset.ic = '1'; f.addEventListener('change', (e) => { if (e.target.name !== 'area') return; const r = f.querySelector(`[name="areaIc"][value="${basCatIcId(e.target.value)}"]`); if (r) r.checked = true; }); } } { const on = document.querySelector('.bas-cce-m.on'); const col = on && on.parentElement; if (col && !col.dataset.vis) { col.dataset.vis = '1'; col.scrollTop = on.offsetTop - col.clientHeight / 2 + on.offsetHeight / 2; } } basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basAtLigar(); basEfLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
+  basIaxLigar(); basCifVe(); basGfLigar(); basPeriodoRepinta(); { const f = document.querySelector('.bas-form'); if (f && f.querySelector('[name="areaIc"]') && !f.dataset.ic) { f.dataset.ic = '1'; f.addEventListener('change', (e) => { if (e.target.name !== 'area') return; const r = f.querySelector(`[name="areaIc"][value="${basCatIcId(e.target.value)}"]`); if (r) r.checked = true; }); } } { const on = document.querySelector('.bas-cce-m.on'); const col = on && on.parentElement; if (col && !col.dataset.vis) { col.dataset.vis = '1'; col.scrollTop = on.offsetTop - col.clientHeight / 2 + on.offsetHeight / 2; } } basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basAtLigar(); basEfLigar(); basCtwLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
   const wr = document.querySelector('.bas-wr'); if (wr && !wr.dataset.lig) { wr.dataset.lig = '1'; basWrIr(wr, 0); }
   const sq = document.querySelector('[data-sq-conta]'); if (sq && !sq.dataset.lig && !matchMedia('(prefers-reduced-motion: reduce)').matches) { sq.dataset.lig = '1'; const alvo = +sq.dataset.sqConta; const t0 = performance.now();
     const passo = (t) => { const k = Math.min(1, (t - t0) / 900); sq.textContent = Math.round(alvo * (1 - Math.pow(1 - k, 3))); if (k < 1 && sq.isConnected) requestAnimationFrame(passo); }; if (alvo > 0) requestAnimationFrame(passo); }
@@ -1207,38 +1207,63 @@ function basSpark(vals) {
   const pts = v.map((x, i) => `${((i / (v.length - 1)) * 60).toFixed(1)},${(20 - ((x - lo) / d) * 18 - 1).toFixed(1)}`).join(' ');
   return `<svg class="bas-ct-sp${v[v.length - 1] < v[0] ? ' desce' : ''}" viewBox="0 0 60 20" preserveAspectRatio="none" aria-hidden="true"><polyline points="${pts}"/></svg>`;
 }
+// o anel da carteira (inspirado nos anéis de alocação dos apps premium): um segmento de vidro por classe, aberto embaixo;
+// a classe escolhida fica na cor de destaque e sai do anel, com "hoje → alvo" em cima e uma frase do que fazer embaixo.
+// Tocar num segmento, numa ficha ou deslizar troca a classe, sem redesenhar a tela (basCtwLigar).
+function basCtwHtml(cls, total, comAlvo, its) {
+  const vivas = cls.filter((c) => c.valor > 0.005 || c.alvo > 0); if (!vivas.length || !(total > 0)) return '';
+  const nome = (c) => c.classe || 'Outros';
+  const dados = vivas.map((c) => { const at = total > 0 ? c.valor / total : 0; const al = c.alvo / 100; const df = (at - al) * 100;
+    const lista = its.filter((i) => (i.a.classe || '') === (c.classe || '') && i.valor > 0.005).sort((a, b) => b.valor - a.valor);
+    const falta = Math.max(0, al * total - c.valor);
+    let frase;
+    if (!comAlvo || !(c.alvo > 0)) frase = lista.length ? `${pct(at, 1)} do que você tem, em ${lista.length} ${lista.length === 1 ? 'ativo' : 'ativos'}. O maior é ${lista[0].a.nome}.` : 'Sem ativos nesta classe ainda.';
+    else if (Math.abs(df) < 2) frase = 'Está no alvo que você escolheu. Siga aportando na mesma proporção.';
+    else if (df > 0) frase = `Está ${df.toFixed(1).replace('.', ',')} pontos acima do alvo. Deixe os próximos aportes para as outras classes, sem precisar vender.`;
+    else frase = `Faltam ${brl0(falta)} para chegar ao alvo. É por aqui que os próximos aportes devem começar.`;
+    return { n: nome(c), at: pct(at, 1), al: comAlvo && c.alvo > 0 ? pct(al) : '', v: basCent(c.valor), f: frase, q: lista.length, df: comAlvo && c.alvo > 0 ? df : 0 }; });
+  // começa na classe mais longe do alvo (ou na maior, sem alvos)
+  let sel = 0; if (comAlvo) dados.forEach((d, i) => { if (Math.abs(d.df) > Math.abs(dados[sel].df)) sel = i; });
+  const cx = 150, cy = 150, R = 124, r = 86, A0 = -135, A1 = 135, gap = 2.6; const pt = (rr, a) => [cx + rr * Math.sin((a * Math.PI) / 180), cy - rr * Math.cos((a * Math.PI) / 180)];
+  const somaV = vivas.reduce((t, c) => t + Math.max(c.valor, 0), 0) || 1; let a = A0;
+  const segs = vivas.map((c, i) => { const span = Math.max(6, ((Math.max(c.valor, 0) / somaV) * (A1 - A0))); const s0 = a + gap / 2; const s1 = Math.min(A1, a + span) - gap / 2; a += span;
+    const big = s1 - s0 > 180 ? 1 : 0; const [x0, y0] = pt(R, s0); const [x1, y1] = pt(R, s1); const [x2, y2] = pt(r, s1); const [x3, y3] = pt(r, s0); const [h0x, h0y] = pt(R - 5, s0 + 1); const [h1x, h1y] = pt(R - 5, s1 - 1);
+    const meio = ((s0 + s1) / 2) * Math.PI / 180; const dx = (Math.sin(meio) * 9).toFixed(1); const dy = (-Math.cos(meio) * 9).toFixed(1);
+    return `<g class="bas-ctw-s${i === sel ? ' on' : ''}" data-i="${i}" style="--dx:${dx}px;--dy:${dy}px;--d:${i * 70}ms" role="button" tabindex="0" aria-label="${esc(dados[i].n)}: ${esc(dados[i].at)}">
+      <path class="c" d="M${x0.toFixed(1)} ${y0.toFixed(1)} A${R} ${R} 0 ${big} 1 ${x1.toFixed(1)} ${y1.toFixed(1)} L${x2.toFixed(1)} ${y2.toFixed(1)} A${r} ${r} 0 ${big} 0 ${x3.toFixed(1)} ${y3.toFixed(1)} Z"/>
+      <path class="b" d="M${h0x.toFixed(1)} ${h0y.toFixed(1)} A${R - 5} ${R - 5} 0 ${big} 1 ${h1x.toFixed(1)} ${h1y.toFixed(1)}"/></g>`; }).join('');
+  const d0 = dados[sel];
+  return `<section class="bas-ctw" data-ctw="${esc(JSON.stringify(dados))}" data-sel="${sel}">
+    <p class="bas-ctw-top" data-ctw-top>${d0.al ? `${d0.at} <span>→</span> ${d0.al}` : d0.at}</p><small class="bas-ctw-lb">${comAlvo ? 'hoje → alvo' : 'da carteira'}</small>
+    <div class="bas-ctw-r"><svg viewBox="0 0 300 262" aria-label="Alocação por classe. Toque numa parte do anel."><defs>
+        <linearGradient id="ctw-on" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:color-mix(in srgb, var(--accent) 45%, #fff)"/><stop offset=".55" style="stop-color:var(--accent)"/><stop offset="1" style="stop-color:color-mix(in srgb, var(--accent) 70%, #000)"/></linearGradient>
+        <linearGradient id="ctw-off" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--ctw-a)"/><stop offset="1" style="stop-color:var(--ctw-b)"/></linearGradient></defs>${segs}</svg>
+      <div class="bas-ctw-c"><small>Total investido</small><b>${basCent(total)}</b><em>${its.filter((i) => i.valor > 0.005).length} ativos · ${vivas.length} ${vivas.length === 1 ? 'classe' : 'classes'}</em></div></div>
+    <div class="bas-ctw-tx" aria-live="polite"><b data-ctw-n>${esc(d0.n)}</b><span data-ctw-v>${d0.v} · ${d0.q} ${d0.q === 1 ? 'ativo' : 'ativos'}</span><p data-ctw-f>${esc(d0.f)}</p></div>
+    <div class="bas-ctw-ch" role="group" aria-label="Classes">${dados.map((d, i) => `<button class="${i === sel ? 'on' : ''}" data-ctw-i="${i}">${esc(d.n)}</button>`).join('')}</div>
+  </section>`;
+}
+function basCtwLigar() {
+  const w = document.querySelector('.bas-ctw[data-ctw]'); if (!w || w.dataset.lig) return; w.dataset.lig = '1'; const D = JSON.parse(w.dataset.ctw); let sel = +w.dataset.sel;
+  const vai = (i) => { i = (i + D.length) % D.length; if (i === sel) return; sel = i; const d = D[i];
+    w.querySelectorAll('.bas-ctw-s').forEach((g) => g.classList.toggle('on', +g.dataset.i === i)); w.querySelectorAll('[data-ctw-i]').forEach((b) => b.classList.toggle('on', +b.dataset.ctwI === i));
+    const tx = w.querySelector('.bas-ctw-tx'); tx.classList.remove('troca'); void tx.offsetWidth; tx.classList.add('troca');
+    w.querySelector('[data-ctw-top]').innerHTML = d.al ? `${d.at} <span>→</span> ${d.al}` : d.at; w.querySelector('[data-ctw-n]').textContent = d.n; w.querySelector('[data-ctw-v]').innerHTML = `${d.v} · ${d.q} ${d.q === 1 ? 'ativo' : 'ativos'}`; w.querySelector('[data-ctw-f]').textContent = d.f;
+    const b = w.querySelector(`[data-ctw-i="${i}"]`); if (b) b.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' }); if (typeof basSom === 'function') basSom('toque'); if (typeof basVibra === 'function') basVibra(8); };
+  w.addEventListener('click', (e) => { const g = e.target.closest('.bas-ctw-s'); const b = e.target.closest('[data-ctw-i]'); if (g) vai(+g.dataset.i); else if (b) vai(+b.dataset.ctwI); });
+  w.addEventListener('keydown', (e) => { if (e.key === 'ArrowRight') vai(sel + 1); else if (e.key === 'ArrowLeft') vai(sel - 1); else if (e.key === 'Enter' && e.target.matches('.bas-ctw-s')) vai(+e.target.dataset.i); });
+  const anel = w.querySelector('.bas-ctw-r'); let x0 = null; anel.addEventListener('pointerdown', (e) => { x0 = e.clientX; }); anel.addEventListener('pointerup', (e) => { if (x0 != null && Math.abs(e.clientX - x0) > 40) vai(sel + (e.clientX < x0 ? 1 : -1)); x0 = null; });
+}
 function basTelaCarteira() {
   const { M, K } = cartAnalise(); const total = M.total; const its = M.items.filter((i) => i.valor > 0.005 || i.alvo > 0); const comAlvo = M.sumAlvo > 0;
   const cls = K.classes.filter((c) => c.valor > 0.005 || c.alvo > 0).sort((a, b) => b.valor - a.valor); const corC = (c) => BAS_CT_COR[cls.indexOf(c) % BAS_CT_COR.length];
   const corDe = (classe) => { const c = cls.find((x) => (x.classe || '') === (classe || '')); return c ? corC(c) : BAS_CT_COR[0]; };
-  // evolução da carteira: soma, mês a mês, da posição de cada ativo (a custo)
-  const mapa = new Map(); const series = new Map(); let pr12 = 0;
-  its.forEach((i) => { const s = basAtSerie(i.a); series.set(i, s); pr12 += s.slice(-12).reduce((t, p) => t + p.pr, 0);
-    s.forEach((p) => { const k = p.y * 12 + p.m; const o = mapa.get(k) || { y: p.y, m: p.m, c: 0, ap: 0, pr: 0 }; o.c += p.c; o.ap += p.ap; o.pr += p.pr; mapa.set(k, o); }); });
-  // um ativo que começou depois continua contando os anteriores: preenche os meses sem registro com a última posição de cada um
-  const ks = [...mapa.keys()].sort((a, b) => a - b); let L = [];
-  if (ks.length) { const ult = new Map(); for (let k = ks[0]; k <= ks[ks.length - 1]; k++) { let c = 0, ap = 0, pr = 0;
-    its.forEach((i) => { const p = series.get(i).find((q) => q.y * 12 + q.m === k); if (p) { ult.set(i, p.c); ap += p.ap; pr += p.pr; } c += ult.get(i) || 0; });
-    L.push({ y: Math.floor(k / 12), m: k % 12, c, ap, pr }); } }
-  const R = S.basAtR || '1A'; const vis = R === 'Tudo' ? L : L.slice(-(R === '6M' ? 6 : 12)); const n = vis.length;
-  const ini = n ? vis[0].c - vis[0].ap : 0; const dif = total - ini; const up = dif >= 0; const pv = ini > 0 ? dif / ini : null;
-  let graf = '';
-  if (n) {
-    let lo = Math.min(...vis.map((p) => p.c), ini); let hi = Math.max(...vis.map((p) => p.c)); if (!(hi > lo)) hi = lo + 1; const pad = (hi - lo) * 0.14; lo = Math.max(0, lo - pad); hi += pad;
-    const yy = (v) => ((hi - v) / (hi - lo)) * 100; const cx = (i) => ((i + 0.5) / n) * 84;
-    const d = basCurva([[0, yy(ini)], ...vis.map((p, i) => [cx(i), yy(p.c)]), [84, yy(total)]]);
-    const dd = vis.map((p) => [basAtMes(p, true), basCent(p.c), p.ap ? `${p.ap > 0 ? '+' : '−'}${brl(Math.abs(p.ap))} ${p.ap > 0 ? 'aplicado' : 'resgatado'}` : 'sem aporte', p.ap > 0 ? 'sobe' : p.ap < 0 ? 'desce' : '']);
-    graf = `<div class="bas-at-g bas-ct-g" data-d="${esc(JSON.stringify(dd))}" role="img" aria-label="Evolução da carteira. Arraste para ver cada mês.">
-      <svg class="bas-at-ln" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="bas-at-ar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#38D6FF" stop-opacity=".38"/><stop offset="1" stop-color="#38D6FF" stop-opacity="0"/></linearGradient></defs><path class="a" d="${d} L84 100 L0 100 Z"/><path class="l" d="${d}"/></svg>
-      <span class="bas-at-fim" style="top:${yy(total).toFixed(2)}%" aria-hidden="true"></span><i class="bas-at-mira" aria-hidden="true"></i></div>
-      <div class="bas-at-eixo" aria-hidden="true">${[vis[0], vis[Math.floor((n - 1) / 2)], vis[n - 1]].map((p) => `<span>${basAtMes(p)}</span>`).join('')}</div>
-      <div class="bas-ct-rg" role="group" aria-label="Período do gráfico">${['6M', '1A', 'Tudo'].map((r) => `<button class="${r === R ? 'on' : ''}" data-act="bas-at-r" data-v="${r}" aria-pressed="${r === R}">${r}</button>`).join('')}</div>`;
-  }
-  const quando = R === 'Tudo' ? 'desde o início' : R === '6M' ? 'em 6 meses' : 'em 12 meses';
+  // série de cada ativo (para as mini linhas)
+  const series = new Map(); its.forEach((i) => series.set(i, basAtSerie(i.a)));
   // alocação: barra segmentada e as classes; a aberta mostra os ativos dela
   const aberta = S.basCartAbre;
   const linhaAt = (i) => { const s = series.get(i) || []; return `<li><button class="bas-ct-at" ${basIr('ativo', { id: i.a.id })}><span class="bas-ct-lg" style="--bc:${corDe(i.a.classe)}">${esc(basSigla(i.a.nome))}</span><span class="bas-ct-an"><b>${esc(i.a.nome)}</b><small>${pct(total > 0 ? i.valor / total : 0, 1)}</small></span>${basSpark(s.slice(-12).map((p) => p.c))}<b class="bas-ct-av">${basCent(i.valor)}</b></button></li>`; };
-  const alocacao = total > 0 ? `<div class="card bas-ct-al"><div class="bas-ct-bar" aria-hidden="true">${cls.filter((c) => c.valor > 0).map((c) => `<i style="flex:${c.valor.toFixed(2)};--bc:${corC(c)}"></i>`).join('')}</div>
+  const alocacao = total > 0 ? `<div class="card bas-ct-al">
     <ul class="bas-ct-cl">${cls.filter((c) => c.valor > 0).map((c) => { const ab = aberta === (c.classe || ''); const lista = its.filter((i) => (i.a.classe || '') === (c.classe || '') && i.valor > 0.005).sort((a, b) => b.valor - a.valor);
       return `<li class="${ab ? 'on' : ''}"><button class="bas-ct-ch" data-act="bas-cart-cl" data-v="${esc(c.classe || '')}" aria-expanded="${ab}"><i style="--bc:${corC(c)}"></i><span><b>${esc(c.classe || 'Outros')}</b><small>${pct(c.valor / total, 1)} · ${lista.length} ${lista.length === 1 ? 'ativo' : 'ativos'}</small></span><b class="bas-ct-cv">${basCent(c.valor)}</b><svg class="bas-ct-sc" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
         ${ab ? `<ul class="bas-ct-ats">${lista.map(linhaAt).join('')}</ul>` : ''}</li>`; }).join('')}</ul></div>` : basCard(basVazio('Sua carteira aparece aqui quando você registrar o primeiro investimento.'));
@@ -1253,15 +1278,11 @@ function basTelaCarteira() {
   const sug = M.items.filter((i) => i.sug > 0.004).sort((a, b) => b.sug - a.sug);
   const prox = comAlvo && sug.length ? basSecao('Próximo aporte', `<small class="bas-pv2-q">${brl0(M.aporte)} disponíveis</small>`, `<div class="card bas-ct-px"><ul>${sug.map((i) => `<li><button ${basIr('ativo', { id: i.a.id })}><span class="bas-ct-lg sm" style="--bc:${corDe(i.a.classe)}">${esc(basSigla(i.a.nome))}</span><span class="bas-ct-an"><b>${esc(i.a.nome)}</b><small>${esc(i.a.classe || '')}${i.cotas ? ` · ${i.cotas} ${i.cotas === 1 ? 'cota' : 'cotas'}` : ''}</small></span><b class="bas-ct-pv">+${basCent(i.sug)}</b></button></li>`).join('')}</ul>
       ${K.mesesEquilibrio > 0 ? `<p class="bas-ct-eq">Assim, a carteira chega ao alvo em ${K.mesesEquilibrio} ${K.mesesEquilibrio === 1 ? 'mês' : 'meses'}, sem vender nada.</p>` : ''}</div>`) : '';
-  return `<div class="bas-pg bas-pg-ct"><div class="bas-gt-bg bas-pt-bg">
-    <header class="bas-pv2-h"><button class="bell bas-cal-b" data-act="bas-voltar" aria-label="Voltar">${I_VOLTA}</button><b>Minha carteira</b><span class="bas-noite-r">${olhoHtml()}</span></header>
-    <small class="bas-pv2-k" data-at="k">Total investido</small><b class="bas-pv2-t" data-at="v">${basCent(total)}</b>
-    <p class="bas-pv2-var" data-at="s">${pv != null && n ? `<span class="bas-ev-pct${up ? '' : ' neg'}">${up ? '↑' : '↓'} ${pct(Math.abs(pv), 1)}</span><span>${up ? '+' : '−'}${brl0(Math.abs(dif))} ${quando}</span>` : `<span>${its.length} ${its.length === 1 ? 'ativo' : 'ativos'}</span>`}</p>
-    ${graf}
-  </div><div class="bas-gt-folha">
-    ${total > 0 ? `<div class="card bas-ct-ks"><span><small>Ativos</small><b>${its.filter((i) => i.valor > 0.005).length}</b></span><span><small>Classes</small><b>${cls.filter((c) => c.valor > 0).length}</b></span><span><small>Proventos 12m</small><b>${brl0(pr12)}</b></span></div>` : ''}
-    ${basSecao('Alocação', '', alocacao)}${nota}${plano}${prox}${basRecHtml()}
-    <p class="bas-disc keep">Valores a custo, sem cotação de mercado. A divisão sugerida segue os alvos que você escolheu, sem indicar ativos nem prometer rentabilidade.</p></div></div>`;
+  return `<div class="bas-pg bas-pg-ctw">
+    <header class="bas-ctw-h"><button class="bas-circ" data-act="bas-voltar" aria-label="Voltar">${I_VOLTA}</button><b>Minha carteira</b><span>${olhoHtml()}</span></header>
+    ${basCtwHtml(cls, total, comAlvo, its)}
+    ${basSecao('Seus ativos', '', alocacao)}${nota}${plano}${prox}${basRecHtml()}
+    <p class="bas-disc keep">Valores a custo, sem cotação de mercado. A divisão sugerida segue os alvos que você escolheu, sem indicar ativos nem prometer rentabilidade.</p></div>`;
 }
 /* ---- App completo: limites, avisos, simulador do sonho e alvos da carteira ---- */
 const I_SINO = ic('<path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2H4.5z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>');
