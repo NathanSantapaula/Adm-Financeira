@@ -2610,3 +2610,25 @@ html[data-vt="ia-sai"]::view-transition-new(root) { animation: none; }
 @keyframes bas-orb-cor { from { filter: hue-rotate(-30deg); } to { filter: hue-rotate(50deg); } }
 .bas-iax-orb::after { animation: bas-gota 9s ease-in-out infinite, bas-orb-cor 7s ease-in-out infinite alternate; }
 .bas-iax:has(.ia-m.dig) .bas-iax-orb::after { animation: bas-gota-gira 1.6s linear infinite, bas-orb-cor 1.1s ease-in-out infinite alternate; }
+/* a trava de rolagem vale só para a tela da conversa (Dúvidas e Avisos usam a mesma marca para esconder as abas, mas rolam) */
+html:has(body[data-bas-ia="1"]), body[data-bas-ia="1"] { overflow: visible; height: auto; overscroll-behavior: auto; }
+html:has(.bas-iax), body:has(.bas-iax) { overflow: hidden; height: 100%; overscroll-behavior: none; }
+/* Dúvidas e Avisos: faixa de vidro sob o relógio, para o conteúdo não passar por baixo dele ao rolar; respiro embaixo */
+body[data-bas-ia="1"]:not(:has(.bas-iax))::before { content: ""; position: fixed; left: 0; right: 0; top: 0; z-index: 60; height: env(safe-area-inset-top, 0px); pointer-events: none;
+  background: color-mix(in srgb, var(--bg) 78%, transparent); -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4); }
+body[data-bas-ia="1"]:not(:has(.bas-iax)) #view { padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px)); }
+/* ===== Dúvidas, refeita: busca em pílula, lista agrupada com ícone colorido por assunto ===== */
+.bas-dv-b { display: flex; align-items: center; gap: 10px; height: 50px; padding: 0 16px; border-radius: 999px; background: var(--surface); color: var(--ink-3);
+  box-shadow: 0 8px 22px -16px rgba(20, 30, 80, .35), inset 0 0 0 .5px var(--line); }
+.bas-dv-b:focus-within { box-shadow: 0 8px 22px -16px rgba(20, 30, 80, .35), inset 0 0 0 1.5px var(--accent); }
+.bas-dv-b svg { width: 19px; height: 19px; flex: none; } .bas-dv-b input { flex: 1; min-width: 0; border: 0; outline: 0; background: none; font: inherit; font-size: 17px; color: var(--ink); }
+.bas-dv-p { margin: 12px 6px 14px; font-size: 14px; color: var(--ink-3); }
+.card.bas-dv-l { list-style: none; margin: 0; padding: 4px 0; border-radius: 22px; overflow: hidden; }
+.bas-dv-l li + li button::before { content: ""; position: absolute; top: 0; left: 64px; right: 0; border-top: .5px solid var(--line); }
+.bas-dv-l li[hidden] + li button::before { display: none; }
+.bas-dv-l button { position: relative; width: 100%; display: flex; align-items: center; gap: 14px; padding: 12px 16px; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+.bas-dv-l button:active { background: var(--surface-2); }
+.bas-dv-l .bas-n { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; } .bas-dv-l b { font-size: 16px; font-weight: 600; line-height: 1.3; } .bas-dv-l small { font-size: 13px; color: var(--ink-3); }
+.bas-dv-l button > svg { width: 16px; height: 16px; flex: none; color: var(--ink-3); }
+.bas-dv-ic { flex: none; width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; color: #fff; background: var(--c); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3); }
+.bas-dv-ic svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
