@@ -2255,3 +2255,15 @@ body[data-ui="basico"][data-screen="app"] .tabbar { left: calc(50% - 30px); widt
 .bas-ia-fab .cifrao { left: -6px; top: -4px; }
 .bas-ia-fab .cifrao { left: -10px; top: -13px; }
 .bas-ia-fab { --cif-size: 90px; } .bas-ia-fab .cifrao { left: -17px; top: -13px; }
+
+/* o toque vai para o botão, não para o Cifrão (que reagiria com gestos e parecia crescer sozinho) */
+.bas-ia-fab .cifrao { pointer-events: none; }
+
+/* abas do assistente (Conversa e Avisos): duas metades iguais, centradas */
+.seg.bas-ia-abas { display: grid !important; grid-template-columns: 1fr 1fr !important; }
+.bas-ia-abas > button { width: 100%; justify-content: center; text-align: center; }
+/* o Cifrão solto fica sempre por cima, inclusive durante a troca de aba (que anima a barra numa camada própria) */
+.bas-cif-solto { view-transition-name: bas-cif; z-index: 130; }
+.bas-cif-corpo.esq { transform: none; }
+/* na bolinha, um pouco menor, para ver mais do corpo */
+.bas-ia-fab { --cif-size: 62px; } .bas-ia-fab .cifrao { left: -6px; top: -4px; }
