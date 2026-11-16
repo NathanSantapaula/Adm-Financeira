@@ -2717,3 +2717,22 @@ html[data-vt="cc"]::view-transition-group(bas-cc-oficial) { animation-duration: 
 .bas-dp3-bt { flex: none; min-height: 38px; padding: 0 18px; border-radius: 999px; font-size: 15px; }
 .bas-dp3-m { height: 6px; border-radius: 999px; overflow: hidden; background: var(--surface-2); } .bas-dp3-m i { display: block; height: 100%; border-radius: inherit; background: var(--accent); }
 .bas-dp3-mt { margin-top: -6px; font-size: 12px; color: var(--ink-3); }
+/* ===== Tela do gasto (referência de comprovante): fechar e editar no alto, quem recebeu, valor grande, data, atalhos e detalhes ===== */
+.bas-gv { padding-top: 6px; }
+.bas-gv-h { display: flex; justify-content: space-between; margin-bottom: 22px; }
+.bas-gv-id { display: flex; align-items: center; gap: 14px; }
+.bas-gv-ic { flex: none; width: 60px; height: 60px; border-radius: 50%; display: grid; place-items: center; background: var(--surface-2); overflow: hidden; }
+.bas-gv-ic .inst-ic { width: 60px; height: 60px; border-radius: 50%; } .bas-gv-ic i { font-style: normal; font-size: 20px; font-weight: 700; color: var(--ink-2); }
+.bas-gv-id b { display: block; font-size: 22px; font-weight: 700; letter-spacing: -.01em; } .bas-gv-id small { font-size: 15px; color: var(--ink-3); }
+.bas-gv-v { margin: 22px 0 4px; font-size: 44px; font-weight: 700; letter-spacing: -.03em; font-variant-numeric: tabular-nums; line-height: 1.05; } .bas-gv-v .bas-cent { opacity: .45; font-size: .6em; }
+.bas-gv-d { margin: 0; font-size: 14px; color: var(--ink-3); }
+.bas-gv-as { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 22px 0 8px; }
+.bas-gv-a { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 14px 6px; border: 0; border-radius: 18px; font: inherit; font-size: 13px; font-weight: 600; color: var(--ink); cursor: pointer;
+  background: var(--surface); box-shadow: 0 6px 18px -14px rgba(20, 30, 80, .35), inset 0 0 0 .5px var(--line); transition: transform 160ms var(--ease-out); }
+.bas-gv-a:active { transform: scale(.96); } .bas-gv-a svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.bas-gv-g { margin: 24px 4px 10px; font-size: 20px; font-weight: 700; }
+.card.bas-gv-l { list-style: none; margin: 0; padding: 4px 16px; border-radius: 22px; }
+.bas-gv-l li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 13px 0; font-size: 15px; } .bas-gv-l li + li { border-top: .5px solid var(--line); }
+.bas-gv-l span { color: var(--ink-3); } .bas-gv-l b { display: inline-flex; align-items: center; gap: 8px; text-align: right; font-weight: 600; }
+.bas-gv-l b .inst-ic { width: 22px; height: 22px; border-radius: 7px; }
+.bas-gv-ok { color: var(--pos) !important; font-weight: 700; }
