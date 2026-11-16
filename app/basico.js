@@ -326,8 +326,7 @@ function basInvestir() {
       <path class="bas-ev-a" d="${area}"/><path class="bas-ev-l" d="${curva}"/></svg>
       <span class="bas-ev-pts" aria-hidden="true" style="--m:${esc(masc)}"></span>
       <span class="bas-ev-guia" aria-hidden="true" style="left:${((pts[sel][0] / W) * 100).toFixed(2)}%;top:${((pts[sel][1] / H) * 100).toFixed(2)}%"></span><span class="bas-ev-p" aria-hidden="true" style="left:${((pts[sel][0] / W) * 100).toFixed(2)}%;top:${((pts[sel][1] / H) * 100).toFixed(2)}%"></span></div>
-    <div class="bas-ev-jan" role="group" aria-label="Período do gráfico">${[[1, '1M'], [3, '3M'], [6, '6M'], [12, 'Ano']].map(([n, t]) => `<button data-act="bas-ev-jan" data-v="${n}" aria-pressed="${n === jan}">${t}</button>`).join('')}</div>
-    <div class="bas-noite-par bas-tres"><span><small>Investido</small><b>${basCent(D.aportado)}</b></span><span><small>Proventos</small><b>${basCent(basSomaJ(C.faturamento))}</b></span><span><small>Disponível</small><b>${basCent(D.disponivel)}</b></span></div></section>`;
+    <div class="bas-ev-jan" role="group" aria-label="Período do gráfico">${[[1, '1M'], [3, '3M'], [6, '6M'], [12, 'Ano']].map(([n, t]) => `<button data-act="bas-ev-jan" data-v="${n}" aria-pressed="${n === jan}">${t}</button>`).join('')}</div></section>`;
   const f = D.meta > 0 ? D.aportado / D.meta : 0;
   secs.meta = basMetaDispHtml();
   // seus sonhos também em Investir: cada aporte aproxima um deles; tocar abre os detalhes

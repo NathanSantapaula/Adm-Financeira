@@ -2063,3 +2063,12 @@ body[data-ui="basico"] .bas-gt-folha .bas-pt-acoes > :is(.bas-circ, .bas-inv-pl)
 @media (prefers-reduced-motion: reduce) { .bas-pt-bg > .bas-ev .bas-ev-p, .bas-pt-bg > .bas-ev .bas-ev-guia { transition: none; } }
 .bas-pt-bg > .bas-ev .bas-ev-p { margin: 0; }
 .bas-pt-bg > .bas-ev .bas-ev-p { transform: none; } .bas-pt-bg > .bas-ev .bas-ev-guia { transform: none; translate: -50% 0; }
+
+/* períodos do gráfico: menores, em cápsula, no mesmo vidro dos outros botões sobre o azul */
+.bas-ev-jan { justify-content: center; gap: 8px; margin: 12px 0 4px; }
+.bas-ev-jan button { flex: 0 0 auto; min-width: 58px; height: 34px; padding: 0 14px; border-radius: 999px; font-size: 14px; }
+.bas-ev-jan button[aria-pressed="true"] { color: var(--lg-txt); background: var(--lg-bg); -webkit-backdrop-filter: var(--lg-desfoque); backdrop-filter: var(--lg-desfoque);
+  box-shadow: inset 0 1px 0 var(--lg-aro), inset 0 -1px 0 var(--lg-aro-b), inset 0 0 0 .5px var(--lg-aro-b), var(--lg-sombra); }
+/* o patrimônio desce, longe do nome, e fica perto do gráfico */
+.bas-pt-bg > .bas-ev { margin-top: 30px; }
+.bas-pt-bg > .bas-ev .bas-ev-g { margin-top: 2px; }
