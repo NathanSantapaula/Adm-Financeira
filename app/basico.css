@@ -1914,3 +1914,17 @@ svg.bas-cr-chip path { fill: none; stroke: rgba(92, 66, 22, .55) !important; str
 .bas-on2-l b { font-size: 16px; font-weight: 600; white-space: nowrap; } .bas-on2-l small { font-size: 14px; color: var(--ink-3); text-align: right; }
 .bas-on2-lim { display: block; width: 100%; margin-top: 4px; padding: 12px 0 10px; border: 0; border-top: 1px solid var(--line); background: none; font: inherit; font-size: 15px; font-weight: 600; color: var(--accent); cursor: pointer; }
 .bas-cal-b svg { width: 20px; height: 20px; }
+
+/* Para onde foi: a linha com nome e valor no alto, o detalhe e a barra embaixo */
+.bas-onde2 .bas-onde-b { margin-bottom: 6px; }
+.bas-onde2 .bas-onde-a .bas-n { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.bas-onde-h { display: flex; justify-content: space-between; gap: 10px; } .bas-onde-h b { font-size: 16px; } .bas-onde-h b + b { white-space: nowrap; }
+.bas-onde-s { font-size: 13.5px; color: var(--ink-3); }
+.bas-onde2 .bas-onde-t { margin-top: 3px; }
+.bas-onde2 .bas-onde-a > .bas-v { display: none; }
+.bas-onde-t.lim i { background: var(--pos); } .bas-onde-a.perto .bas-onde-t.lim i { background: var(--warn); } .bas-onde-a.passou .bas-onde-t.lim i { background: var(--neg); }
+.bas-onde-a.passou .bas-onde-s { color: var(--neg); }
+/* Entradas e + Gasto: dois botões de vidro lado a lado, centrados, ocupando a largura */
+.bas-gt-folha > .bas-gt-acoes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.bas-gt-acoes > button { width: 100% !important; height: 50px; margin: 0 !important; border-radius: 999px !important; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 16px; font-weight: 600; }
+.bas-gt-acoes > button svg { width: 20px; height: 20px; }
