@@ -2703,3 +2703,5 @@ html[data-vt="cc"]::view-transition-group(bas-cc-oficial) { animation-duration: 
 .bas-cr-b.nova { animation: bas-band-pop 520ms cubic-bezier(.2, .85, .2, 1.3) both; }
 @keyframes bas-band-pop { from { transform: scale(.3); opacity: 0; filter: blur(4px); } 60% { transform: scale(1.15); opacity: 1; filter: none; } }
 @media (prefers-reduced-motion: reduce) { .bas-cce-card { transition: none; } .bas-cr-b.nova { animation: none; } }
+/* a regra antiga girava qualquer svg do selo enquanto pensava, inclusive o Cifrão: ele fica de pé */
+.bas-iax-orb .cifrao svg, .bas-iax:has(.ia-m.dig) .bas-iax-orb .cifrao svg { animation: none !important; transform: none !important; }
