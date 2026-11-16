@@ -1235,6 +1235,7 @@ function basCtwHtml(cls, total, comAlvo, its) {
         <linearGradient id="ctw-on" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:color-mix(in srgb, var(--accent) 45%, #fff)"/><stop offset=".55" style="stop-color:var(--accent)"/><stop offset="1" style="stop-color:color-mix(in srgb, var(--accent) 70%, #000)"/></linearGradient>
         <linearGradient id="ctw-off" gradientUnits="userSpaceOnUse" x1="60" y1="20" x2="240" y2="262"><stop offset="0" style="stop-color:var(--accent);stop-opacity:.62"/><stop offset=".55" style="stop-color:var(--accent);stop-opacity:.28"/><stop offset="1" style="stop-color:var(--accent);stop-opacity:.06"/></linearGradient>
         <pattern id="ctw-lis" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)"><line x1="1" y1="0" x2="1" y2="7" style="stroke:#fff;stroke-width:1.8;stroke-opacity:.92"/></pattern>
+        <linearGradient id="ctw-onw" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".55" stop-color="#E4F6FF"/><stop offset="1" stop-color="#9FDCFF"/></linearGradient>
         <radialGradient id="ctw-gl" gradientUnits="userSpaceOnUse" cx="110" cy="40" r="170"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".5" stop-color="#fff" stop-opacity=".08"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>${segs}</svg>
       <div class="bas-ctw-c"><small>Total investido</small><b>${basCent(total)}</b></div></div>
     <div class="bas-ctw-tx" aria-live="polite"><b data-ctw-n>${esc(d0.n)}</b><span data-ctw-v>${d0.v}</span><em class="${d0.tk}" data-ctw-t>${esc(d0.t)}</em></div>
@@ -1268,11 +1269,12 @@ function basTelaCarteira() {
   const sug = M.items.filter((i) => i.sug > 0.004).sort((a, b) => b.sug - a.sug);
   const prox = comAlvo && sug.length ? basSecao('Próximo aporte', `<small class="bas-pv2-q">${brl0(M.aporte)} disponíveis</small>`, `<div class="card bas-ct-px"><ul>${sug.map((i) => `<li><button ${basIr('ativo', { id: i.a.id })}><span class="bas-ct-lg sm" style="--bc:${corDe(i.a.classe)}">${esc(basSigla(i.a.nome))}</span><span class="bas-ct-an"><b>${esc(i.a.nome)}</b></span><b class="bas-ct-pv">+${basCent(i.sug)}</b></button></li>`).join('')}</ul>
 </div>`) : '';
-  return `<div class="bas-pg bas-pg-ctw">
-    <header class="bas-ctw-h"><button class="bas-circ" data-act="bas-voltar" aria-label="Voltar">${I_VOLTA}</button><b>Minha carteira</b><span class="bas-ctw-hr"><button class="bas-circ" ${basIr('alvos')} aria-label="Meus alvos" title="Meus alvos"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".8"/></svg></button>${olhoHtml()}</span></header>
+  return `<div class="bas-pg bas-pg-ctw"><div class="bas-gt-bg bas-pt-bg bas-ctw-bg">
+    <header class="bas-pv2-h"><button class="bell bas-cal-b" data-act="bas-voltar" aria-label="Voltar">${I_VOLTA}</button><b>Minha carteira</b><span class="bas-noite-r"><button class="bell bas-cal-b bas-ctw-alvo" ${basIr('alvos')} aria-label="Meus alvos" title="Meus alvos"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".8"/></svg></button>${olhoHtml()}</span></header>
     ${basCtwHtml(cls, total, comAlvo, its)}
+  </div><div class="bas-gt-folha">
     ${basSecao('Seus ativos', '', alocacao)}${prox}${basRecHtml()}
-    <p class="bas-disc keep">Valores a custo. Sugestão pelos seus alvos, sem indicar ativos.</p></div>`;
+    <p class="bas-disc keep">Valores a custo. Sugestão pelos seus alvos, sem indicar ativos.</p></div></div>`;
 }
 /* ---- App completo: limites, avisos, simulador do sonho e alvos da carteira ---- */
 const I_SINO = ic('<path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2H4.5z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>');
