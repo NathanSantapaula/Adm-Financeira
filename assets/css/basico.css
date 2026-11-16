@@ -1663,3 +1663,433 @@ body[data-ui="basico"][data-screen="app"] .tabbar { left: 50%; right: auto; widt
 .bas-tabs button[aria-current="page"] { color: var(--accent); background: color-mix(in srgb, var(--accent) 13%, transparent); box-shadow: none; }
 .bas-tabs svg { width: 23px; height: 23px; }
 @media (prefers-reduced-motion: reduce) { .bas-tabs button { transition: none; } }
+
+/* ===== Barra de cima única (todas as abas) ===== */
+.bas-pg > .bas-topo { margin-bottom: 14px; }
+.bas-pg > .bas-topo .bas-eu-t small { color: var(--ink-3); }
+.bas-pg > .bas-topo .bas-eu-m .av { box-shadow: 0 0 0 2px var(--line); }
+
+/* ===== Gastos: o total em destaque e os cartões translúcidos ===== */
+.bas-gt { position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; text-align: center; margin: 4px 0 18px; padding: 26px 18px 0; border-radius: 30px; color: #fff;
+  background: radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--accent) 70%, #fff), transparent 60%), linear-gradient(170deg, var(--accent), color-mix(in srgb, var(--accent) 55%, #000));
+  box-shadow: 0 24px 50px -28px var(--accent); }
+.bas-gt > small { font-size: 16px; font-weight: 600; opacity: .9; }
+.bas-gt-v { margin: 4px 0 10px; font-size: 48px; font-weight: 700; letter-spacing: -.035em; line-height: 1.05; }
+.bas-gt-v .bas-cent, .bas-gt-c .bas-cent { opacity: .55; }
+.bas-gt-chip { border: 0; border-radius: 999px; padding: 6px 14px; font: inherit; font-size: 14px; font-weight: 600; color: #fff; background: rgba(255, 255, 255, .18); cursor: pointer; }
+.bas-gt-chip.warn { background: color-mix(in srgb, var(--warn) 55%, transparent); } .bas-gt-chip.neg { background: color-mix(in srgb, var(--neg) 60%, transparent); }
+.bas-gt-pilha { position: relative; width: 100%; height: 132px; margin-top: 22px; padding: 0; border: 0; background: none; cursor: pointer; }
+.bas-gt-c { position: absolute; left: calc(var(--i) * 18px); right: calc(var(--i) * 18px); bottom: calc(var(--i) * 16px - 34px); height: 140px; border-radius: 22px 22px 0 0; display: flex; flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 4px; padding: 16px 20px; color: #fff; text-align: left;
+  background: linear-gradient(160deg, color-mix(in srgb, var(--cb) 45%, rgba(255, 255, 255, .28)), color-mix(in srgb, var(--cb) 20%, rgba(255, 255, 255, .08)));
+  border: 1px solid rgba(255, 255, 255, .35); border-bottom: 0; -webkit-backdrop-filter: blur(18px) saturate(160%); backdrop-filter: blur(18px) saturate(160%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45), 0 -10px 24px -14px rgba(0, 0, 0, .35); transition: transform 220ms var(--ease-out); }
+.bas-gt-c:not([style*="--i:0"]) { opacity: calc(1 - var(--i) * .25); }
+.bas-gt-pilha:active .bas-gt-c { transform: translateY(-6px); }
+.bas-gt-cn { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; opacity: .9; } .bas-gt-cn .inst-ic { width: 22px; height: 22px; }
+.bas-gt-c b { font-size: 26px; font-weight: 700; letter-spacing: -.02em; }
+
+/* os cartões na tela: fila que roda de lado, valor em destaque */
+.bas-ccv { position: fixed; inset: 0; z-index: 90; display: flex; flex-direction: column; justify-content: center; gap: 18px; padding: max(20px, env(safe-area-inset-top)) 0 max(28px, env(safe-area-inset-bottom));
+  background: color-mix(in srgb, var(--bg) 55%, transparent); -webkit-backdrop-filter: blur(24px) saturate(140%); backdrop-filter: blur(24px) saturate(140%); animation: bas-ccv-in 260ms var(--ease-out); }
+.bas-ccv.sai { animation: bas-ccv-out 220ms ease forwards; }
+.bas-ccv-h { position: absolute; top: max(16px, env(safe-area-inset-top)); left: 16px; right: 16px; display: flex; align-items: center; justify-content: space-between; } .bas-ccv-h b { font-size: 20px; }
+.bas-ccv-fila { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; } .bas-ccv-fila::-webkit-scrollbar { display: none; }
+.bas-ccv-i { flex: none; width: 100%; padding: 0 24px; scroll-snap-align: center; display: flex; flex-direction: column; gap: 16px; animation: bas-ccv-sobe 420ms cubic-bezier(.2, .8, .2, 1); }
+.bas-cc-c.bas-cc-xl { width: 100%; padding: 22px 24px; border-radius: 26px; grid-template-rows: auto 1fr auto; }
+.bas-xl-v { display: flex; flex-direction: column; justify-content: center; } .bas-xl-v small { font-size: 14px; opacity: .75; }
+.bas-xl-v b { font-size: 42px; font-weight: 700; letter-spacing: -.03em; line-height: 1.05; }
+.bas-xl-r { display: flex; justify-content: space-between; font-size: 15px; font-weight: 600; opacity: .85; }
+.bas-ccv-ver { align-self: center; }
+.bas-ccv-p { display: flex; justify-content: center; gap: 7px; } .bas-ccv-p i { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-3); opacity: .4; transition: all 200ms; } .bas-ccv-p i.on { width: 20px; border-radius: 4px; background: var(--accent); opacity: 1; }
+@keyframes bas-ccv-in { from { opacity: 0; } } @keyframes bas-ccv-out { to { opacity: 0; } } @keyframes bas-ccv-sobe { from { transform: translateY(60%) scale(.9); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .bas-ccv, .bas-ccv.sai, .bas-ccv-i { animation: none; } .bas-gt-c { transition: none; } }
+
+/* fundo azul de ponta a ponta no alto de Gastos; a folha de baixo sobe por cima dele e cobre a base dos cartões */
+body[data-ui="basico"] { --bas-azul: #0A84FF; --bas-azul-1: #3b6cff; --bas-azul-2: #1428f5; --bas-azul-3: #03061f; }
+.bas-gt-bg { position: relative; overflow: hidden; margin: -16px -16px 0; padding: 16px 16px 0; color: #fff;
+  background: linear-gradient(180deg, var(--bas-azul-1) 0%, var(--bas-azul-2) 42%, var(--bas-azul-3) 100%); }
+.bas-gt-bg > .bas-topo .bas-eu-t small { color: rgba(255, 255, 255, .75); }
+.bas-gt-bg > .bas-topo .bas-eu-m .av { box-shadow: 0 0 0 2px rgba(255, 255, 255, .35); }
+.bas-gt-bg :is(.olho, .bell, .bas-circ) { color: #fff; background: rgba(255, 255, 255, .16); border-color: transparent; box-shadow: none; }
+.bas-gt-bg .bas-pg-per { flex-wrap: nowrap; } .bas-gt-bg .bas-inv-pl { margin-left: auto; background: #fff; color: var(--bas-azul); box-shadow: none; }
+.bas-gt-bg .bas-gt { margin: 0; padding-top: 22px; border-radius: 0; background: none; box-shadow: none; overflow: visible; }
+.bas-gt-folha { position: relative; z-index: 2; margin: -30px -16px 0; padding: 22px 16px 16px; min-height: 50vh; background: var(--bg); border-radius: 28px 28px 0 0; box-shadow: 0 -8px 24px -12px rgba(0, 0, 0, .25); }
+.bas-gt-bg .bas-pg-per { gap: 6px; } .bas-gt-bg .bas-pg-per > * { flex-shrink: 0; } .bas-gt-bg .bas-per { flex-shrink: 1; min-width: 0; overflow: hidden; } .bas-gt-bg .bas-per span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* a folha fica na frente dos cartões: o azul isola o z-index dos cartões dentro dele */
+.bas-gt-bg { isolation: isolate; z-index: 0; }
+.bas-gt-folha > .bas-pg-per { margin: 0 0 16px; flex-wrap: nowrap; } .bas-gt-folha > .bas-pg-per .bas-inv-pl { margin-left: auto; }
+
+/* pilha de cartões no jeito de app de banco: vidro translúcido com a textura do modelo por baixo, detalhes estilizados na frente */
+.bas-gt-pilha { height: 118px; margin-top: 26px; }
+.bas-gt-c { left: calc(var(--i) * 16px); right: calc(var(--i) * 16px); bottom: calc(var(--i) * 18px - 30px); height: 120px; padding: 0; overflow: hidden; border-radius: 20px 20px 0 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .26), rgba(255, 255, 255, .1)); border: 1px solid rgba(255, 255, 255, .38); border-bottom: 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5), 0 -8px 22px -12px rgba(0, 0, 0, .3); }
+.bas-gt-c:not([style*="--i:0"]) { opacity: 1; filter: brightness(calc(1 - var(--i) * .06)); }
+.bas-cc-c.bas-gt-tx { position: absolute; inset: 0; width: auto; aspect-ratio: auto; padding: 0; border-radius: inherit; opacity: .38; box-shadow: none; transform: none; pointer-events: none; }
+.bas-gt-d { position: absolute; left: 20px; right: 20px; top: 20px; display: flex; align-items: center; gap: 18px; font-size: 15px; font-weight: 600; letter-spacing: .04em; color: rgba(255, 255, 255, .78); font-variant-numeric: tabular-nums; }
+
+/* logo do banco translúcida no cartão da frente, no lugar do nome */
+.bas-gt-d .inst-ic.bas-gt-logo { margin-left: auto; width: 54px; height: 30px; border-radius: 0; background: none !important; box-shadow: none !important; }
+.bas-gt-d .inst-ic.bas-gt-logo::after { display: none; }
+.bas-gt-d .inst-ic.bas-gt-logo i { width: 100%; height: 100%; background: rgba(255, 255, 255, .6) !important; filter: none !important; }
+.bas-gt-d .inst-ic.bas-gt-logo b { font-size: 20px; font-style: italic; color: rgba(255, 255, 255, .6) !important; }
+
+/* ===== Liquid Glass, pelas diretrizes da Apple ("Adopting Liquid Glass"):
+   - vidro só na camada de controles e navegação (barra de cima, período, ações, botões flutuantes), nunca no conteúdo;
+   - sem fundo pintado por cima do vidro: ele é transparente, desfoca e satura o que está atrás, com a borda pegando a luz;
+   - cor com moderação: só a ação principal é "prominent" (vidro tingido na cor de destaque), o resto é vidro neutro;
+   - formas em cápsula e círculo, concêntricas; ao toque o vidro cresce um pouco e acende;
+   - reduzir transparência deixa fosco e sólido; mais contraste dá borda definida; reduzir movimento tira a escala. ===== */
+body[data-ui="basico"] {
+  --lg-bg: rgba(255, 255, 255, .42); --lg-bg-on: rgba(255, 255, 255, .62); --lg-aro: rgba(255, 255, 255, .75); --lg-aro-b: rgba(255, 255, 255, .28);
+  --lg-sombra: 0 1px 1.5px rgba(0, 0, 0, .06), 0 8px 22px -10px rgba(0, 0, 0, .22); --lg-txt: var(--ink); --lg-desfoque: blur(14px) saturate(190%);
+}
+:root[data-theme="oled"] body[data-ui="basico"] { --lg-bg: rgba(255, 255, 255, .08); --lg-bg-on: rgba(255, 255, 255, .16); --lg-aro: rgba(255, 255, 255, .32); --lg-aro-b: rgba(255, 255, 255, .08); --lg-sombra: 0 1px 1.5px rgba(0, 0, 0, .3), 0 8px 22px -10px rgba(0, 0, 0, .6); }
+/* vidro claro sobre fundo colorido (o azul de Gastos): mais transparente, rótulo branco */
+.bas-gt-bg { --lg-bg: rgba(255, 255, 255, .14); --lg-bg-on: rgba(255, 255, 255, .26); --lg-aro: rgba(255, 255, 255, .55); --lg-aro-b: rgba(255, 255, 255, .15); --lg-txt: #fff; }
+body[data-ui="basico"] :is(.olho, .bell, .bas-circ, .bas-per, .bas-gt-chip, .bas-ct2-b) {
+  color: var(--lg-txt) !important; background: var(--lg-bg) !important; border: 0 !important;
+  -webkit-backdrop-filter: var(--lg-desfoque); backdrop-filter: var(--lg-desfoque);
+  box-shadow: inset 0 1px 0 var(--lg-aro), inset 0 -1px 0 var(--lg-aro-b), inset 0 0 0 .5px var(--lg-aro-b), var(--lg-sombra) !important;
+  transition: transform 260ms cubic-bezier(.3, 1.6, .5, 1), background-color 160ms ease, box-shadow 160ms ease; }
+/* a ação principal: vidro "prominent", tingido na cor de destaque, rótulo branco */
+body[data-ui="basico"] :is(.bas-inv-pl, .bas-folha-b .btn.primary, .btn.primary) {
+  color: #fff !important; border: 0 !important; background: color-mix(in srgb, var(--accent) 88%, transparent) !important;
+  -webkit-backdrop-filter: var(--lg-desfoque); backdrop-filter: var(--lg-desfoque);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45), inset 0 -1px 0 rgba(0, 0, 0, .12), 0 1px 1.5px rgba(0, 0, 0, .08), 0 10px 24px -10px color-mix(in srgb, var(--accent) 70%, transparent) !important;
+  transition: transform 260ms cubic-bezier(.3, 1.6, .5, 1), filter 160ms ease; }
+/* ao toque: cresce um pouco e acende, como o vidro interativo */
+body[data-ui="basico"] :is(.olho, .bell, .bas-circ, .bas-per, .bas-gt-chip, .bas-ct2-b):active { transform: scale(1.06); background: var(--lg-bg-on) !important; }
+body[data-ui="basico"] :is(.bas-inv-pl, .btn.primary):active { transform: scale(1.04); filter: brightness(1.12); }
+@media (prefers-reduced-transparency: reduce) {
+  body[data-ui="basico"] :is(.olho, .bell, .bas-circ, .bas-per, .bas-gt-chip, .bas-ct2-b) { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--surface) !important; color: var(--ink) !important; }
+  body[data-ui="basico"] :is(.bas-inv-pl, .btn.primary) { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--accent) !important; } }
+@media (prefers-contrast: more) { body[data-ui="basico"] :is(.olho, .bell, .bas-circ, .bas-per, .bas-gt-chip, .bas-ct2-b, .bas-inv-pl, .btn.primary) { box-shadow: inset 0 0 0 1.5px currentColor !important; } }
+@media (prefers-reduced-motion: reduce) { body[data-ui="basico"] :is(.olho, .bell, .bas-circ, .bas-per, .bas-gt-chip, .bas-ct2-b, .bas-inv-pl, .btn.primary):active { transform: none; } }
+
+/* ===== Cartões: frente da pilha com aproximação, logo e bandeira; escolher o cartão; gastos do cartão ===== */
+.bas-gt-d { align-items: center; }
+.bas-gt-nfc svg { width: 24px; height: 24px; fill: none; stroke: rgba(255, 255, 255, .62); stroke-width: 2; stroke-linecap: round; }
+.bas-gt-d .inst-ic.bas-gt-logo { margin-left: auto; width: 46px; }
+.bas-gt-d .bas-band { height: 22px; width: auto; color: rgba(255, 255, 255, .6); }
+.bas-gt-c { transition: transform 320ms cubic-bezier(.2, .8, .2, 1); }
+.bas-gt-pilha.abre .bas-gt-c { transform: translateY(calc((3 - var(--i)) * -10px)) rotate(calc((var(--i) - 1) * -2.5deg)); }
+.bas-gt-pilha.abre .bas-gt-c[style*="--i:0"] { transform: translateY(-34px) scale(1.04); }
+/* o cartão em pé, na proporção de um cartão de verdade */
+.bas-cc-c.bas-rc { position: relative; display: block; width: 100%; aspect-ratio: .63; padding: 18px; border-radius: 22px; overflow: hidden; color: #fff; }
+.bas-rc-t { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; }
+.bas-rc-t .inst-ic { width: 40px; height: 40px; }
+.bas-rc-nfc svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; opacity: .75; }
+.bas-rc-chip { position: absolute; left: 20px; top: 44%; width: 44px; height: 34px; border-radius: 8px; background: linear-gradient(135deg, #f3dc94, #b8913f 45%, #f6e3a8 70%, #a37e33); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .18); }
+.bas-rc-chip::after { content: ""; position: absolute; inset: 8px 6px; border: 1px solid rgba(80, 55, 10, .35); border-radius: 4px; }
+.bas-rc-b { position: absolute; right: 18px; bottom: 16px; } .bas-rc-b .bas-band { height: 28px; width: auto; color: rgba(255, 255, 255, .72); }
+.bas-rc:is([data-m="metal"], [data-m="holo"], [data-m="ouro"], [data-m="platina"]) .bas-band { color: rgba(0, 0, 0, .45); }
+.bas-rc-fila { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 26px calc(50% - 105px) 14px; margin: 0 -16px; perspective: 1100px; }
+.bas-rc-fila::-webkit-scrollbar { display: none; }
+.bas-rc-i { flex: none; width: 210px; margin: 0 -14px; padding: 0; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; scroll-snap-align: center; display: flex; flex-direction: column; align-items: center; gap: 16px;
+  transform: rotateY(calc(var(--d, 0) * -32deg)) scale(calc(1 - var(--a, 0) * .18)); opacity: calc(1 - var(--a, 0) * .3); z-index: calc(10 - var(--a, 0) * 10); }
+.bas-rc-i .bas-rc { box-shadow: 0 30px 50px -24px rgba(0, 0, 0, .55); transition: transform 200ms var(--ease-out); }
+.bas-rc-i:active .bas-rc { transform: scale(.96); }
+.bas-rc-n { display: flex; flex-direction: column; align-items: center; gap: 2px; opacity: calc(1 - var(--a, 0) * 2.2); }
+.bas-rc-n b { font-size: 20px; } .bas-rc-n small { font-size: 15px; color: var(--ink-3); }
+/* tela do cartão: botões na lateral, o cartão em pé e a folha com os gastos */
+.bas-ct2 { display: grid; grid-template-columns: 52px 1fr; align-items: center; gap: 12px; padding: 6px 0 26px; }
+.bas-ct2-lado { display: flex; flex-direction: column; gap: 14px; }
+.bas-ct2-b { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; }
+.bas-ct2-b svg { width: 22px; height: 22px; }
+.bas-ct2-card { width: 190px; justify-self: center; transform: perspective(900px) rotateY(-10deg) rotate(-4deg); animation: bas-ct2-in 520ms cubic-bezier(.2, .8, .2, 1); }
+.bas-ct2-card .bas-rc { box-shadow: 0 34px 60px -26px rgba(0, 0, 0, .6); }
+@keyframes bas-ct2-in { from { transform: perspective(900px) translateY(40px) rotateY(-30deg) rotate(-10deg); opacity: 0; } }
+.bas-ct2-folha { margin: 0 -16px; padding: 22px 16px 16px; border-radius: 28px 28px 0 0; background: var(--surface); box-shadow: 0 -10px 30px -16px rgba(0, 0, 0, .3); min-height: 40vh; }
+.bas-ct2-folha > .bas-pg-per { margin: 0 0 14px; }
+.bas-ct2-res { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.bas-ct2-t { display: flex; flex-direction: column; gap: 2px; padding: 14px 16px; margin: 0; }
+.bas-ct2-t.g { grid-column: 1 / -1; } .bas-ct2-t small { font-size: 14px; color: var(--ink-3); font-weight: 600; }
+.bas-ct2-t b { font-size: 24px; font-weight: 700; letter-spacing: -.02em; } .bas-ct2-t.g b { font-size: 36px; }
+.bas-ct2-t span { font-size: 14px; color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bas-ct2-cat { padding: 14px 16px; margin: 0 0 6px; } .bas-ct2-cat .bas-onde-l button { border: 0; background: none; font: inherit; color: inherit; padding: 0; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.bas-tx-l { list-style: none; margin: 0; padding: 0; }
+.bas-tx-g { padding: 14px 4px 6px; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-3); }
+.bas-tx { width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px 4px; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; border-radius: 14px; }
+.bas-tx:active { background: var(--surface-2); }
+.bas-tx-ic { flex: none; width: 44px; height: 44px; border-radius: 13px; display: grid; place-items: center; font-weight: 700; font-size: 15px; color: #fff; background: linear-gradient(145deg, color-mix(in srgb, var(--bc) 80%, #fff), var(--bc)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .4); }
+.bas-tx-n { flex: 1; min-width: 0; display: flex; flex-direction: column; } .bas-tx-n b { font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .bas-tx-n small { font-size: 14px; color: var(--ink-3); }
+.bas-tx-v { font-size: 16px; white-space: nowrap; }
+@media (prefers-reduced-motion: reduce) { .bas-gt-c, .bas-rc-i .bas-rc { transition: none; } .bas-ct2-card { animation: none; } }
+
+/* na pilha do início de Gastos a bandeira fica quase transparente, sem a logo do banco */
+.bas-gt-d .bas-band { margin-left: auto; height: 18px; color: rgba(255, 255, 255, .32); }
+.bas-band { color: rgba(255, 255, 255, .85); }
+
+/* cartão em pé = cartão deitado girado 90° no sentido horário: o chip fica no alto, a aproximação embaixo dele,
+   a logo do banco no canto de cima à direita e a bandeira embaixo à esquerda, lendo de cima para baixo */
+.bas-cc-c.bas-rc { container-type: inline-size; padding: 0; }
+.bas-rc-in { position: absolute; left: 50%; top: 50%; width: calc(100cqw / .63); height: 100cqw; transform: translate(-50%, -50%) rotate(90deg); }
+.bas-rc-in .bas-rc-t { position: absolute; left: 7%; top: 9%; }
+.bas-rc-in .bas-rc-t .inst-ic { width: 13cqw; height: 13cqw; }
+.bas-rc-in .bas-rc-chip { left: 9%; top: 38%; width: 16%; height: 21%; }
+.bas-rc-in .bas-rc-nfc { position: absolute; left: 28%; top: 41%; }
+.bas-rc-in .bas-rc-nfc svg { width: 11cqw; height: 11cqw; }
+.bas-rc-in .bas-rc-b { right: 6%; bottom: 8%; }
+.bas-rc-in .bas-band { display: block; height: auto; width: 24%; }
+.bas-rc-in .bas-rc-b .bas-band { width: 30cqw; height: auto; }
+
+/* ===== Cartão refeito: limpo, no jeito de um cartão de verdade (cor do banco em degradê suave, reflexo largo e anéis de luz bem leves) ===== */
+.bas-cr { position: relative; display: block; width: 100%; aspect-ratio: .63; container-type: inline-size; border-radius: 20px; overflow: hidden; color: #fff;
+  background:
+    radial-gradient(130% 65% at 90% 0%, rgba(255, 255, 255, .26), transparent 55%),
+    radial-gradient(circle at 75% 62%, transparent 30%, rgba(255, 255, 255, .06) 30.5%, transparent 32%, transparent 46%, rgba(255, 255, 255, .05) 46.5%, transparent 48%),
+    radial-gradient(90% 55% at 0% 100%, rgba(0, 0, 0, .28), transparent 60%),
+    linear-gradient(160deg, color-mix(in srgb, var(--cb) 80%, #fff) 0%, var(--cb) 42%, color-mix(in srgb, var(--cb) 62%, #000) 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .16), inset 0 1px 0 rgba(255, 255, 255, .35), 0 34px 60px -30px rgba(0, 0, 0, .6), 0 10px 22px -12px rgba(0, 0, 0, .35); }
+/* deitado e girado 90° no sentido horário: chip no alto, aproximação embaixo dele, logo no canto de cima, bandeira embaixo na lateral */
+.bas-cr-in { position: absolute; left: 50%; top: 50%; width: calc(100cqw / .63); height: 100cqw; transform: translate(-50%, -50%) rotate(90deg); }
+.bas-cr-t { position: absolute; left: 6%; top: 9%; } .bas-cr-t .inst-ic { width: 12cqw; height: 12cqw; border-radius: 26%; box-shadow: 0 0 0 1px rgba(255, 255, 255, .15); }
+.bas-cr-chip { position: absolute; left: 8%; top: 37%; width: 15%; height: 23%; border-radius: 6px; overflow: hidden;
+  background: linear-gradient(135deg, #efdcaa 0%, #c9a65a 38%, #f4e4b6 58%, #b8934b 100%); box-shadow: inset 0 0 0 1px rgba(90, 64, 18, .35), 0 1px 2px rgba(0, 0, 0, .25); }
+.bas-cr-chip::before { content: ""; position: absolute; left: 0; right: 0; top: 30%; bottom: 30%; border-top: 1px solid rgba(90, 64, 18, .45); border-bottom: 1px solid rgba(90, 64, 18, .45); }
+.bas-cr-chip::after { content: ""; position: absolute; top: 0; bottom: 0; left: 36%; right: 36%; border-left: 1px solid rgba(90, 64, 18, .45); border-right: 1px solid rgba(90, 64, 18, .45); }
+.bas-cr-nfc { position: absolute; left: 26.5%; top: 41%; } .bas-cr-nfc svg { display: block; width: 8cqw; height: 8cqw; fill: none; stroke: rgba(255, 255, 255, .85); stroke-width: 2; stroke-linecap: round; }
+.bas-cr-b { position: absolute; right: 6%; bottom: 9%; line-height: 0; } .bas-cr-b .bas-band { display: block; height: auto; color: #fff; filter: none; }
+.bas-cr-b.visa .bas-band { width: 30cqw; } .bas-cr-b.master .bas-band { width: 20cqw; }
+/* escolher o cartão: grandes, empilhados no meio como na foto; o do meio de frente, os outros atrás, girados e menores */
+.bas-rc-fila { padding: 26px calc(50% - 135px) 18px; perspective: 1300px; cursor: grab; }
+.bas-rc-fila.arrasta { cursor: grabbing; scroll-snap-type: none; } .bas-rc-fila.arrasta * { pointer-events: none; }
+.bas-rc-i { width: 270px; margin: 0 -78px; transform: rotateY(calc(var(--d, 0) * -36deg)) scale(calc(1 - var(--a, 0) * .16)); opacity: 1; transform-origin: 50% 50%; }
+.bas-rc-i .bas-cr { transition: transform 220ms var(--ease-out); } .bas-rc-i:active .bas-cr { transform: scale(.97); }
+.bas-rc-i .bas-rc-n { margin-top: 6px; }
+/* tela do cartão: maior, inclinado, passando um pouco por cima da folha de baixo */
+.bas-ct2 { position: relative; z-index: 2; grid-template-columns: 52px 1fr; padding: 4px 0 0; }
+.bas-ct2-card { width: 232px; margin-bottom: -96px; transform: rotate(-7deg); animation: bas-ct2-in2 560ms cubic-bezier(.2, .8, .2, 1); }
+@keyframes bas-ct2-in2 { from { transform: translateY(70px) rotate(-16deg); opacity: 0; } }
+.bas-ct2-folha { position: relative; z-index: 1; padding-top: 110px; }
+@media (prefers-reduced-motion: reduce) { .bas-ct2-card { animation: none; } .bas-rc-i .bas-cr { transition: none; } }
+/* as margens negativas encolhem a fila: a sobra lateral compensa, para o primeiro e o último cartão chegarem ao meio */
+.bas-rc-fila { padding-left: calc(50% - 57px); padding-right: calc(50% - 57px); }
+.bas-rc-i { transform: rotateY(calc(var(--d, 0) * -44deg)) scale(calc(1 - var(--a, 0) * .3)); }
+.bas-rc-i .bas-rc-n { opacity: calc(1 - var(--a, 0) * 3); }
+/* os ícones do app usam traço; nas bandeiras o desenho é só preenchimento (o traço engrossava as letras da Visa) */
+.bas-band, .bas-band * { stroke: none !important; }
+/* o cartão passa só uma pontinha por cima da folha */
+.bas-ct2-card { margin-bottom: -26px; } .bas-ct2-folha { padding-top: 40px; }
+
+/* ===== Tela do cartão, rodada 3 ===== */
+/* o cartão usa o modelo escolhido; só o "Do banco" ganha o degradê limpo na cor do banco */
+.bas-cc-c.bas-cc-mini.bas-cr { display: block; width: 100%; aspect-ratio: .63; padding: 0; border-radius: 20px; flex: none; }
+.bas-cr[data-m="banco"] { background:
+    radial-gradient(130% 65% at 90% 0%, rgba(255, 255, 255, .26), transparent 55%),
+    radial-gradient(circle at 75% 62%, transparent 30%, rgba(255, 255, 255, .06) 30.5%, transparent 32%, transparent 46%, rgba(255, 255, 255, .05) 46.5%, transparent 48%),
+    radial-gradient(90% 55% at 0% 100%, rgba(0, 0, 0, .28), transparent 60%),
+    linear-gradient(160deg, color-mix(in srgb, var(--cb) 80%, #fff) 0%, var(--cb) 42%, color-mix(in srgb, var(--cb) 62%, #000) 100%); }
+.bas-cr .bas-cr-nfc svg { stroke: currentColor; opacity: .8; }
+.bas-cr:is([data-m="metal"], [data-m="holo"], [data-m="ouro"], [data-m="platina"]) .bas-cr-b .bas-band { color: rgba(0, 0, 0, .55); }
+/* chip: desenho com os contatos, metal champanhe suave */
+svg.bas-cr-chip { position: absolute; left: 8%; top: 37%; width: 15%; height: auto; aspect-ratio: 4 / 3; border-radius: 4px; overflow: visible;
+  background: linear-gradient(140deg, #f1e3bb 0%, #d4b56f 35%, #ecd9a5 55%, #b99550 100%); box-shadow: inset 0 0 0 .5px rgba(80, 58, 18, .45), 0 .5px 1px rgba(0, 0, 0, .3); }
+svg.bas-cr-chip path { fill: none; stroke: rgba(92, 66, 22, .55) !important; stroke-width: .8; }
+.bas-cr .bas-cr-chip::before, .bas-cr .bas-cr-chip::after { display: none; }
+/* maior, mais reto e um pouco por cima do primeiro bloco; arrasta para o lado */
+.bas-ct2-card { width: 258px; margin-bottom: -78px; transform: translateX(var(--dx, 0px)) rotate(calc(-3deg + var(--dx, 0px) / 40)); transition: transform 380ms cubic-bezier(.3, 1.3, .5, 1); touch-action: pan-y; cursor: grab; user-select: none; animation: bas-ct2-in3 520ms cubic-bezier(.2, .8, .2, 1); }
+.bas-ct2-card.arrasta { transition: none; cursor: grabbing; }
+.bas-ct2-card.vem-d { animation: bas-ct2-vd 420ms cubic-bezier(.2, .8, .2, 1); } .bas-ct2-card.vem-e { animation: bas-ct2-ve 420ms cubic-bezier(.2, .8, .2, 1); }
+@keyframes bas-ct2-in3 { from { transform: translateY(60px) rotate(-10deg); opacity: 0; } }
+@keyframes bas-ct2-vd { from { transform: translateX(120%) rotate(8deg); } } @keyframes bas-ct2-ve { from { transform: translateX(-120%) rotate(-12deg); } }
+.bas-ct2-folha { padding-top: 26px; }
+.bas-ct2-res { position: relative; z-index: 0; }
+@media (prefers-reduced-motion: reduce) { .bas-ct2-card, .bas-ct2-card.vem-d, .bas-ct2-card.vem-e { animation: none; transition: none; } }
+.bas-ct2-card { margin-bottom: -44px; }
+/* o cartão entra só na borda da folha e para antes do primeiro bloco */
+.bas-ct2-card { margin-bottom: -30px; } .bas-ct2-folha { padding-top: 48px; }
+
+/* ===== "Para onde foi o dinheiro": barra única e lista curta ===== */
+.bas-on2 { padding: 18px 18px 8px; }
+.bas-on2-bar { display: flex; gap: 3px; height: 10px; margin-bottom: 8px; }
+.bas-on2-bar i { min-width: 4px; border-radius: 99px; background: var(--bc); }
+.bas-on2-ls { list-style: none; margin: 0; padding: 0; }
+.bas-on2-l { width: 100%; display: grid; grid-template-columns: 10px 1fr auto 44px; align-items: center; gap: 12px; padding: 12px 0; border: 0; border-bottom: 1px solid var(--line); background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+.bas-on2-ls li:last-child .bas-on2-l { border-bottom: 0; }
+.bas-on2-l > i { width: 10px; height: 10px; border-radius: 50%; background: var(--bc); }
+.bas-on2-n { display: flex; flex-direction: column; min-width: 0; font-size: 16px; font-weight: 600; }
+.bas-on2-n em { font-style: normal; font-size: 13px; font-weight: 500; color: var(--pos); } .bas-on2-n em.perto { color: var(--warn); } .bas-on2-n em.passou { color: var(--neg); }
+.bas-on2-l b { font-size: 16px; font-weight: 600; white-space: nowrap; } .bas-on2-l small { font-size: 14px; color: var(--ink-3); text-align: right; }
+.bas-on2-lim { display: block; width: 100%; margin-top: 4px; padding: 12px 0 10px; border: 0; border-top: 1px solid var(--line); background: none; font: inherit; font-size: 15px; font-weight: 600; color: var(--accent); cursor: pointer; }
+.bas-cal-b svg { width: 20px; height: 20px; }
+
+/* Para onde foi: a linha com nome e valor no alto, o detalhe e a barra embaixo */
+.bas-onde2 .bas-onde-b { margin-bottom: 6px; }
+.bas-onde2 .bas-onde-a .bas-n { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.bas-onde-h { display: flex; justify-content: space-between; gap: 10px; } .bas-onde-h b { font-size: 16px; } .bas-onde-h b + b { white-space: nowrap; }
+.bas-onde-s { font-size: 13.5px; color: var(--ink-3); }
+.bas-onde2 .bas-onde-t { margin-top: 3px; }
+.bas-onde2 .bas-onde-a > .bas-v { display: none; }
+.bas-onde-t.lim i { background: var(--pos); } .bas-onde-a.perto .bas-onde-t.lim i { background: var(--warn); } .bas-onde-a.passou .bas-onde-t.lim i { background: var(--neg); }
+.bas-onde-a.passou .bas-onde-s { color: var(--neg); }
+/* Entradas e + Gasto: dois botões de vidro lado a lado, centrados, ocupando a largura */
+.bas-gt-folha > .bas-gt-acoes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.bas-gt-acoes > button { width: 100% !important; height: 50px; margin: 0 !important; border-radius: 999px !important; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 16px; font-weight: 600; }
+.bas-gt-acoes > button svg { width: 20px; height: 20px; }
+
+/* Últimos gastos: lista simples num cartão só */
+.bas-ult { list-style: none; margin: 0; padding: 4px 16px; }
+.bas-ult li + li .bas-ult-l { border-top: 1px solid var(--line); }
+.bas-ult-l { width: 100%; display: flex; align-items: center; gap: 14px; padding: 13px 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+.bas-ult-ic { flex: none; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; overflow: hidden; background: var(--surface-2); }
+.bas-ult-ic .inst-ic { width: 42px; height: 42px; border-radius: 50%; } .bas-ult-ic > b { font-size: 15px; color: var(--ink-2); }
+.bas-ult-n { flex: 1; min-width: 0; display: flex; flex-direction: column; } .bas-ult-n b { font-size: 16px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bas-ult-n small { font-size: 13.5px; color: var(--ink-3); }
+.bas-ult-v { font-size: 16px; font-weight: 600; white-space: nowrap; } .bas-ult-v.pos { color: var(--pos); }
+.bas-ult-ver { border: 0; background: none; font: inherit; font-size: 15px; font-weight: 600; color: var(--ink-3); cursor: pointer; padding: 4px 0; }
+/* botões de ação da folha de Gastos: o mesmo vidro da barra de cima, recebendo um pouco da luz azul que vem de cima */
+body[data-ui="basico"] .bas-gt-folha .bas-gt-acoes > .bas-en-bt {
+  background: color-mix(in srgb, var(--bas-azul) 7%, var(--lg-bg)) !important;
+  box-shadow: inset 0 1px 0 var(--lg-aro), inset 0 10px 16px -12px color-mix(in srgb, var(--bas-azul) 45%, transparent), inset 0 -1px 0 var(--lg-aro-b), inset 0 0 0 .5px var(--lg-aro-b),
+    0 -6px 18px -12px color-mix(in srgb, var(--bas-azul) 55%, transparent), var(--lg-sombra) !important; }
+body[data-ui="basico"] .bas-gt-folha .bas-gt-acoes > .bas-inv-pl {
+  background: color-mix(in srgb, var(--bas-azul) 82%, transparent) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5), inset 0 10px 16px -12px rgba(255, 255, 255, .45), inset 0 -1px 0 rgba(0, 0, 0, .12),
+    0 -6px 18px -12px color-mix(in srgb, var(--bas-azul) 60%, transparent), 0 10px 24px -12px color-mix(in srgb, var(--bas-azul) 70%, transparent) !important; }
+/* o ícone do banco nos Últimos gastos fica como antes: o quadrado arredondado do app, sem corte redondo */
+.bas-ult-ic:has(.inst-ic) { border-radius: 0; overflow: visible; background: none; }
+.bas-ult-ic .inst-ic { border-radius: 26%; }
+/* "+ Gasto" também é vidro transparente, igual ao Entradas, com a luz azul de cima */
+body[data-ui="basico"] .bas-gt-folha .bas-gt-acoes > .bas-inv-pl {
+  color: var(--lg-txt) !important; background: color-mix(in srgb, var(--bas-azul) 7%, var(--lg-bg)) !important;
+  box-shadow: inset 0 1px 0 var(--lg-aro), inset 0 10px 16px -12px color-mix(in srgb, var(--bas-azul) 45%, transparent), inset 0 -1px 0 var(--lg-aro-b), inset 0 0 0 .5px var(--lg-aro-b),
+    0 -6px 18px -12px color-mix(in srgb, var(--bas-azul) 55%, transparent), var(--lg-sombra) !important; }
+
+/* janela "Todos os gastos": folha que sobe de baixo sobre o fundo escurecido */
+.bas-pop { position: fixed; inset: 0; z-index: 95; display: flex; align-items: flex-end; justify-content: center; background: rgba(0, 0, 0, .35); animation: bas-pop-fundo 240ms ease; }
+.bas-pop-f { width: 100%; max-width: 520px; max-height: 86vh; display: flex; flex-direction: column; padding: 8px 16px max(20px, env(safe-area-inset-bottom)); border-radius: 28px 28px 0 0; background: var(--surface);
+  box-shadow: 0 -20px 50px -20px rgba(0, 0, 0, .45); animation: bas-pop-sobe 360ms cubic-bezier(.2, .9, .25, 1); }
+.bas-pop-al { align-self: center; width: 40px; height: 5px; border-radius: 3px; background: var(--line-2); margin-bottom: 10px; }
+.bas-pop-h { display: flex; align-items: center; justify-content: space-between; padding: 4px 2px 10px; }
+.bas-pop-h > span { display: flex; flex-direction: column; } .bas-pop-h b { font-size: 21px; } .bas-pop-h small { font-size: 14px; color: var(--ink-3); }
+.bas-pop-c { overflow-y: auto; overscroll-behavior: contain; } .bas-pop-c .bas-ult { padding: 0; }
+.bas-pop.sai { animation: bas-pop-fundo 240ms ease reverse forwards; } .bas-pop.sai .bas-pop-f { animation: bas-pop-sobe 240ms ease-in reverse forwards; }
+@keyframes bas-pop-fundo { from { background: rgba(0, 0, 0, 0); } } @keyframes bas-pop-sobe { from { transform: translateY(100%); } }
+@media (prefers-reduced-motion: reduce) { .bas-pop, .bas-pop-f, .bas-pop.sai, .bas-pop.sai .bas-pop-f { animation: none; } }
+
+/* ===== Barra de abas em Liquid Glass, no jeito do iPhone ===== */
+body[data-ui="basico"][data-screen="app"] .tabbar { background: var(--lg-bg) !important; border: 0 !important;
+  -webkit-backdrop-filter: blur(18px) saturate(190%); backdrop-filter: blur(18px) saturate(190%);
+  box-shadow: inset 0 1px 0 var(--lg-aro), inset 0 -1px 0 var(--lg-aro-b), inset 0 0 0 .5px var(--lg-aro-b), 0 1px 2px rgba(0, 0, 0, .06), 0 14px 34px -14px rgba(0, 0, 0, .3) !important; }
+.bas-tabs { position: relative; touch-action: none; user-select: none; }
+.bas-tabs button { position: relative; z-index: 1; background: transparent !important; }
+.bas-tabs button[aria-current="page"] { background: transparent !important; color: var(--accent); }
+.bas-tabs button.sob { color: var(--accent); }
+/* a lente: vidro mais claro que desliza com mola; ao arrastar ela cresce um pouco e fica mais transparente, como uma gota */
+.bas-tab-lente { position: absolute; left: 0; top: 5px; bottom: 5px; border-radius: 999px; pointer-events: none;
+  background: color-mix(in srgb, var(--accent) 12%, var(--lg-bg-on));
+  box-shadow: inset 0 1px 0 var(--lg-aro), inset 0 -1px 0 var(--lg-aro-b), inset 0 0 0 .5px var(--lg-aro-b), 0 4px 12px -6px rgba(0, 0, 0, .25);
+  transition: transform 420ms cubic-bezier(.3, 1.35, .45, 1), width 300ms ease, scale 220ms ease, background-color 200ms ease; }
+.bas-tabs.arrasta .bas-tab-lente { scale: 1.12 1.18; background: color-mix(in srgb, var(--accent) 8%, rgba(255, 255, 255, .28));
+  -webkit-backdrop-filter: blur(2px) saturate(160%) brightness(1.1); backdrop-filter: blur(2px) saturate(160%) brightness(1.1); }
+@media (prefers-reduced-motion: reduce) { .bas-tab-lente { transition: none; } .bas-tabs.arrasta .bas-tab-lente { scale: none; } }
+@media (prefers-reduced-transparency: reduce) { body[data-ui="basico"][data-screen="app"] .tabbar { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--surface) !important; } }
+/* Entradas e + Gasto: vidro neutro, sem a luz azul */
+body[data-ui="basico"] .bas-gt-folha .bas-gt-acoes > :is(.bas-en-bt, .bas-inv-pl) { color: var(--lg-txt) !important; background: var(--lg-bg) !important;
+  box-shadow: inset 0 1px 0 var(--lg-aro), inset 0 -1px 0 var(--lg-aro-b), inset 0 0 0 .5px var(--lg-aro-b), var(--lg-sombra) !important; }
+/* o "+" da lateral do cartão em cor oposta (vidro escuro no claro, claro no escuro), para se destacar dos outros */
+body[data-ui="basico"] .bas-ct2-lado .bas-ct2-b:first-child { color: var(--bg) !important; background: color-mix(in srgb, var(--ink) 86%, transparent) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), inset 0 -1px 0 rgba(0, 0, 0, .2), 0 1px 1.5px rgba(0, 0, 0, .1), 0 10px 22px -10px rgba(0, 0, 0, .45) !important; }
+
+/* ===== Início e Patrimônio no mesmo jeito de Gastos: degradê azul no alto e a folha por cima ===== */
+.bas[data-aba="inicio"] .bas-noite { border-radius: 0; padding-bottom: 64px; color: #fff;
+  background: linear-gradient(180deg, var(--bas-azul-1) 0%, var(--bas-azul-2) 42%, var(--bas-azul-3) 100%) !important; animation: none; }
+.bas[data-aba="inicio"] .bas-noite::before { opacity: .5; }
+.bas[data-aba="inicio"] .bas-noite .bas-topo .bas-eu-t small { color: rgba(255, 255, 255, .75); }
+.bas[data-aba="inicio"] .bas-noite { --lg-bg: rgba(255, 255, 255, .14); --lg-bg-on: rgba(255, 255, 255, .26); --lg-aro: rgba(255, 255, 255, .55); --lg-aro-b: rgba(255, 255, 255, .15); --lg-txt: #fff; }
+.bas[data-aba="inicio"] .bas-secs { position: relative; z-index: 2; margin: -32px -16px 0; padding: 20px 16px 16px; min-height: 50vh; background: var(--bg); border-radius: 28px 28px 0 0; box-shadow: 0 -8px 24px -12px rgba(0, 0, 0, .25); }
+.bas[data-aba="inicio"] .bas-secs.sobe > .bas-sec:first-child { margin: 0; }
+.bas-pt-bg { padding-bottom: 46px; margin-top: calc(-16px - env(safe-area-inset-top, 0px)); padding-top: calc(16px + env(safe-area-inset-top, 0px)); }
+.bas-pt-bg .bas-pg-per { margin: 14px 0 0; }
+
+/* ===== Início: sem os pontinhos; variação em pílula de vidro ===== */
+.bas[data-aba="inicio"] .bas-noite::before { display: none; }
+.bas-var { margin: 10px 0 4px; display: flex; justify-content: center; }
+.bas-var-p { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px 6px 6px; border-radius: 999px; font-size: 14px; font-weight: 600; color: #fff;
+  background: rgba(255, 255, 255, .14); -webkit-backdrop-filter: blur(14px) saturate(180%); backdrop-filter: blur(14px) saturate(180%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5), inset 0 -1px 0 rgba(255, 255, 255, .14), inset 0 0 0 .5px rgba(255, 255, 255, .15); }
+.bas-var-p i { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 13px; font-weight: 800; background: rgba(255, 255, 255, .22); }
+.bas-var-p.pos i { background: color-mix(in srgb, var(--bas-noite-pos, #30d158) 75%, transparent); } .bas-var-p.neg i { background: color-mix(in srgb, var(--bas-noite-neg, #ff6b7a) 75%, transparent); }
+/* ===== Patrimônio: o gráfico direto no azul, sem cartão; as ações embaixo dele ===== */
+.bas-pt-bg > .bas-ev { margin: 8px 0 0; padding: 0; border: 0; border-radius: 0; background: none !important; box-shadow: none !important; color: #fff; }
+.bas-pt-bg > .bas-ev::before, .bas-pt-bg > .bas-ev::after { display: none; }
+.bas-pt-bg > .bas-ev .bas-ev-k { color: rgba(255, 255, 255, .75); }
+.bas-pt-bg > .bas-ev :is(text, .bas-ev-m, .bas-ev-x span) { color: rgba(255, 255, 255, .7); fill: rgba(255, 255, 255, .7); }
+.bas-pt-bg > .bas-ev .bas-ev-h { text-align: center; }
+.bas-pt-bg .bas-pg-per { justify-content: center; margin-top: 16px; }
+
+/* Patrimônio: as ações ficam no alto da folha */
+.bas-gt-folha > .bas-pt-acoes { margin: 0 0 16px; }
+/* Patrimônio: as ações como em Gastos — vidro neutro, do mesmo tamanho, ocupando a largura, com o nome escrito */
+.bas-gt-folha > .bas-pt-acoes { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 8px; }
+.bas-pt-acoes > button { width: 100% !important; height: 50px; margin: 0 !important; border-radius: 999px !important; display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 15px; font-weight: 600; padding: 0 10px; }
+.bas-pt-acoes > .bas-circ::after { content: attr(aria-label); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bas-pt-acoes > button svg { width: 19px; height: 19px; flex: none; }
+body[data-ui="basico"] .bas-gt-folha .bas-pt-acoes > :is(.bas-circ, .bas-inv-pl) { color: var(--lg-txt) !important; background: var(--lg-bg) !important;
+  box-shadow: inset 0 1px 0 var(--lg-aro), inset 0 -1px 0 var(--lg-aro-b), inset 0 0 0 .5px var(--lg-aro-b), var(--lg-sombra) !important; }
+.bas-gt-folha > .bas-pt-acoes { grid-auto-columns: minmax(0, 1fr); }
+.bas-pt-acoes > .bas-circ[aria-label="Minha carteira"]::after { content: "Carteira"; }
+.bas-pt-acoes > button { font-size: 14px; gap: 5px; padding: 0 6px; } .bas-pt-acoes > button svg { width: 17px; height: 17px; }
+
+/* ===== Gráfico do patrimônio: valor grande à esquerda, pílula da variação, linha grossa com brilho,
+   área em pontinhos sob a linha, o ponto do mês com aro forte e a guia até embaixo, e os períodos em pílulas ===== */
+.bas-pt-bg > .bas-ev { overflow: visible; }
+.bas-pt-bg > .bas-ev .bas-ev-h { text-align: left; padding: 0 2px; }
+.bas-pt-bg > .bas-ev .bas-ev-k { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.bas-pt-bg > .bas-ev .bas-ev-v { font-size: 46px; font-weight: 700; letter-spacing: -.035em; color: #fff; }
+.bas-pt-bg > .bas-ev .bas-ev-v .bas-cent { opacity: .45; }
+.bas-ev-var { display: flex; align-items: center; gap: 10px; margin: 8px 0 0; font-size: 15px; color: rgba(255, 255, 255, .72); }
+.bas-ev-pct { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 10px; font-weight: 700; font-size: 14px; color: #fff;
+  background: rgba(255, 255, 255, .16); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35), inset 0 0 0 .5px rgba(255, 255, 255, .2); }
+.bas-ev-pct.neg { background: color-mix(in srgb, var(--neg) 35%, transparent); }
+.bas-pt-bg > .bas-ev .bas-ev-g { height: 190px; margin: 18px -16px 0; cursor: crosshair; }
+.bas-pt-bg > .bas-ev .bas-ev-g svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.bas-pt-bg > .bas-ev .bas-ev-a { fill: url(#bas-ev-ar); opacity: .55; }
+.bas-pt-bg > .bas-ev #bas-ev-ar stop { stop-color: #fff; }
+.bas-pt-bg > .bas-ev .bas-ev-l { stroke: #f2f6ff; stroke-width: 4.5; filter: drop-shadow(0 0 4px rgba(255, 255, 255, .9)) drop-shadow(0 0 14px color-mix(in srgb, var(--bas-azul-1) 90%, #fff)); }
+/* pontinhos só dentro da área sob a linha, mais fortes perto dela */
+.bas-ev-pts { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle, rgba(255, 255, 255, .5) 1.1px, transparent 1.6px) 0 0 / 9px 9px;
+  -webkit-mask: var(--m) 0 0 / 100% 100% no-repeat, linear-gradient(#000 0%, rgba(0, 0, 0, .25) 100%); -webkit-mask-composite: source-in;
+  mask: var(--m) 0 0 / 100% 100% no-repeat, linear-gradient(#000 0%, rgba(0, 0, 0, .25) 100%); mask-composite: intersect; }
+/* o ponto do mês: centro escuro, aro claro grosso e brilho; a guia sai dele até embaixo */
+.bas-pt-bg > .bas-ev .bas-ev-p { width: 26px; height: 26px; z-index: 2; background: var(--bas-azul-3); border: 4.5px solid #f2f6ff; box-shadow: 0 0 12px rgba(255, 255, 255, .8), 0 0 26px color-mix(in srgb, var(--bas-azul-1) 80%, #fff); transform: translate(-50%, -50%); }
+.bas-pt-bg > .bas-ev .bas-ev-guia { opacity: 1; bottom: 0; width: 3px; transform: translateX(-50%); border-radius: 2px; background: linear-gradient(#f2f6ff, rgba(242, 246, 255, .55)); box-shadow: 0 0 10px rgba(255, 255, 255, .6); }
+/* períodos em pílulas, o escolhido em vidro */
+.bas-ev-jan { display: flex; justify-content: space-between; gap: 4px; margin: 14px 0 6px; }
+.bas-ev-jan button { flex: 1; height: 38px; border: 0; border-radius: 12px; background: none; font: inherit; font-size: 15px; font-weight: 600; color: rgba(255, 255, 255, .7); cursor: pointer; }
+.bas-ev-jan button[aria-pressed="true"] { color: #fff; background: rgba(255, 255, 255, .16); -webkit-backdrop-filter: blur(12px) saturate(180%); backdrop-filter: blur(12px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45), inset 0 0 0 .5px rgba(255, 255, 255, .18); }
+@media (prefers-reduced-motion: reduce) { .bas-pt-bg > .bas-ev .bas-ev-p, .bas-pt-bg > .bas-ev .bas-ev-guia { transition: none; } }
+.bas-pt-bg > .bas-ev .bas-ev-p { margin: 0; }
+.bas-pt-bg > .bas-ev .bas-ev-p { transform: none; } .bas-pt-bg > .bas-ev .bas-ev-guia { transform: none; translate: -50% 0; }
+
+/* períodos do gráfico: menores, em cápsula, no mesmo vidro dos outros botões sobre o azul */
+.bas-ev-jan { justify-content: center; gap: 8px; margin: 12px 0 4px; }
+.bas-ev-jan button { flex: 0 0 auto; min-width: 58px; height: 34px; padding: 0 14px; border-radius: 999px; font-size: 14px; }
+.bas-ev-jan button[aria-pressed="true"] { color: var(--lg-txt); background: var(--lg-bg); -webkit-backdrop-filter: var(--lg-desfoque); backdrop-filter: var(--lg-desfoque);
+  box-shadow: inset 0 1px 0 var(--lg-aro), inset 0 -1px 0 var(--lg-aro-b), inset 0 0 0 .5px var(--lg-aro-b), var(--lg-sombra); }
+/* o patrimônio desce, longe do nome, e fica perto do gráfico */
+.bas-pt-bg > .bas-ev { margin-top: 30px; }
+.bas-pt-bg > .bas-ev .bas-ev-g { margin-top: 2px; }
+
+/* gráfico mais alto, colado ao valor; embaixo, a letra de cada mês no lugar de cada ponto (só leitura) */
+.bas-pt-bg > .bas-ev .bas-ev-g { margin-top: -6px; height: 180px; }
+.bas-ev-meses { position: relative; height: 18px; margin: 8px -16px 4px; }
+.bas-ev-meses span { position: absolute; translate: -50% 0; font-size: 13px; font-weight: 600; color: rgba(255, 255, 255, .55); }
+.bas-ev-meses span.on { color: #fff; }
+/* pílula da % na mesma curvatura e vidro dos botões; gráfico ainda mais colado ao valor */
+.bas-ev-pct { border-radius: 999px; padding: 5px 12px; color: var(--lg-txt); background: var(--lg-bg); -webkit-backdrop-filter: var(--lg-desfoque); backdrop-filter: var(--lg-desfoque);
+  box-shadow: inset 0 1px 0 var(--lg-aro), inset 0 -1px 0 var(--lg-aro-b), inset 0 0 0 .5px var(--lg-aro-b), var(--lg-sombra); }
+.bas-pt-bg > .bas-ev .bas-ev-g { margin-top: -22px; }
+
+/* a linha vai se intensificando da esquerda para a direita, como na referência */
+#bas-ev-ln stop:nth-child(1) { stop-color: color-mix(in srgb, var(--bas-azul-1) 75%, #fff); stop-opacity: .55; }
+#bas-ev-ln stop:nth-child(2) { stop-color: color-mix(in srgb, var(--bas-azul-1) 35%, #fff); stop-opacity: .85; }
+#bas-ev-ln stop:nth-child(3) { stop-color: #fff; stop-opacity: 1; }
+.bas-pt-bg > .bas-ev .bas-ev-l { stroke: url(#bas-ev-ln); }
+/* linha opaca, com um degradê bem visível: ciano à esquerda, ciano-claro no meio, branco no mês atual */
+body[data-ui="basico"] { --bas-ciano: #4fd1ff; }
+#bas-ev-ln stop:nth-child(1) { stop-color: var(--bas-ciano); stop-opacity: 1; }
+#bas-ev-ln stop:nth-child(2) { stop-color: color-mix(in srgb, var(--bas-ciano) 45%, #fff); stop-opacity: 1; }
+#bas-ev-ln stop:nth-child(3) { stop-color: #fff; stop-opacity: 1; }
