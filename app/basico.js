@@ -308,8 +308,8 @@ function basArco(el) {
 /* ---- Investir: o quanto investiu. O patrimônio num gráfico que segue o dedo, a meta e o disponível, a carteira e o investido ---- */
 function basInvestir() {
   const C = S.C; const j = basJan(); const D = E.disponivelAporte({ C, mes: j.de, ate: j.ate, metaMes: C.metaAporteMes }); const pode = temRecurso('aporte_simples'); const V = basVarPatr(C); const secs = {};
-  const ult = S.year === NOW_Y ? NOW_M : 11; const jan = S.basEvJan || 12; const ini = Math.max(0, ult - (jan === 1 ? 1 : jan - 1)); const serie = C.patrimonio.slice(ini, ult + 1); const mn = Math.min(...serie); const mx = Math.max(...serie); const W = 320; const H = 170; const P = 16;
-  const xs = (i) => (serie.length > 1 ? P + (i / (serie.length - 1)) * (W - 2 * P) : W / 2); const ys = (v) => (mx > mn ? H - 22 - ((v - mn) / (mx - mn)) * (H - 56) : H * 0.45);
+  const ult = S.year === NOW_Y ? NOW_M : 11; const jan = 12; const ini = Math.max(0, ult - (jan === 1 ? 1 : jan - 1)); const serie = C.patrimonio.slice(ini, ult + 1); const mn = Math.min(...serie); const mx = Math.max(...serie); const W = 320; const H = 170; const P = 16;
+  const xs = (i) => (serie.length > 1 ? P + (i / (serie.length - 1)) * (W - 2 * P) : W / 2); const ys = (v) => (mx > mn ? H - 26 - ((v - mn) / (mx - mn)) * (H - 40) : H * 0.4);
   const pts = serie.map((v, i) => [xs(i), ys(v)]);
   // curva suave (Catmull-Rom para Bézier), a área com degradê e a faixa do período escolhido
   const curva = basCurva([[0, pts[0][1]], ...pts, [W, pts[pts.length - 1][1]]]); // a linha entra e sai pelas bordas, como no gráfico de referência
@@ -326,7 +326,7 @@ function basInvestir() {
       <path class="bas-ev-a" d="${area}"/><path class="bas-ev-l" d="${curva}"/></svg>
       <span class="bas-ev-pts" aria-hidden="true" style="--m:${esc(masc)}"></span>
       <span class="bas-ev-guia" aria-hidden="true" style="left:${((pts[sel][0] / W) * 100).toFixed(2)}%;top:${((pts[sel][1] / H) * 100).toFixed(2)}%"></span><span class="bas-ev-p" aria-hidden="true" style="left:${((pts[sel][0] / W) * 100).toFixed(2)}%;top:${((pts[sel][1] / H) * 100).toFixed(2)}%"></span></div>
-    <div class="bas-ev-jan" role="group" aria-label="Período do gráfico">${[[1, '1M'], [3, '3M'], [6, '6M'], [12, 'Ano']].map(([n, t]) => `<button data-act="bas-ev-jan" data-v="${n}" aria-pressed="${n === jan}">${t}</button>`).join('')}</div></section>`;
+    <div class="bas-ev-meses" aria-hidden="true">${serie.map((_, i) => `<span style="left:${((xs(i) / W) * 100).toFixed(2)}%"${i === sel ? ' class="on"' : ''}>${MES[ini + i][0]}</span>`).join('')}</div></section>`;
   const f = D.meta > 0 ? D.aportado / D.meta : 0;
   secs.meta = basMetaDispHtml();
   // seus sonhos também em Investir: cada aporte aproxima um deles; tocar abre os detalhes

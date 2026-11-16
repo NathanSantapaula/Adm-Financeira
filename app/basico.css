@@ -2072,3 +2072,9 @@ body[data-ui="basico"] .bas-gt-folha .bas-pt-acoes > :is(.bas-circ, .bas-inv-pl)
 /* o patrimônio desce, longe do nome, e fica perto do gráfico */
 .bas-pt-bg > .bas-ev { margin-top: 30px; }
 .bas-pt-bg > .bas-ev .bas-ev-g { margin-top: 2px; }
+
+/* gráfico mais alto, colado ao valor; embaixo, a letra de cada mês no lugar de cada ponto (só leitura) */
+.bas-pt-bg > .bas-ev .bas-ev-g { margin-top: -6px; height: 180px; }
+.bas-ev-meses { position: relative; height: 18px; margin: 8px -16px 4px; }
+.bas-ev-meses span { position: absolute; translate: -50% 0; font-size: 13px; font-weight: 600; color: rgba(255, 255, 255, .55); }
+.bas-ev-meses span.on { color: #fff; }
