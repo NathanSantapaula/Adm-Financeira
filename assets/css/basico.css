@@ -2871,3 +2871,8 @@ html[data-vt="cc"]::view-transition-group(bas-cc-oficial) { animation-duration: 
   animation: none !important; transition: left 120ms var(--ease-out), top 120ms var(--ease-out), border-color 200ms ease, box-shadow 200ms ease; }
 :root .bas-pt-bg > .bas-ev .bas-ev-guia { opacity: 1 !important; width: 3px !important; border-radius: 0; background: var(--ev-cor, rgb(150, 248, 255)) !important;
   box-shadow: 0 0 6px color-mix(in srgb, var(--ev-cor, rgb(150, 248, 255)) 60%, transparent) !important; transition: left 120ms var(--ease-out), top 120ms var(--ease-out), background-color 200ms ease; }
+/* a bolinha numa camada própria e acima de tudo: no Safari ela às vezes deixava de ser desenhada ao arrastar e soltar */
+:root .bas-pt-bg > .bas-ev .bas-ev-p { z-index: 5 !important; will-change: left, top; -webkit-backface-visibility: hidden; backface-visibility: hidden; opacity: 1 !important; visibility: visible !important; }
+:root .bas-pt-bg > .bas-ev .bas-ev-guia { z-index: 4; }
+/* linha grossa sempre opaca */
+:root .bas-pt-bg > .bas-ev .bas-ev-l { opacity: 1 !important; stroke-opacity: 1 !important; }
