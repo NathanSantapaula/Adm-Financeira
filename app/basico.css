@@ -3355,3 +3355,19 @@ body[data-ui="basico"] .ab-vivo { background: rgba(255, 255, 255, .72) !importan
 :root:not([data-theme="light"]) body[data-ui="basico"] .ab-marca, :root:not([data-theme="light"]) body[data-ui="basico"] .ab-marca .marca-s { color: #fff; }
 :root:not([data-theme="light"]) body[data-ui="basico"] .ab-capa-ver { color: #fff !important; background: rgba(255, 255, 255, .1) !important; border-color: rgba(255, 255, 255, .2) !important; }
 :root:not([data-theme="light"]) body[data-ui="basico"] .ab-vivo { background: rgba(255, 255, 255, .07) !important; border-color: rgba(255, 255, 255, .14) !important; color: #fff; }
+/* ===== Globo do App no tema claro: névoa pastel sobre gelo, esfera de vidro fosco, textos quase pretos, card branco e botão com sombra macia ===== */
+:root[data-theme="light"] body[data-ui="basico"] .ab { --ab-ink: #0F172A; --ab-ink-2: #475569; --ab-ink-3: #94A3B8; color: #0F172A;
+  background: radial-gradient(55% 40% at 15% 12%, rgba(147, 197, 253, .28), transparent 70%), radial-gradient(50% 38% at 88% 30%, rgba(226, 214, 190, .32), transparent 70%),
+    radial-gradient(60% 45% at 50% 78%, rgba(191, 219, 254, .35), transparent 72%), radial-gradient(45% 35% at 80% 92%, rgba(214, 205, 190, .22), transparent 70%),
+    linear-gradient(180deg, #F4F6F9 0%, #FFFFFF 100%) !important; }
+:root[data-theme="light"] body[data-ui="basico"] :is(.ab-capa-t, .ab-tit) { color: #0F172A !important; -webkit-text-fill-color: #0F172A !important; text-shadow: none !important; }
+:root[data-theme="light"] body[data-ui="basico"] :is(.ab-capa-k, .ab-capa-s, .ab-saud) { color: #475569 !important; }
+:root[data-theme="light"] body[data-ui="basico"] :is(.ab-capa-n, .ab-capa-n.neg) { color: #0F172A !important; text-shadow: none !important; }
+:root[data-theme="light"] body[data-ui="basico"] .ab-marca, :root[data-theme="light"] body[data-ui="basico"] .ab-marca .marca-s { color: #0F172A; }
+:root[data-theme="light"] body[data-ui="basico"] :is(.ab-capa-entrar, .ab-entrar) { background: linear-gradient(170deg, #4F7BFF, #2563EB 55%, #1D4ED8) !important; box-shadow: 0 10px 25px -5px rgba(37, 99, 235, .25), inset 0 1px 0 rgba(255, 255, 255, .3) !important; }
+:root[data-theme="light"] body[data-ui="basico"] .ab-capa-ver { color: #0F172A !important; background: rgba(255, 255, 255, .7) !important; border: 1px solid #E2E8F0 !important; box-shadow: 0 6px 18px -10px rgba(15, 23, 42, .18) !important; }
+:root[data-theme="light"] body[data-ui="basico"] .ab-vivo { background: #fff !important; border: 1px solid #E2E8F0 !important; box-shadow: 0 8px 24px -14px rgba(15, 23, 42, .18) !important; color: #0F172A; -webkit-backdrop-filter: none; backdrop-filter: none; }
+:root[data-theme="light"] body[data-ui="basico"] .ab-vivo :is(small, .ab-desde, p) { color: #475569 !important; }
+:root[data-theme="light"] body[data-ui="basico"] .ab-vivo .ab-pill { color: #DC2626; background: rgba(239, 68, 68, .1); border: 0; }
+:root[data-theme="light"] body[data-ui="basico"] .ab-vivo .ab-pill i { background: #EF4444; box-shadow: 0 0 0 3px rgba(239, 68, 68, .15); }
+:root[data-theme="light"] body[data-ui="basico"] .ab :is(.ab-olho, .ab-zoom button, .ab-ano) { color: #0F172A; background: rgba(255, 255, 255, .8); border: 1px solid #E2E8F0; box-shadow: 0 6px 16px -10px rgba(15, 23, 42, .2); }
