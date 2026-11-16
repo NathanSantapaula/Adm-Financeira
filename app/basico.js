@@ -177,7 +177,7 @@ function basTelaPeriodo() {
 const BAS_SECS = {
   inicio: [['sonho', 'Meu sonho'], ['disp', 'Dá para investir'], ['historico', 'Patrimônio ano a ano'], ['aviso', 'O que o assistente notou'], ['ritmo', 'Ritmo do mês'], ['seuano', 'Seu ano'], ['resumo', 'Resumo do mês'], ['atividade', 'Atividade'], ['calendario', 'Mês dia a dia', 0], ['semana', 'Dia que mais gasta', 0], ['maior', 'Maior gasto', 0], ['globo', 'Seu universo', 0], ['saude', 'Saúde financeira', 0], ['contas', 'Contas a pagar', 0], ['limite', 'Limite do mês', 0], ['meta', 'Meta de investimento', 0], ['cartoes', 'Seus cartões', 0], ['proventos', 'Proventos', 0]],
   gastos: [['onde', 'Para onde foi o dinheiro'], ['ultimos', 'Últimos gastos']],
-  investir: [['patr', 'Evolução do patrimônio'], ['meta', 'Meta e disponível'], ['sonhos', 'Seus sonhos'], ['comp', 'Como está dividido'], ['feitos', 'Investido no período']],
+  investir: [['patr', 'Evolução do patrimônio'], ['meta', 'Meta e disponível'], ['comp', 'Como está dividido'], ['feitos', 'Investido no período']],
 };
 function basOrdemDe(aba) {
   const ids = BAS_SECS[aba].map((x) => x[0]); const o = ((S.profile.basOrdem || {})[aba] || []).filter((id) => ids.includes(id));
@@ -337,7 +337,7 @@ function basInvestir() {
   secs.feitos = ativos.length ? basSecao(`Investido ${esc(basJanFrase())}`, '', `<ul class="bas-ativ">${ativos.map(([a, v], i) => basRow(pode && j.n === 1 ? basIr('aporte', { id: a.id }) : 'disabled', esc(basIniciais(a.nome)), esc(a.nome), v < 0 ? 'Resgate' : E.norm(a.classe) === E.norm(a.nome) ? '' : esc(a.classe || ''), `<b class="${v < 0 ? 'neg' : 'pos'}">${v < 0 ? '−' : '+'}${basCent(Math.abs(v))}</b>`, PAL[i % 6])).join('')}</ul>`) : '';
   // Investimento: pílula compacta na linha do período (aportar, resgatar ou importar ficam na tela que ela abre)
   const acoes = `<button class="bas-inv-pl" ${basIrInv()} aria-label="Investimento: aportar, resgatar ou importar">${I.plus}<span>Investir</span></button>`;
-  return `<div class="bas-pg bas-pg-i"><div class="bas-gt-bg bas-pt-bg">${basTopo()}<div class="bas-pg-per">${extras}${acoes}</div></div><div class="bas-gt-folha">${basOrdenar('investir', secs)}${basOrganizarBtn('investir')}<p class="bas-disc keep">Valores a custo, sem cotação de mercado. Sem promessa de rentabilidade.</p></div></div>`;
+  return `<div class="bas-pg bas-pg-i"><div class="bas-gt-bg bas-pt-bg">${basTopo()}<div class="bas-pg-per">${extras}${acoes}</div></div><div class="bas-gt-folha">${basOrdenar('investir', secs)}<p class="bas-disc keep">Valores a custo, sem cotação de mercado. Sem promessa de rentabilidade.</p></div></div>`;
 }
 // o gráfico do patrimônio segue o dedo (manipulação direta): o mês mais perto do toque aparece em cima, sem redesenhar
 function basEvLigar() {
