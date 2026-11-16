@@ -2705,3 +2705,15 @@ html[data-vt="cc"]::view-transition-group(bas-cc-oficial) { animation-duration: 
 @media (prefers-reduced-motion: reduce) { .bas-cce-card { transition: none; } .bas-cr-b.nova { animation: none; } }
 /* a regra antiga girava qualquer svg do selo enquanto pensava, inclusive o Cifrão: ele fica de pé */
 .bas-iax-orb .cifrao svg, .bas-iax:has(.ia-m.dig) .bas-iax-orb .cifrao svg { animation: none !important; transform: none !important; }
+/* ===== Dá para investir, enxuto: ícone, valor e uma ficha de estado numa linha; a meta do mês numa barra fina ===== */
+.card.bas-dp3 { padding: 16px 18px; border-radius: 24px; display: flex; flex-direction: column; gap: 12px; }
+.bas-dp3-l { display: flex; align-items: center; gap: 14px; }
+.bas-dp3-ic { flex: none; width: 44px; height: 44px; border-radius: 14px; display: grid; place-items: center; color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.bas-dp3-ic svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.bas-dp3-t { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; } .bas-dp3-t small { font-size: 13px; color: var(--ink-3); }
+.bas-dp3-t b { font-size: 26px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; } .bas-dp3-t b .bas-cent { opacity: .45; font-size: .62em; }
+.bas-dp3-st { flex: none; padding: 6px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--ink-2); background: var(--surface-2); }
+.bas-dp3-st.ok { color: var(--pos); background: color-mix(in srgb, var(--pos) 12%, transparent); }
+.bas-dp3-bt { flex: none; min-height: 38px; padding: 0 18px; border-radius: 999px; font-size: 15px; }
+.bas-dp3-m { height: 6px; border-radius: 999px; overflow: hidden; background: var(--surface-2); } .bas-dp3-m i { display: block; height: 100%; border-radius: inherit; background: var(--accent); }
+.bas-dp3-mt { margin-top: -6px; font-size: 12px; color: var(--ink-3); }
