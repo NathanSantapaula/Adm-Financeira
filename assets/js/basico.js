@@ -620,10 +620,49 @@ function basSurpresas() {
   const chave = `${NOW_Y}-${NOW_M}`; const dia = new Date().getDate();
   if (NOW_M > 0 && dia <= 7 && S.profile.retroVista !== chave) { S.profile.retroVista = chave; touch('profile'); setTimeout(() => basAbrir('retro', { id: NOW_M - 1 }), 900); return; }
 }
+/* Cifrão do assistente com olhos: olha para o que acontece na tela (o campo enquanto você digita, a sua mensagem,
+   a resposta que chega, a ficha tocada, a conversa rolando), pensa enquanto espera e reage ao que a resposta diz. */
+const basCifHost = () => document.querySelector('.bas-iax-orb .cifrao');
+function basCifOlha(el, corpo) { const h = basCifHost(); if (!h || !el) return; const r = el.getBoundingClientRect ? el.getBoundingClientRect() : el;
+  h.dispatchEvent(new CustomEvent('cifrao:olhar', { detail: { x: r.left + (r.width || 0) / 2, y: r.top + (r.height || 0) / 2, corpo } })); }
+const basCifFaz = (nome) => { const h = basCifHost(); if (h && h.cifrao) h.cifrao.tocar(nome); };
+// lê a resposta como uma pessoa leria: boa notícia, alerta, falta de dados ou neutra; cada tipo tem reações que se alternam
+const BAS_CIF_HUMOR = [
+  ['festa', /parab|bateu|batida|recorde|em dia|tudo investido|otim|excelente|cresceu|acima da meta|sobrou r|saudavel|alcanc/, ['comemorando', 'brilha', 'danca', 'confiante']],
+  ['alerta', /passou|acima do limite|a mais do que|estour|negativ|cuidado|atencao|gastou mais|nao tem sobra|falta[mr]? |atras/, ['surpreso', 'timido', 'espiando']],
+  ['duvida', /nao ha|nao encontrei|registre|sem dados|nao entendi|ainda nao|nao sei/, ['confuso', 'curioso']],
+  ['compra', /compra|objetivo|planejar/, ['pensando', 'curioso']],
+];
+let basCifN = 0; let basCifPend = false; let basCifVez = 0;
+function basCifConversa() {
+  if (!basCifHost()) return; const st = iaEstado(); const n = st.msgs.length;
+  if (st.pend && !basCifPend) { basCifPend = true; const eu = [...document.querySelectorAll('.bas-iax-log .ia-m.eu')].pop(); basCifOlha(eu, .5); setTimeout(() => basCifFaz('pensando'), 380); }
+  if (!st.pend && basCifPend && n > basCifN) {
+    basCifPend = false; const m = st.msgs[n - 1]; const resp = [...document.querySelectorAll('.bas-iax-log .ia-m.ia')].pop();
+    const t = basSemAcento(m.ai || (m.r ? voz(m.r.chave, iaVars(m.r.vars)) : m.t || ''));
+    const h = BAS_CIF_HUMOR.find(([, re]) => re.test(t)); const ops = h ? h[2] : ['piscadela', 'animado', 'curioso'];
+    basCifOlha(resp, .8); setTimeout(() => basCifFaz(ops[basCifVez++ % ops.length]), 260);
+  }
+  basCifN = n;
+}
+function basIaxLigar() {
+  const tela = document.querySelector('.bas-iax'); if (!tela || tela.dataset.cif) return; tela.dataset.cif = '1'; basCifN = iaEstado().msgs.length; basCifPend = false;
+  let parado = 0; const acorda = () => { clearTimeout(parado); parado = setTimeout(() => basCifFaz('sonolento'), 25000); }; acorda();
+  const inp = tela.querySelector('.bas-iax-f input'); let ult = 0;
+  if (inp) {
+    inp.addEventListener('focus', () => { basCifOlha(inp, .6); basCifFaz('curioso'); acorda(); });
+    // enquanto digita, os olhos acompanham o fim do texto
+    inp.addEventListener('input', () => { const agora = Date.now(); acorda(); if (agora - ult < 250) return; ult = agora; const r = inp.getBoundingClientRect();
+      basCifOlha({ left: r.left + Math.min(r.width - 10, 10 + inp.value.length * 8.5), top: r.top + r.height / 2, width: 0, height: 0 }, .35); });
+  }
+  tela.addEventListener('pointerdown', (e) => { acorda(); const alvo = e.target.closest('.ia-ficha, .bas-iax-c, .bas-iax-b, .bas-iax-env, .btn'); if (alvo) basCifOlha(alvo, .7); }, true);
+  const log = tela.querySelector('.bas-iax-log'); let rol = 0;
+  if (log) log.addEventListener('scroll', () => { const agora = Date.now(); acorda(); if (agora - rol < 300) return; rol = agora; const r = log.getBoundingClientRect(); basCifOlha({ left: r.left + r.width / 2, top: r.top + r.height * .6, width: 0, height: 0 }, .4); }, { passive: true });
+}
 function basDesenhar() {
   const st = document.getElementById('bas-o3');
   if (st) { const falhou = () => st.classList.add('sem-3d'); if (typeof o3Ligar === 'function') o3Ligar(st, st.dataset.tipo, falhou); else falhou(); }
-  basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
+  basIaxLigar(); basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
   const wr = document.querySelector('.bas-wr'); if (wr && !wr.dataset.lig) { wr.dataset.lig = '1'; basWrIr(wr, 0); }
   const sq = document.querySelector('[data-sq-conta]'); if (sq && !sq.dataset.lig && !matchMedia('(prefers-reduced-motion: reduce)').matches) { sq.dataset.lig = '1'; const alvo = +sq.dataset.sqConta; const t0 = performance.now();
     const passo = (t) => { const k = Math.min(1, (t - t0) / 900); sq.textContent = Math.round(alvo * (1 - Math.pow(1 - k, 3))); if (k < 1 && sq.isConnected) requestAnimationFrame(passo); }; if (alvo > 0) requestAnimationFrame(passo); }
