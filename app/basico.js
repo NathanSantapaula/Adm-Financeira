@@ -87,9 +87,10 @@ function basCifSolta(fab, px, py, alvo) {
   if (document.querySelector('.bas-cif-solto')) return;
   const w = document.createElement('div'); w.className = 'bas-cif-solto'; w.innerHTML = '<span class="bas-cif-corpo"><span class="cifrao"></span></span>'; document.body.appendChild(w); fab.classList.add('vazia');
   const corpo = w.querySelector('.bas-cif-corpo'); const T = 64;
-  const rf = fab.getBoundingClientRect(); let x = rf.left + rf.width / 2 - T / 2, y = rf.top + rf.height / 2 - T / 2; let tx = px - T / 2, ty = py - T - 18; let solto = true, vivo = true, parado = 0;
+  const rf = fab.getBoundingClientRect(); let x = rf.left + rf.width / 2 - T / 2, y = rf.top + rf.height / 2 - T / 2; let tx = px - T / 2, ty = py - T - 18; let solto = true, vivo = true, parado = 0, andava = false;
   const lim = () => { tx = Math.max(4, Math.min(innerWidth - T - 4, tx)); ty = Math.max(4, Math.min(innerHeight - T - 4, ty)); };
   const passo = () => { if (!vivo) return; const dx = tx - x, dy = ty - y; x += dx * 0.16; y += dy * 0.16; const mov = Math.hypot(dx, dy) > 1.5;
+    if (andava && !mov) basCifSob(w, x + T / 2, y + T + 8); andava = mov;
     w.classList.toggle('andando', mov); /* nunca espelha: o cifrão invertido não é o símbolo */ w.style.transform = `translate(${x}px, ${y}px)`; requestAnimationFrame(passo); };
   requestAnimationFrame(passo);
   // segue o dedo enquanto ele estiver na tela (primeiro o toque longo da bolinha, depois arrastando o próprio Cifrão)
@@ -574,7 +575,7 @@ function basIaTela() {
   const card = (q, rot, val, ic0) => `<button class="bas-iax-c" data-act="ia-perg" data-q="${esc(q)}"><small>${esc(rot)}</small><b>${val}</b><span class="bas-iax-cr"><span class="bas-iax-ci" aria-hidden="true">${ic0}</span><span class="bas-iax-ca" aria-hidden="true">${I.chev}</span></span></button>`;
   return `<div class="bas-iax"><span class="bas-iax-brilho" aria-hidden="true"></span>
     <header class="bas-iax-h"><button class="bas-iax-b" data-act="bas-voltar" aria-label="Voltar">${I_VOLTA}</button><span class="bas-iax-hr"><button class="bas-iax-b" ${basIr('duvidas')} aria-label="Dúvidas">?</button><button class="bas-iax-b" ${basIr('avisos-tela')} aria-label="Avisos${av ? `: ${av} novos` : ''}">${I_IA_SINO}${av ? '<i class="bas-iax-pt"></i>' : ''}</button></span></header>
-    <div class="bas-iax-topo"><span class="bas-iax-orb" aria-hidden="true"><span class="cifrao" data-sem-giro></span></span><p class="bas-iax-st"><span class="ok">Como posso ajudar?</span><span class="pe">Pensando…</span></p></div>
+    <div class="bas-iax-topo"><span class="bas-iax-orb" aria-hidden="true"><span class="cifrao" data-sem-giro></span></span><p class="bas-iax-st" aria-live="polite"><span class="ok" data-cif-st>Como posso ajudar?</span><span class="pe">Pensando…</span></p></div>
     <div class="ia-log bas-iax-log" data-ia-log="b" role="log" aria-live="polite">${st.msgs.length ? iaLogHtml('b') : ''}</div>
     <div class="bas-iax-cs">${card(E.IA_FICHAS.aporte, 'Dá para investir', basCent(D.disponivel), I.inv)}${card(E.IA_FICHAS.gastos, `Gastou ${basJanFrase()}`, basCent(sai), I.despesas)}</div>
     <div class="ia-fichas bas-iax-fi" data-ia-fichas role="group" aria-label="Sugestões de perguntas">${iaFichasHtml()}</div>
@@ -643,28 +644,83 @@ const BAS_CIF_HUMOR = [
 // o que a pessoa escreve também mexe com ele: agradecer dá carinho, um oi dá pulinhos
 const BAS_CIF_PERG = [[/obrigad|valeu|brigad|amei|gostei/, 'carinho'], [/^(oi|ola|bom dia|boa tarde|boa noite)\b/, 'festa']];
 let basCifN = 0; let basCifPend = false; let basCifVez = 0;
+// a frase ao lado do selo mostra o que ele está fazendo; parado, alterna sugestões curtas
+const BAS_CIF_FALA = { aperto: 'Vamos com calma', alerta: 'Opa, olha isso', duvida: 'Hmm, faltou um dado', festa: 'Que notícia boa!', dinheiro: 'Plim! Falando de dinheiro', compra: 'Fazendo as contas' };
+const basCifDicas = () => [`Olhando ${basJanFrase()}`, 'Pergunte o que quiser', 'Posso ver seus gastos', 'Quer falar de metas?', 'Dá para investir? Pergunte', 'Toque em mim'];
+let basCifStT = 0; let basCifStI = 0;
+function basCifFala(txt, depois) {
+  const el = document.querySelector('[data-cif-st]'); if (!el) return; clearTimeout(basCifStT);
+  if (el.textContent !== txt) { el.classList.remove('troca'); void el.offsetWidth; el.textContent = txt; el.classList.add('troca'); }
+  basCifStT = setTimeout(() => { const d = basCifDicas(); basCifFala(d[basCifStI++ % d.length], true); }, depois ? 6500 : 4200);
+}
 function basCifConversa() {
   if (!basCifHost()) return; const st = iaEstado(); const n = st.msgs.length;
   if (st.pend && !basCifPend) { basCifPend = true; const eu = [...document.querySelectorAll('.bas-iax-log .ia-m.eu')].pop(); basCifOlha(eu, .5);
     const q = basSemAcento((st.msgs[n - 1] && st.msgs[n - 1].txt) || ''); const pq = BAS_CIF_PERG.find(([re]) => re.test(q));
     // enquanto espera: reage ao que foi dito ou faz conta de olho, alternando com o pensar
-    setTimeout(() => basCifFaz(pq ? pq[1] : basCifVez++ % 2 ? 'calculando' : 'pensando'), 380); }
+    setTimeout(() => basCifFaz(pq ? pq[1] : basCifVez++ % 2 ? 'calculando' : 'pensando'), 380); basCifFala(pq && pq[1] === 'carinho' ? 'Eu que agradeço' : 'Pensando…'); }
   if (!st.pend && basCifPend && n > basCifN) {
     basCifPend = false; const m = st.msgs[n - 1]; const resp = [...document.querySelectorAll('.bas-iax-log .ia-m.ia')].pop();
     const t = basSemAcento(m.ai || (m.r ? voz(m.r.chave, iaVars(m.r.vars)) : m.t || ''));
     const h = BAS_CIF_HUMOR.find(([, re]) => re.test(t)); const ops = h ? h[2] : ['piscadela', 'animado', 'curioso'];
-    basCifOlha(resp, .8); setTimeout(() => basCifFaz(ops[basCifVez++ % ops.length]), 260);
+    basCifOlha(resp, .8); setTimeout(() => basCifFaz(ops[basCifVez++ % ops.length]), 260); basCifFala(h ? BAS_CIF_FALA[h[0]] : 'Pronto');
   }
   basCifN = n;
 }
+/* O Cifrão da bolinha lê a tela que abriu e reage ao que vê (olhando para o que chamou a atenção):
+   limite estourado em Gastos, patrimônio subindo ou caindo, recorde, valores escondidos. Cada situação tem várias reações, que se alternam. */
+const BAS_CIF_VE = { estourou: ['susto', 'nao', 'frio', 'surpreso'], perto: ['calculando', 'espiada', 'pensando'], tranquilo: ['sim', 'plim', 'piscadela'],
+  recorde: ['festa', 'orgulho', 'brilha', 'comemorando'], subiu: ['plim', 'orgulho', 'sim', 'festa'], caiu: ['frio', 'timido', 'nao', 'calculando'],
+  escondeu: ['timido', 'piscadela'], mostrou: ['espiada', 'curioso'], olhar: ['curioso', 'espiada', 'calculando'] };
+let basCifVeSig = ''; let basCifVeN = 0; let basCifVeT = 0;
+function basCifVe() {
+  const fab = document.querySelector('.bas-ia-fab:not(.vazia)'); const h = fab && fab.querySelector('.cifrao'); if (!h) return; if (!h.cifrao) { setTimeout(basCifVe, 150); return; }
+  const topo = basPilha().length ? basPilha()[basPilha().length - 1].t : ''; const sig = [S.basAba, topo, S.privado ? 1 : 0, S.mes, JSON.stringify(S.basPer || '')].join('|');
+  if (sig === basCifVeSig) return; const antes = basCifVeSig.split('|'); basCifVeSig = sig;
+  clearTimeout(basCifVeT); basCifVeT = setTimeout(() => {
+    if (!h.isConnected || !h.cifrao) return; const q = (sel) => document.querySelector(sel);
+    let tipo = ''; let alvo = null;
+    if (antes.length > 2 && antes[2] !== (S.privado ? '1' : '0')) { tipo = S.privado ? 'escondeu' : 'mostrou'; alvo = q('[data-act="olho"], .bas-olho, [aria-label*="valores"]'); }
+    else if ((alvo = q('.bas-gt-chip.neg'))) tipo = 'estourou';
+    else if ((alvo = q('.bas-gt-chip.warn'))) tipo = 'perto';
+    else if ((alvo = q('.bas-noite-v.recorde'))) tipo = 'recorde';
+    else if ((alvo = q('.bas-var-p.neg'))) tipo = 'caiu';
+    else if ((alvo = q('.bas-var-p.pos'))) tipo = 'subiu';
+    else if ((alvo = q('.bas-gt-chip'))) tipo = 'tranquilo';
+    else { alvo = q('#view h1, .bas-noite-v, .bas-gt-v'); tipo = basCifVeN % 3 === 0 ? 'olhar' : ''; }
+    if (alvo) h.dispatchEvent(new CustomEvent('cifrao:olhar', { detail: (() => { const r = alvo.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, corpo: .6 }; })() }));
+    if (tipo) { const ops = BAS_CIF_VE[tipo]; setTimeout(() => h.cifrao && h.cifrao.tocar(ops[basCifVeN % ops.length]), 300); }
+    basCifVeN++;
+  }, 650);
+}
+// o Cifrão solto, quando para em cima de algo, reage ao que está embaixo dele
+let basCifSobT = 0;
+function basCifSob(w, cx, cy) {
+  const agora = Date.now(); if (agora - basCifSobT < 1200) return; basCifSobT = agora;
+  const h = w.querySelector('.cifrao'); if (!h || !h.cifrao) return;
+  const el = document.elementsFromPoint(cx, cy).find((e) => !w.contains(e) && e !== document.body && e !== document.documentElement); if (!el) return;
+  const t = (el.closest('button, li, .card, section') || el).textContent || '';
+  const n = basCifVeN++; const pega = (ops) => ops[n % ops.length];
+  let r = '';
+  if (el.closest('.bas-cc-c, .bas-rc, .bas-gt-c, .bas-cr')) r = pega(['plim', 'carinho', 'orgulho']);
+  else if (el.closest('.neg, .bas-gt-chip.neg') || /passou|acima do limite|−\s?R\$/.test(t)) r = pega(['susto', 'nao', 'frio']);
+  else if (el.closest('.pos') || /\+\s?R\$|recorde/.test(t)) r = pega(['festa', 'plim', 'sim']);
+  else if (el.closest('.bas-tabs, .tabbar')) r = pega(['espiada', 'curioso']);
+  else if (/R\$/.test(t)) r = pega(['calculando', 'espiada', 'sim']);
+  else if (el.closest('button, a')) r = pega(['curioso', 'espiada']);
+  h.dispatchEvent(new CustomEvent('cifrao:olhar', { detail: { x: cx, y: cy + 30, corpo: .4 } }));
+  if (r) setTimeout(() => h.cifrao && h.cifrao.tocar(r), 200);
+}
 function basIaxLigar() {
   const tela = document.querySelector('.bas-iax'); if (!tela || tela.dataset.cif) return; tela.dataset.cif = '1'; basCifN = iaEstado().msgs.length; basCifPend = false;
-  let parado = 0; const acorda = () => { clearTimeout(parado); parado = setTimeout(() => basCifFaz('sonolento'), 25000); }; acorda();
+  let parado = 0; const acorda = () => { clearTimeout(parado); parado = setTimeout(() => { basCifFaz('sonolento'); basCifFala('Zzz… me chame quando quiser'); }, 25000); }; acorda();
+  basCifStI = 0; basCifStT = setTimeout(() => basCifFala(basCifDicas()[basCifStI++], true), 3500);
+  const selo = tela.querySelector('.bas-iax-orb'); if (selo) selo.addEventListener('click', () => { acorda(); basCifFala(['Oi!', 'Hehe', 'Faz cócegas', 'Estou aqui'][basCifVez++ % 4]); });
   const inp = tela.querySelector('.bas-iax-f input'); let ult = 0;
   if (inp) {
-    inp.addEventListener('focus', () => { basCifOlha(inp, .6); basCifFaz('curioso'); acorda(); });
+    inp.addEventListener('focus', () => { basCifOlha(inp, .6); basCifFaz('curioso'); acorda(); basCifFala('Estou ouvindo'); });
     // enquanto digita, os olhos acompanham o fim do texto
-    inp.addEventListener('input', () => { const agora = Date.now(); acorda(); if (agora - ult < 250) return; ult = agora; const r = inp.getBoundingClientRect();
+    inp.addEventListener('input', () => { const agora = Date.now(); acorda(); if (agora - ult < 250) return; ult = agora; if (inp.value.length > 2) basCifFala('Lendo o que você escreve…'); const r = inp.getBoundingClientRect();
       basCifOlha({ left: r.left + Math.min(r.width - 10, 10 + inp.value.length * 8.5), top: r.top + r.height / 2, width: 0, height: 0 }, .35); });
   }
   tela.addEventListener('pointerdown', (e) => { acorda(); const alvo = e.target.closest('.ia-ficha, .bas-iax-c, .bas-iax-b, .bas-iax-env, .btn'); if (alvo) basCifOlha(alvo, .7); }, true);
@@ -674,7 +730,7 @@ function basIaxLigar() {
 function basDesenhar() {
   const st = document.getElementById('bas-o3');
   if (st) { const falhou = () => st.classList.add('sem-3d'); if (typeof o3Ligar === 'function') o3Ligar(st, st.dataset.tipo, falhou); else falhou(); }
-  basIaxLigar(); basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
+  basIaxLigar(); basCifVe(); basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
   const wr = document.querySelector('.bas-wr'); if (wr && !wr.dataset.lig) { wr.dataset.lig = '1'; basWrIr(wr, 0); }
   const sq = document.querySelector('[data-sq-conta]'); if (sq && !sq.dataset.lig && !matchMedia('(prefers-reduced-motion: reduce)').matches) { sq.dataset.lig = '1'; const alvo = +sq.dataset.sqConta; const t0 = performance.now();
     const passo = (t) => { const k = Math.min(1, (t - t0) / 900); sq.textContent = Math.round(alvo * (1 - Math.pow(1 - k, 3))); if (k < 1 && sq.isConnected) requestAnimationFrame(passo); }; if (alvo > 0) requestAnimationFrame(passo); }
