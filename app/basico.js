@@ -1904,11 +1904,11 @@ function basTelaAtivo(o) {
   const grade = [0.25, 0.5, 0.75].map((f) => `<i class="bas-at-gl" style="top:${f * 100}%"><span>${brl0(hi - (hi - lo) * f)}</span></i>`).join('');
   const corpo = velas
     ? vis.map((p, i) => { const t = yy(Math.max(p.o, p.c)); const h = Math.max(0.8, Math.abs(yy(p.o) - yy(p.c))); const cl = p.ap > 0 ? 'sobe' : p.ap < 0 ? 'desce' : 'igual';
-      return `<span class="bas-at-v ${cl}" style="left:${cx(i).toFixed(2)}%;top:${t.toFixed(2)}%;height:${h.toFixed(2)}%;--w:${Math.min(16, Math.max(4, 220 / n)).toFixed(1)}px;--d:${(i * 28).toFixed(0)}ms"></span>${p.pr > 0 ? `<b class="bas-at-pr" style="left:${cx(i).toFixed(2)}%;top:${Math.max(0, t - 9).toFixed(2)}%" aria-hidden="true">D</b>` : ''}`; }).join('')
+      return `<span class="bas-at-v ${cl}" style="left:${cx(i).toFixed(2)}%;top:${t.toFixed(2)}%;height:${h.toFixed(2)}%;--w:${Math.min(16, Math.max(4, 220 / n)).toFixed(1)}px;--d:${(i * 28).toFixed(0)}ms"></span>${p.pr > 0 ? `<b class="bas-at-pr" style="left:${cx(i).toFixed(2)}%;top:${Math.max(0, t - 9).toFixed(2)}%" aria-hidden="true"></b>` : ''}`; }).join('')
     : `<svg class="bas-at-ln" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="bas-at-ar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#38D6FF" stop-opacity=".45"/><stop offset="1" stop-color="#38D6FF" stop-opacity="0"/></linearGradient></defs>
       <path class="a" d="M0 ${yy(vis[0] ? vis[0].o : 0).toFixed(2)} ${vis.map((p, i) => `L${cx(i).toFixed(2)} ${yy(p.c).toFixed(2)}`).join(' ')} L84 ${yy(pos).toFixed(2)} L84 100 L0 100 Z"/>
       <path class="l" d="M0 ${yy(vis[0] ? vis[0].o : 0).toFixed(2)} ${vis.map((p, i) => `L${cx(i).toFixed(2)} ${yy(p.c).toFixed(2)}`).join(' ')} L84 ${yy(pos).toFixed(2)}"/></svg>
-      ${vis.map((p, i) => (p.pr > 0 ? `<b class="bas-at-pr" style="left:${cx(i).toFixed(2)}%;top:${Math.max(0, yy(p.c) - 12).toFixed(2)}%" aria-hidden="true">D</b>` : '')).join('')}
+      ${vis.map((p, i) => (p.pr > 0 ? `<b class="bas-at-pr" style="left:${cx(i).toFixed(2)}%;top:${Math.max(0, yy(p.c) - 12).toFixed(2)}%" aria-hidden="true"></b>` : '')).join('')}
       <span class="bas-at-fim" style="top:${yy(pos).toFixed(2)}%" aria-hidden="true"></span>`;
   const dd = vis.map((p) => [basAtMes(p, true), basCent(p.c), p.ap ? `${p.ap > 0 ? '+' : '−'}${brl(Math.abs(p.ap))} ${p.ap > 0 ? 'aplicado' : 'resgatado'}${p.pr > 0 ? ` · ${brl(p.pr)} de provento` : ''}` : p.pr > 0 ? `${brl(p.pr)} de provento` : 'sem movimento', p.ap > 0 ? 'sobe' : p.ap < 0 ? 'desce' : '']);
   const eixo = n ? [vis[0], vis[Math.floor((n - 1) / 2)], vis[n - 1]].map((p) => `<span>${basAtMes(p)}</span>`).join('') : '';
