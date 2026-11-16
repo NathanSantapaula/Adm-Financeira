@@ -261,8 +261,8 @@ function basGastos() {
   secs.onde = basOndeHtml();
   const lanc = basLancJan().slice(0, 8);
   secs.ultimos = lanc.length ? basSecao('Últimos gastos', '', `<ul class="bas-ativ">${lanc.map(basLancLinha).join('')}</ul>`) : '';
-  return `<div class="bas-pg bas-pg-g"><div class="bas-gt-bg">${basTopo()}<div class="bas-pg-per">${basPerPill(true)}<button class="bas-circ" ${basIr('entradas')} aria-label="Entradas" title="Entradas">${I_ENTRADA}</button><button class="bell" data-act="bas-importar" aria-label="Importar extrato do banco" title="Importar extrato">${I_IMPORTAR}</button><button class="bas-inv-pl" ${basIr('gasto')} aria-label="Novo gasto">${I.plus}<span>Gasto</span></button></div>
-    ${basGastoTopoHtml(sai, orc)}</div><div class="bas-gt-folha">${basOrdenar('gastos', secs)}</div></div>`;
+  return `<div class="bas-pg bas-pg-g"><div class="bas-gt-bg">${basTopo()}
+    ${basGastoTopoHtml(sai, orc)}</div><div class="bas-gt-folha"><div class="bas-pg-per">${basPerPill()}<button class="bas-circ" ${basIr('entradas')} aria-label="Entradas" title="Entradas">${I_ENTRADA}</button><button class="bas-inv-pl" ${basIr('gasto')} aria-label="Novo gasto">${I.plus}<span>Gasto</span></button></div>${basOrdenar('gastos', secs)}</div></div>`;
 }
 // toque num arco ou na legenda: destaca a categoria e mostra o valor no centro, sem redesenhar; o segundo toque abre
 function basArco(el) {
@@ -548,7 +548,7 @@ function basTelaGasto(o, it) {
   // inteligente: o último banco usado já vem marcado e o nome conhecido lembra categoria e banco
   const mem = basMemGastos(); const pc = it && it.parcel; const ini = pc ? { ano: pc.ano, mes: pc.mes } : { ano: S.year, mes: S.mes };
   const i0 = l ? l.inst || '' : it ? it.inst || '' : ([...(p.lancamentos || [])].reverse().find((x) => x.inst && instMinhas().includes(x.inst)) || {}).inst || '';
-  return basForm(it ? 'conta' : 'gasto', l || it ? 'Editar gasto' : 'Novo gasto', `${l ? '' : basChips('tipo', [['uma', 'Uma vez'], ['mes', 'Todo mês'], ['parc', 'Parcelado']], tipo, 'Como é o gasto')}
+  return basForm(it ? 'conta' : 'gasto', l || it ? 'Editar gasto' : 'Novo gasto', `${l || it ? '' : `<button type="button" class="bas-imp" data-act="bas-importar">${I_IMP}<span class="bas-n"><b>Importar do extrato</b><small>Traz os gastos do banco ou do cartão de um arquivo</small></span>${I.chev}</button>`}${l ? '' : basChips('tipo', [['uma', 'Uma vez'], ['mes', 'Todo mês'], ['parc', 'Parcelado']], tipo, 'Como é o gasto')}
     <div class="bas-blk" data-blk="val">${basValor('valor', l ? Math.abs(l.valor) : it && !pc ? +it.valores[S.mes] || 0 : 0, it && !pc ? `Quanto foi? Vale de ${MES_LONGO[S.mes]} em diante` : 'Quanto foi?')}</div>
     ${l ? '' : `<div class="bas-blk" data-blk="parc">${basValor('total', pc ? pc.total : 0, 'Valor total da compra')}${basCampo('n', 'Em quantas vezes?', pc ? pc.n : 10, 'inputmode="numeric" maxlength="3"')}<p class="bas-p">A primeira parcela cai em ${MES_LONGO[ini.mes]} de ${ini.ano}.</p></div>`}
     ${basCampo('desc', 'Com o quê?', l ? l.desc : it ? it.nome : '', 'placeholder="Ex.: Mercado, Aluguel, Celular" list="bas-dl-desc" autocomplete="off"')}<datalist id="bas-dl-desc">${[...mem.values()].map((x) => `<option value="${esc(x.desc)}">`).join('')}</datalist>

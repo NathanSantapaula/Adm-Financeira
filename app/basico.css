@@ -1714,3 +1714,7 @@ body[data-ui="basico"] { --bas-azul: #0A84FF; --bas-azul-1: #3b6cff; --bas-azul-
 .bas-gt-bg .bas-gt { margin: 0; padding-top: 22px; border-radius: 0; background: none; box-shadow: none; overflow: visible; }
 .bas-gt-folha { position: relative; z-index: 2; margin: -30px -16px 0; padding: 22px 16px 16px; min-height: 50vh; background: var(--bg); border-radius: 28px 28px 0 0; box-shadow: 0 -8px 24px -12px rgba(0, 0, 0, .25); }
 .bas-gt-bg .bas-pg-per { gap: 6px; } .bas-gt-bg .bas-pg-per > * { flex-shrink: 0; } .bas-gt-bg .bas-per { flex-shrink: 1; min-width: 0; overflow: hidden; } .bas-gt-bg .bas-per span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* a folha fica na frente dos cartões: o azul isola o z-index dos cartões dentro dele */
+.bas-gt-bg { isolation: isolate; z-index: 0; }
+.bas-gt-folha > .bas-pg-per { margin: 0 0 16px; flex-wrap: nowrap; } .bas-gt-folha > .bas-pg-per .bas-inv-pl { margin-left: auto; }
