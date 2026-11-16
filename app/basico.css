@@ -3159,3 +3159,9 @@ body[data-ui="basico"][data-screen="app"] .tabbar { bottom: max(8px, calc(env(sa
 .bas-ef-k svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linejoin: round; stroke-linecap: round; }
 @media (max-height: 740px) { .bas-ef-k { height: 46px; } .bas-ef-v b { font-size: 46px; } .bas-ef-k0 { margin-top: 12px; } }
 @media (prefers-reduced-motion: reduce) { .bas-ef-cur, .bas-ef-v.pulo b { animation: none; } }
+/* cartão De onde vem recolhível: fechado mostra só ícone e nome */
+.bas-ef-abre { display: inline-flex; align-items: center; gap: 4px; padding: 6px 4px 6px 0; border: 0; background: none; font: inherit; color: var(--ink-2); cursor: pointer; }
+.bas-ef-abre small { font-size: 14px; font-weight: 600; } .bas-ef-abre svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform 200ms; }
+.bas-ef-c:not(.fechado) .bas-ef-abre svg { transform: rotate(180deg); }
+.bas-ef-c.fechado { gap: 8px; padding: 12px 16px 14px; } .bas-ef-c.fechado :is(.bas-ef-num, .bas-sw, .bas-ef-mais, .bas-ef-opc) { display: none; }
+.bas-ef-c.fechado .bas-ef-ic { width: 44px; height: 44px; }
