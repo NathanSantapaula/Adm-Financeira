@@ -2022,3 +2022,13 @@ body[data-ui="basico"] .bas-ct2-lado .bas-ct2-b:first-child { color: var(--bg) !
 
 /* Patrimônio: as ações ficam no alto da folha */
 .bas-gt-folha > .bas-pt-acoes { margin: 0 0 16px; }
+/* Patrimônio: as ações como em Gastos — vidro neutro, do mesmo tamanho, ocupando a largura, com o nome escrito */
+.bas-gt-folha > .bas-pt-acoes { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 8px; }
+.bas-pt-acoes > button { width: 100% !important; height: 50px; margin: 0 !important; border-radius: 999px !important; display: inline-flex; align-items: center; justify-content: center; gap: 6px; font-size: 15px; font-weight: 600; padding: 0 10px; }
+.bas-pt-acoes > .bas-circ::after { content: attr(aria-label); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bas-pt-acoes > button svg { width: 19px; height: 19px; flex: none; }
+body[data-ui="basico"] .bas-gt-folha .bas-pt-acoes > :is(.bas-circ, .bas-inv-pl) { color: var(--lg-txt) !important; background: var(--lg-bg) !important;
+  box-shadow: inset 0 1px 0 var(--lg-aro), inset 0 -1px 0 var(--lg-aro-b), inset 0 0 0 .5px var(--lg-aro-b), var(--lg-sombra) !important; }
+.bas-gt-folha > .bas-pt-acoes { grid-auto-columns: minmax(0, 1fr); }
+.bas-pt-acoes > .bas-circ[aria-label="Minha carteira"]::after { content: "Carteira"; }
+.bas-pt-acoes > button { font-size: 14px; gap: 5px; padding: 0 6px; } .bas-pt-acoes > button svg { width: 17px; height: 17px; }
