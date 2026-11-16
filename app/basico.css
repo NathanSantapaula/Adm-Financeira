@@ -1928,3 +1928,23 @@ svg.bas-cr-chip path { fill: none; stroke: rgba(92, 66, 22, .55) !important; str
 .bas-gt-folha > .bas-gt-acoes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .bas-gt-acoes > button { width: 100% !important; height: 50px; margin: 0 !important; border-radius: 999px !important; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-size: 16px; font-weight: 600; }
 .bas-gt-acoes > button svg { width: 20px; height: 20px; }
+
+/* Últimos gastos: lista simples num cartão só */
+.bas-ult { list-style: none; margin: 0; padding: 4px 16px; }
+.bas-ult li + li .bas-ult-l { border-top: 1px solid var(--line); }
+.bas-ult-l { width: 100%; display: flex; align-items: center; gap: 14px; padding: 13px 0; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+.bas-ult-ic { flex: none; width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; overflow: hidden; background: var(--surface-2); }
+.bas-ult-ic .inst-ic { width: 42px; height: 42px; border-radius: 50%; } .bas-ult-ic > b { font-size: 15px; color: var(--ink-2); }
+.bas-ult-n { flex: 1; min-width: 0; display: flex; flex-direction: column; } .bas-ult-n b { font-size: 16px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bas-ult-n small { font-size: 13.5px; color: var(--ink-3); }
+.bas-ult-v { font-size: 16px; font-weight: 600; white-space: nowrap; } .bas-ult-v.pos { color: var(--pos); }
+.bas-ult-ver { border: 0; background: none; font: inherit; font-size: 15px; font-weight: 600; color: var(--ink-3); cursor: pointer; padding: 4px 0; }
+/* botões de ação da folha de Gastos: o mesmo vidro da barra de cima, recebendo um pouco da luz azul que vem de cima */
+body[data-ui="basico"] .bas-gt-folha .bas-gt-acoes > .bas-en-bt {
+  background: color-mix(in srgb, var(--bas-azul) 7%, var(--lg-bg)) !important;
+  box-shadow: inset 0 1px 0 var(--lg-aro), inset 0 10px 16px -12px color-mix(in srgb, var(--bas-azul) 45%, transparent), inset 0 -1px 0 var(--lg-aro-b), inset 0 0 0 .5px var(--lg-aro-b),
+    0 -6px 18px -12px color-mix(in srgb, var(--bas-azul) 55%, transparent), var(--lg-sombra) !important; }
+body[data-ui="basico"] .bas-gt-folha .bas-gt-acoes > .bas-inv-pl {
+  background: color-mix(in srgb, var(--bas-azul) 82%, transparent) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5), inset 0 10px 16px -12px rgba(255, 255, 255, .45), inset 0 -1px 0 rgba(0, 0, 0, .12),
+    0 -6px 18px -12px color-mix(in srgb, var(--bas-azul) 60%, transparent), 0 10px 24px -12px color-mix(in srgb, var(--bas-azul) 70%, transparent) !important; }

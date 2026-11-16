@@ -259,7 +259,12 @@ function basGastos() {
   const tot = lista.reduce((s, x) => s + x[1], 0); const secs = {};
   secs.onde = basOndeHtml();
   const lanc = basLancJan().slice(0, 8);
-  secs.ultimos = lanc.length ? basSecao('Últimos gastos', '', `<ul class="bas-ativ">${lanc.map(basLancLinha).join('')}</ul>`) : '';
+  // últimos gastos numa lista simples (ícone redondo, nome, quando e valor); "Ver tudo" mostra o período inteiro
+  const todos = basLancJan(); const quando = (l) => { const d = E.parseDataISO(l.data); const hj = new Date(); const ont = new Date(hj - 864e5);
+    return d.ano === hj.getFullYear() && d.mes === hj.getMonth() && d.dia === hj.getDate() ? 'Hoje' : d.ano === ont.getFullYear() && d.mes === ont.getMonth() && d.dia === ont.getDate() ? 'Ontem' : `${d.dia} ${MES[d.mes].toLowerCase()}`; };
+  const vis = S.basUltTodos ? todos : todos.slice(0, 5);
+  secs.ultimos = todos.length ? basSecao('Últimos gastos', todos.length > 5 ? `<button class="bas-ult-ver" data-act="bas-ult-todos">${S.basUltTodos ? 'Ver menos' : 'Ver tudo'}</button>` : '',
+    `<ul class="card bas-ult">${vis.map((l) => `<li><button class="bas-ult-l" ${basIr('gasto', { id: l.id })}><span class="bas-ult-ic">${l.inst && instDe(l.inst) ? instIcone(l.inst) : `<b>${esc(basIniciais(l.desc || l.area))}</b>`}</span><span class="bas-ult-n"><b>${esc(l.desc || l.area)}</b><small>${esc(quando(l))} · ${esc(l.area)}</small></span><b class="bas-ult-v${l.valor < 0 ? ' pos' : ''}">${l.valor < 0 ? '+' : '−'}${brl(Math.abs(l.valor))}</b></button></li>`).join('')}</ul>`) : '';
   return `<div class="bas-pg bas-pg-g"><div class="bas-gt-bg">${basTopo()}
     ${basGastoTopoHtml(sai, orc)}</div><div class="bas-gt-folha"><div class="bas-pg-per bas-gt-acoes"><button class="bas-circ bas-en-bt" ${basIr('entradas')}>${I_ENTRADA}<span>Entradas</span></button><button class="bas-inv-pl" ${basIr('gasto')} aria-label="Novo gasto">${I.plus}<span>Gasto</span></button></div>${basOrdenar('gastos', secs)}</div></div>`;
 }
@@ -1734,6 +1739,7 @@ function basAcao(act, ds, el) {
     case 'bas-ord': case 'bas-ord-vis': case 'bas-ord-pad': basOrdAcao(act, ds); return true;
     case 'bas-arco': basArco(el); return true;
     case 'bas-ccv': basCcVer(); return true;
+    case 'bas-ult-todos': S.basUltTodos = !S.basUltTodos; render(); return true;
     case 'bas-arco-abrir': { const b = document.querySelector('.bas-roda'); if (b && b.dataset.sel) basAbrir('categoria', { area: b.dataset.sel }); return true; }
     case 'bas-ia-aba': S.basIaAba = ['avisos', 'duvidas'].includes(ds.v) ? ds.v : 'conversa'; basSom('toque'); render(); return true;
     case 'bas-guia': basGuiaIniciar(ds.id); return true;
