@@ -737,14 +737,29 @@ function basTelaCategoria(o) {
     ${contas.length + lanc.length ? basSecao('Gastos', '', `<ul class="bas-ativ">${contas.filter((x) => !x.pago).map(basContaLinha).join('')}${lanc.map(basLancLinha).join('')}</ul>`) : ''}`);
 }
 const I_CAM = ic('<path d="M4 8h3l2-2.5h6L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>');
-// perfil de investidor: o resultado do teste, a divisão de referência e refazer o teste
+// perfil de investidor: a régua dos três perfis com o seu marcado, a sua carteira de hoje contra a referência do perfil e refazer o teste
+const BAS_PF_ORDEM = ['conservador', 'moderado', 'agressivo'];
+const basEhRf = (a) => /fixa|tesouro|cdb|lci|lca|reserva|caixa|poupan|debent|\bcri\b|\bcra\b|pos.?fixad|prefixad|ipca/.test(basSemAcento(`${a.tipo || ''} ${a.classe || ''}`));
 function basTelaPerfilInv() {
-  const p = S.profile; const pf = p.perfilInvestidor && E.PERFIS[p.perfilInvestidor.resultado];
-  const inv = pf ? `<div class="bas-dp-pf"><span class="bas-dp-pf-n">${esc(pf.nome)}</span><p>${esc(pf.desc)}</p>
-      <div class="bas-dp-bar" aria-label="Referência: ${pf.alvo.rendaFixa}% renda fixa e ${pf.alvo.bolsa}% renda variável"><i style="width:${pf.alvo.rendaFixa}%"></i></div>
-      <div class="bas-dp-leg"><span><i class="rf"></i>Renda fixa ${pf.alvo.rendaFixa}%</span><span><i class="rv"></i>Renda variável ${pf.alvo.bolsa}%</span></div></div>`
-    : '<p class="bas-p bas-p0">Você ainda não respondeu o teste. Leva uns 2 minutos e ajuda o assessor a entender como você lida com risco.</p>';
-  return basDet('Perfil de investidor', `<div class="card bas-dp-c">${inv}<button type="button" class="btn bas-dp-ref" data-act="refazer-perfil">${pf ? 'Refazer o teste' : 'Fazer o teste'}</button></div>`).replace(olhoHtml(), '');
+  const r = S.profile.perfilInvestidor && S.profile.perfilInvestidor.resultado; const pf = r && E.PERFIS[r];
+  if (!pf) return basDet('Perfil de investidor', `<div class="card bas-pi-vz"><span class="bas-pi-ic" aria-hidden="true">${I.inv}</span><b>Descubra o seu perfil</b><p>Perguntas rápidas sobre como você lida com risco. O resultado ajuda o assessor a montar uma carteira do seu jeito.</p><button type="button" class="btn primary lg bas-cta" data-act="refazer-perfil">Fazer o teste</button></div>`).replace(olhoHtml(), '');
+  const ix = BAS_PF_ORDEM.indexOf(r);
+  let rf = 0; let tot = 0;
+  try { const { K } = cartAnalise(); (K.classes || []).forEach((c) => { tot += c.valor || 0; if (basEhRf(c)) rf += c.valor || 0; }); } catch (e) { tot = 0; }
+  const hoje = tot > 0 ? Math.round((rf / tot) * 100) : null; const dif = hoje == null ? 0 : hoje - pf.alvo.rendaFixa;
+  const barra = (v) => `<span class="bas-pi-b"><i style="width:${v}%"></i></span>`;
+  const leitura = hoje == null ? 'Quando você registrar os seus investimentos, mostramos aqui como a sua carteira se compara ao seu perfil.'
+    : Math.abs(dif) < 10 ? 'Sua carteira está alinhada com o seu perfil.'
+    : dif > 0 ? `Sua carteira está mais conservadora do que o seu perfil: ${hoje}% em renda fixa. Vale conversar com o assessor.`
+    : `Sua carteira tem mais renda variável do que o seu perfil sugere: ${100 - hoje}%. Vale conversar com o assessor.`;
+  return basDet('Perfil de investidor', `<div class="bas-pi-hero"><small>Seu perfil</small><b>${esc(pf.nome)}</b>
+      <div class="bas-pi-regua" role="img" aria-label="Perfil ${esc(pf.nome)}, ${ix + 1} de 3">${BAS_PF_ORDEM.map((k, n) => `<span class="${n <= ix ? 'on' : ''}${n === ix ? ' eu' : ''}"><i></i><em>${esc(E.PERFIS[k].nome)}</em></span>`).join('')}</div>
+      <p>${esc(pf.desc)}</p></div>
+    <h2 class="bas-dp-g">Sua carteira e o seu perfil</h2>
+    <div class="card bas-dp-c bas-pi-cmp"><div class="bas-pi-l"><span>Referência do perfil</span><b>${pf.alvo.rendaFixa}% renda fixa</b></div>${barra(pf.alvo.rendaFixa)}
+      ${hoje == null ? '' : `<div class="bas-pi-l"><span>Sua carteira hoje</span><b>${hoje}% renda fixa</b></div>${barra(hoje)}`}
+      <p class="bas-pi-txt${hoje != null && Math.abs(dif) < 10 ? ' ok' : ''}">${leitura}</p></div>
+    <button type="button" class="btn lg bas-cta bas-pi-ref" data-act="refazer-perfil">Refazer o teste</button><p class="bas-dp-nota bas-pi-nota">Mudou de momento de vida? Refaça: leva uns 2 minutos.</p>`).replace(olhoHtml(), '');
 }
 // Dados pessoais: foto, dados, contato, perfil de investidor (com refazer o teste) e a conta
 function basTelaPerfil() {
