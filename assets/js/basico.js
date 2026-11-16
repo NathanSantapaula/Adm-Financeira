@@ -84,26 +84,89 @@ function basIaFabLigar() {
   ['pointerup', 'pointercancel'].forEach((ev) => b.addEventListener(ev, () => clearTimeout(t)));
   b.addEventListener('contextmenu', (e) => e.preventDefault());
 }
+// rotas do Cifrão solto, como a trilha da landing: em cada aba ele tem pousos (em cima de um bloco, numa fração da largura);
+// ao rolar ele corre aos saltos para o pouso mais perto do meio da tela; ao trocar de aba, sorteia uma das 3 rotas dela.
+// Arrastar com o dedo o tira da rota; rolar ou trocar de aba o devolve a ela.
+const BAS_CIF_ROTAS = {
+  inicio: [
+    [['.bas-noite-v', .88], ['.bas-var', .06], ['.card.bas-sonho', .9], ['.card.bas-w-hist', .12], ['.card.bas-w-aviso', .88], ['.card.bas-w-ano', .15], ['.card.bas-w-res', .85], ['.bas-org', .2]],
+    [['.bas-eu-m', .95], ['.bas-var', .94], ['.bas-sec .card', .1, 0], ['.bas-sec .card', .9, 1], ['.bas-sec .card', .1, 2], ['.bas-sec .card', .9, 3], ['.bas-sec .card', .1, 4], ['.bas-sec .card', .9, 5]],
+    [['.bas-noite-v', .5], ['.card.bas-sonho', .5], ['.card.bas-card', .8], ['.card.bas-w-hist', .5], ['.card.bas-w-ano', .85], ['.card.bas-w-res', .2], ['.bas-org', .5]],
+  ],
+  gastos: [
+    [['.bas-gt-v', .9], ['.bas-gt-pilha', .1], ['.bas-gt-acoes', .5], ['.bas-onde-a', .9, 0], ['.bas-onde-a', .1, 2], ['.bas-onde-a', .9, 4], ['.card.bas-ult', .15], ['.bas-ult-l', .85, 3]],
+    [['.bas-gt-pilha', .9], ['.bas-en-bt', .2], ['.bas-onde-a', .1, 1], ['.bas-onde-a', .9, 3], ['.bas-lim-add', .5], ['.bas-ult-l', .9, 1], ['.bas-ult-l', .1, 3]],
+    [['.bas-gt-v', .1], ['.bas-inv-pl', .7], ['.bas-onde-a', .5, 0], ['.bas-onde-a', .85, 2], ['.bas-onde-a', .15, 5], ['.card.bas-ult', .85], ['.bas-ult-l', .5, 4]],
+  ],
+  investir: [
+    [['.bas-ev-v', .9], ['.bas-ev-g', .2], ['.bas-pt-acoes', .85], ['.card.bas-qa', .1], ['.card.bas-dp', .9], ['.bas-sn-c', .15], ['.bas-ativ li', .9, 0], ['.bas-ativ li', .1, 2]],
+    [['.bas-ev-h', .15], ['.bas-ev-g', .85], ['.bas-inv-pl', .5], ['.bas-qa-c', .9], ['.card.bas-dp', .1], ['.bas-sn-c', .5], ['.bas-ativ li', .1, 1]],
+    [['.bas-ev-g', .5], ['.bas-circ', .5, 0], ['.card.bas-qa', .85], ['.bas-dp-v', .2], ['.bas-comp', .85], ['.bas-ativ li', .5, 2]],
+  ],
+  perfil: [
+    [['.bas-pf-eu', .85], ['.card.bas-pf-l', .1], ['.bas-pf-li', .9, 2], ['.bas-pf-tema', .15], ['.bas-ativ', .85], ['.bas-sair', .5]],
+    [['.bas-pf-eu', .15], ['.bas-pf-li', .9, 0], ['.bas-pf-li', .1, 3], ['.bas-pf-tema', .85], ['.bas-ativ li', .1, 1]],
+    [['.bas-pf-h', .5], ['.card.bas-pf-l', .85], ['.bas-pf-tema', .5], ['.bas-ativ li', .9, 2], ['.bas-sair', .2]],
+  ],
+};
+// telas sem rota própria: os cartões da tela, alternando os lados (cada uma das 3 rotas com um jeito)
+const BAS_CIF_GERAL = [[.88, .12], [.12, .88], [.5, .85, .15]];
+const basCifChave = () => { const t = S.basPilha && S.basPilha.length ? S.basPilha[S.basPilha.length - 1].t : ''; return t || S.basAba || 'inicio'; };
+function basCifPousos(chave, n) {
+  const rota = BAS_CIF_ROTAS[chave];
+  const lista = rota ? rota[n % rota.length].map(([s, fx, i]) => [document.querySelectorAll('#view ' + s)[i || 0], fx])
+    : [...document.querySelectorAll('#view .card, #view .bas-sec')].filter((e) => !e.parentElement.closest('.card')).slice(0, 14).map((e, i) => { const g = BAS_CIF_GERAL[n % 3]; return [e, g[i % g.length]]; });
+  const vistos = new Set(); return lista.filter(([e]) => e && !vistos.has(e) && vistos.add(e) && e.getClientRects().length);
+}
 function basCifSolta(fab, px, py, alvo) {
   if (document.querySelector('.bas-cif-solto')) return;
   const w = document.createElement('div'); w.className = 'bas-cif-solto'; w.innerHTML = '<span class="bas-cif-corpo"><span class="cifrao"></span></span>'; document.body.appendChild(w); fab.classList.add('vazia');
-  const corpo = w.querySelector('.bas-cif-corpo'); const T = 64;
-  const rf = fab.getBoundingClientRect(); let x = rf.left + rf.width / 2 - T / 2, y = rf.top + rf.height / 2 - T / 2; let tx = px - T / 2, ty = py - T - 18; let solto = true, vivo = true, parado = 0, andava = false;
+  const corpo = w.querySelector('.bas-cif-corpo'); const T = 64; const calmo = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const rf = fab.getBoundingClientRect(); let x = rf.left + rf.width / 2 - T / 2, y = rf.top + rf.height / 2 - T / 2; let tx = px - T / 2, ty = py - T - 18; let solto = true, vivo = true, andava = false;
+  // rota: livre = fora dela (arrastado); pouso = índice do pouso atual; corrida = salto em andamento até um pouso novo
+  let livre = true, chave = basCifChave(), rotaN = Math.floor(Math.random() * 3), pouso = -1, corrida = null, voltando = false;
   const lim = () => { tx = Math.max(4, Math.min(innerWidth - T - 4, tx)); ty = Math.max(4, Math.min(innerHeight - T - 4, ty)); };
-  const passo = () => { if (!vivo) return; const dx = tx - x, dy = ty - y; x += dx * 0.16; y += dy * 0.16; const mov = Math.hypot(dx, dy) > 1.5;
-    if (andava && !mov) basCifSob(w, x + T / 2, y + T + 8); andava = mov;
-    w.classList.toggle('andando', mov); /* nunca espelha: o cifrão invertido não é o símbolo */ w.style.transform = `translate(${x}px, ${y}px)`; requestAnimationFrame(passo); };
+  const cif = () => w.querySelector('.cifrao');
+  const naRota = () => { if (voltando) return; livre = false; };
+  const alvoRota = () => {
+    const k = basCifChave(); if (k !== chave) { chave = k; rotaN = (rotaN + 1 + Math.floor(Math.random() * 2)) % 3; pouso = -1; livre = false; }
+    const ps = basCifPousos(chave, rotaN); if (!ps.length) return null; const vh = innerHeight; const foco = vh * 0.38;
+    let best = -1, bd = 1e9; ps.forEach(([e], i) => { const r = e.getBoundingClientRect(); const d = Math.abs(r.top - foco) + (r.top < 70 || r.top > vh - 170 ? 600 : 0); if (d < bd) { bd = d; best = i; } });
+    const [e, fx] = ps[best]; const r = e.getBoundingClientRect();
+    return { i: best, x: Math.max(4, Math.min(innerWidth - T - 4, r.left + r.width * fx - T / 2)), y: Math.max(56, Math.min(vh - T - 96, r.top - T + 10)) };
+  };
+  const pose = (dir, s) => { const h = cif(); if (!h) return; h.setAttribute('data-scroll-suspended', ''); h.dispatchEvent(new CustomEvent('cifrao:scroll-pose', { detail: {
+    yaw: dir * .5, rotation: dir * .12, scaleY: 1 + .12 * s - .06 * (1 - s), scaleX: 1 - .07 * s + .05 * (1 - s), gazeX: dir * .045, gazeY: .02, eyeScaleX: 1.18 } })); };
+  const passo = () => {
+    if (!vivo) return;
+    if (!livre && !solto && !voltando) {
+      const a = alvoRota();
+      if (a) { if (a.i !== pouso || !corrida && Math.hypot(a.x - x, a.y - y) > 90) { pouso = a.i; corrida = { x0: x, y0: y, d: Math.max(1, Math.hypot(a.x - x, a.y - y)) }; } tx = a.x; ty = a.y; }
+    }
+    let hop = 0;
+    if (corrida && !livre && !solto) {
+      const dx = tx - x, dy = ty - y; const rem = Math.hypot(dx, dy); x += dx * 0.11; y += dy * 0.11;
+      const p = Math.min(1, Math.max(0, 1 - rem / corrida.d)); const n = Math.max(1, Math.min(5, Math.round(corrida.d / 110)));
+      const s = Math.abs(Math.sin(Math.PI * p * n)); hop = calmo ? 0 : s * Math.min(34, corrida.d * 0.3) * (1 - p * 0.35);
+      if (!calmo) pose(Math.sign(dx) || 1, s);
+      if (rem < 1.5) { corrida = null; x = tx; y = ty; const h = cif(); if (h) { h.removeAttribute('data-scroll-suspended'); h.dispatchEvent(new CustomEvent('cifrao:scroll-pose', { detail: {} })); } basCifSob(w, x + T / 2, y + T + 8); }
+    } else if (!livre && !solto && !voltando) { x = tx; y = ty; } // pousado: grudado no bloco enquanto a página rola
+    else { const dx = tx - x, dy = ty - y; x += dx * 0.16; y += dy * 0.16; }
+    const mov = !!corrida || (livre || solto || voltando) && Math.hypot(tx - x, ty - y) > 1.5;
+    if (andava && !mov && (livre || solto)) basCifSob(w, x + T / 2, y + T + 8); andava = mov;
+    w.classList.toggle('andando', mov && !corrida); /* nunca espelha: o cifrão invertido não é o símbolo */ w.style.transform = `translate(${x}px, ${y - hop}px)`; requestAnimationFrame(passo); };
   requestAnimationFrame(passo);
+  addEventListener('scroll', naRota, { passive: true });
   // segue o dedo enquanto ele estiver na tela (primeiro o toque longo da bolinha, depois arrastando o próprio Cifrão)
   const segue = (e) => { if (!solto) return; tx = e.clientX - T / 2; ty = e.clientY - T - 18; lim(); };
   const larga = () => { solto = false; };
   alvo.addEventListener('pointermove', segue); alvo.addEventListener('pointerup', larga, { once: true }); alvo.addEventListener('pointercancel', larga, { once: true });
   let x0 = 0, y0 = 0, arrastou = false;
   w.addEventListener('pointerdown', (e) => { w.setPointerCapture(e.pointerId); solto = true; arrastou = false; x0 = e.clientX; y0 = e.clientY; });
-  w.addEventListener('pointermove', (e) => { if (!solto) return; if (Math.hypot(e.clientX - x0, e.clientY - y0) > 6) arrastou = true; segue(e); });
+  w.addEventListener('pointermove', (e) => { if (!solto) return; if (Math.hypot(e.clientX - x0, e.clientY - y0) > 6) { arrastou = true; livre = true; corrida = null; const h = cif(); if (h) h.removeAttribute('data-scroll-suspended'); } segue(e); });
   w.addEventListener('pointerup', () => { solto = false; if (!arrastou) volta(); });
   S.basCifEm = Date.now(); S.basCifVolta = (destino) => volta(destino);
-  const volta = (destino) => { const f = destino || document.querySelector('.bas-ia-fab') || fab; const r = f.getBoundingClientRect(); tx = r.left + r.width / 2 - T / 2; ty = r.top + r.height / 2 - T / 2; setTimeout(() => { vivo = false; w.remove(); document.querySelectorAll('.bas-ia-fab').forEach((x) => x.classList.remove('vazia')); document.querySelectorAll('.bas-iax-orb.espera').forEach((x) => x.classList.remove('espera')); S.basCifPasseio = false; S.basCifVolta = null; }, 650); };
+  const volta = (destino) => { voltando = true; corrida = null; removeEventListener('scroll', naRota); const f = destino || document.querySelector('.bas-ia-fab') || fab; const r = f.getBoundingClientRect(); tx = r.left + r.width / 2 - T / 2; ty = r.top + r.height / 2 - T / 2; setTimeout(() => { vivo = false; w.remove(); document.querySelectorAll('.bas-ia-fab').forEach((x) => x.classList.remove('vazia')); document.querySelectorAll('.bas-iax-orb.espera').forEach((x) => x.classList.remove('espera')); S.basCifPasseio = false; S.basCifVolta = null; }, 650); };
   // o toque que solta o toque longo não abre o assistente (S.basCifEm)
 }
 function basTabLigar() {
@@ -1979,8 +2042,10 @@ function basTelaProventos() {
   const mx = Math.max(1, ...vals);
   const barras = vals.map((v, i) => { const dentro = i >= j.de && i <= j.ate; return `<button class="${dentro ? 'in' : 'fora'}${i === sel ? ' on' : ''}${i > ult ? ' fut' : ''}" data-act="bas-prov-mes" data-m="${i}" style="--h:${v > 0 ? Math.max(6, (v / mx) * 78).toFixed(1) : 3}%" aria-label="${MES_LONGO[i]}: ${esc(brl(v))}" aria-pressed="${i === sel}">${i === sel && v > 0 ? `<small>${brl0(v)}</small>` : ''}<i></i><b>${MES[i][0]}</b></button>`; }).join('');
   // quem pagou no período: soma por ativo, com a parte de cada um
-  const L = S.plan.ativos.map((a) => { let t = 0; for (let m = j.de; m <= j.ate; m++) t += +a.pr[m] || 0; return { a, t }; }).filter((x) => Math.abs(x.t) > 0.005).sort((x, y) => y.t - x.t);
-  const linha = (x, i) => `<li><button class="bas-pv2-l" ${basIr('provento', { id: x.a.id })}><span class="bas-pv2-ini" style="--bc:${PAL[i % 6]}">${esc(basIniciais(x.a.nome))}</span><span class="bas-pv2-n"><b>${esc(x.a.nome)}</b><small>${esc(x.a.classe || 'Ativo')}</small><i style="--p:${tot > 0 ? Math.max(3, (x.t / tot) * 100).toFixed(1) : 0}%"></i></span><b class="bas-pv2-v">${basCent(x.t)}</b></button></li>`;
+  // mês tocado: a lista mostra quem pagou naquele mês (tocar de novo volta ao período)
+  const um = S.basProvMes != null; const ld = um ? sel : j.de; const la = um ? sel : j.ate; const tl = um ? soma(sel, sel) : tot; const frase = um ? `em ${MES_LONGO[sel]}` : basJanFrase();
+  const L = S.plan.ativos.map((a) => { let t = 0; for (let m = ld; m <= la; m++) t += +a.pr[m] || 0; return { a, t }; }).filter((x) => Math.abs(x.t) > 0.005).sort((x, y) => y.t - x.t);
+  const linha = (x, i) => `<li><button class="bas-pv2-l" ${basIr('provento', { id: x.a.id })}><span class="bas-pv2-ini" style="--bc:${PAL[i % 6]}">${esc(basIniciais(x.a.nome))}</span><span class="bas-pv2-n"><b>${esc(x.a.nome)}</b><small>${esc(x.a.classe || 'Ativo')}</small><i style="--p:${tl > 0 ? Math.max(3, (x.t / tl) * 100).toFixed(1) : 0}%"></i></span><b class="bas-pv2-v">${basCent(x.t)}</b></button></li>`;
   return `<div class="bas-pg bas-pg-prov"><div class="bas-gt-bg bas-pt-bg bas-pv2-bg">
     <header class="bas-pv2-h"><button class="bell bas-cal-b" data-act="bas-voltar" aria-label="Voltar">${I_VOLTA}</button><b>Proventos</b><span class="bas-noite-r"><button class="bell bas-cal-b" ${basIr('periodo')} aria-label="Período: ${esc(basJanRot())}, ${S.year}">${I_CAL}</button>${olhoHtml()}</span></header>
     <small class="bas-pv2-k">Recebido ${esc(basJanFrase())}</small>
@@ -1989,7 +2054,7 @@ function basTelaProventos() {
     <div class="bas-pv2-g" role="group" aria-label="Proventos mês a mês. Toque num mês.">${barras}</div>
   </div><div class="bas-gt-folha">
     <div class="bas-pg-per bas-gt-acoes">${S.plan.ativos.length ? `<button class="bas-inv-pl" ${basIr('provento')}>${I.plus}<span>Registrar</span></button>` : ''}<button class="bas-circ bas-en-bt" data-act="bas-importar">${I_IMP}<span>Importar</span></button></div>
-    ${L.length ? basSecao(`Quem pagou ${basJanFrase()}`, `<small class="bas-pv2-q">${L.length} ${L.length === 1 ? 'ativo' : 'ativos'}</small>`, `<ul class="card bas-pv2-ls">${L.map(linha).join('')}</ul>`) : basCard(basVazio(`Nenhum provento ${basJanFrase()}.`))}
+    ${L.length ? basSecao(`Quem pagou ${frase}`, `<small class="bas-pv2-q">${L.length} ${L.length === 1 ? 'ativo' : 'ativos'} · ${brl0(tl)}</small>`, `<ul class="card bas-pv2-ls">${L.map(linha).join('')}</ul>`) : basCard(basVazio(`Nenhum provento ${frase}.`))}
   </div></div>`;
 }
 // alvos da carteira, refeitos: por classe, com o valor e o % de hoje, um campo claro por ativo, o total ao vivo e atalhos
@@ -2274,7 +2339,7 @@ function basAcao(act, ds, el) {
     case 'bas-cc-band': if (instDe(ds.id) && CC_BAND[ds.v]) basCcGrava(ds.id, 'b', ds.v); return true;
     case 'bas-cc-cor': if (instDe(ds.id) && /^#[0-9a-f]{6}$/i.test(ds.v || '')) basCcGrava(ds.id, 'c', ds.v); return true;
     case 'bas-gasto-rec': { const f = el.closest('form'); const x = basMemGastos().get(ds.k); if (f && x) { f.querySelector('[name="desc"]').value = x.desc; basGastoLembra(f, x, true); basSom('toque'); } return true; }
-    case 'bas-prov-mes': S.basProvMes = +ds.m; basSom('toque'); render(); return true;
+    case 'bas-prov-mes': S.basProvMes = S.basProvMes === +ds.m ? null : +ds.m; basSom('toque'); render(); return true;
     case 'bas-prov-ano': if (+ds.y !== S.year && S.plans[+ds.y]) { S.basProvMes = null; switchYear(+ds.y); } return true;
     case 'bas-al-passo': case 'bas-al-igual': case 'bas-al-100': case 'bas-al-zero': basAlAcao(act, el); return true;
     case 'bas-cores': S.basCores = !S.basCores; basSom('toque'); render(); return true;
