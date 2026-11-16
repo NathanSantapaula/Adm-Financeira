@@ -217,8 +217,72 @@ Object.assign(K, {
   ],
   tonto: [{ at: 0, pose: {} }, ...Array.from({ length: 9 }, (_, i) => ({ at: 160 + i * 190, pose: { gazeX: Math.cos(i * 1.4) * .045, gazeY: Math.sin(i * 1.4) * .04, rotation: Math.sin(i * .9) * .11, x: Math.sin(i * .9) * .012, skew: Math.sin(i * .9) * .06, eyeScaleX: .85, leftEyeScaleY: .75, rightEyeScaleY: .9, eyeTilt: Math.sin(i) * .1, duvida: i > 5 ? .7 : 0 } })), { at: 2200, pose: {} }],
 });
+// Reações próprias do Cifrão do App, todas de pé (servem no selo do assistente): o "plim" do dinheiro, calcular de olho,
+// susto, pulinhos de festa, sim e não com a cabeça, carinho, espiada, crescer de orgulho e tremer de frio.
+const SORRI = { leftEyeSmile: .9, rightEyeSmile: .9, leftEyeScaleY: .66, rightEyeScaleY: .66, eyeScaleX: 1.14 };
+Object.assign(K, {
+  moeda: [
+    { at: 0, pose: {} },
+    { at: 160, pose: { y: .03, scaleX: 1.14, scaleY: .84, leftEyeScaleY: .6, rightEyeScaleY: .6 } },
+    { at: 360, pose: { y: -.09, scaleX: .9, scaleY: 1.12, eyeScaleX: 1.3, leftEyeScaleY: 1.15, rightEyeScaleY: 1.15, brilho: 1 } },
+    { at: 560, pose: { y: -.1, scaleX: .96, scaleY: 1.05, ...SORRI, brilho: 1 } },
+    { at: 760, pose: { y: .025, scaleX: 1.12, scaleY: .88, ...SORRI, marcas: 1, brilho: .6 } },
+    { at: 940, pose: { y: -.012, scaleX: .98, scaleY: 1.03, ...SORRI, marcas: .5 } }, { at: 1300, pose: {} },
+  ],
+  conta: [
+    { at: 0, pose: {} },
+    { at: 180, pose: { gazeX: -.045, gazeY: -.04, eyeScaleX: 1.08, leftEyeScaleY: .82, rightEyeScaleY: .92, y: -.006 } },
+    { at: 420, pose: { gazeX: .045, gazeY: -.04, eyeScaleX: 1.08, leftEyeScaleY: .92, rightEyeScaleY: .82, y: .004 } },
+    { at: 640, pose: { gazeX: -.04, gazeY: -.035, y: -.006 } },
+    { at: 860, pose: { gazeX: .04, gazeY: -.035, y: .004 } },
+    { at: 1080, pose: { gazeX: 0, gazeY: .01, y: -.03, scaleY: 1.05, eyeScaleX: 1.25, leftEyeScaleY: 1.1, rightEyeScaleY: 1.1, marcas: .8 } }, { at: 1400, pose: {} },
+  ],
+  susto: [
+    { at: 0, pose: {} },
+    { at: 90, pose: { y: .03, scaleX: .9, scaleY: .9, eyeScaleX: 1.55, leftEyeScaleY: 1.3, rightEyeScaleY: 1.3, marcas: 1 } },
+    ...[0, 1, 2, 3, 4].map((i) => ({ at: 180 + i * 70, pose: { x: i % 2 ? .012 : -.012, y: .02, scaleX: .92, scaleY: .92, eyeScaleX: 1.5, leftEyeScaleY: 1.28, rightEyeScaleY: 1.28, marcas: 1 } })),
+    { at: 700, pose: { y: -.02, scaleY: 1.04, eyeScaleX: 1.3, leftEyeScaleY: 1.15, rightEyeScaleY: 1.15, marcas: .4 } }, { at: 1100, pose: {} },
+  ],
+  pulinhos: [{ at: 0, pose: {} }, ...[0, 1, 2].flatMap((i) => [
+    { at: 120 + i * 360, pose: { y: .02, scaleX: 1.1, scaleY: .88, ...SORRI } },
+    { at: 300 + i * 360, pose: { y: -.07 - i * .01, scaleX: .94, scaleY: 1.08, ...SORRI, brilho: i === 2 ? 1 : .4 } }]),
+    { at: 1240, pose: { y: .018, scaleX: 1.08, scaleY: .92, ...SORRI, brilho: .5 } }, { at: 1600, pose: {} },
+  ],
+  sim: [{ at: 0, pose: {} }, ...[0, 1].flatMap((i) => [
+    { at: 150 + i * 320, pose: { pitch: .16, y: .012, gazeY: .02, ...SORRI } },
+    { at: 310 + i * 320, pose: { pitch: -.06, y: -.008, ...SORRI } }]), { at: 1000, pose: {} },
+  ],
+  nao: [{ at: 0, pose: {} }, ...[0, 1, 2].map((i) => ({ at: 140 + i * 190, pose: { yaw: i % 2 ? -.17 : .17, x: i % 2 ? -.006 : .006, eyeScaleX: 1.12, leftEyeScaleY: .55, rightEyeScaleY: .95, eyeTilt: .1 } })),
+    { at: 780, pose: { eyeScaleX: 1.1, leftEyeScaleY: .6, rightEyeScaleY: .95, eyeTilt: .08 } }, { at: 1150, pose: {} },
+  ],
+  carinho: [
+    { at: 0, pose: {} },
+    { at: 260, pose: { y: .02, scaleX: 1.06, scaleY: .93, rotation: .05, ...SORRI, leftEyeSmile: 1, rightEyeSmile: 1 } },
+    { at: 620, pose: { y: .022, scaleX: 1.06, scaleY: .93, rotation: -.05, ...SORRI, leftEyeSmile: 1, rightEyeSmile: 1, brilho: .5 } },
+    { at: 980, pose: { y: .02, scaleX: 1.05, scaleY: .94, rotation: .03, ...SORRI, leftEyeSmile: 1, rightEyeSmile: 1, brilho: .5 } }, { at: 1400, pose: {} },
+  ],
+  olhada: [
+    { at: 0, pose: {} },
+    { at: 220, pose: { y: .06, scaleX: 1.1, scaleY: .8, leftEyeScaleY: .5, rightEyeScaleY: .5, gazeY: .03 } },
+    { at: 560, pose: { y: .05, scaleX: 1.08, scaleY: .84, gazeX: .045, gazeY: -.04, leftEyeScaleY: .8, rightEyeScaleY: .8, eyeScaleX: 1.15 } },
+    { at: 860, pose: { y: .05, scaleX: 1.08, scaleY: .84, gazeX: -.045, gazeY: -.04, leftEyeScaleY: .8, rightEyeScaleY: .8, duvida: .9 } },
+    { at: 1120, pose: { y: -.02, scaleY: 1.05, eyeScaleX: 1.25, duvida: .9 } }, { at: 1500, pose: {} },
+  ],
+  estica: [
+    { at: 0, pose: {} },
+    { at: 200, pose: { y: .02, scaleX: 1.08, scaleY: .9 } },
+    { at: 520, pose: { y: -.06, scaleX: .9, scaleY: 1.13, pitch: -.08, gazeY: -.02, leftEyeScaleY: .7, rightEyeScaleY: .7, leftEyeSmile: .6, rightEyeSmile: .6, brilho: 1 } },
+    { at: 1100, pose: { y: -.06, scaleX: .9, scaleY: 1.13, pitch: -.08, leftEyeScaleY: .7, rightEyeScaleY: .7, leftEyeSmile: .6, rightEyeSmile: .6, brilho: 1 } },
+    { at: 1350, pose: { y: .012, scaleX: 1.05, scaleY: .95, brilho: 0 } }, { at: 1700, pose: {} },
+  ],
+  tremor: [{ at: 0, pose: {} }, { at: 140, pose: { y: .02, scaleX: .94, scaleY: .94, leftEyeScaleY: .6, rightEyeScaleY: .6, gazeY: .02 } },
+    ...Array.from({ length: 9 }, (_, i) => ({ at: 220 + i * 60, pose: { x: i % 2 ? .006 : -.006, y: .02, scaleX: .94, scaleY: .94, leftEyeScaleY: .6, rightEyeScaleY: .6, gazeY: .02 } })),
+    { at: 900, pose: { y: .01, leftEyeScaleY: .8, rightEyeScaleY: .8 } }, { at: 1250, pose: {} },
+  ],
+});
+for (const k of Object.keys(K)) if (DURACAO[k] == null) DURACAO[k] = K[k][K[k].length - 1].at;
 // Nomes da cartilha → sequências.
-const EXPRESSOES = { neutro: null, curioso: 'glance-right', animado: 'hop', sonolento: 'sonolento', confuso: 'confuso', irritado: 'irritado', surpreso: 'notice', confiante: 'proud', comemorando: 'milestone', pensando: 'focus', espiando: 'glance-left', desorientado: 'erro', piscadela: 'wink', giro: 'spin', cambalhota: 'flip', gelatina: 'gelatina', cocegas: 'cocegas', timido: 'timido', espreguica: 'espreguica', danca: 'danca', espirro: 'espirro', soluco: 'soluco', derrete: 'derrete', segue: 'segue', brilha: 'brilha', tonto: 'tonto' };
+const EXPRESSOES = { neutro: null, plim: 'moeda', calculando: 'conta', susto: 'susto', festa: 'pulinhos', sim: 'sim', nao: 'nao', carinho: 'carinho', espiada: 'olhada', orgulho: 'estica', frio: 'tremor', curioso: 'glance-right', animado: 'hop', sonolento: 'sonolento', confuso: 'confuso', irritado: 'irritado', surpreso: 'notice', confiante: 'proud', comemorando: 'milestone', pensando: 'focus', espiando: 'glance-left', desorientado: 'erro', piscadela: 'wink', giro: 'spin', cambalhota: 'flip', gelatina: 'gelatina', cocegas: 'cocegas', timido: 'timido', espreguica: 'espreguica', danca: 'danca', espirro: 'espirro', soluco: 'soluco', derrete: 'derrete', segue: 'segue', brilha: 'brilha', tonto: 'tonto' };
 const CHAVES = Object.keys(REPOUSO);
 const ANG = (k) => k === 'yaw' || k === 'pitch';
 function seq(nome, t) {
@@ -408,10 +472,10 @@ function criar(host) {
   const ator = { host, svg, atencao: novaAtencao(20261111 + serial * 327), visivel: true, elapsed: 0, seq: 'notice', seqT: 0, gestoEm: 6500 + serial * 1700, gestoI: 0,
     atual: { ...REPOUSO }, origem: { ...REPOUSO }, grupo: q('[data-ator]'), volume: q('[data-volume]'), cifrao: q('[data-cifrao]'), dot: q('[data-dot]'), face: q('[data-face]'),
     marcas: q('[data-marcas]'), aro: q('[data-aro]'), brilhos: q('[data-brilhos]'), duvida: q('[data-duvida]'), left: q('[data-left]'), right: q('[data-right]'), le: q('[data-le]'), re: q('[data-re]'), lb: q('[data-lb]'), rb: q('[data-rb]') };
-  const TOQUE = ['gelatina', 'wink', 'hop', 'brilha', 'spin', 'timido', 'milestone', 'flip', 'proud', 'confuso', 'danca', 'espirro', 'soluco', 'derrete', 'segue', 'notice', 'glance-right'];
+  const TOQUE = ['moeda', 'pulinhos', 'carinho', 'olhada', 'estica', 'sim', 'nao', 'tremor', 'susto', 'conta', 'gelatina', 'wink', 'hop', 'brilha', 'spin', 'timido', 'milestone', 'flip', 'proud', 'confuso', 'danca', 'espirro', 'soluco', 'derrete', 'segue', 'notice', 'glance-right'];
   let ultimo = 0, serie = 0, saco = [], antes = '';
   // Cada toque tira uma reação de um saco embaralhado: todas aparecem antes de repetir. Séries rápidas e o toque depois de muito tempo parado têm reação própria.
-  const sorteia = () => { if (!saco.length) { saco = TOQUE.slice().sort(() => Math.random() - .5); if (saco[0] === antes) saco.push(saco.shift()); } return (antes = saco.shift()); };
+  const sorteia = () => { if (!saco.length) { saco = TOQUE.filter((n) => !(host.hasAttribute('data-sem-giro') && GIROS.has(n))).sort(() => Math.random() - .5); if (saco[0] === antes) saco.push(saco.shift()); } return (antes = saco.shift()); };
   host.addEventListener('click', () => {
     const agora = performance.now(), parado = ultimo > 0 && agora - ultimo > 20000;
     serie = agora - ultimo < 450 ? serie + 1 : 1; ultimo = agora;
@@ -470,7 +534,7 @@ function montar() {
 montar();
 new MutationObserver((rs) => { if (rs.some((r) => [...r.addedNodes, ...r.removedNodes].some((n) => n.nodeType === 1 && (n.matches('.cifrao') || n.querySelector('.cifrao'))))) montar(); }).observe(document.body, { childList: true, subtree: true });
 const GIROS = new Set(['spin', 'flip', 'derrete', 'tonto', 'erro']);
-const GESTOS = ['glance-left', 'wink', 'gelatina', 'hop', 'glance-right', 'brilha', 'proud', 'spin', 'confuso', 'sonolento', 'espreguica', 'notice', 'danca', 'flip', 'derrete', 'irritado', 'milestone'];
+const GESTOS = ['conta', 'glance-left', 'carinho', 'wink', 'gelatina', 'hop', 'glance-right', 'brilha', 'proud', 'spin', 'confuso', 'sonolento', 'espreguica', 'notice', 'danca', 'flip', 'derrete', 'irritado', 'milestone'];
 // O olhar segue o ponteiro: cada ator olha na direção do cursor em relação ao próprio centro.
 let ultimoPonteiro = 0;
 addEventListener('pointermove', (e) => {

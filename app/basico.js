@@ -633,15 +633,22 @@ function basCifOlha(el, corpo) { const h = basCifHost(); if (!h || !el) return; 
 const basCifFaz = (nome) => { const h = basCifHost(); if (h && h.cifrao) h.cifrao.tocar(nome); };
 // lê a resposta como uma pessoa leria: boa notícia, alerta, falta de dados ou neutra; cada tipo tem reações que se alternam
 const BAS_CIF_HUMOR = [
-  ['festa', /parab|bateu|batida|recorde|em dia|tudo investido|otim|excelente|cresceu|acima da meta|sobrou r|saudavel|alcanc/, ['comemorando', 'brilha', 'danca', 'confiante']],
-  ['alerta', /passou|acima do limite|a mais do que|estour|negativ|cuidado|atencao|gastou mais|nao tem sobra|falta[mr]? |atras/, ['surpreso', 'timido', 'espiando']],
-  ['duvida', /nao ha|nao encontrei|registre|sem dados|nao entendi|ainda nao|nao sei/, ['confuso', 'curioso']],
-  ['compra', /compra|objetivo|planejar/, ['pensando', 'curioso']],
+  ['aperto', /nao tem sobra|falta[mr]? |atras|sem sobra|apertad/, ['frio', 'timido', 'nao']],
+  ['alerta', /passou|acima do limite|a mais do que|estour|negativ|cuidado|gastou mais|fora do padrao|acima da sua media/, ['susto', 'nao', 'surpreso']],
+  ['duvida', /nao ha|nao encontrei|registre|sem dados|nao entendi|ainda nao|nao sei/, ['espiada', 'confuso', 'calculando']],
+  ['festa', /parab|bateu|batida|recorde|em dia|tudo investido|otim|excelente|cresceu|acima da meta|saudavel|alcanc|conquist/, ['festa', 'orgulho', 'plim', 'comemorando', 'brilha']],
+  ['dinheiro', /sobrou r|sobra de|da para investir|disponivel|aport|investi|rendeu|proventos|dividend/, ['plim', 'sim', 'orgulho']],
+  ['compra', /compra|objetivo|planejar|sonho/, ['calculando', 'pensando', 'sim']],
 ];
+// o que a pessoa escreve também mexe com ele: agradecer dá carinho, um oi dá pulinhos
+const BAS_CIF_PERG = [[/obrigad|valeu|brigad|amei|gostei/, 'carinho'], [/^(oi|ola|bom dia|boa tarde|boa noite)\b/, 'festa']];
 let basCifN = 0; let basCifPend = false; let basCifVez = 0;
 function basCifConversa() {
   if (!basCifHost()) return; const st = iaEstado(); const n = st.msgs.length;
-  if (st.pend && !basCifPend) { basCifPend = true; const eu = [...document.querySelectorAll('.bas-iax-log .ia-m.eu')].pop(); basCifOlha(eu, .5); setTimeout(() => basCifFaz('pensando'), 380); }
+  if (st.pend && !basCifPend) { basCifPend = true; const eu = [...document.querySelectorAll('.bas-iax-log .ia-m.eu')].pop(); basCifOlha(eu, .5);
+    const q = basSemAcento((st.msgs[n - 1] && st.msgs[n - 1].txt) || ''); const pq = BAS_CIF_PERG.find(([re]) => re.test(q));
+    // enquanto espera: reage ao que foi dito ou faz conta de olho, alternando com o pensar
+    setTimeout(() => basCifFaz(pq ? pq[1] : basCifVez++ % 2 ? 'calculando' : 'pensando'), 380); }
   if (!st.pend && basCifPend && n > basCifN) {
     basCifPend = false; const m = st.msgs[n - 1]; const resp = [...document.querySelectorAll('.bas-iax-log .ia-m.ia')].pop();
     const t = basSemAcento(m.ai || (m.r ? voz(m.r.chave, iaVars(m.r.vars)) : m.t || ''));
