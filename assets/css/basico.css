@@ -2188,3 +2188,16 @@ body[data-ui="basico"][data-screen="app"] .tabbar { left: calc(50% + 34px); widt
 .bas-ia-fab-n { position: absolute; top: 4px; right: 4px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; font-size: 11px; font-weight: 700; line-height: 18px; color: #fff; background: var(--neg); box-shadow: 0 0 0 2px var(--bg); }
 @keyframes bas-ia-gira { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .bas-ia-fab-bg { animation: none; } }
+
+/* botão da IA, rodada 2: o mesmo degradê azul das telas (sem girar), uma luz que sobe e desce devagar, borda de vidro;
+   com aviso novo, a borda pulsa em vermelho */
+.bas-ia-fab { box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .55), inset 0 2px 0 rgba(255, 255, 255, .45), 0 0 0 2px color-mix(in srgb, var(--bas-azul-1) 55%, transparent), 0 12px 26px -10px rgba(0, 10, 80, .65); }
+.bas-ia-fab-bg { inset: 0; filter: none; animation: bas-ia-luz 5s ease-in-out infinite alternate;
+  background: radial-gradient(70% 45% at 50% var(--ia-y, 18%), rgba(140, 200, 255, .55), transparent 70%), linear-gradient(180deg, var(--bas-azul-1) 0%, var(--bas-azul-2) 48%, var(--bas-azul-3) 100%);
+  background-size: 100% 220%, 100% 100%; background-position: 50% 0%, 0 0; }
+@keyframes bas-ia-luz { to { background-position: 50% 100%, 0 0; } }
+.bas-ia-fab.alerta { animation: bas-ia-alerta 1.6s ease-in-out infinite; }
+@keyframes bas-ia-alerta {
+  0%, 100% { box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .55), inset 0 2px 0 rgba(255, 255, 255, .45), 0 0 0 2px color-mix(in srgb, var(--neg) 70%, transparent), 0 0 0 0 color-mix(in srgb, var(--neg) 55%, transparent), 0 12px 26px -10px rgba(0, 10, 80, .65); }
+  50% { box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .55), inset 0 2px 0 rgba(255, 255, 255, .45), 0 0 0 2.5px var(--neg), 0 0 0 9px color-mix(in srgb, var(--neg) 0%, transparent), 0 12px 26px -10px rgba(0, 10, 80, .65); } }
+@media (prefers-reduced-motion: reduce) { .bas-ia-fab-bg, .bas-ia-fab.alerta { animation: none; } .bas-ia-fab.alerta { box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .55), 0 0 0 2.5px var(--neg); } }
