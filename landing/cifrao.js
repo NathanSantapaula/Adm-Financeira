@@ -384,8 +384,14 @@ function criar(host) {
       <feSpecularLighting in="rel" surfaceScale="9" specularConstant="1.25" specularExponent="34" lighting-color="#FFFFFF" result="esp"><fePointLight x="330" y="120" z="520"/></feSpecularLighting>
       <feSpecularLighting in="rel" surfaceScale="9" specularConstant=".9" specularExponent="10" lighting-color="#46B6FF" result="aro"><feDistantLight azimuth="-10" elevation="18"/></feSpecularLighting>
       <feComposite in="tom" in2="esp" operator="arithmetic" k2="1" k3=".75" result="t2"/>
-      <feComposite in="t2" in2="aro" operator="arithmetic" k2="1" k3=".85" result="t3"/>
-      <feComposite in="t3" in2="SourceAlpha" operator="in"/></filter>` : '';
+      <feComposite in="t2" in2="aro" operator="arithmetic" k2="1" k3=".4" result="t3"/>
+      <feMorphology in="SourceAlpha" operator="erode" radius="24" result="er"/><feGaussianBlur in="er" stdDeviation="26" result="erb"/>
+      <feComposite in="SourceAlpha" in2="erb" operator="out" result="borda"/><feFlood flood-color="#7A6BFF" flood-opacity=".32"/><feComposite in2="borda" operator="in" result="lilas"/>
+      <feOffset in="SourceAlpha" dx="-46" dy="14" result="off"/><feComposite in="SourceAlpha" in2="off" operator="out" result="lado"/><feGaussianBlur in="lado" stdDeviation="12" result="ladob"/>
+      <feFlood flood-color="#5CC4FF" flood-opacity=".45"/><feComposite in2="ladob" operator="in" result="azul"/>
+      <feMerge result="t4"><feMergeNode in="t3"/><feMergeNode in="lilas"/><feMergeNode in="azul"/></feMerge>
+      <feComposite in="t4" in2="SourceAlpha" operator="in"/></filter>
+    <linearGradient id="${id}-o" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34385A"/><stop offset=".55" stop-color="#0B0C16"/><stop offset="1" stop-color="#020208"/></linearGradient>` : '';
   svg.innerHTML = `<defs><clipPath id="${id}-c">${CORPO}</clipPath>${FILTRO}</defs>
   <g data-ator>
     <g data-marcas fill="none" stroke="var(--cif-body)" stroke-width="34" stroke-linecap="round" opacity="0"><path d="M760 215 815 150M815 275 890 245M700 165 712 95"/></g>
@@ -395,7 +401,7 @@ function criar(host) {
       <g data-cifrao fill="var(--cif-body)"${vol ? ` filter="url(#${id}-v)"` : ''}>${CORPO}</g>
       <circle data-dot cx="500" cy="520" r="330" fill="var(--cif-body)" opacity="0"/>
       <circle data-aro cx="500" cy="520" r="250" fill="none" stroke="var(--cif-eyes)" stroke-width="26" opacity="0"/>
-      <g clip-path="url(#${id}-c)"><g data-face fill="var(--cif-eyes)"><g data-left><path data-le/>${vol ? '<ellipse data-lb cx="382" cy="390" rx="21" ry="27" fill="#fff"/>' : ''}</g><g data-right><path data-re/>${vol ? '<ellipse data-rb cx="534" cy="349" rx="21" ry="27" fill="#fff"/>' : ''}</g></g></g>
+      <g clip-path="url(#${id}-c)"><g data-face fill="var(--cif-eyes)"><g data-left><path data-le${vol ? ` fill="url(#${id}-o)" stroke="rgba(150,160,255,.35)" stroke-width="5"` : ''}/>${vol ? '<ellipse data-lb cx="382" cy="390" rx="21" ry="27" fill="#fff"/>' : ''}</g><g data-right><path data-re${vol ? ` fill="url(#${id}-o)" stroke="rgba(150,160,255,.35)" stroke-width="5"` : ''}/>${vol ? '<ellipse data-rb cx="534" cy="349" rx="21" ry="27" fill="#fff"/>' : ''}</g></g></g>
     </g>
   </g>`;
   host.appendChild(svg);
