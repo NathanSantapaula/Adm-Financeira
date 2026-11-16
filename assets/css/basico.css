@@ -3107,3 +3107,18 @@ body[data-ui="basico"][data-screen="app"] .tabbar { bottom: max(8px, calc(env(sa
 .bas-at-b:active { transform: scale(.97); }
 @media (prefers-reduced-motion: reduce) { .bas-at-v, .bas-at-ln, .bas-at-fim { animation: none; } }
 .bas-at-g svg.bas-at-ln { width: 100% !important; height: 100% !important; max-width: none; }
+/* ativo: proventos como faixa de volume dourada embaixo do gráfico (no lugar do "D"), legenda e velas mais visíveis */
+.bas-at-v.sobe { background: linear-gradient(180deg, #E6FDFF, #5CE1FF 45%, #3D8BFF); box-shadow: 0 0 0 1px rgba(255, 255, 255, .25), 0 0 16px rgba(92, 225, 255, .6); }
+.bas-at-v.desce { background: linear-gradient(180deg, #FF8A96, #E0384B); box-shadow: 0 0 0 1px rgba(255, 255, 255, .2), 0 0 16px rgba(255, 107, 122, .55); }
+.bas-at-v::before { opacity: .8; width: 2px; }
+.bas-at-gl { border-top-color: rgba(255, 255, 255, .1); } .bas-at-gl span { color: rgba(255, 255, 255, .62); font-weight: 600; }
+.bas-at-vol { position: relative; height: 54px; margin-top: 12px; border-top: 1px solid rgba(255, 255, 255, .14); }
+.bas-at-vol > small { position: absolute; left: 0; top: 5px; font-size: 11px; font-weight: 600; letter-spacing: .02em; color: rgba(255, 224, 140, .85); }
+.bas-at-vol > i { position: absolute; bottom: 0; width: var(--w); translate: -50% 0; border-radius: 4px 4px 2px 2px; background: linear-gradient(180deg, #FFF1B8, #FFD24A 45%, #F5A700); box-shadow: 0 0 12px rgba(255, 196, 0, .45); transform-origin: bottom; animation: bas-at-sobe 520ms cubic-bezier(.2, .9, .2, 1) var(--d) both; transition: opacity 150ms, filter 150ms; }
+.bas-at-vol > i.mx { box-shadow: 0 0 0 1px rgba(255, 241, 184, .7), 0 0 18px rgba(255, 196, 0, .75); }
+.bas-at-vol > i em { position: absolute; bottom: calc(100% + 4px); left: 50%; translate: -50% 0; padding: 2px 7px; border-radius: 999px; font-style: normal; font-size: 11px; font-weight: 700; white-space: nowrap; color: #3A2A00; background: #FFD24A; }
+.bas-at-vol.arrasta > i:not(.sel) { opacity: .3; } .bas-at-vol > i.sel { filter: brightness(1.15); }
+.bas-at-leg { display: flex; gap: 14px; margin-top: 10px; font-size: 12px; font-weight: 600; color: rgba(255, 255, 255, .78); }
+.bas-at-leg span { display: inline-flex; align-items: center; gap: 6px; } .bas-at-leg i { width: 9px; height: 9px; border-radius: 3px; }
+.bas-at-leg .sobe { background: #5CE1FF; } .bas-at-leg .desce { background: #FF6B7A; } .bas-at-leg .pr { background: #FFD24A; }
+@media (prefers-reduced-motion: reduce) { .bas-at-vol > i { animation: none; } }
