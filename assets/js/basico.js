@@ -1060,8 +1060,8 @@ function basTelaEntrada(o) {
     <small class="bas-ef-k0">Vai entrar em ${esc(MES_LONGO[S.mes])}</small>
     <div class="bas-ef-v" aria-live="polite"><i>R$</i><b data-ef-v>${v0 ? esc(nf.format(v0)) : '0'}</b><span class="bas-ef-cur" aria-hidden="true"></span></div>
     <input type="hidden" name="valor" value="${v0 ? esc(nf.format(v0)) : ''}">
-    <section class="card bas-ef-c">
-      <div class="bas-ef-ch"><small>De onde vem</small><button type="button" class="bas-ef-mais" data-ef-mais aria-expanded="false">Ajustar</button></div>
+    <section class="card bas-ef-c fechado">
+      <div class="bas-ef-ch"><button type="button" class="bas-ef-abre" data-ef-abre aria-expanded="false"><small>De onde vem</small><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><button type="button" class="bas-ef-mais" data-ef-mais aria-expanded="false">Ajustar</button></div>
       <div class="bas-ef-fonte"><span class="bas-ef-ic" data-ef-ic aria-hidden="true">${ic(BAS_REN_IC[ic0][1])}</span>
         <span class="bas-ef-fn"><input name="nome" value="${esc(r ? r.nome : '')}" placeholder="Salário, freela, aluguel…" aria-label="De onde veio?" enterkeyhint="done"><small data-ef-sub></small></span></div>
       <ul class="bas-ef-num"><li><span>Por mês</span><b data-ef-mes>–</b></li><li><span>Até dezembro</span><b data-ef-ano>–</b></li><li><span>Da renda média</span><b data-ef-pct>–</b></li></ul>
@@ -1100,6 +1100,8 @@ function basEfLigar() {
   // nome conhecido escolhe o ícone sozinho (se o cliente ainda não escolheu um)
   let icMexeu = false; f.querySelectorAll('[name="rendaIc"]').forEach((x) => x.addEventListener('change', () => { icMexeu = true; }));
   f.querySelector('[name="nome"]').addEventListener('input', (e) => { if (icMexeu) return; const k = basRenIcId({ nome: e.target.value }); const rr = f.querySelector(`[name="rendaIc"][value="${k}"]`); if (rr && k !== 'outros') { rr.checked = true; icone(); } });
+  // o cartão começa enxuto (ícone e nome); a seta abre os números e o "Entra todo mês"
+  const ab = f.querySelector('[data-ef-abre]'); ab.addEventListener('click', () => { const c = f.querySelector('.bas-ef-c'); const fe = c.classList.toggle('fechado'); ab.setAttribute('aria-expanded', String(!fe)); if (fe) { f.querySelector('.bas-ef-opc').hidden = true; mais.textContent = 'Ajustar'; } });
   const mais = f.querySelector('[data-ef-mais]'); mais.addEventListener('click', () => { const op = f.querySelector('.bas-ef-opc'); op.hidden = !op.hidden; mais.setAttribute('aria-expanded', String(!op.hidden)); mais.textContent = op.hidden ? 'Ajustar' : 'Pronto'; });
   f.querySelectorAll('[data-ef-rec]').forEach((b) => b.addEventListener('click', () => { const d = b.dataset; f.querySelector('[name="nome"]').value = d.nome;
     [['rendaIc', d.ic], ['cat', d.cat], ['uso', d.uso]].forEach(([n, v]) => { const x = f.querySelector(`[name="${n}"][value="${v}"]`); if (x) x.checked = true; }); icMexeu = true; icone();
