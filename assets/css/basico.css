@@ -2569,3 +2569,21 @@ html:has(body[data-bas-ia="1"]), body[data-bas-ia="1"] { overflow: hidden; overs
 @media (prefers-reduced-motion: reduce) { .bas-ia-fab.vazia { animation: none; } }
 .bas-ia-fab.vazia { filter: saturate(.85) brightness(.96); } @keyframes bas-fab-espera { 50% { filter: saturate(.7) brightness(.9); } }
 .bas-ia-fab.vazia .cifrao { filter: none; --cif-body: rgba(0, 8, 50, .5); }
+/* ===== Entrada do assistente: a tela nasce da bolinha (círculo que cresce a partir dela) e o conteúdo chega em ondas;
+   ao voltar, a tela se recolhe para a bolinha ===== */
+html[data-vt="ia"]::view-transition-old(root) { animation: 420ms ease both bas-vt-some; }
+html[data-vt="ia"]::view-transition-new(root) { animation: 560ms cubic-bezier(.2, .85, .2, 1) both bas-vt-ia; }
+html[data-vt="ia-sai"]::view-transition-old(root) { animation: 420ms cubic-bezier(.4, 0, .2, 1) both bas-vt-ia-sai; z-index: 2; }
+html[data-vt="ia-sai"]::view-transition-new(root) { animation: none; }
+@keyframes bas-vt-ia { from { clip-path: circle(26px at calc(100% - 42px) calc(100% - 48px - env(safe-area-inset-bottom, 0px))); } to { clip-path: circle(150% at calc(100% - 42px) calc(100% - 48px - env(safe-area-inset-bottom, 0px))); } }
+@keyframes bas-vt-ia-sai { from { clip-path: circle(150% at calc(100% - 42px) calc(100% - 48px - env(safe-area-inset-bottom, 0px))); } to { clip-path: circle(26px at calc(100% - 42px) calc(100% - 48px - env(safe-area-inset-bottom, 0px))); opacity: .4; } }
+@media (prefers-reduced-motion: no-preference) {
+  .bas-iax-h, .bas-iax-topo, .bas-iax-log, .bas-iax-cs, .bas-iax-fi, .bas-iax-f { animation: bas-iax-chega 520ms cubic-bezier(.2, .85, .2, 1) both; }
+  .bas-iax-topo { animation-name: bas-iax-pop; animation-delay: 120ms; }
+  .bas-iax-log { animation-delay: 200ms; } .bas-iax-cs { animation-delay: 240ms; } .bas-iax-fi { animation-delay: 290ms; } .bas-iax-f { animation-delay: 330ms; }
+}
+@keyframes bas-iax-chega { from { opacity: 0; transform: translateY(18px); } }
+@keyframes bas-iax-pop { from { opacity: 0; transform: scale(.7) translateY(20px); } 70% { transform: scale(1.04); } }
+/* o selo espera o Cifrão que vem voando */
+.bas-iax-orb.espera .cifrao { opacity: 0; }
+.bas-iax-orb .cifrao { transition: opacity 200ms ease; }

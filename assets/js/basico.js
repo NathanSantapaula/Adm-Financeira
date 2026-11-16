@@ -100,8 +100,8 @@ function basCifSolta(fab, px, py, alvo) {
   w.addEventListener('pointerdown', (e) => { w.setPointerCapture(e.pointerId); solto = true; arrastou = false; x0 = e.clientX; y0 = e.clientY; });
   w.addEventListener('pointermove', (e) => { if (!solto) return; if (Math.hypot(e.clientX - x0, e.clientY - y0) > 6) arrastou = true; segue(e); });
   w.addEventListener('pointerup', () => { solto = false; if (!arrastou) volta(); });
-  S.basCifEm = Date.now(); S.basCifVolta = () => volta();
-  const volta = () => { const f = document.querySelector('.bas-ia-fab') || fab; const r = f.getBoundingClientRect(); tx = r.left + r.width / 2 - T / 2; ty = r.top + r.height / 2 - T / 2; setTimeout(() => { vivo = false; w.remove(); document.querySelectorAll('.bas-ia-fab').forEach((x) => x.classList.remove('vazia')); S.basCifPasseio = false; S.basCifVolta = null; }, 650); };
+  S.basCifEm = Date.now(); S.basCifVolta = (destino) => volta(destino);
+  const volta = (destino) => { const f = destino || document.querySelector('.bas-ia-fab') || fab; const r = f.getBoundingClientRect(); tx = r.left + r.width / 2 - T / 2; ty = r.top + r.height / 2 - T / 2; setTimeout(() => { vivo = false; w.remove(); document.querySelectorAll('.bas-ia-fab').forEach((x) => x.classList.remove('vazia')); document.querySelectorAll('.bas-iax-orb.espera').forEach((x) => x.classList.remove('espera')); S.basCifPasseio = false; S.basCifVolta = null; }, 650); };
   // o toque que solta o toque longo não abre o assistente (S.basCifEm)
 }
 function basTabLigar() {
@@ -143,10 +143,10 @@ const basSumiu = () => basDet('Não encontrado', basCard(basVazio('Este item nã
 /* ---------- navegação: pilha de telas ligada ao histórico do navegador ---------- */
 function basAbrir(t, o) {
   basPilha().push(Object.assign({ t, volta: window.scrollY }, o)); history.pushState({ bas: basPilha().length }, ''); basSom('toque');
-  basTransicao('vai', () => { render(); window.scrollTo(0, 0); const f = $('#view [data-foco]'); if (f && matchMedia('(pointer: coarse)').matches === false) f.focus({ preventScroll: true }); });
+  basTransicao(t === 'ia' ? 'ia' : 'vai', () => { render(); window.scrollTo(0, 0); const f = $('#view [data-foco]'); if (f && matchMedia('(pointer: coarse)').matches === false) f.focus({ preventScroll: true }); });
 }
 function basFechar() {
-  const t = basPilha().pop(); basSom('volta'); basTransicao('volta', () => { render(); window.scrollTo(0, t ? t.volta || 0 : 0); });
+  const t = basPilha().pop(); basSom('volta'); basTransicao(t && t.t === 'ia' ? 'ia-sai' : 'volta', () => { render(); window.scrollTo(0, t ? t.volta || 0 : 0); });
   if (history.state && history.state.bas) history.back(); // o popstate vê a pilha já menor e não faz nada
 }
 function basLimpar() { const n = basPilha().length; S.basPilha = []; if (n && history.state && history.state.bas) history.go(-Math.min(n, history.state.bas)); }
@@ -1934,7 +1934,10 @@ function basAcao(act, ds, el) {
     case 'bas-arco': basArco(el); return true;
     case 'bas-ccv': basCcVer(); return true;
     case 'bas-ult-todos': basUltPop(); return true;
-    case 'bas-ia-fab': if (Date.now() - (S.basCifEm || 0) < 800) return true; if (document.querySelector('.bas-cif-solto') && S.basCifVolta) S.basCifVolta(); S.basCifPasseio = false; basAbrir('ia'); return true;
+    case 'bas-ia-fab': { if (Date.now() - (S.basCifEm || 0) < 800) return true; const fora = document.querySelector('.bas-cif-solto') && S.basCifVolta; S.basCifPasseio = false; basAbrir('ia');
+      // o Cifrão que estava passeando voa até o selo do assistente e só então aparece lá dentro
+      if (fora) { const pousa = (n) => { const o = document.querySelector('.bas-iax-orb'); if (!o && n < 20) { setTimeout(() => pousa(n + 1), 40); return; } if (o) o.classList.add('espera'); S.basCifVolta(o && o.querySelector('.cifrao')); }; setTimeout(() => pousa(0), 80); }
+      return true; }
     case 'bas-ev-jan': S.basEvJan = +ds.v; basSom('toque'); render(); return true;
     case 'bas-arco-abrir': { const b = document.querySelector('.bas-roda'); if (b && b.dataset.sel) basAbrir('categoria', { area: b.dataset.sel }); return true; }
     case 'bas-ia-aba': S.basIaAba = ['avisos', 'duvidas'].includes(ds.v) ? ds.v : 'conversa'; basSom('toque'); render(); return true;
