@@ -62,7 +62,7 @@ function basCat(fixa) {
 // abas embaixo (no lugar do menu lateral e do topo); some nas telas de formulário
 function basicoBarra() {
   $('#topo').innerHTML = ''; $('#side').innerHTML = ''; const a = basAba(); const t = basTopoPilha();
-  document.body.dataset.basFolha = t && BAS_FORMS.has(t.t) ? '1' : ''; document.body.dataset.basPerfil = a === 'perfil' && !t ? '1' : ''; document.body.dataset.basIa = t && (t.t === 'duvidas' || t.t === 'avisos-tela' || (t.t === 'ia' && (S.basIaAba || 'conversa') === 'conversa')) ? '1' : '';
+  document.body.dataset.basFolha = t && BAS_FORMS.has(t.t) ? '1' : ''; document.body.dataset.basPerfil = a === 'perfil' && !t ? '1' : ''; document.body.dataset.basIa = t && (t.t === 'duvidas' || t.t === 'avisos-tela' || t.t === 'cartao-estilo' || (t.t === 'ia' && (S.basIaAba || 'conversa') === 'conversa')) ? '1' : '';
   const av = basAvisosNovos();
   // botão da IA separado, à esquerda da barra: fundo em degradê neon que se move, vidro por cima e o Cifrão dentro
   $('#tabbar').innerHTML = `<button class="bas-ia-fab${av ? ' alerta' : ''}${document.querySelector('.bas-cif-solto') ? ' vazia' : ''}" data-act="bas-ia-fab" aria-label="Assistente${av ? `: ${av} avisos novos` : ''}. Segure e arraste para o Cifrão andar pela tela."><span class="cifrao" aria-hidden="true"></span></button><div class="bas-tabs"><span class="bas-tab-lente" aria-hidden="true"></span>${basAbas().map(([k, l, i]) => `<button data-act="bas-aba" data-v="${k}" ${a === k ? 'aria-current="page"' : ''}>${i}<span>${l}</span></button>`).join('')}</div>`;
