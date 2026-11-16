@@ -2872,7 +2872,16 @@ html[data-vt="cc"]::view-transition-group(bas-cc-oficial) { animation-duration: 
 :root .bas-pt-bg > .bas-ev .bas-ev-guia { opacity: 1 !important; width: 3px !important; border-radius: 0; background: var(--ev-cor, rgb(150, 248, 255)) !important;
   box-shadow: 0 0 6px color-mix(in srgb, var(--ev-cor, rgb(150, 248, 255)) 60%, transparent) !important; transition: left 120ms var(--ease-out), top 120ms var(--ease-out), background-color 200ms ease; }
 /* a bolinha numa camada própria e acima de tudo: no Safari ela às vezes deixava de ser desenhada ao arrastar e soltar */
-:root .bas-pt-bg > .bas-ev .bas-ev-p { z-index: 5 !important; will-change: left, top; -webkit-backface-visibility: hidden; backface-visibility: hidden; opacity: 1 !important; visibility: visible !important; }
+:root .bas-pt-bg > .bas-ev .bas-ev-p { z-index: 5 !important; opacity: 1 !important; visibility: visible !important; }
 :root .bas-pt-bg > .bas-ev .bas-ev-guia { z-index: 4; }
 /* linha grossa sempre opaca */
 :root .bas-pt-bg > .bas-ev .bas-ev-l { opacity: 1 !important; stroke-opacity: 1 !important; }
+/* a linha grossa numa camada acima dos pontinhos do fundo (eles eram desenhados por cima e deixavam a linha com cara de transparente) */
+.bas-ev-sobre { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; z-index: 3; }
+.bas-pt-bg > .bas-ev .bas-ev-g > svg:first-of-type .bas-ev-l { visibility: hidden; }
+.bas-ev:not(.bas-pt-bg > .bas-ev) .bas-ev-sobre { display: none; }
+/* centro da bolinha: branco no tema claro, preto no escuro */
+:root .bas-pt-bg > .bas-ev .bas-ev-p { background: #05060A !important; }
+:root[data-theme="light"] .bas-pt-bg > .bas-ev .bas-ev-p { background: #fff !important; }
+/* fichas de banco: espaço para a sombra (não é cortada) e a primeira não encosta na borda ao alinhar */
+.bas-ccn-bancos { padding: 6px 16px 22px; margin-bottom: -14px; scroll-padding-inline: 16px; }
