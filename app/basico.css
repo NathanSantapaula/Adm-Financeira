@@ -1896,15 +1896,6 @@ svg.bas-cr-chip path { fill: none; stroke: rgba(92, 66, 22, .55) !important; str
 @keyframes bas-ct2-vd { from { transform: translateX(120%) rotate(8deg); } } @keyframes bas-ct2-ve { from { transform: translateX(-120%) rotate(-12deg); } }
 .bas-ct2-folha { padding-top: 26px; }
 .bas-ct2-res { position: relative; z-index: 0; }
-/* botões da lateral: Liquid Glass que recebe a luz do cartão (a cor dele entra pelo lado de onde o cartão está) */
-body[data-ui="basico"] .bas-ct2 .bas-ct2-b {
-  background: color-mix(in srgb, var(--cb) 10%, var(--lg-bg)) !important;
-  box-shadow: inset 0 1px 0 var(--lg-aro), inset 0 -1px 0 var(--lg-aro-b), inset -10px 0 16px -10px color-mix(in srgb, var(--cb) 75%, transparent), inset 0 0 0 .5px color-mix(in srgb, var(--cb) 30%, var(--lg-aro-b)),
-    6px 0 22px -8px color-mix(in srgb, var(--cb) 55%, transparent), var(--lg-sombra) !important; }
-/* embaixo do cartão em Seus cartões: o banco pequeno, o valor em destaque e a parte dos gastos */
-.bas-rc-i .bas-rc-n { margin-top: 14px; gap: 0; } .bas-rc-n small { font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-3); }
-.bas-rc-n b { font-size: 34px; font-weight: 700; letter-spacing: -.03em; line-height: 1.15; } .bas-rc-n em { font-style: normal; font-size: 14px; color: var(--ink-3); }
-.bas-rc-fila + .bas-ccv-p { margin-top: 2px; }
 @media (prefers-reduced-motion: reduce) { .bas-ct2-card, .bas-ct2-card.vem-d, .bas-ct2-card.vem-e { animation: none; transition: none; } }
 .bas-ct2-card { margin-bottom: -44px; }
 /* o cartão entra só na borda da folha e para antes do primeiro bloco */
