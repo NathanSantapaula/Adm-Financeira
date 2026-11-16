@@ -59,6 +59,8 @@ window.FP_CONFIG = {
 
   // Ingestão por IA (PDF e relatórios): ligue só depois de publicar a Edge Function (supabase/functions/ingest-statement)
   ingestao: { iaAtiva: false, bucket: 'ingestao', funcao: 'ingest-statement' },
+  // assistente do App com IA (Edge Function supabase/functions/assistente, Groq gratuito); desligado, ele responde só no aparelho
+  assistente: { iaAtiva: false, funcao: 'assistente' },
 
   // Troca o plano mínimo de um recurso. Exemplo: recursos: { carteira: 'completo', importar: 'gratis' }
   // Recursos: ingestao, orcamento, backup, investimentos, proventos, patrimonio, carteira, ingestao_invest, importar,

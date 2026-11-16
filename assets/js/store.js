@@ -143,6 +143,10 @@ const Store = (() => {
       const r = await sb.storage.from(bucket).upload(caminho, file, { contentType: file.type || 'application/pdf', upsert: false }); if (r.error) throw erro('Não foi possível enviar o arquivo para leitura.');
       return caminho;
     },
+    async assistente(body) {
+      const r = await sb.functions.invoke((CFG.assistente && CFG.assistente.funcao) || 'assistente', { body });
+      if (r.error || !r.data || !r.data.texto) throw erro('O assistente não respondeu.'); return r.data.texto;
+    },
     async ingestIA(payload) {
       const r = await sb.functions.invoke((CFG.ingestao && CFG.ingestao.funcao) || 'ingest-statement', { body: payload });
       if (r.error) throw erro('A leitura por IA não respondeu agora. Tente de novo em instantes.'); return r.data;

@@ -2422,3 +2422,67 @@ body[data-bas-ia="1"] .tabbar { display: none !important; }
 .bas-w-res-s { width: 92px; transform: rotate(4deg); background: linear-gradient(165deg, var(--bas-azul-1), var(--bas-azul-2) 55%, var(--bas-azul-3)) !important; box-shadow: 0 16px 30px -14px color-mix(in srgb, var(--bas-azul-2) 70%, transparent), inset 0 1px 0 rgba(255, 255, 255, .35) !important; }
 /* um estilo antigo dava margem embaixo ao dia de hoje e abria um buraco na grade */
 .bas-cal .bas-cal-d.hoje { margin: 0; }
+
+/* ===== Selo do assistente vivo: aura de luz colorida girando atrás do Cifrão, respirando; pensando, gira mais rápido e solta ondas ===== */
+.bas-iax-orb { position: relative; isolation: isolate; overflow: visible; }
+.bas-iax-orb::before { content: ""; position: absolute; inset: -16px; z-index: -1; border-radius: 50%; pointer-events: none;
+  background: conic-gradient(from var(--ia-ang, 0deg), #3D7BFF, #22D3EE, #8B5CF6, #EC4899, #3D7BFF);
+  filter: blur(16px); opacity: .7; animation: bas-orb-gira 7s linear infinite, bas-orb-resp 3.2s ease-in-out infinite alternate; }
+.bas-iax-orb::after { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: 50%; pointer-events: none; opacity: 0;
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent); }
+@keyframes bas-orb-gira { to { transform: rotate(360deg); } }
+@keyframes bas-orb-resp { from { opacity: .45; scale: .92; } to { opacity: .8; scale: 1.06; } }
+@keyframes bas-orb-onda { 0% { opacity: .9; box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent); } 100% { opacity: 0; box-shadow: 0 0 0 30px color-mix(in srgb, var(--accent) 0%, transparent); } }
+.bas-iax:has(.ia-m.dig) .bas-iax-orb { animation: none; }
+.bas-iax:has(.ia-m.dig) .bas-iax-orb::before { animation-duration: 1.6s, .9s; opacity: .95; }
+.bas-iax:has(.ia-m.dig) .bas-iax-orb::after { animation: bas-orb-onda 1.3s ease-out infinite; }
+.bas-iax:has(.ia-m.dig) .bas-iax-st .pe { background: linear-gradient(90deg, currentColor 20%, color-mix(in srgb, currentColor 35%, transparent) 50%, currentColor 80%) 0 0 / 200% 100%;
+  -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent; animation: bas-orb-brilho 1.4s linear infinite; }
+.bas-iax-st .pe { color: inherit; } @keyframes bas-orb-brilho { to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) { .bas-iax-orb::before, .bas-iax-orb::after, .bas-iax-st .pe { animation: none !important; } }
+
+/* ===== Assistente no tema claro, refeito: fundo branco com névoa azul limpa no alto, vidro branco, destaque na cor do app ===== */
+:root[data-theme="light"] .bas-iax { background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 6%, #fff) 0%, #fff 45%, color-mix(in srgb, var(--accent) 4%, #F5F6FA) 100%); }
+:root[data-theme="light"] .bas-iax-brilho { opacity: 1; filter: blur(30px); top: -30vh; height: 60vh;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 42%, #fff) 0%, color-mix(in srgb, #8B5CF6 18%, transparent) 55%, transparent 100%); }
+:root[data-theme="light"] .bas-iax-b, :root[data-theme="light"] .bas-iax-mais { color: var(--ink); background: rgba(255, 255, 255, .72); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+  box-shadow: 0 4px 14px -6px rgba(20, 30, 80, .18), inset 0 0 0 .5px rgba(20, 30, 80, .1); }
+:root[data-theme="light"] .bas-iax-orb { background: linear-gradient(155deg, color-mix(in srgb, var(--accent) 80%, #fff), var(--accent)); box-shadow: 0 14px 30px -12px color-mix(in srgb, var(--accent) 70%, transparent), inset 0 1px 0 rgba(255, 255, 255, .5); }
+:root[data-theme="light"] .bas-iax-orb::before { opacity: .45; }
+:root[data-theme="light"] .bas-iax-st { color: var(--ink); font-size: 19px; letter-spacing: -.01em; }
+:root[data-theme="light"] .bas-iax-c { background: #fff; box-shadow: 0 12px 30px -18px rgba(20, 30, 80, .28), inset 0 0 0 .5px rgba(20, 30, 80, .08); }
+:root[data-theme="light"] .bas-iax-c small { color: var(--ink-3); } :root[data-theme="light"] .bas-iax-c b { color: var(--ink); }
+:root[data-theme="light"] .bas-iax-ci { background: color-mix(in srgb, var(--accent) 12%, #fff); color: var(--accent); }
+:root[data-theme="light"] .bas-iax-ca { background: #F1F3F8; color: var(--ink-3); }
+:root[data-theme="light"] .bas-iax-fi .ia-ficha { background: #fff; color: var(--ink); box-shadow: 0 4px 12px -8px rgba(20, 30, 80, .25), inset 0 0 0 .5px rgba(20, 30, 80, .1); }
+:root[data-theme="light"] .bas-iax-f { background: #fff; box-shadow: 0 16px 40px -20px rgba(20, 30, 80, .3), inset 0 0 0 .5px rgba(20, 30, 80, .08); }
+:root[data-theme="light"] .bas-iax-f:focus-within { box-shadow: 0 16px 40px -20px rgba(20, 30, 80, .3), 0 0 0 1.5px color-mix(in srgb, var(--accent) 60%, transparent); }
+:root[data-theme="light"] .bas-iax-mod { color: var(--ink-3); font-weight: 500; }
+:root[data-theme="light"] .bas-iax-env { background: linear-gradient(155deg, color-mix(in srgb, var(--accent) 80%, #fff), var(--accent)); color: #fff; box-shadow: 0 8px 18px -8px color-mix(in srgb, var(--accent) 80%, transparent); }
+:root[data-theme="light"] .bas-iax-log .ia-m.ia { background: #fff !important; box-shadow: 0 6px 18px -12px rgba(20, 30, 80, .25), inset 0 0 0 .5px rgba(20, 30, 80, .08) !important; }
+:root[data-theme="light"] .bas-iax-log .ia-m.dig p i { background: var(--accent); }
+/* Dúvidas como tela própria: sem a barra de baixo */
+body[data-bas-ia="1"] .bas-ia-fab { display: none !important; }
+/* Perfil: atalho para o globo do patrimônio no canto superior direito (ícone e nome, vidro sobre o azul) */
+.bas-pf-globo { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 16px 0 12px; border: 0; border-radius: 999px; font: inherit; font-size: 15px; font-weight: 600; color: #fff; cursor: pointer;
+  background: rgba(255, 255, 255, .14); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .35); }
+.bas-pf-globo svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; }
+.bas-pf-globo:active { transform: scale(.96); }
+/* ===== Dados pessoais, refeitos: foto no topo, grupos em cartões, perfil de investidor com a divisão de referência ===== */
+.bas-dp-eu { display: flex; flex-direction: column; align-items: center; gap: 6px; margin: 4px 0 8px; text-align: center; }
+.bas-dp-av { position: relative; cursor: pointer; } .bas-dp-av .av { width: 96px; height: 96px; font-size: 36px; box-shadow: 0 12px 30px -14px rgba(20, 30, 80, .45); }
+.bas-dp-av .bas-pf-pen { position: absolute; right: -2px; bottom: -2px; }
+.bas-dp-eu b { margin-top: 6px; font-size: 20px; } .bas-dp-eu small { color: var(--ink-3); font-size: 14px; }
+.bas-dp-g { margin: 22px 4px 8px; font-size: 13px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); }
+.card.bas-dp-c { display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 22px; }
+.bas-dp-c .bas-fl { margin: 0; } .bas-dp-c input[readonly] { color: var(--ink-3); background: var(--surface-2); }
+.bas-dp-nota { margin: -6px 2px 0; font-size: 13px; color: var(--ink-3); }
+.bas-dp-pf-n { align-self: flex-start; display: inline-block; padding: 6px 14px; border-radius: 999px; font-weight: 700; font-size: 15px; color: #fff; background: linear-gradient(155deg, color-mix(in srgb, var(--accent) 80%, #fff), var(--accent)); }
+.bas-dp-pf { display: flex; flex-direction: column; gap: 10px; } .bas-dp-pf p { margin: 0; font-size: 15px; line-height: 1.45; color: var(--ink-2); }
+.bas-dp-bar { height: 10px; border-radius: 999px; overflow: hidden; background: color-mix(in srgb, #8B5CF6 70%, var(--accent)); } .bas-dp-bar i { display: block; height: 100%; background: var(--accent); }
+.bas-dp-leg { display: flex; justify-content: space-between; font-size: 13px; color: var(--ink-3); } .bas-dp-leg span { display: inline-flex; align-items: center; gap: 6px; }
+.bas-dp-leg i { width: 9px; height: 9px; border-radius: 50%; } .bas-dp-leg .rf { background: var(--accent); } .bas-dp-leg .rv { background: color-mix(in srgb, #8B5CF6 70%, var(--accent)); }
+.bas-dp-ref { width: 100%; min-height: 46px; border-radius: 999px; font-weight: 600; }
+.bas-dp-l { list-style: none; margin: 0; padding: 0; } .bas-dp-l li { display: flex; justify-content: space-between; padding: 10px 2px; font-size: 15px; } .bas-dp-l li + li { border-top: .5px solid var(--line); }
+.bas-dp-l span { color: var(--ink-3); }
+.bas-pf-globo { width: 44px; padding: 0; justify-content: center; border-radius: 50%; } .bas-pf-globo svg { width: 22px; height: 22px; }
