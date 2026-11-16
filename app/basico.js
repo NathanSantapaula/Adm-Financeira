@@ -864,14 +864,14 @@ function basTelaCartoes() {
     ${insts.length > 1 ? `<div class="bas-ccv-p" aria-hidden="true">${insts.map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div>` : ''}` : basCard(basVazio('Nenhum cartão com gasto no período.')));
 }
 // fila em leque: o cartão do meio fica de frente e os vizinhos giram e encolhem conforme a distância (--d, --a)
-// arrastar o cartão para o lado troca para o cartão vizinho (a mesma ordem de "Seus cartões"), sem empilhar outra tela
+// arrastar o cartão para o lado troca para o cartão vizinho (a mesma ordem de "Seus cartões", em loop), sem empilhar outra tela
 function basCtLigar() {
   const c = document.querySelector('.bas-ct2-card'); S.basCtDir = 0; if (!c || c.dataset.lig) return; c.dataset.lig = '1';
   const ks = basGastoInsts().map((x) => x.k); const i = ks.indexOf(c.dataset.id); let x0 = null, dx = 0;
   c.addEventListener('pointerdown', (e) => { x0 = e.clientX; dx = 0; c.setPointerCapture(e.pointerId); c.classList.add('arrasta'); });
-  c.addEventListener('pointermove', (e) => { if (x0 == null) return; dx = e.clientX - x0; const borda = (dx > 0 && i <= 0) || (dx < 0 && i >= ks.length - 1); c.style.setProperty('--dx', `${borda ? dx * 0.25 : dx}px`); });
-  const solta = () => { if (x0 == null) return; x0 = null; c.classList.remove('arrasta'); const n = dx < -70 ? i + 1 : dx > 70 ? i - 1 : -1;
-    if (n >= 0 && n < ks.length) { basSom('toque'); const t = basPilha()[basPilha().length - 1]; t.id = ks[n]; S.basCtDir = dx < 0 ? 1 : -1; render(); window.scrollTo(0, 0); } else c.style.setProperty('--dx', '0px'); };
+  c.addEventListener('pointermove', (e) => { if (x0 == null) return; dx = e.clientX - x0; c.style.setProperty('--dx', `${ks.length > 1 ? dx : dx * 0.25}px`); });
+  const solta = () => { if (x0 == null) return; x0 = null; c.classList.remove('arrasta'); const n = ks.length < 2 || Math.abs(dx) <= 70 ? -1 : (i + (dx < 0 ? 1 : -1) + ks.length) % ks.length; // em loop: depois do último vem o primeiro
+    if (n >= 0) { basSom('toque'); const t = basPilha()[basPilha().length - 1]; t.id = ks[n]; S.basCtDir = dx < 0 ? 1 : -1; render(); window.scrollTo(0, 0); } else c.style.setProperty('--dx', '0px'); };
   c.addEventListener('pointerup', solta); c.addEventListener('pointercancel', solta);
 }
 function basRcLigar() {
