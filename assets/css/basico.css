@@ -2687,3 +2687,5 @@ html[data-vt="cc"]::view-transition-group(bas-cc-oficial) { animation-duration: 
 @keyframes bas-cce-gira { 40% { transform: translate(-50%, -50%) rotate(-104deg) scale(1.04); } }
 .bas-cce-palco { height: 360px; } .bas-cce-card { top: 56%; width: 258px; }
 .bas-cce-palco { overflow: visible; overflow-x: clip; height: 370px; } .bas-cce-card { top: 54%; }
+.bas-cce-palco { margin-top: 30px; height: 384px; } .bas-cce-card { top: 52%; }
+.bas-cce { margin-top: 22px; }
