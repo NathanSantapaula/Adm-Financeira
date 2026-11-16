@@ -2552,9 +2552,9 @@ html:has(body[data-bas-ia="1"]), body[data-bas-ia="1"] { overflow: hidden; overs
 .bas-iax:has(.bas-iax-log:not(:empty)) .bas-iax-cs { display: none; }
 /* Seus cartões: cada cartão e a logo do banco (uma máscara CSS) ficam numa camada própria da GPU,
    para o Safari não redesenhar a máscara a cada quadro do arraste (era o "travando" da logo) */
-.bas-rc-i { will-change: transform, opacity; -webkit-backface-visibility: hidden; backface-visibility: hidden; }
-.bas-rc-i .bas-cr, .bas-rc-i .bas-cr-t { transform: translateZ(0); -webkit-backface-visibility: hidden; backface-visibility: hidden; }
-.bas-rc-i .bas-cr-t > * { will-change: transform; transform: translateZ(0); }
+/* (camadas próprias removidas: no Safari elas apagavam a logo de duas máscaras, como a do Itaú)
+   os cartões do lado só diminuem; sem mudar a transparência a cada quadro, a máscara da logo não é redesenhada */
+.bas-rc-i { opacity: 1 !important; }
 /* Cifrão solto: a caixa dele ganha folga para a sombra não ser cortada num quadrado */
 .bas-cif-solto .cifrao { box-sizing: content-box; padding: 22px; margin: -22px; }
 /* duas sombras (filter) aninhadas viravam um bloco quadrado no Safari: fica uma só, no próprio Cifrão */
