@@ -3107,3 +3107,7 @@ body[data-ui="basico"][data-screen="app"] .tabbar { bottom: max(8px, calc(env(sa
 .bas-at-b:active { transform: scale(.97); }
 @media (prefers-reduced-motion: reduce) { .bas-at-v, .bas-at-ln, .bas-at-fim { animation: none; } }
 .bas-at-g svg.bas-at-ln { width: 100% !important; height: 100% !important; max-width: none; }
+/* bolinha de provento menor: uma moeda de ouro com brilho na quina e um halo que respira */
+.bas-at-pr { width: 9px; height: 9px; margin-top: -3px; background: radial-gradient(circle at 32% 30%, #FFFBE6 0 18%, #FFE07A 38%, #F5B700 70%, #B87F00 100%); box-shadow: 0 0 0 1.5px rgba(255, 224, 122, .28), 0 0 8px rgba(255, 196, 0, .7); animation: bas-at-ouro 2.6s ease-in-out infinite; }
+@keyframes bas-at-ouro { 50% { box-shadow: 0 0 0 3.5px rgba(255, 224, 122, .1), 0 0 13px rgba(255, 196, 0, .9); } }
+@media (prefers-reduced-motion: reduce) { .bas-at-pr { animation: none; } }
