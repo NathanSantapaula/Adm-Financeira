@@ -3007,3 +3007,26 @@ body[data-ui="basico"] .bas-pg { padding-bottom: 0; }
 body[data-ui="basico"][data-screen="app"] .tabbar { bottom: max(8px, calc(env(safe-area-inset-bottom, 0px) - 10px)) !important; }
 /* topo igual em todas as abas: o do Início ficava 4 px para dentro e 2 px abaixo (folga do painel escuro) */
 .bas-noite > .bas-topo { margin-left: -4px; margin-right: -4px; margin-top: -2px; }
+/* ===== Proventos, refeito no jeito do Patrimônio (subpágina): topo azul com voltar, calendário e olho; recebido no período e barras do ano ===== */
+.bas-pv2-h { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; }
+.bas-pv2-h > b { font-size: 18px; font-weight: 700; color: #fff; }
+.bas-pv2-k { display: block; margin-top: 22px; font-size: 15px; color: rgba(255, 255, 255, .72); }
+.bas-pv2-t { display: block; margin-top: 2px; font-size: 46px; font-weight: 700; letter-spacing: -.03em; color: #fff; font-variant-numeric: tabular-nums; line-height: 1.05; }
+.bas-pv2-t .bas-cent { opacity: .5; font-size: .6em; }
+.bas-pv2-var { display: flex; align-items: center; gap: 10px; margin: 10px 0 0; font-size: 15px; color: rgba(255, 255, 255, .75); }
+.bas-pv2-g { display: grid; grid-template-columns: repeat(12, 1fr); gap: 6px; align-items: end; height: 190px; margin: 22px -2px 4px; }
+.bas-pv2-g button { position: relative; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 8px; padding: 0; border: 0; background: none; font: inherit; cursor: pointer; }
+.bas-pv2-g i { display: block; width: 100%; height: var(--h); border-radius: 8px; background: linear-gradient(180deg, #B8FBFF, #38D6FF 55%, #3D8BFF); box-shadow: 0 0 14px rgba(56, 214, 255, .35); transition: height 600ms cubic-bezier(.2, .9, .2, 1), opacity 200ms; }
+.bas-pv2-g button.fora i { opacity: .28; box-shadow: none; } .bas-pv2-g button.fut i { opacity: .15; }
+.bas-pv2-g button.on i { box-shadow: 0 0 0 2px #fff, 0 0 22px rgba(184, 251, 255, .8); }
+.bas-pv2-g b { font-size: 12px; font-weight: 600; color: rgba(255, 255, 255, .6); } .bas-pv2-g button.on b { color: #fff; }
+.bas-pv2-g small { position: absolute; bottom: calc(var(--h) + 30px); left: 50%; translate: -50% 0; padding: 3px 8px; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap; color: #0B1640; background: #fff; box-shadow: 0 6px 14px -6px rgba(0, 0, 0, .5); }
+.bas-pv2-q { font-size: 14px; color: var(--ink-3); }
+.card.bas-pv2-ls { list-style: none; margin: 0; padding: 4px 0; border-radius: 22px; overflow: hidden; }
+.bas-pv2-ls li + li .bas-pv2-l::before { content: ""; position: absolute; top: 0; left: 70px; right: 16px; border-top: .5px solid var(--line); }
+.bas-pv2-l { position: relative; width: 100%; display: flex; align-items: center; gap: 14px; padding: 12px 16px; border: 0; background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+.bas-pv2-ini { flex: none; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-size: 15px; font-weight: 700; color: var(--bc); background: color-mix(in srgb, var(--bc) 14%, transparent); }
+.bas-pv2-n { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; } .bas-pv2-n b { font-size: 16px; } .bas-pv2-n small { font-size: 13px; color: var(--ink-3); }
+.bas-pv2-n i { display: block; height: 4px; margin-top: 6px; border-radius: 999px; background: linear-gradient(90deg, var(--accent) var(--p), var(--surface-2) var(--p)); }
+.bas-pv2-v { font-size: 16px; font-weight: 700; color: var(--pos); font-variant-numeric: tabular-nums; } .bas-pv2-v .bas-cent { opacity: .55; }
+@media (prefers-reduced-motion: reduce) { .bas-pv2-g i { transition: none; } }
