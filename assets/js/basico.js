@@ -62,7 +62,7 @@ function basCat(fixa) {
 // abas embaixo (no lugar do menu lateral e do topo); some nas telas de formulário
 function basicoBarra() {
   $('#topo').innerHTML = ''; $('#side').innerHTML = ''; const a = basAba(); const t = basTopoPilha();
-  document.body.dataset.basFolha = t && BAS_FORMS.has(t.t) ? '1' : ''; document.body.dataset.basPerfil = a === 'perfil' && !t ? '1' : '';
+  document.body.dataset.basFolha = t && BAS_FORMS.has(t.t) ? '1' : ''; document.body.dataset.basPerfil = a === 'perfil' && !t ? '1' : ''; document.body.dataset.basIa = t && t.t === 'ia' && (S.basIaAba || 'conversa') === 'conversa' ? '1' : '';
   const av = basAvisosNovos();
   // botão da IA separado, à esquerda da barra: fundo em degradê neon que se move, vidro por cima e o Cifrão dentro
   $('#tabbar').innerHTML = `<button class="bas-ia-fab${av ? ' alerta' : ''}${document.querySelector('.bas-cif-solto') ? ' vazia' : ''}" data-act="bas-ia-fab" aria-label="Assistente${av ? `: ${av} avisos novos` : ''}. Segure e arraste para o Cifrão andar pela tela."><span class="cifrao" aria-hidden="true"></span></button><div class="bas-tabs"><span class="bas-tab-lente" aria-hidden="true"></span>${basAbas().map(([k, l, i]) => `<button data-act="bas-aba" data-v="${k}" ${a === k ? 'aria-current="page"' : ''}>${i}<span>${l}</span></button>`).join('')}</div>`;
@@ -545,8 +545,27 @@ function basDvLigar() {
   i.addEventListener('input', () => { const ws = basSemAcento(i.value).trim().split(/\s+/).filter(Boolean); let n = 0;
     document.querySelectorAll('.bas-dv-l li').forEach((li) => { const ok = ws.every((w) => li.dataset.k.includes(w)); li.hidden = !ok; if (ok) n++; }); document.querySelector('.bas-dv-nada').hidden = !!n; });
 }
+// tela do assistente no jeito dos apps de IA: escura, com o brilho azul no alto, o selo do assistente no centro,
+// dois cartões com números do mês, as sugestões e a caixa de pergunta embaixo; Avisos e Dúvidas ficam nos botões do alto
+const I_IA_ASTER = ic('<path d="M12 3v4.5M12 16.5V21M3 12h4.5M16.5 12H21M5.6 5.6l3.2 3.2M15.2 15.2l3.2 3.2M5.6 18.4l3.2-3.2M15.2 8.8l3.2-3.2"/>');
+const I_IA_SINO = ic('<path d="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>');
+const I_IA_ENV = ic('<path d="M4 12 20 4l-6 16-2.5-6.5z"/><path d="M11.5 13.5 20 4"/>');
+function basIaTela() {
+  const C = S.C; const j = basJan(); const D = E.disponivelAporte({ C, mes: j.de, ate: j.ate, metaMes: C.metaAporteMes }); const sai = basSomaJ(C.despesas); const av = basAvisosNovos();
+  const st = iaEstado(); const ult = st.msgs.slice().reverse().find((m) => m.de === 'eu');
+  const card = (q, rot, val, ic0) => `<button class="bas-iax-c" data-act="ia-perg" data-q="${esc(q)}"><small>${esc(rot)}</small><b>${val}</b><span class="bas-iax-cr"><span class="bas-iax-ci" aria-hidden="true">${ic0}</span><span class="bas-iax-ca" aria-hidden="true">${I.chev}</span></span></button>`;
+  return `<div class="bas-iax"><span class="bas-iax-brilho" aria-hidden="true"></span>
+    <header class="bas-iax-h"><button class="bas-iax-b" data-act="bas-voltar" aria-label="Voltar">${I_VOLTA}</button><span class="bas-iax-hr"><button class="bas-iax-b" data-act="bas-ia-aba" data-v="duvidas" aria-label="Dúvidas">?</button><button class="bas-iax-b" data-act="bas-ia-aba" data-v="avisos" aria-label="Avisos${av ? `: ${av} novos` : ''}">${I_IA_SINO}${av ? '<i class="bas-iax-pt"></i>' : ''}</button></span></header>
+    <div class="bas-iax-topo"><span class="bas-iax-orb" aria-hidden="true">${I_IA_ASTER}</span><p class="bas-iax-st"><span class="ok">Como posso ajudar?</span><span class="pe">Pensando…</span></p></div>
+    <div class="ia-log bas-iax-log" data-ia-log="b" role="log" aria-live="polite">${st.msgs.length ? iaLogHtml('b') : ''}</div>
+    <div class="bas-iax-cs">${card(E.IA_FICHAS.aporte, 'Dá para investir', basCent(D.disponivel), I.inv)}${card(E.IA_FICHAS.gastos, `Gastou ${basJanFrase()}`, basCent(sai), I.despesas)}</div>
+    <div class="ia-fichas bas-iax-fi" data-ia-fichas role="group" aria-label="Sugestões de perguntas">${iaFichasHtml()}</div>
+    <form class="ia-f bas-iax-f" data-form="ia" autocomplete="off"><input name="q" maxlength="300" placeholder="${ult ? esc(ult.txt) : 'Pergunte sobre o seu dinheiro'}" aria-label="Pergunta para o assistente" enterkeyhint="send">
+      <span class="bas-iax-fr"><button type="button" class="bas-iax-mais" data-act="ia-mais" aria-label="Mais perguntas">${I.plus}</button><span class="bas-iax-mod">${esc(CFG.marca || '')} Intelligence</span><button class="bas-iax-env" aria-label="Enviar">${I_IA_ENV}</button></span></form></div>`;
+}
 function basTelaIa() {
   const aba = ['avisos', 'duvidas'].includes(S.basIaAba) ? S.basIaAba : 'conversa'; const av = basAvisosNovos();
+  if (aba === 'conversa') { S.iaComecou = true; return basIaTela(); }
   const abas = `<div class="seg bas-ia-abas" role="tablist">${[['conversa', 'Conversa'], ['avisos', `Avisos${av ? ` <em>${av}</em>` : ''}`]].map(([v, l]) => `<button role="tab" class="${aba === v ? 'on' : ''}" data-act="bas-ia-aba" data-v="${v}" aria-selected="${aba === v}">${l}</button>`).join('')}</div>`;
   const duv = `<button class="bas-circ bas-ia-duv${aba === 'duvidas' ? ' on' : ''}" data-act="bas-ia-aba" data-v="${aba === 'duvidas' ? 'conversa' : 'duvidas'}" aria-label="Dúvidas" aria-pressed="${aba === 'duvidas'}">?</button>`;
   return basDet(`Assistente ${esc(CFG.marca || '')}`, `${aba === 'duvidas' ? '' : abas}${aba === 'avisos' ? basAvisosLista() : aba === 'duvidas' ? basDuvidasHtml() : `<section class="card ia-card bas-ia">${S.iaComecou ? `${iaConversaHtml('b')}<p class="ia-disc disc">Respostas automáticas a partir do seu planejamento, sem indicação de investimentos.</p>` : iaIntroHtml()}</section>`}`, duv).replace(olhoHtml(), '');
