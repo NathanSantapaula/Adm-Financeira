@@ -314,7 +314,7 @@ function abQuadro(agora) {
   const div = A.div.map((q, i) => { const p = abProj(abRot([Math.cos(q.fase + t * q.vel) * q.rr, 0, Math.sin(q.fase + t * q.vel) * q.rr], q.inc, q.gir)); return { q, p: abFixo('d' + i, p[0], p[1], p[2]) }; });
   const apo = A.D.apo.map((a, i, arr) => { const p = abProj(abRot([Math.cos((i / arr.length) * Math.PI * 2 + t * 0.12) * 1.3, 0, Math.sin((i / arr.length) * Math.PI * 2 + t * 0.12) * 1.3], 0.95, 0.4)); return { a, p: abFixo('a' + a.mes, p[0], p[1], p[2]) }; });
   ctx.globalCompositeOperation = T.soma;
-  const ka = 1 - 0.4 * A.km; anel.forEach((q, i) => { if (q[2] < 0) abBalde(abEstilo(T.acc, A.anel[i].b * 0.7 * ka)).push(q[0], q[1], 1.2); }); abDespejar(ctx);
+  const ka = 1 - 0.4 * A.km; if (!T.app) anel.forEach((q, i) => { if (q[2] < 0) abBalde(abEstilo(T.acc, A.anel[i].b * 0.7 * ka)).push(q[0], q[1], 1.2); }); abDespejar(ctx);
   abTrilha(false, t); div.forEach((d) => { if (d.p[2] < 0) { ctx.globalAlpha = lente(d.p[0], d.p[1]); abDiv(d, false); } }); apo.forEach((a) => { if (a.p[2] < 0) { ctx.globalAlpha = lente(a.p[0], a.p[1]); abLosango(a, false); } }); ctx.globalAlpha = 1;
   // malha
   // (trechos agrupados por transparência só para trocar a cor menos vezes)
@@ -363,7 +363,7 @@ function abQuadro(agora) {
   });
   // camadas da frente
   ctx.globalCompositeOperation = T.escuro ? 'lighter' : 'source-over';
-  anel.forEach((q, i) => { if (q[2] >= 0) abBalde(abEstilo(T.escuro ? T.acc : T.acc2, A.anel[i].b * (T.escuro ? 1 : 1.3) * ka * lente(q[0], q[1]))).push(q[0], q[1], T.escuro ? 1.4 : 1.8); }); abDespejar(ctx);
+  if (!T.app) anel.forEach((q, i) => { if (q[2] >= 0) abBalde(abEstilo(T.escuro ? T.acc : T.acc2, A.anel[i].b * (T.escuro ? 1 : 1.3) * ka * lente(q[0], q[1]))).push(q[0], q[1], T.escuro ? 1.4 : 1.8); }); abDespejar(ctx);
   ctx.globalCompositeOperation = 'source-over';
   abTrilha(true, t); div.forEach((d) => { if (d.p[2] >= 0) { ctx.globalAlpha = lente(d.p[0], d.p[1]); abDiv(d, true); } }); apo.forEach((a) => { if (a.p[2] >= 0) { ctx.globalAlpha = lente(a.p[0], a.p[1]); abLosango(a, true); } }); ctx.globalAlpha = 1;
   // borda luminosa do globo (sombra larga, igual em todo quadro depois da entrada: camada pronta)
@@ -430,7 +430,7 @@ function abCamada(nome, desenha) {
   c.setTransform(A.cv.width / A.W, 0, 0, A.cv.height / A.H, 0, 0); c.clearRect(0, 0, A.W, A.H); desenha(c);
   A.camadas[nome] = { chave, cv }; return cv;
 }
-function abTrilha(frente, t) { const A = AB; const ctx = A.ctx; if (!A.D.apo.length) return; ctx.strokeStyle = abRgba(A.T.pos, frente ? 0.45 : 0.15); ctx.lineWidth = 1.2; ctx.setLineDash([1, 5]);
+function abTrilha(frente, t) { const A = AB; const ctx = A.ctx; if (!A.D.apo.length || A.T.app) return; // no App, nada cruza o planeta ctx.strokeStyle = abRgba(A.T.pos, frente ? 0.45 : 0.15); ctx.lineWidth = 1.2; ctx.setLineDash([1, 5]);
   let ant = null; for (let i = 0; i <= 90; i++) { const a = (i / 90) * Math.PI * 2; const p = abProj(abRot([Math.cos(a) * 1.3, 0, Math.sin(a) * 1.3], 0.95, 0.4)); if (ant && (p[2] >= 0) === frente) { ctx.beginPath(); ctx.moveTo(ant[0], ant[1]); ctx.lineTo(p[0], p[1]); ctx.stroke(); } ant = p; }
   ctx.setLineDash([]); }
 function abDiv(d, frente) { const A = AB; const ctx = A.ctx; const prof = (d.p[2] + 1) / 2; const r = 1.3 + prof * 1.6; ctx.fillStyle = abRgba(A.T.ouro, 0.3 + prof * 0.7);
