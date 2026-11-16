@@ -2124,3 +2124,14 @@ body[data-bas-perfil="1"] .tabbar { display: none !important; }
 .bas-pf-pen { position: absolute; right: -4px; bottom: -4px; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; color: var(--ink);
   background: var(--surface); box-shadow: 0 0 0 3px var(--bg), 0 4px 12px -4px rgba(0, 0, 0, .4); }
 .bas-pf-pen svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Gastos sem cartão: um cartão de vidro tracejado com o + para adicionar */
+.bas-gt-novo { background: rgba(255, 255, 255, .1); border: 1.5px dashed rgba(255, 255, 255, .45); border-bottom: 0; }
+.bas-gt-novo .bas-gt-d { justify-content: center; gap: 10px; font-size: 16px; font-weight: 600; color: #fff; letter-spacing: 0; }
+.bas-gt-novo .bas-gt-d i { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; background: rgba(255, 255, 255, .22); }
+.bas-gt-novo .bas-gt-d i svg { width: 18px; height: 18px; }
+.bas-gt:has(.bas-gt-vazia) { padding-bottom: 0; }
+/* Entrou e Saiu do Início: cápsula de vidro, como os botões */
+.bas[data-aba="inicio"] .bas-noite-par > button { border-radius: 999px !important; border: 0 !important; color: #fff; background: rgba(255, 255, 255, .14) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(180%); backdrop-filter: blur(14px) saturate(180%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55), inset 0 -1px 0 rgba(255, 255, 255, .15), inset 0 0 0 .5px rgba(255, 255, 255, .15), 0 8px 22px -10px rgba(0, 0, 0, .3) !important; padding: 10px 24px; }

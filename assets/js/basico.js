@@ -882,7 +882,7 @@ function basGastoTopoHtml(sai, orc) {
     return `<span class="bas-gt-c" style="--i:${i};z-index:${3 - i};--cb:${st.c}"><span class="bas-cc-c bas-cc-mini bas-gt-tx" data-m="${st.m}" style="--cb:${st.c}" aria-hidden="true"></span>${i === 0 ? `<span class="bas-gt-d"><span class="bas-gt-nfc">${CC_NFC}</span>${CC_BAND[basBand(x.k)]}</span>` : ''}</span>`; }).join('');
   return `<section class="bas-gt"><small>Gastou ${esc(basJanFrase())}</small><b class="bas-gt-v">${basCent(sai)}</b>
     ${uso != null ? `<button class="bas-gt-chip${uso > 1 ? ' neg' : uso >= 0.8 ? ' warn' : ''}" ${basIr('limite')}>${pct(uso)} do limite do mês</button>` : `<button class="bas-gt-chip" ${basIr('limite')}>Definir limite do mês</button>`}
-    ${insts.length ? `<button class="bas-gt-pilha" data-act="bas-ccv" aria-label="Ver seus ${insts.length} cartões">${pilha}</button>` : ''}</section>`;
+    ${insts.length ? `<button class="bas-gt-pilha" data-act="bas-ccv" aria-label="Ver seus ${insts.length} cartões">${pilha}</button>` : `<button class="bas-gt-pilha bas-gt-vazia" ${basIr('planejamento')} aria-label="Adicionar um cartão"><span class="bas-gt-c bas-gt-novo" style="--i:0"><span class="bas-gt-d"><i aria-hidden="true">${I.plus}</i>Adicionar um cartão</span></span></button>`}</section>`;
 }
 // bandeira do cartão: os símbolos reais da Visa (Simple Icons) e da Mastercard, em branco e translúcidos: Visa ou Mastercard em cartaoEstilo[inst].b; sem escolha, sai do nome do banco
 const CC_BAND = {
