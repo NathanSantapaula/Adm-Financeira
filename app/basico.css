@@ -3117,3 +3117,45 @@ body[data-ui="basico"][data-screen="app"] .tabbar { bottom: max(8px, calc(env(sa
 .bas-pv2-g button.on i, .bas-pv2-g button.fora.on i { opacity: 1; background: linear-gradient(180deg, #FFFFFF, #B8FBFF 30%, #38D6FF 70%, #3D8BFF); box-shadow: 0 0 0 2px #fff, 0 0 26px rgba(184, 251, 255, .9), 0 0 50px rgba(56, 214, 255, .5); }
 /* comprovante: valor numa linha só e centavos colados (o gap do flex os separava) */
 .bas-gp-papel li span { min-width: 0; } .bas-gp-papel li b { flex: none; white-space: nowrap; } .bas-gp-papel li b > .bas-cent { margin-left: -7px; }
+/* ===== Nova entrada no jeito de app de pagamento: valor grande, cartão "De onde vem" com os números, atalhos e teclado próprio ===== */
+.bas-form.bas-ef { gap: 0; min-height: calc(100dvh - 24px); display: flex; flex-direction: column; padding-bottom: 0; }
+.bas-ef-h { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 8px; }
+.bas-ef-h > b { text-align: center; font-size: 17px; font-weight: 700; }
+.bas-ef-h .bas-circ { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; padding: 0; }
+.bas-ef-h .bas-circ svg { width: 20px; height: 20px; } .bas-ef-del { color: var(--neg) !important; }
+.bas-ef-del svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.bas-ef-k0 { margin-top: 22px; font-size: 15px; color: var(--ink-3); }
+.bas-ef-v { display: flex; align-items: baseline; gap: 8px; margin-top: 2px; min-width: 0; }
+.bas-ef-v i { font-style: normal; font-size: 30px; font-weight: 600; color: var(--ink-3); }
+.bas-ef-v b { font-size: 54px; font-weight: 700; letter-spacing: -.035em; line-height: 1.1; font-variant-numeric: tabular-nums; color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: color 200ms; }
+.bas-ef.tem .bas-ef-v b { color: var(--ink); }
+.bas-ef-v.pulo b { animation: bas-ef-pulo 220ms cubic-bezier(.2, .9, .2, 1.4); }
+@keyframes bas-ef-pulo { from { transform: scale(.96); } }
+.bas-ef-cur { align-self: center; width: 2.5px; height: 46px; border-radius: 2px; background: var(--accent); animation: bas-ef-pisca 1s steps(2, start) infinite; }
+@keyframes bas-ef-pisca { to { visibility: hidden; } }
+.card.bas-ef-c { margin-top: 18px; padding: 16px; border-radius: 26px; display: grid; gap: 12px; }
+.bas-ef-ch { display: flex; align-items: center; justify-content: space-between; } .bas-ef-ch small { font-size: 14px; font-weight: 600; color: var(--ink-2); }
+.bas-ef-mais { height: 32px; padding: 0 14px; border-radius: 999px; border: 0; font: inherit; font-size: 13px; font-weight: 700; color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); cursor: pointer; }
+.bas-ef-fonte { display: flex; align-items: center; gap: 14px; }
+.bas-ef-ic { flex: none; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; color: #fff; background: radial-gradient(circle at 30% 25%, color-mix(in srgb, var(--accent) 55%, #fff), var(--accent) 70%); box-shadow: 0 10px 22px -10px var(--accent), inset 0 1px 0 rgba(255, 255, 255, .4); }
+.bas-ef-ic svg { width: 24px; height: 24px; }
+.bas-ef-fn { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.bas-form .bas-ef-fn input { width: 100%; height: auto; padding: 0; border: 0; background: none; box-shadow: none; font: inherit; font-size: 18px !important; font-weight: 700; color: var(--ink); outline: none; }
+.bas-ef-fn input::placeholder { color: var(--ink-3); font-weight: 600; } .bas-ef-fn small { font-size: 13px; color: var(--ink-3); }
+.bas-ef-num { list-style: none; margin: 0; padding: 12px 0 0; border-top: .5px solid var(--line); display: grid; grid-template-columns: repeat(3, 1fr); }
+.bas-ef-num li { display: flex; flex-direction: column; gap: 2px; min-width: 0; } .bas-ef-num li + li { padding-left: 12px; border-left: .5px solid var(--line); }
+.bas-ef-num span { font-size: 11.5px; color: var(--ink-3); } .bas-ef-num b { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .bas-ef-num b .bas-cent { opacity: .5; }
+.bas-ef.tem .bas-ef-num li:nth-child(2) b { color: var(--accent); }
+.bas-ef-opc { display: grid; gap: 14px; padding-top: 4px; }
+.bas-ef-c .bas-sw { margin: 0; padding: 10px 0 0; border-top: .5px solid var(--line); background: none; box-shadow: none; }
+.bas-ef-rec { display: flex; gap: 8px; margin: 14px -16px 0; padding: 0 16px; overflow-x: auto; scrollbar-width: none; } .bas-ef-rec::-webkit-scrollbar { display: none; }
+.bas-ef-rec button { flex: none; display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 14px 0 10px; border-radius: 999px; border: .5px solid var(--line); background: var(--glass, var(--surface)); font: inherit; font-size: 14px; font-weight: 600; color: var(--ink); cursor: pointer; }
+.bas-ef-rec button svg { width: 17px; height: 17px; color: var(--accent); } .bas-ef-rec button.on { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); }
+.bas-ef-pe { margin-top: auto; padding-top: 16px; display: grid; gap: 12px; padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px)); }
+.bas-ef-ok { width: 100%; }
+.bas-ef-tec { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.bas-ef-k { height: 52px; border-radius: 18px; border: .5px solid color-mix(in srgb, var(--line) 70%, transparent); background: var(--glass-strong, var(--surface)); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); font: inherit; font-size: 24px; font-weight: 500; color: var(--ink); display: grid; place-items: center; cursor: pointer; box-shadow: 0 1px 0 rgba(255, 255, 255, .5) inset, 0 6px 14px -10px rgba(0, 20, 80, .35); transition: transform 90ms, background 90ms; -webkit-tap-highlight-color: transparent; }
+.bas-ef-k:active { transform: scale(.94); background: color-mix(in srgb, var(--accent) 14%, var(--surface)); }
+.bas-ef-k svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linejoin: round; stroke-linecap: round; }
+@media (max-height: 740px) { .bas-ef-k { height: 46px; } .bas-ef-v b { font-size: 46px; } .bas-ef-k0 { margin-top: 12px; } }
+@media (prefers-reduced-motion: reduce) { .bas-ef-cur, .bas-ef-v.pulo b { animation: none; } }

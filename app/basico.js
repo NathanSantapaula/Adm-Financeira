@@ -823,7 +823,7 @@ function basIaxLigar() {
 function basDesenhar() {
   const st = document.getElementById('bas-o3');
   if (st) { const falhou = () => st.classList.add('sem-3d'); if (typeof o3Ligar === 'function') o3Ligar(st, st.dataset.tipo, falhou); else falhou(); }
-  basIaxLigar(); basCifVe(); basGfLigar(); basPeriodoRepinta(); { const f = document.querySelector('.bas-form'); if (f && f.querySelector('[name="areaIc"]') && !f.dataset.ic) { f.dataset.ic = '1'; f.addEventListener('change', (e) => { if (e.target.name !== 'area') return; const r = f.querySelector(`[name="areaIc"][value="${basCatIcId(e.target.value)}"]`); if (r) r.checked = true; }); } } { const on = document.querySelector('.bas-cce-m.on'); const col = on && on.parentElement; if (col && !col.dataset.vis) { col.dataset.vis = '1'; col.scrollTop = on.offsetTop - col.clientHeight / 2 + on.offsetHeight / 2; } } basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basAtLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
+  basIaxLigar(); basCifVe(); basGfLigar(); basPeriodoRepinta(); { const f = document.querySelector('.bas-form'); if (f && f.querySelector('[name="areaIc"]') && !f.dataset.ic) { f.dataset.ic = '1'; f.addEventListener('change', (e) => { if (e.target.name !== 'area') return; const r = f.querySelector(`[name="areaIc"][value="${basCatIcId(e.target.value)}"]`); if (r) r.checked = true; }); } } { const on = document.querySelector('.bas-cce-m.on'); const col = on && on.parentElement; if (col && !col.dataset.vis) { col.dataset.vis = '1'; col.scrollTop = on.offsetTop - col.clientHeight / 2 + on.offsetHeight / 2; } } basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basAtLigar(); basEfLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
   const wr = document.querySelector('.bas-wr'); if (wr && !wr.dataset.lig) { wr.dataset.lig = '1'; basWrIr(wr, 0); }
   const sq = document.querySelector('[data-sq-conta]'); if (sq && !sq.dataset.lig && !matchMedia('(prefers-reduced-motion: reduce)').matches) { sq.dataset.lig = '1'; const alvo = +sq.dataset.sqConta; const t0 = performance.now();
     const passo = (t) => { const k = Math.min(1, (t - t0) / 900); sq.textContent = Math.round(alvo * (1 - Math.pow(1 - k, 3))); if (k < 1 && sq.isConnected) requestAnimationFrame(passo); }; if (alvo > 0) requestAnimationFrame(passo); }
@@ -1045,16 +1045,67 @@ const BAS_REN_IC = {
 const BAS_REN_NOME = [['vale', /vale|\bvr\b|\bva\b|refeic|aliment|ifood|sodexo|alelo|ticket/], ['salario', /salar|holerite|clt|pro.?labore|ordenado/], ['freela', /freela|freelanc|projeto|servic/],
   ['aluguel', /aluguel|imovel/], ['invest', /rendiment|dividend|provent|juros|invest/], ['bonus', /bonus|bônus|plr|13|decimo|comiss|premio/], ['pix', /pix|transfer|reembols/], ['presente', /present|mesada|doac/], ['negocio', /negocio|empresa|loja|venda/]];
 function basRenIcId(r) { if (r && BAS_REN_IC[r.icone]) return r.icone; if (r && r.soGasto) return 'cartao'; const t = basSemAcento((r && r.nome) || '').toLowerCase(); const h = BAS_REN_NOME.find(([, re]) => re.test(t)); return h ? h[0] : 'outros'; }
+// nova entrada no jeito de app de pagamento: o valor grande digitado num teclado próprio, o cartão "De onde vem"
+// com o ícone, o nome e o que essa entrada significa (até dezembro, o peso na renda), atalhos das fontes que já existem,
+// mais opções recolhidas e o Salvar acima do teclado. Grava pelo mesmo basSalvar('entrada').
 function basTelaEntrada(o) {
   const r = o.id ? S.plan.rendas.find((x) => x.id === o.id) : null; if (o.id && !r) return basSumiu();
-  return basForm('entrada', r ? 'Editar entrada' : 'Nova entrada', `${basValor('valor', r ? +r.valores[S.mes] || 0 : 0, `Quanto entrou em ${MES_LONGO[S.mes]}?`)}
-    ${basCampo('nome', 'De onde veio?', r ? r.nome : '', 'placeholder="Ex.: Salário, Freela"')}
-    <fieldset class="bas-fs bas-catic"><legend>Ícone</legend><div class="bas-catic-g">${Object.keys(BAS_REN_IC).map((k) => `<label title="${esc(BAS_REN_IC[k][0])}"><input type="radio" name="rendaIc" value="${k}" ${k === (r ? basRenIcId(r) : 'salario') ? 'checked' : ''}><span aria-label="${esc(BAS_REN_IC[k][0])}">${ic(BAS_REN_IC[k][1])}</span></label>`).join('')}</div></fieldset>
-    ${basChips('cat', (S.plan.rendaCats && S.plan.rendaCats.length ? S.plan.rendaCats : E.CATS_RENDA()).map((c) => [c.id, c.nome]), r ? r.cat : 'fixa', 'Tipo de renda')}
-    ${basChips('uso', [['livre', 'Pode investir'], ['gasto', 'Só para gastos']], r && r.soGasto ? 'gasto' : 'livre', 'Esse dinheiro pode ser investido?')}
-    <div class="bas-blk" data-blk="ben">${basChips('inst', [...new Set(['ifood', ...instMinhas(), ...(r && r.inst ? [r.inst] : [])])].filter((v) => instDe(v) && v !== 'dinheiro' && v !== 'outra').map((v) => [v, instDe(v)[1]]), (r && r.inst) || 'ifood', 'Em qual cartão ele cai?')}
-      <p class="bas-p">Vale-refeição, vale-alimentação e benefícios: os gastos pagos com este cartão usam esse saldo, e o que sobrar nele não entra no que dá para investir.</p></div>
-    ${basSw('todo', r ? 'Usar este valor até dezembro' : 'Entra todo mês', r ? `Troca o valor de ${MES_LONGO[S.mes]} em diante.` : `De ${MES_LONGO[S.mes]} até dezembro.`, !r)}`, { excluir: r ? 'Excluir entrada' : '' });
+  const v0 = r ? +r.valores[S.mes] || 0 : 0; const ic0 = r ? basRenIcId(r) : 'salario';
+  const C = S.C; const ult = S.year === NOW_Y ? NOW_M : 11; let soma = 0; for (let m = 0; m <= ult; m++) soma += +C.receita[m] || 0; const media = soma / (ult + 1);
+  const vistos = new Set(); const recentes = S.plan.rendas.filter((x) => x !== r && x.nome && !vistos.has(x.nome) && vistos.add(x.nome)).slice(0, 6);
+  const cats = S.plan.rendaCats && S.plan.rendaCats.length ? S.plan.rendaCats : E.CATS_RENDA();
+  const tecla = (k, rot) => `<button type="button" class="bas-ef-k" data-ef-k="${k}" aria-label="${rot || k}">${k === 'x' ? '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5h11v14H9l-6-7z"/><path d="m12.5 9.5 5 5m0-5-5 5"/></svg>' : k}</button>`;
+  return `<form class="bas-form bas-ef" data-form="bas" data-t="entrada" novalidate autocomplete="off" data-media="${media.toFixed(2)}" data-meses="${12 - S.mes}">
+    <header class="bas-ef-h"><button type="button" class="bas-circ bas-ef-x" data-act="bas-voltar" aria-label="Cancelar">${I_VOLTA}</button><b>${r ? 'Editar entrada' : 'Nova entrada'}</b>${r ? `<button type="button" class="bas-circ bas-ef-del" data-act="bas-excluir" aria-label="Excluir entrada"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg></button>` : '<span></span>'}</header>
+    <small class="bas-ef-k0">Vai entrar em ${esc(MES_LONGO[S.mes])}</small>
+    <div class="bas-ef-v" aria-live="polite"><i>R$</i><b data-ef-v>${v0 ? esc(nf.format(v0)) : '0'}</b><span class="bas-ef-cur" aria-hidden="true"></span></div>
+    <input type="hidden" name="valor" value="${v0 ? esc(nf.format(v0)) : ''}">
+    <section class="card bas-ef-c">
+      <div class="bas-ef-ch"><small>De onde vem</small><button type="button" class="bas-ef-mais" data-ef-mais aria-expanded="false">Ajustar</button></div>
+      <div class="bas-ef-fonte"><span class="bas-ef-ic" data-ef-ic aria-hidden="true">${ic(BAS_REN_IC[ic0][1])}</span>
+        <span class="bas-ef-fn"><input name="nome" value="${esc(r ? r.nome : '')}" placeholder="Salário, freela, aluguel…" aria-label="De onde veio?" enterkeyhint="done"><small data-ef-sub></small></span></div>
+      <ul class="bas-ef-num"><li><span>Por mês</span><b data-ef-mes>–</b></li><li><span>Até dezembro</span><b data-ef-ano>–</b></li><li><span>Da renda média</span><b data-ef-pct>–</b></li></ul>
+      <div class="bas-ef-opc" hidden>
+        <fieldset class="bas-fs bas-catic"><legend>Ícone</legend><div class="bas-catic-g">${Object.keys(BAS_REN_IC).map((k) => `<label title="${esc(BAS_REN_IC[k][0])}"><input type="radio" name="rendaIc" value="${k}" ${k === ic0 ? 'checked' : ''}><span aria-label="${esc(BAS_REN_IC[k][0])}">${ic(BAS_REN_IC[k][1])}</span></label>`).join('')}</div></fieldset>
+        ${basChips('cat', cats.map((c) => [c.id, c.nome]), r ? r.cat : 'fixa', 'Tipo de renda')}
+        ${basChips('uso', [['livre', 'Pode investir'], ['gasto', 'Só para gastos']], r && r.soGasto ? 'gasto' : 'livre', 'Esse dinheiro pode ser investido?')}
+        <div class="bas-blk" data-blk="ben">${basChips('inst', [...new Set(['ifood', ...instMinhas(), ...(r && r.inst ? [r.inst] : [])])].filter((v) => instDe(v) && v !== 'dinheiro' && v !== 'outra').map((v) => [v, instDe(v)[1]]), (r && r.inst) || 'ifood', 'Em qual cartão ele cai?')}
+          <p class="bas-p">Os gastos pagos com este cartão usam esse saldo, e o que sobrar nele não entra no que dá para investir.</p></div>
+      </div>
+      ${basSw('todo', r ? 'Usar este valor até dezembro' : 'Entra todo mês', r ? `Troca o valor de ${MES_LONGO[S.mes]} em diante.` : `De ${MES_LONGO[S.mes]} até dezembro.`, !r)}
+    </section>
+    ${recentes.length ? `<div class="bas-ef-rec" role="group" aria-label="Fontes que você já tem">${recentes.map((x) => `<button type="button" data-ef-rec data-nome="${esc(x.nome)}" data-ic="${basRenIcId(x)}" data-cat="${esc(x.cat || '')}" data-uso="${x.soGasto ? 'gasto' : 'livre'}" data-v="${esc(nf.format(+((x.valores || [])[S.mes] || (x.valores || []).filter((y) => +y > 0).slice(-1)[0] || 0)))}">${ic(BAS_REN_IC[basRenIcId(x)][1])}<span>${esc(x.nome)}</span></button>`).join('')}</div>` : ''}
+    <div class="bas-ef-pe"><p class="bas-err" role="alert" hidden></p><button class="btn primary lg bas-cta bas-ef-ok" type="submit">${r ? 'Salvar' : 'Anotar entrada'}</button>
+      <div class="bas-ef-tec" role="group" aria-label="Teclado numérico">${['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((k) => tecla(k)).join('')}${tecla(',', 'vírgula')}${tecla('0')}${tecla('x', 'apagar')}</div></div>
+  </form>`;
+}
+function basEfLigar() {
+  const f = document.querySelector('form.bas-ef'); if (!f || f.dataset.lig) return; f.dataset.lig = '1';
+  const inp = f.querySelector('[name="valor"]'); const out = f.querySelector('[data-ef-v]'); const media = +f.dataset.media || 0; const meses = +f.dataset.meses || 1;
+  let txt = inp.value.replace(/\./g, ''); if (/,00$/.test(txt)) txt = txt.slice(0, -3);
+  const fmt = (t) => { const [i, d] = t.split(','); const ii = (i || '0').replace(/^0+(?=\d)/, ''); return ii.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + (d != null ? ',' + d : ''); };
+  const conta = () => { const v = parseReais(txt || '0') || 0; const todo = f.querySelector('[name="todo"]').checked; const nome = f.querySelector('[name="nome"]').value.trim();
+    const cat = f.querySelector('[name="cat"]:checked'); const uso = f.querySelector('[name="uso"]:checked');
+    f.querySelector('[data-ef-sub]').textContent = [cat ? cat.nextElementSibling.textContent : '', todo ? 'todo mês' : 'só este mês', uso && uso.value === 'gasto' ? 'só para gastos' : ''].filter(Boolean).join(' · ');
+    f.querySelector('[data-ef-mes]').innerHTML = v ? basCent(v) : '–'; f.querySelector('[data-ef-ano]').innerHTML = v ? basCent(todo ? v * meses : v) : '–';
+    f.querySelector('[data-ef-pct]').textContent = v && media > 0 ? pct(v / media) : '–'; f.classList.toggle('tem', v > 0); };
+  const mostra = () => { out.textContent = txt ? fmt(txt) : '0'; inp.value = txt; out.parentElement.classList.remove('pulo'); void out.offsetWidth; out.parentElement.classList.add('pulo'); conta(); };
+  const tecla = (k) => { if (k === 'x') txt = txt.slice(0, -1); else if (k === ',') { if (!txt.includes(',')) txt = (txt || '0') + ','; } else { const [i, d] = txt.split(','); if (d != null ? d.length >= 2 : (i || '').length >= 9) return; txt = txt === '0' ? k : txt + k; }
+    if (typeof basSom === 'function') basSom('toque'); if (typeof basVibra === 'function') basVibra(6); mostra(); };
+  f.querySelectorAll('[data-ef-k]').forEach((b) => b.addEventListener('click', () => tecla(b.dataset.efK)));
+  // teclado do computador também digita o valor (fora do campo do nome)
+  f.addEventListener('keydown', (e) => { if (e.target.matches('input[name="nome"]')) return; const k = e.key === 'Backspace' ? 'x' : e.key === '.' ? ',' : e.key; if (/^[\d,x]$/.test(k)) { e.preventDefault(); tecla(k); } });
+  const icone = () => { const s = f.querySelector('[name="rendaIc"]:checked'); if (s) f.querySelector('[data-ef-ic]').innerHTML = ic(BAS_REN_IC[s.value][1]); };
+  f.addEventListener('change', () => { icone(); conta(); });
+  // nome conhecido escolhe o ícone sozinho (se o cliente ainda não escolheu um)
+  let icMexeu = false; f.querySelectorAll('[name="rendaIc"]').forEach((x) => x.addEventListener('change', () => { icMexeu = true; }));
+  f.querySelector('[name="nome"]').addEventListener('input', (e) => { if (icMexeu) return; const k = basRenIcId({ nome: e.target.value }); const rr = f.querySelector(`[name="rendaIc"][value="${k}"]`); if (rr && k !== 'outros') { rr.checked = true; icone(); } });
+  const mais = f.querySelector('[data-ef-mais]'); mais.addEventListener('click', () => { const op = f.querySelector('.bas-ef-opc'); op.hidden = !op.hidden; mais.setAttribute('aria-expanded', String(!op.hidden)); mais.textContent = op.hidden ? 'Ajustar' : 'Pronto'; });
+  f.querySelectorAll('[data-ef-rec]').forEach((b) => b.addEventListener('click', () => { const d = b.dataset; f.querySelector('[name="nome"]').value = d.nome;
+    [['rendaIc', d.ic], ['cat', d.cat], ['uso', d.uso]].forEach(([n, v]) => { const x = f.querySelector(`[name="${n}"][value="${v}"]`); if (x) x.checked = true; }); icMexeu = true; icone();
+    if (!parseReais(txt || '0') && d.v && d.v !== '0,00') { txt = d.v.replace(/\./g, '').replace(/,00$/, ''); mostra(); } else conta();
+    f.querySelectorAll('[data-ef-rec]').forEach((x) => x.classList.toggle('on', x === b)); }));
+  conta();
 }
 // registrar investimento (ou corrigir o valor de um ativo no mês)
 function basTelaAporte(o) {
