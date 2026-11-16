@@ -2032,3 +2032,34 @@ body[data-ui="basico"] .bas-gt-folha .bas-pt-acoes > :is(.bas-circ, .bas-inv-pl)
 .bas-gt-folha > .bas-pt-acoes { grid-auto-columns: minmax(0, 1fr); }
 .bas-pt-acoes > .bas-circ[aria-label="Minha carteira"]::after { content: "Carteira"; }
 .bas-pt-acoes > button { font-size: 14px; gap: 5px; padding: 0 6px; } .bas-pt-acoes > button svg { width: 17px; height: 17px; }
+
+/* ===== Gráfico do patrimônio: valor grande à esquerda, pílula da variação, linha grossa com brilho,
+   área em pontinhos sob a linha, o ponto do mês com aro forte e a guia até embaixo, e os períodos em pílulas ===== */
+.bas-pt-bg > .bas-ev { overflow: visible; }
+.bas-pt-bg > .bas-ev .bas-ev-h { text-align: left; padding: 0 2px; }
+.bas-pt-bg > .bas-ev .bas-ev-k { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.bas-pt-bg > .bas-ev .bas-ev-v { font-size: 46px; font-weight: 700; letter-spacing: -.035em; color: #fff; }
+.bas-pt-bg > .bas-ev .bas-ev-v .bas-cent { opacity: .45; }
+.bas-ev-var { display: flex; align-items: center; gap: 10px; margin: 8px 0 0; font-size: 15px; color: rgba(255, 255, 255, .72); }
+.bas-ev-pct { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 10px; font-weight: 700; font-size: 14px; color: #fff;
+  background: rgba(255, 255, 255, .16); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35), inset 0 0 0 .5px rgba(255, 255, 255, .2); }
+.bas-ev-pct.neg { background: color-mix(in srgb, var(--neg) 35%, transparent); }
+.bas-pt-bg > .bas-ev .bas-ev-g { height: 190px; margin: 18px -16px 0; cursor: crosshair; }
+.bas-pt-bg > .bas-ev .bas-ev-g svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.bas-pt-bg > .bas-ev .bas-ev-a { fill: url(#bas-ev-ar); opacity: .55; }
+.bas-pt-bg > .bas-ev #bas-ev-ar stop { stop-color: #fff; }
+.bas-pt-bg > .bas-ev .bas-ev-l { stroke: #f2f6ff; stroke-width: 4.5; filter: drop-shadow(0 0 4px rgba(255, 255, 255, .9)) drop-shadow(0 0 14px color-mix(in srgb, var(--bas-azul-1) 90%, #fff)); }
+/* pontinhos só dentro da área sob a linha, mais fortes perto dela */
+.bas-ev-pts { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle, rgba(255, 255, 255, .5) 1.1px, transparent 1.6px) 0 0 / 9px 9px;
+  -webkit-mask: var(--m) 0 0 / 100% 100% no-repeat, linear-gradient(#000 0%, rgba(0, 0, 0, .25) 100%); -webkit-mask-composite: source-in;
+  mask: var(--m) 0 0 / 100% 100% no-repeat, linear-gradient(#000 0%, rgba(0, 0, 0, .25) 100%); mask-composite: intersect; }
+/* o ponto do mês: centro escuro, aro claro grosso e brilho; a guia sai dele até embaixo */
+.bas-pt-bg > .bas-ev .bas-ev-p { width: 26px; height: 26px; z-index: 2; background: var(--bas-azul-3); border: 4.5px solid #f2f6ff; box-shadow: 0 0 12px rgba(255, 255, 255, .8), 0 0 26px color-mix(in srgb, var(--bas-azul-1) 80%, #fff); transform: translate(-50%, -50%); }
+.bas-pt-bg > .bas-ev .bas-ev-guia { opacity: 1; bottom: 0; width: 3px; transform: translateX(-50%); border-radius: 2px; background: linear-gradient(#f2f6ff, rgba(242, 246, 255, .55)); box-shadow: 0 0 10px rgba(255, 255, 255, .6); }
+/* períodos em pílulas, o escolhido em vidro */
+.bas-ev-jan { display: flex; justify-content: space-between; gap: 4px; margin: 14px 0 6px; }
+.bas-ev-jan button { flex: 1; height: 38px; border: 0; border-radius: 12px; background: none; font: inherit; font-size: 15px; font-weight: 600; color: rgba(255, 255, 255, .7); cursor: pointer; }
+.bas-ev-jan button[aria-pressed="true"] { color: #fff; background: rgba(255, 255, 255, .16); -webkit-backdrop-filter: blur(12px) saturate(180%); backdrop-filter: blur(12px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45), inset 0 0 0 .5px rgba(255, 255, 255, .18); }
+@media (prefers-reduced-motion: reduce) { .bas-pt-bg > .bas-ev .bas-ev-p, .bas-pt-bg > .bas-ev .bas-ev-guia { transition: none; } }
+.bas-pt-bg > .bas-ev .bas-ev-p { margin: 0; }
+.bas-pt-bg > .bas-ev .bas-ev-p { transform: none; } .bas-pt-bg > .bas-ev .bas-ev-guia { transform: none; translate: -50% 0; }

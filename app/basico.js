@@ -308,20 +308,25 @@ function basArco(el) {
 /* ---- Investir: o quanto investiu. O patrimônio num gráfico que segue o dedo, a meta e o disponível, a carteira e o investido ---- */
 function basInvestir() {
   const C = S.C; const j = basJan(); const D = E.disponivelAporte({ C, mes: j.de, ate: j.ate, metaMes: C.metaAporteMes }); const pode = temRecurso('aporte_simples'); const V = basVarPatr(C); const secs = {};
-  const ult = S.year === NOW_Y ? NOW_M : 11; const serie = C.patrimonio.slice(0, ult + 1); const mn = Math.min(...serie); const mx = Math.max(...serie); const W = 320; const H = 150; const P = 12;
-  const xs = (i) => (serie.length > 1 ? P + (i / (serie.length - 1)) * (W - 2 * P) : W / 2); const ys = (v) => (mx > mn ? H - 18 - ((v - mn) / (mx - mn)) * (H - 46) : H / 2);
+  const ult = S.year === NOW_Y ? NOW_M : 11; const jan = S.basEvJan || 12; const ini = Math.max(0, ult - (jan === 1 ? 1 : jan - 1)); const serie = C.patrimonio.slice(ini, ult + 1); const mn = Math.min(...serie); const mx = Math.max(...serie); const W = 320; const H = 170; const P = 16;
+  const xs = (i) => (serie.length > 1 ? P + (i / (serie.length - 1)) * (W - 2 * P) : W / 2); const ys = (v) => (mx > mn ? H - 22 - ((v - mn) / (mx - mn)) * (H - 56) : H * 0.45);
   const pts = serie.map((v, i) => [xs(i), ys(v)]);
   // curva suave (Catmull-Rom para Bézier), a área com degradê e a faixa do período escolhido
-  const curva = basCurva(pts);
-  const fx = Math.min(j.ate, ult); const fai = j.n > 1 && j.de <= ult ? `<rect class="bas-ev-faixa" x="${(xs(j.de) - 8).toFixed(1)}" y="0" width="${(xs(fx) - xs(j.de) + 16).toFixed(1)}" height="${H}" rx="10"/>` : '';
-  const dados = serie.map((v, i) => [MES_LONGO[i], brl(v)]); const sel = Math.min(j.ate, ult);
+  const curva = basCurva([[0, pts[0][1]], ...pts, [W, pts[pts.length - 1][1]]]); // a linha entra e sai pelas bordas, como no gráfico de referência
+  const fai = '';
+  const dados = serie.map((v, i) => [MES_LONGO[ini + i], brl(v)]); const sel = serie.length - 1;
+  const area = `${curva} L${W} ${H} L0 ${H} Z`;
+  const masc = `url("data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${W} ${H}' preserveAspectRatio='none'><path d='${area}'/></svg>`)}")`;
+  const vF = C.patrimonio[ult]; const vI = ini > 0 ? C.patrimonio[ini - 1] : serie[0]; const dif = vF - vI; const va = vI ? dif / Math.abs(vI) : 0; const up = dif >= 0;
+  const janTxt = { 1: 'no mês', 3: 'em 3 meses', 6: 'em 6 meses', 12: `em ${S.year}` }[jan];
   secs.patr = `<section class="bas-ev" data-pts='${esc(JSON.stringify(pts.map((p) => [+p[0].toFixed(1), +p[1].toFixed(1)])))}' data-d='${esc(JSON.stringify(dados))}' data-w="${W}" data-h="${H}">
-    <div class="bas-ev-h"><small class="bas-ev-k" data-ev="k">Patrimônio em ${MES_LONGO[sel]}</small><b class="bas-ev-v" data-ev="v">${basCent(C.patrimonio[sel])}</b>
-      ${basVarChip(V)}</div>
+    <div class="bas-ev-h"><small class="bas-ev-k" data-ev="k">Patrimônio em ${MES_LONGO[ini + sel]}</small><b class="bas-ev-v" data-ev="v">${basCent(serie[sel])}</b>
+      <p class="bas-ev-var"><span class="bas-ev-pct${up ? '' : ' neg'}">${up ? '↑' : '↓'} ${pct(Math.abs(va), 2)}</span><span>${up ? '+' : '−'}${brl(Math.abs(dif))} ${esc(janTxt)}</span></p></div>
     <div class="bas-ev-g" role="img" aria-label="Evolução do patrimônio em ${S.year}. Arraste o dedo para ver cada mês."><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="bas-ev-ar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--accent)" stop-opacity=".45"/><stop offset="1" stop-color="var(--accent)" stop-opacity="0"/></linearGradient></defs>
-      ${fai}<path class="bas-ev-a" d="${curva} L${xs(serie.length - 1).toFixed(1)} ${H} L${xs(0).toFixed(1)} ${H} Z"/><path class="bas-ev-l" d="${curva}"/></svg>
-      <span class="bas-ev-guia" aria-hidden="true"></span><span class="bas-ev-p" aria-hidden="true" style="left:${((pts[sel][0] / W) * 100).toFixed(2)}%;top:${((pts[sel][1] / H) * 100).toFixed(2)}%"></span></div>
-    <div class="bas-barras-m bas-ev-m" aria-hidden="true">${MES.slice(0, ult + 1).map((m, i) => `<span${i >= j.de && i <= j.ate ? ' class="on"' : ''}>${m[0]}</span>`).join('')}</div>
+      <path class="bas-ev-a" d="${area}"/><path class="bas-ev-l" d="${curva}"/></svg>
+      <span class="bas-ev-pts" aria-hidden="true" style="--m:${esc(masc)}"></span>
+      <span class="bas-ev-guia" aria-hidden="true" style="left:${((pts[sel][0] / W) * 100).toFixed(2)}%;top:${((pts[sel][1] / H) * 100).toFixed(2)}%"></span><span class="bas-ev-p" aria-hidden="true" style="left:${((pts[sel][0] / W) * 100).toFixed(2)}%;top:${((pts[sel][1] / H) * 100).toFixed(2)}%"></span></div>
+    <div class="bas-ev-jan" role="group" aria-label="Período do gráfico">${[[1, '1M'], [3, '3M'], [6, '6M'], [12, 'Ano']].map(([n, t]) => `<button data-act="bas-ev-jan" data-v="${n}" aria-pressed="${n === jan}">${t}</button>`).join('')}</div>
     <div class="bas-noite-par bas-tres"><span><small>Investido</small><b>${basCent(D.aportado)}</b></span><span><small>Proventos</small><b>${basCent(basSomaJ(C.faturamento))}</b></span><span><small>Disponível</small><b>${basCent(D.disponivel)}</b></span></div></section>`;
   const f = D.meta > 0 ? D.aportado / D.meta : 0;
   secs.meta = basMetaDispHtml();
@@ -350,9 +355,9 @@ function basEvLigar() {
   const ponto = ev.querySelector('.bas-ev-p'); const guia = ev.querySelector('.bas-ev-guia'); const k = ev.querySelector('[data-ev="k"]'); const v = ev.querySelector('[data-ev="v"]');
   const k0 = k.textContent; const v0 = v.innerHTML; let ult = -1; const topo = pts.reduce((b, p, n) => (p[1] < pts[b][1] ? n : b), 0);
   const mover = (e) => { const r = g.getBoundingClientRect(); const x = ((e.clientX - r.left) / r.width) * W; let i = 0; pts.forEach((p, n) => { if (Math.abs(p[0] - x) < Math.abs(pts[i][0] - x)) i = n; });
-    if (i === ult) return; ult = i; const L = (pts[i][0] / W) * 100; ponto.style.left = L + '%'; ponto.style.top = (pts[i][1] / H) * 100 + '%'; guia.style.left = L + '%'; ev.classList.add('arrasta');
+    if (i === ult) return; ult = i; const L = (pts[i][0] / W) * 100; ponto.style.left = L + '%'; ponto.style.top = (pts[i][1] / H) * 100 + '%'; guia.style.left = L + '%'; guia.style.top = (pts[i][1] / H) * 100 + '%'; ev.classList.add('arrasta');
     k.textContent = `Patrimônio em ${dd[i][0]}`; v.textContent = dd[i][1]; basSom('toque'); ponto.classList.toggle('topo', i === topo); if (i === topo) basVibra(14); };
-  const soltar = () => { ev.classList.remove('arrasta'); ult = -1; k.textContent = k0; v.innerHTML = v0; };
+  const l0 = ponto.style.left; const t0 = ponto.style.top; const soltar = () => { ev.classList.remove('arrasta'); ult = -1; k.textContent = k0; v.innerHTML = v0; ponto.style.left = guia.style.left = l0; ponto.style.top = guia.style.top = t0; };
   g.addEventListener('pointerdown', (e) => { g.setPointerCapture(e.pointerId); mover(e); }); g.addEventListener('pointermove', (e) => { if (e.buttons || e.pointerType === 'mouse') mover(e); });
   g.addEventListener('pointerup', soltar); g.addEventListener('pointercancel', soltar); g.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') soltar(); });
 }
@@ -1781,6 +1786,7 @@ function basAcao(act, ds, el) {
     case 'bas-arco': basArco(el); return true;
     case 'bas-ccv': basCcVer(); return true;
     case 'bas-ult-todos': basUltPop(); return true;
+    case 'bas-ev-jan': S.basEvJan = +ds.v; basSom('toque'); render(); return true;
     case 'bas-arco-abrir': { const b = document.querySelector('.bas-roda'); if (b && b.dataset.sel) basAbrir('categoria', { area: b.dataset.sel }); return true; }
     case 'bas-ia-aba': S.basIaAba = ['avisos', 'duvidas'].includes(ds.v) ? ds.v : 'conversa'; basSom('toque'); render(); return true;
     case 'bas-guia': basGuiaIniciar(ds.id); return true;
