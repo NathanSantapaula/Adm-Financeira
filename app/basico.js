@@ -840,7 +840,7 @@ function basGastoTopoHtml(sai, orc) {
   // cartões translúcidos com a textura do modelo de cada um; na frente, os detalhes de cartão estilizados (final e validade de enfeite, tirados do nome do banco), sem valor
   const enf = (k) => { let h = 7; for (const c of k) h = (h * 31 + c.charCodeAt(0)) % 99991; return { fim: String(1000 + (h % 9000)), val: `${String(1 + (h % 12)).padStart(2, '0')}/${30 + (h % 6)}` }; };
   const pilha = insts.slice(0, 3).map((x, i) => { const st = basCcEstilo(x.k); const d = enf(x.k);
-    return `<span class="bas-gt-c" style="--i:${i};z-index:${3 - i};--cb:${st.c}"><span class="bas-cc-c bas-cc-mini bas-gt-tx" data-m="${st.m}" style="--cb:${st.c}" aria-hidden="true"></span>${i === 0 ? `<span class="bas-gt-d"><span>•••• ${d.fim}</span><span>${d.val}</span><b>${esc(instDe(x.k)[1])}</b></span>` : ''}</span>`; }).join('');
+    return `<span class="bas-gt-c" style="--i:${i};z-index:${3 - i};--cb:${st.c}"><span class="bas-cc-c bas-cc-mini bas-gt-tx" data-m="${st.m}" style="--cb:${st.c}" aria-hidden="true"></span>${i === 0 ? `<span class="bas-gt-d"><span>•••• ${d.fim}</span><span>${d.val}</span>${instIcone(x.k, 'bas-gt-logo')}</span>` : ''}</span>`; }).join('');
   return `<section class="bas-gt"><small>Gastou ${esc(basJanFrase())}</small><b class="bas-gt-v">${basCent(sai)}</b>
     ${uso != null ? `<button class="bas-gt-chip${uso > 1 ? ' neg' : uso >= 0.8 ? ' warn' : ''}" ${basIr('limite')}>${pct(uso)} do limite do mês</button>` : `<button class="bas-gt-chip" ${basIr('limite')}>Definir limite do mês</button>`}
     ${insts.length ? `<button class="bas-gt-pilha" data-act="bas-ccv" aria-label="Ver seus ${insts.length} cartões">${pilha}</button>` : ''}</section>`;

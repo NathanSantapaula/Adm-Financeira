@@ -1727,4 +1727,31 @@ body[data-ui="basico"] { --bas-azul: #0A84FF; --bas-azul-1: #3b6cff; --bas-azul-
 .bas-gt-c:not([style*="--i:0"]) { opacity: 1; filter: brightness(calc(1 - var(--i) * .06)); }
 .bas-cc-c.bas-gt-tx { position: absolute; inset: 0; width: auto; aspect-ratio: auto; padding: 0; border-radius: inherit; opacity: .38; box-shadow: none; transform: none; pointer-events: none; }
 .bas-gt-d { position: absolute; left: 20px; right: 20px; top: 20px; display: flex; align-items: center; gap: 18px; font-size: 15px; font-weight: 600; letter-spacing: .04em; color: rgba(255, 255, 255, .78); font-variant-numeric: tabular-nums; }
-.bas-gt-d b { margin-left: auto; font-size: 20px; font-weight: 800; font-style: italic; letter-spacing: -.01em; text-transform: uppercase; color: rgba(255, 255, 255, .55); }
+
+/* logo do banco translúcida no cartão da frente, no lugar do nome */
+.bas-gt-d .inst-ic.bas-gt-logo { margin-left: auto; width: 54px; height: 30px; border-radius: 0; background: none !important; box-shadow: none !important; }
+.bas-gt-d .inst-ic.bas-gt-logo::after { display: none; }
+.bas-gt-d .inst-ic.bas-gt-logo i { width: 100%; height: 100%; background: rgba(255, 255, 255, .6) !important; filter: none !important; }
+.bas-gt-d .inst-ic.bas-gt-logo b { font-size: 20px; font-style: italic; color: rgba(255, 255, 255, .6) !important; }
+
+/* ===== Liquid Glass (exagerado) em todos os botões do App: vidro que recebe luz de todo lado e devolve ===== */
+body[data-ui="basico"] {
+  --lg-fundo: rgba(255, 255, 255, .22); --lg-borda: rgba(255, 255, 255, .7);
+  --lg-luz: radial-gradient(120% 90% at 20% 0%, rgba(255, 255, 255, .85), rgba(255, 255, 255, 0) 55%), radial-gradient(90% 70% at 85% 110%, rgba(255, 255, 255, .45), rgba(255, 255, 255, 0) 60%), linear-gradient(180deg, rgba(255, 255, 255, .35), rgba(255, 255, 255, .04) 50%, rgba(255, 255, 255, .18));
+  --lg-sombra: inset 0 1.5px 0 rgba(255, 255, 255, .95), inset 0 -1.5px 1px rgba(255, 255, 255, .45), inset 1.5px 0 0 rgba(255, 255, 255, .5), inset -1.5px 0 0 rgba(255, 255, 255, .3),
+    inset 8px 10px 16px -10px rgba(255, 255, 255, .9), inset -10px -12px 20px -12px color-mix(in srgb, var(--accent) 55%, transparent),
+    0 10px 26px -10px rgba(0, 20, 60, .35), 0 2px 6px rgba(0, 20, 60, .1);
+}
+:root[data-theme="oled"] body[data-ui="basico"], :root[data-theme="dark"] body[data-ui="basico"] { --lg-fundo: rgba(255, 255, 255, .08); --lg-borda: rgba(255, 255, 255, .32); }
+body[data-ui="basico"] :is(.bas-per, .bas-circ, .olho, .bell, .bas-gt-chip, .btn:not(.primary), .bas-ccv-ver, .bas-lim-add button) {
+  border: 1px solid var(--lg-borda) !important; background-color: var(--lg-fundo) !important; background-image: var(--lg-luz) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(200%) brightness(1.08); backdrop-filter: blur(22px) saturate(200%) brightness(1.08); box-shadow: var(--lg-sombra) !important;
+  transition: transform 180ms var(--ease-out), box-shadow 180ms ease; }
+body[data-ui="basico"] :is(.bas-inv-pl, .btn.primary) {
+  border: 1px solid rgba(255, 255, 255, .75) !important; color: #fff !important;
+  background-color: color-mix(in srgb, var(--accent) 78%, transparent) !important; background-image: var(--lg-luz) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(200%); backdrop-filter: blur(22px) saturate(200%);
+  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, .95), inset 0 -2px 2px rgba(255, 255, 255, .4), inset 8px 10px 16px -10px rgba(255, 255, 255, .9), inset -10px -12px 18px -10px rgba(0, 10, 60, .45),
+    0 12px 28px -10px color-mix(in srgb, var(--accent) 80%, transparent), 0 0 0 4px color-mix(in srgb, var(--accent) 12%, transparent) !important; }
+body[data-ui="basico"] :is(.bas-per, .bas-circ, .olho, .bell, .bas-gt-chip, .bas-inv-pl, .btn, .bas-ccv-ver):active { transform: scale(.94); }
+@media (prefers-reduced-transparency: reduce) { body[data-ui="basico"] :is(.bas-per, .bas-circ, .olho, .bell, .bas-gt-chip, .bas-inv-pl, .btn) { -webkit-backdrop-filter: none; backdrop-filter: none; background-image: none !important; } }
