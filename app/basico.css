@@ -2832,3 +2832,10 @@ html[data-vt="cc"]::view-transition-group(bas-cc-oficial) { animation-duration: 
 .bas-ccn-bancos + .bas-cce-palco { margin-top: 10px; }
 /* o cartão "+" é opaco: o cartão do lado não aparece borrado através dele */
 .bas-rc-novo { background: var(--bg) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+/* pontos de Seus cartões no jeito do iPhone: o ponto atual vira uma pílula azul e o anterior encolhe junto, sem nada por cima */
+.bas-ccv-ind { display: none !important; }
+.bas-ccv-p { gap: 6px; padding: 7px 10px; border-radius: 999px; background: color-mix(in srgb, var(--surface) 70%, transparent); box-shadow: inset 0 0 0 .5px var(--line); }
+.bas-ccv-p i, .bas-ccv-p i.on { height: 7px; border-radius: 999px; opacity: 1; transition: width 340ms cubic-bezier(.3, .9, .2, 1), background-color 340ms ease; }
+.bas-ccv-p i { width: 7px; background: color-mix(in srgb, var(--ink-3) 45%, transparent); }
+.bas-ccv-p i.on { width: 22px; background: var(--accent); }
+@media (prefers-reduced-motion: reduce) { .bas-ccv-p i { transition: none; } }

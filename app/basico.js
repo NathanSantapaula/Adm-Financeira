@@ -1212,7 +1212,7 @@ function basCcVer() {
 function basTelaCartoes() {
   const insts = basGastoInsts(); const tot = insts.reduce((s, x) => s + x.v, 0);
   return basDet('Seus cartões', insts.length ? `<div class="bas-rc-fila" role="list">${insts.map((x) => { const i = instDe(x.k); return `<button class="bas-rc-i" role="listitem" ${basIr('cartao', { id: x.k })} aria-label="${esc(i[1])}: ver os gastos">${basCartaoFace(x.k)}<span class="bas-rc-n"><small>${esc(i[1])}</small><b>${basCent(x.v)}</b><em>${x.v > 0 ? `${pct(x.v / (tot || 1))} dos gastos ${esc(basJanFrase())}` : `sem gastos ${esc(basJanFrase())}`}</em></span></button>`; }).join('')}<button class="bas-rc-i bas-rc-add" role="listitem" ${basIr('cartao-novo')} aria-label="Adicionar um cartão"><span class="bas-rc-novo" aria-hidden="true"><i>${I.plus}</i><b>Adicionar cartão</b><small>Escolha o seu banco</small></span><span class="bas-rc-n"><small>Novo</small><b>&nbsp;</b><em>&nbsp;</em></span></button></div>
-    <div class="bas-ccv-p" aria-hidden="true">${insts.concat([0]).map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}<b class="bas-ccv-ind"></b></div>` : basCard(basVazio('Nenhum cartão com gasto no período.')));
+    <div class="bas-ccv-p" aria-hidden="true">${insts.concat([0]).map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div>` : basCard(basVazio('Nenhum cartão com gasto no período.')));
 }
 // fila em leque: o cartão do meio fica de frente e os vizinhos giram e encolhem conforme a distância (--d, --a)
 // arrastar o cartão para o lado troca para o cartão vizinho (a mesma ordem de "Seus cartões", em loop), sem empilhar outra tela
@@ -1241,8 +1241,7 @@ function basRcLigar() {
   const it = [...f.children]; const passo = () => { const c = f.scrollLeft + f.clientWidth / 2; let perto = 0, md = 9;
     it.forEach((e, i) => { const d = (e.offsetLeft + e.offsetWidth / 2 - c) / e.offsetWidth; e.style.setProperty('--d', Math.max(-1.5, Math.min(1.5, d)).toFixed(3)); e.style.setProperty('--a', Math.min(1.5, Math.abs(d)).toFixed(3)); e.style.zIndex = String(20 - Math.round(Math.abs(d) * 4)); if (Math.abs(d) < md) { md = Math.abs(d); perto = i; } });
     pts.forEach((p, i) => p.classList.toggle('on', i === perto));
-    // um indicador só, que desliza até o ponto do cartão do meio (antes dois pontos cresciam ao mesmo tempo e se juntavam)
-    const ind = document.querySelector('.bas-ccv-ind'); const alvo = pts[perto]; if (ind && alvo) ind.style.transform = `translateX(${alvo.offsetLeft + alvo.offsetWidth / 2 - 10}px)`; };
+  };
   let q = 0; f.addEventListener('scroll', () => { if (!q) q = requestAnimationFrame(() => { q = 0; passo(); }); }, { passive: true }); passo();
   const centro = (e) => f.scrollTo({ left: e.offsetLeft + e.offsetWidth / 2 - f.clientWidth / 2, behavior: 'smooth' });
   let x0 = null, s0 = 0, mov = false;
