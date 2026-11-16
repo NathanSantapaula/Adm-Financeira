@@ -3053,7 +3053,8 @@ body[data-ui="basico"][data-screen="app"] .tabbar { bottom: max(8px, calc(env(sa
 .bas-en2-leg .fx, .bas-en2-col .fx { background: linear-gradient(180deg, #FFFFFF, #DCE9FF); }
 .bas-en2-col { box-shadow: 0 0 14px rgba(127, 182, 255, .3); }
 /* nova entrada: a mesma pílula transparente dos outros botões, na largura toda */
-.bas-en-bt.bas-en2-add { display: flex; width: 100%; flex-direction: row; justify-content: center; align-items: center; gap: 8px; min-height: 46px; border-radius: 999px; margin-bottom: 4px; }
+.bas-gt-folha > .bas-gt-acoes.bas-en2-acoes { grid-template-columns: 1fr; }
+.bas-ren-ic svg { width: 21px; height: 21px; }
 /* ===== Ativo, no jeito de corretora: posição a custo em velas ou linha, seguindo o dedo; resumo, constância, movimentações e Resgatar | Aplicar ===== */
 .bas-at-id { display: flex; align-items: center; gap: 12px; margin-top: 14px; }
 .bas-at-logo { flex: none; min-width: 48px; height: 48px; padding: 0 8px; border-radius: 14px; display: grid; place-items: center; font-size: 14px; font-weight: 800; letter-spacing: .02em; color: #fff; background: linear-gradient(150deg, color-mix(in srgb, var(--bc) 85%, #fff), var(--bc)); box-shadow: 0 8px 20px -8px color-mix(in srgb, var(--bc) 70%, transparent), inset 0 1px 0 rgba(255, 255, 255, .35); }
