@@ -65,7 +65,7 @@ function basicoBarra() {
   document.body.dataset.basFolha = t && BAS_FORMS.has(t.t) ? '1' : ''; document.body.dataset.basPerfil = a === 'perfil' && !t ? '1' : '';
   const av = basAvisosNovos();
   // botão da IA separado, à esquerda da barra: fundo em degradê neon que se move, vidro por cima e o Cifrão dentro
-  $('#tabbar').innerHTML = `<button class="bas-ia-fab${av ? ' alerta' : ''}" data-act="bas-ia-fab" aria-label="Assistente${av ? `: ${av} avisos novos` : ''}. Segure e arraste para o Cifrão andar pela tela."><span class="cifrao" aria-hidden="true"></span></button><div class="bas-tabs"><span class="bas-tab-lente" aria-hidden="true"></span>${basAbas().map(([k, l, i]) => `<button data-act="bas-aba" data-v="${k}" ${a === k ? 'aria-current="page"' : ''}>${i}<span>${l}</span></button>`).join('')}</div>`;
+  $('#tabbar').innerHTML = `<button class="bas-ia-fab${av ? ' alerta' : ''}${document.querySelector('.bas-cif-solto') ? ' vazia' : ''}" data-act="bas-ia-fab" aria-label="Assistente${av ? `: ${av} avisos novos` : ''}. Segure e arraste para o Cifrão andar pela tela."><span class="cifrao" aria-hidden="true"></span></button><div class="bas-tabs"><span class="bas-tab-lente" aria-hidden="true"></span>${basAbas().map(([k, l, i]) => `<button data-act="bas-aba" data-v="${k}" ${a === k ? 'aria-current="page"' : ''}>${i}<span>${l}</span></button>`).join('')}</div>`;
   basTabLigar(); basIaFabLigar();
 }
 // barra de abas no jeito do iPhone: uma lente de vidro marca a aba e desliza até a nova; segurar e arrastar leva a lente
@@ -87,7 +87,7 @@ function basCifSolta(fab, px, py, alvo) {
   const rf = fab.getBoundingClientRect(); let x = rf.left + rf.width / 2 - T / 2, y = rf.top + rf.height / 2 - T / 2; let tx = px - T / 2, ty = py - T - 18; let solto = true, vivo = true, parado = 0;
   const lim = () => { tx = Math.max(4, Math.min(innerWidth - T - 4, tx)); ty = Math.max(4, Math.min(innerHeight - T - 4, ty)); };
   const passo = () => { if (!vivo) return; const dx = tx - x, dy = ty - y; x += dx * 0.16; y += dy * 0.16; const mov = Math.hypot(dx, dy) > 1.5;
-    w.classList.toggle('andando', mov); if (Math.abs(dx) > 2) corpo.classList.toggle('esq', dx < 0); w.style.transform = `translate(${x}px, ${y}px)`; requestAnimationFrame(passo); };
+    w.classList.toggle('andando', mov); /* nunca espelha: o cifrão invertido não é o símbolo */ w.style.transform = `translate(${x}px, ${y}px)`; requestAnimationFrame(passo); };
   requestAnimationFrame(passo);
   // segue o dedo enquanto ele estiver na tela (primeiro o toque longo da bolinha, depois arrastando o próprio Cifrão)
   const segue = (e) => { if (!solto) return; tx = e.clientX - T / 2; ty = e.clientY - T - 18; lim(); };
@@ -97,8 +97,9 @@ function basCifSolta(fab, px, py, alvo) {
   w.addEventListener('pointerdown', (e) => { w.setPointerCapture(e.pointerId); solto = true; arrastou = false; x0 = e.clientX; y0 = e.clientY; });
   w.addEventListener('pointermove', (e) => { if (!solto) return; if (Math.hypot(e.clientX - x0, e.clientY - y0) > 6) arrastou = true; segue(e); });
   w.addEventListener('pointerup', () => { solto = false; if (!arrastou) volta(); });
-  const volta = () => { const r = fab.getBoundingClientRect(); tx = r.left + r.width / 2 - T / 2; ty = r.top + r.height / 2 - T / 2; setTimeout(() => { vivo = false; w.remove(); fab.classList.remove('vazia'); S.basCifPasseio = false; }, 650); };
-  setTimeout(() => fab.addEventListener('click', () => { if (document.body.contains(w)) volta(); }, { once: true }), 700); // espera passar o clique que solta o toque longo
+  S.basCifEm = Date.now(); S.basCifVolta = () => volta();
+  const volta = () => { const f = document.querySelector('.bas-ia-fab') || fab; const r = f.getBoundingClientRect(); tx = r.left + r.width / 2 - T / 2; ty = r.top + r.height / 2 - T / 2; setTimeout(() => { vivo = false; w.remove(); document.querySelectorAll('.bas-ia-fab').forEach((x) => x.classList.remove('vazia')); S.basCifPasseio = false; S.basCifVolta = null; }, 650); };
+  // o toque que solta o toque longo não abre o assistente (S.basCifEm)
 }
 function basTabLigar() {
   { const b = document.querySelector('#tabbar .bas-tabs'); if (b && b.dataset.lig) return; }
@@ -1827,7 +1828,7 @@ function basAcao(act, ds, el) {
     case 'bas-arco': basArco(el); return true;
     case 'bas-ccv': basCcVer(); return true;
     case 'bas-ult-todos': basUltPop(); return true;
-    case 'bas-ia-fab': if (S.basCifPasseio) return true; basAbrir('ia'); return true;
+    case 'bas-ia-fab': if (Date.now() - (S.basCifEm || 0) < 800) return true; if (document.querySelector('.bas-cif-solto') && S.basCifVolta) S.basCifVolta(); S.basCifPasseio = false; basAbrir('ia'); return true;
     case 'bas-ev-jan': S.basEvJan = +ds.v; basSom('toque'); render(); return true;
     case 'bas-arco-abrir': { const b = document.querySelector('.bas-roda'); if (b && b.dataset.sel) basAbrir('categoria', { area: b.dataset.sel }); return true; }
     case 'bas-ia-aba': S.basIaAba = ['avisos', 'duvidas'].includes(ds.v) ? ds.v : 'conversa'; basSom('toque'); render(); return true;
