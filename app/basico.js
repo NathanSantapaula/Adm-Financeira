@@ -333,7 +333,7 @@ function basTelaEntradas() {
     <div class="bas-en2-leg" aria-hidden="true"><span><i class="fx"></i>Renda fixa</span><span><i class="ex"></i>Extra</span></div>
     <div class="bas-en2-g" role="group" aria-label="Entradas mês a mês, renda fixa e extra">${col}</div>
   </div><div class="bas-gt-folha">
-    <button class="bas-en2-add" ${basIr('entrada')}>${I.plus}<span>Nova entrada</span></button>
+    <button class="bas-circ bas-en-bt bas-en2-add" ${basIr('entrada')}>${I.plus}<span>Nova entrada</span></button>
     <div class="card bas-en2-ks">${k('Média por mês', brl0(R.mediaMes))}${k('Previsível', fontes.length ? pct(prev) : '–', `${brl0(prevMes)}/mês`)}${k('Guardou', R.poupanca != null ? pct(R.poupanca) : '–', `${brl0(R.sobraMes)}/mês`)}</div>
     ${fontes.length ? basSecao('De onde vem', `<small class="bas-pv2-q">${fontes.length} ${fontes.length === 1 ? 'fonte' : 'fontes'}</small>`, `<ul class="card bas-pv2-ls">${fontes.map(fonte).join('')}</ul>`) : basCard(basVazio('Nenhuma entrada neste período. Toque em + Entrada para anotar.'))}
     ${fr.length ? basSecao('O que os números dizem', '', `<ul class="bas-ah-fr">${fr.slice(0, 3).map(([t, x]) => `<li class="${t}">${x}</li>`).join('')}</ul>`) : ''}

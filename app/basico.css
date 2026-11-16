@@ -3052,7 +3052,5 @@ body[data-ui="basico"][data-screen="app"] .tabbar { bottom: max(8px, calc(env(sa
 .bas-en2-leg .ex, .bas-en2-col .ex { background: #7FB6FF; }
 .bas-en2-leg .fx, .bas-en2-col .fx { background: linear-gradient(180deg, #FFFFFF, #DCE9FF); }
 .bas-en2-col { box-shadow: 0 0 14px rgba(127, 182, 255, .3); }
-.bas-en2-add { width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; margin-bottom: 4px; border: 0; border-radius: 18px; font: inherit; font-size: 16px; font-weight: 700; color: #fff; cursor: pointer;
-  background: linear-gradient(155deg, var(--bas-azul-1), var(--bas-azul-2)); box-shadow: 0 12px 26px -14px color-mix(in srgb, var(--bas-azul-2) 80%, transparent); }
-.bas-en2-add svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
-.bas-en2-add:active { transform: scale(.98); }
+/* nova entrada: a mesma pílula transparente dos outros botões, na largura toda */
+.bas-en-bt.bas-en2-add { display: flex; width: 100%; flex-direction: row; justify-content: center; align-items: center; gap: 8px; min-height: 46px; border-radius: 999px; margin-bottom: 4px; }
