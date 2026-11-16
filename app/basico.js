@@ -397,15 +397,19 @@ function basInvestir() {
   return `<div class="bas-pg bas-pg-i"><div class="bas-gt-bg bas-pt-bg">${basTopo()}${patrTopo}</div><div class="bas-gt-folha"><div class="bas-pg-per bas-pt-acoes">${extras}${acoes}</div>${basOrdenar('investir', secs)}<p class="bas-disc keep">Valores a custo, sem cotação de mercado.</p></div></div>`;
 }
 // o gráfico do patrimônio segue o dedo (manipulação direta): o mês mais perto do toque aparece em cima, sem redesenhar
+const BAS_EV_COR = [[0, [61, 139, 255]], [0.55, [56, 214, 255]], [1, [150, 248, 255]]];
+function basEvCor(t) { t = Math.max(0, Math.min(1, t)); let a = BAS_EV_COR[0]; let b = BAS_EV_COR[BAS_EV_COR.length - 1]; for (let n = 1; n < BAS_EV_COR.length; n++) if (BAS_EV_COR[n][0] >= t) { a = BAS_EV_COR[n - 1]; b = BAS_EV_COR[n]; break; }
+  const k = b[0] > a[0] ? (t - a[0]) / (b[0] - a[0]) : 0; return `rgb(${a[1].map((c, i) => Math.round(c + (b[1][i] - c) * k)).join(',')})`; }
 function basEvLigar() {
   const ev = document.querySelector('.bas-ev[data-pts]'); if (!ev || ev.dataset.on) return; ev.dataset.on = '1';
   const g = ev.querySelector('.bas-ev-g'); const pts = JSON.parse(ev.dataset.pts); const dd = JSON.parse(ev.dataset.d); const W = +ev.dataset.w; const H = +ev.dataset.h;
   const ponto = ev.querySelector('.bas-ev-p'); const guia = ev.querySelector('.bas-ev-guia'); const k = ev.querySelector('[data-ev="k"]'); const v = ev.querySelector('[data-ev="v"]');
-  const k0 = k.textContent; const v0 = v.innerHTML; let ult = -1; const topo = pts.reduce((b, p, n) => (p[1] < pts[b][1] ? n : b), 0);
+  const k0 = k.textContent; const v0 = v.innerHTML; let ult = -1; const corEm = (i) => ev.style.setProperty('--ev-cor', basEvCor(pts[i][0] / W)); const topo = pts.reduce((b, p, n) => (p[1] < pts[b][1] ? n : b), 0);
   const mover = (e) => { const r = g.getBoundingClientRect(); const x = ((e.clientX - r.left) / r.width) * W; let i = 0; pts.forEach((p, n) => { if (Math.abs(p[0] - x) < Math.abs(pts[i][0] - x)) i = n; });
-    if (i === ult) return; ult = i; const L = (pts[i][0] / W) * 100; ponto.style.left = L + '%'; ponto.style.top = (pts[i][1] / H) * 100 + '%'; guia.style.left = L + '%'; guia.style.top = (pts[i][1] / H) * 100 + '%'; ev.classList.add('arrasta');
+    if (i === ult) return; ult = i; const L = (pts[i][0] / W) * 100; ponto.style.left = L + '%'; ponto.style.top = (pts[i][1] / H) * 100 + '%'; guia.style.left = L + '%'; guia.style.top = (pts[i][1] / H) * 100 + '%'; ev.classList.add('arrasta'); corEm(i);
     k.textContent = `Patrimônio em ${dd[i][0]}`; v.textContent = dd[i][1]; basSom('toque'); ponto.classList.toggle('topo', i === topo); if (i === topo) basVibra(14); };
-  const l0 = ponto.style.left; const t0 = ponto.style.top; const soltar = () => { ev.classList.remove('arrasta'); ult = -1; k.textContent = k0; v.innerHTML = v0; ponto.style.left = guia.style.left = l0; ponto.style.top = guia.style.top = t0; };
+  const l0 = ponto.style.left; const t0 = ponto.style.top; const soltar = () => { ev.classList.remove('arrasta'); ult = -1; k.textContent = k0; v.innerHTML = v0; ponto.style.left = guia.style.left = l0; ponto.style.top = guia.style.top = t0; corEm(pts.length - 1); };
+  corEm(pts.length - 1);
   g.addEventListener('pointerdown', (e) => { g.setPointerCapture(e.pointerId); mover(e); }); g.addEventListener('pointermove', (e) => { if (e.buttons || e.pointerType === 'mouse') mover(e); });
   g.addEventListener('pointerup', soltar); g.addEventListener('pointercancel', soltar); g.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') soltar(); });
 }
