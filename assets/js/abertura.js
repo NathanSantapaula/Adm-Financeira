@@ -27,6 +27,13 @@ function abTemaApp() {
   for (let i = cls.length; i < A.D.classes.length; i++) cls.push(abMix(cls[i % 6], branco, 0.3));
   // no tema escuro do aparelho: fundo quase preto, o mesmo planeta azul, textos e estrelas brancos
   const bgT = k('--bg'); const noite = (0.2126 * bgT[0] + 0.7152 * bgT[1] + 0.0722 * bgT[2]) / 255 < 0.45;
+  if (!noite) { const tinta = [15, 23, 42];
+    A.T = { escuro: false, app: true, noite, vidro: true, bg: [244, 246, 249], ink: tinta, ink2: [71, 85, 105], acc: [96, 140, 230], acc2: [150, 180, 235], pos: [40, 160, 120], neg: k('--neg'), ouro: [214, 170, 90],
+      cls: [[96, 140, 230], [104, 186, 206], [150, 132, 212], [214, 170, 90], [118, 172, 140], [204, 124, 160]].concat(cls.slice(6)),
+      luz: branco, terra: [30, 45, 90], terraA: 0.32, grade: [40, 56, 96], soma: 'source-over', aroK: 0.45,
+      esfera: { brilho: [255, 255, 255], meio: [234, 240, 250], borda: [196, 208, 232], a: [0.82, 0.62, 0.5] }, veu: branco,
+      pts: [[96, 140, 230], [104, 186, 206], [150, 132, 212], [214, 170, 90], [118, 172, 140], [204, 124, 160]], poeira: [[170, 196, 240], [214, 200, 170], [196, 210, 236], [226, 214, 190]],
+      texto: tinta, texto2: [71, 85, 105], sobe: [40, 160, 120] }; return; }
   A.T = { escuro: false, app: true, noite, bg: noite ? [2, 4, 14] : branco, ink: noite ? branco : navy, ink2: noite ? [200, 210, 235] : [70, 84, 130], acc: ceu, acc2: [56, 214, 255], pos: [22, 160, 110], neg: k('--neg'), ouro: [230, 160, 30], cls,
     luz: branco, terra: branco, soma: 'source-over',
     // no escuro, o miolo do planeta é preto e a luz fica no aro azul; no claro, a esfera azul da marca
@@ -294,10 +301,10 @@ function abQuadro(agora) {
   ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, R * 1.8, 0, 7); ctx.fill();
   g = ctx.createRadialGradient(cx - R * 0.32, cy - R * 0.38, R * 0.04, cx, cy, R);
   if (T.escuro) { g.addColorStop(0, abRgba(T.acc, 0.3)); g.addColorStop(0.55, abRgba(T.acc, 0.14)); g.addColorStop(1, abRgba(T.bg, 0.55)); }
-  else { g.addColorStop(0, abRgba(T.esfera.brilho, 1)); g.addColorStop(0.5, abRgba(T.esfera.meio, 1)); g.addColorStop(1, abRgba(T.esfera.borda, 1)); }
+  else { const ea = T.esfera.a || [1, 1, 1]; g.addColorStop(0, abRgba(T.esfera.brilho, ea[0])); g.addColorStop(0.5, abRgba(T.esfera.meio, ea[1])); g.addColorStop(1, abRgba(T.esfera.borda, ea[2])); }
   // a esfera do tema claro tem uma sombra larga (a operação mais cara do canvas): depois da entrada, ela é desenhada
   // uma vez numa camada do tamanho da tela e só copiada nos quadros seguintes
-  const esfera = (c) => { if (!T.escuro) { c.shadowColor = T.app ? (T.noite ? 'rgba(47, 107, 255, .7)' : 'rgba(20, 40, 245, .45)') : abRgba(T.acc, 0.55); c.shadowBlur = T.app ? 80 : 60; c.shadowOffsetY = T.app ? 24 : 18; }
+  const esfera = (c) => { if (!T.escuro) { c.shadowColor = T.vidro ? 'rgba(15, 23, 42, .16)' : T.app ? (T.noite ? 'rgba(47, 107, 255, .7)' : 'rgba(20, 40, 245, .45)') : abRgba(T.acc, 0.55); c.shadowBlur = T.app ? 80 : 60; c.shadowOffsetY = T.vidro ? 34 : T.app ? 24 : 18; }
     c.globalAlpha = T.escuro ? 1 : e; c.fillStyle = g; c.beginPath(); c.arc(cx, cy, R * e, 0, 7); c.fill(); c.globalAlpha = 1; c.shadowBlur = 0; c.shadowOffsetY = 0; };
   if (T.escuro || e < 1) esfera(ctx); else camada('esfera', esfera);
   if (T.escuro && A.km) { ctx.fillStyle = abRgba(T.bg, 0.88); ctx.beginPath(); ctx.arc(cx, cy, R * e, 0, 7); ctx.fill(); } // mapa: miolo escuro, a luz fica no aro
@@ -313,7 +320,7 @@ function abQuadro(agora) {
   abTrilha(false, t); div.forEach((d) => { if (d.p[2] < 0) { ctx.globalAlpha = lente(d.p[0], d.p[1]); abDiv(d, false); } }); apo.forEach((a) => { if (a.p[2] < 0) { ctx.globalAlpha = lente(a.p[0], a.p[1]); abLosango(a, false); } }); ctx.globalAlpha = 1;
   // malha
   // (trechos agrupados por transparência só para trocar a cor menos vezes)
-  ctx.lineWidth = 1; const tracos = new Map(); A.malha.forEach((L) => { let ant = null; L.forEach((v) => { const p = abProj(v); if (ant) { const prof = (p[2] + ant[2]) / 2; if (prof > -0.05) { const es = abEstilo(T.escuro ? T.acc : T.luz, (T.escuro ? 0.2 : 0.3) * (0.25 + prof * 0.75) * e * (1 - A.km) * lente((p[0] + ant[0]) / 2, (p[1] + ant[1]) / 2)); let l = tracos.get(es); if (!l) tracos.set(es, (l = [])); l.push(ant[0], ant[1], p[0], p[1]); } } ant = p; }); });
+  ctx.lineWidth = 1; const tracos = new Map(); A.malha.forEach((L) => { let ant = null; L.forEach((v) => { const p = abProj(v); if (ant) { const prof = (p[2] + ant[2]) / 2; if (prof > -0.05) { const es = abEstilo(T.grade || (T.escuro ? T.acc : T.luz), (T.grade ? 0.22 : T.escuro ? 0.2 : 0.3) * (0.25 + prof * 0.75) * e * (T.grade ? 1 : 1 - A.km) * lente((p[0] + ant[0]) / 2, (p[1] + ant[1]) / 2)); let l = tracos.get(es); if (!l) tracos.set(es, (l = [])); l.push(ant[0], ant[1], p[0], p[1]); } } ant = p; }); });
   // cada trecho segue com o próprio traço: no tema escuro as pontas que se encostam somam luz, e isso faz parte do desenho
   tracos.forEach((l, es) => { ctx.strokeStyle = es; for (let j = 0; j < l.length; j += 4) { ctx.beginPath(); ctx.moveTo(l[j], l[j + 1]); ctx.lineTo(l[j + 2], l[j + 3]); ctx.stroke(); } });
   // pontos do globo (entram espalhados e se juntam; afastam-se do mouse)
@@ -332,7 +339,7 @@ function abQuadro(agora) {
   const focos = []; if (A.km) { const m = A.mapa; const km = e;
     for (let j = 0; j < m.length; j += 4) { const x2 = m[j] * cY - m[j + 2] * sY, z2 = m[j] * sY + m[j + 2] * cY; const z = m[j + 1] * sX + z2 * cX; if (z <= 0) continue;
       const sx = cx + x2 * R, sy = cy + (m[j + 1] * cX - z2 * sX) * R; const tam = 1.1 + z * 1.3;
-      abBalde(abEstilo(T.app ? T.terra : T.luz, (0.2 + z * 0.75) * km * lente(sx, sy))).push(sx - tam / 2, sy - tam / 2, tam); if (m[j + 3] && z > 0.1) focos.push(sx, sy, z, j); }
+      abBalde(abEstilo(T.app ? T.terra : T.luz, (0.2 + z * 0.75) * (T.terraA || 1) * km * lente(sx, sy))).push(sx - tam / 2, sy - tam / 2, tam); if (m[j + 3] && z > 0.1) focos.push(sx, sy, z, j); }
     abDespejar(ctx); }
   // mapa: luzes acesas sobre os continentes, pulsando devagar
   if (focos.length) { ctx.globalCompositeOperation = T.soma; for (let j = 0; j < focos.length; j += 4) { const [fx, fy, fz, fi] = focos.slice(j, j + 4);
@@ -366,12 +373,12 @@ function abQuadro(agora) {
   if (e < 1) borda(ctx); else camada('borda', borda);
   // mapa: aro de luz forte na borda (branco no fio, cor de destaque por dentro e por fora)
   if (A.km) { const k = e; const ar = ctx.createRadialGradient(cx, cy, R * 0.78, cx, cy, R * 1.16);
-    [[0, T.acc, 0], [0.32, T.acc, 0.08], [0.53, T.acc, 0.5], [0.579, T.luz, 0.95], [0.6, T.acc, 0.65], [0.68, T.acc, 0.25], [1, T.acc, 0]].forEach(([p, c, a]) => ar.addColorStop(p, abRgba(c, a * k)));
+    [[0, T.acc, 0], [0.32, T.acc, 0.08], [0.53, T.acc, 0.5], [0.579, T.luz, 0.95], [0.6, T.acc, 0.65], [0.68, T.acc, 0.25], [1, T.acc, 0]].forEach(([p, c, a]) => ar.addColorStop(p, abRgba(c, a * k * (c === T.luz ? 1 : T.aroK || 1))));
     ctx.globalCompositeOperation = T.soma; ctx.fillStyle = ar; ctx.beginPath(); ctx.arc(cx, cy, R * 1.16, 0, 7); ctx.fill(); ctx.globalCompositeOperation = 'source-over'; }
   if (A.D.op.info && A.kc < 0.5) abInfo(t, lente); // na capa o "i" ficaria sobre o título
   // valor no centro, por cima de tudo: um véu macio em elipse (escuro no tema escuro, o tom profundo da esfera no claro)
   // dá contraste sem moldura; as linhas pequenas ganham uma sombra curta. Depois da entrada vira camada pronta.
-  const fonte = A.fonte; const veu = T.escuro ? T.bg : T.esfera.borda;
+  const fonte = A.fonte; const veu = T.veu || (T.escuro ? T.bg : T.esfera.borda);
   const textos = (c) => { const va = e * (1 - A.kc); if (va <= 0.01) return; // na capa o valor do centro some (a frase de cima já mostra o patrimônio)
     c.save(); c.globalAlpha = va; c.translate(Z.x, Z.y); c.scale(1, Z.ry / Z.rx); const vg = c.createRadialGradient(0, 0, 0, 0, 0, Z.rx * 1.12);
     vg.addColorStop(0, abRgba(veu, T.escuro ? 0.66 : 0.5)); vg.addColorStop(0.5, abRgba(veu, T.escuro ? 0.44 : 0.32)); vg.addColorStop(1, abRgba(veu, 0)); c.fillStyle = vg; c.beginPath(); c.arc(0, 0, Z.rx * 1.12, 0, 7); c.fill(); c.restore();
