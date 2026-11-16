@@ -2019,3 +2019,6 @@ body[data-ui="basico"] .bas-ct2-lado .bas-ct2-b:first-child { color: var(--bg) !
 .bas-pt-bg > .bas-ev :is(text, .bas-ev-m, .bas-ev-x span) { color: rgba(255, 255, 255, .7); fill: rgba(255, 255, 255, .7); }
 .bas-pt-bg > .bas-ev .bas-ev-h { text-align: center; }
 .bas-pt-bg .bas-pg-per { justify-content: center; margin-top: 16px; }
+
+/* Patrimônio: as ações ficam no alto da folha */
+.bas-gt-folha > .bas-pt-acoes { margin: 0 0 16px; }
