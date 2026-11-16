@@ -2088,3 +2088,8 @@ body[data-ui="basico"] .bas-gt-folha .bas-pt-acoes > :is(.bas-circ, .bas-inv-pl)
 #bas-ev-ln stop:nth-child(2) { stop-color: color-mix(in srgb, var(--bas-azul-1) 35%, #fff); stop-opacity: .85; }
 #bas-ev-ln stop:nth-child(3) { stop-color: #fff; stop-opacity: 1; }
 .bas-pt-bg > .bas-ev .bas-ev-l { stroke: url(#bas-ev-ln); }
+/* linha opaca, com um degradê bem visível: ciano à esquerda, ciano-claro no meio, branco no mês atual */
+body[data-ui="basico"] { --bas-ciano: #4fd1ff; }
+#bas-ev-ln stop:nth-child(1) { stop-color: var(--bas-ciano); stop-opacity: 1; }
+#bas-ev-ln stop:nth-child(2) { stop-color: color-mix(in srgb, var(--bas-ciano) 45%, #fff); stop-opacity: 1; }
+#bas-ev-ln stop:nth-child(3) { stop-color: #fff; stop-opacity: 1; }
