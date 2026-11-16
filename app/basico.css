@@ -1989,3 +1989,6 @@ body[data-ui="basico"][data-screen="app"] .tabbar { background: var(--lg-bg) !im
 /* Entradas e + Gasto: vidro neutro, sem a luz azul */
 body[data-ui="basico"] .bas-gt-folha .bas-gt-acoes > :is(.bas-en-bt, .bas-inv-pl) { color: var(--lg-txt) !important; background: var(--lg-bg) !important;
   box-shadow: inset 0 1px 0 var(--lg-aro), inset 0 -1px 0 var(--lg-aro-b), inset 0 0 0 .5px var(--lg-aro-b), var(--lg-sombra) !important; }
+/* o "+" da lateral do cartão em cor oposta (vidro escuro no claro, claro no escuro), para se destacar dos outros */
+body[data-ui="basico"] .bas-ct2-lado .bas-ct2-b:first-child { color: var(--bg) !important; background: color-mix(in srgb, var(--ink) 86%, transparent) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), inset 0 -1px 0 rgba(0, 0, 0, .2), 0 1px 1.5px rgba(0, 0, 0, .1), 0 10px 22px -10px rgba(0, 0, 0, .45) !important; }
