@@ -381,6 +381,8 @@ function iaResumoNuvem(d) {
 // texto da IA: valores em reais somem com o olho fechado
 const iaTxtIa = (t) => (oculto() ? String(t).replace(/R\$\s?-?[\d.,]+(\s?(mil|milhões|milhão|k))?/gi, brl(0)) : String(t));
 
+// valores em reais e percentuais da resposta ganham destaque próprio (o texto já vem escapado)
+const iaRealca = (h) => h.replace(/R\$\s?(?:-?\d+(?:\.\d{3})*(?:,\d+)?(?:\s?(?:mil|milhões|milhão))?|[•*]+)/g, '<b class="ia-val">$&</b>').replace(/(^|[\s(])(-?\d+(?:[.,]\d+)?%)/g, '$1<b class="ia-pct">$2</b>');
 /* ---------- conversa ---------- */
 const iaRapido = () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 function iaEnviar(q) {
@@ -410,7 +412,7 @@ function iaMsgHtml(m, i) {
   if (m.guia) return `<div class="ia-m ia"><p><b>${esc(m.t)}</b><br>Eu mostro o caminho na tela, passo a passo.</p><button class="btn sm" data-act="bas-guia" data-id="${esc(m.guia)}">Me mostre</button></div>`;
   const r = m.r; const avs = (r.avisos || []).map((id) => (S.notifs || []).find((n) => n.id === id)).filter(Boolean);
   const vs = [r.chave, r.chave + '_2', r.chave + '_3'].filter((k) => VOZ[tomAtual()][k] != null); const ch = vs.length ? vs[Math.floor((r.v || 0) * vs.length)] : r.chave;
-  return `<div class="ia-m ia${m.ai ? ' nuvem' : ''}"><p>${esc(m.ai ? iaTxtIa(m.ai) : voz(ch, iaVars(r.vars)))}</p>${avs.length ? `<ul class="ia-av">${avs.map((n) => `<li class="${n.nivel}"><b>${esc(n.titulo)}</b><span>${esc(n.texto)}</span></li>`).join('')}</ul>` : ''}${iaCta(r.cta, i)}</div>`;
+  return `<div class="ia-m ia${m.ai ? ' nuvem' : ''}"><p>${iaRealca(esc(m.ai ? iaTxtIa(m.ai) : voz(ch, iaVars(r.vars))))}</p>${avs.length ? `<ul class="ia-av">${avs.map((n) => `<li class="${n.nivel}"><b>${esc(n.titulo)}</b><span>${esc(n.texto)}</span></li>`).join('')}</ul>` : ''}${iaCta(r.cta, i)}</div>`;
 }
 // boas-vindas: só a saudação curta (pedido do Nathan)
 const iaBoasHtml = () => `<div class="ia-m ia"><p>${esc(voz('ia_oi', iaVars({})))}</p></div>`;

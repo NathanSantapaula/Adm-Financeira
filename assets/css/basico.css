@@ -2632,3 +2632,10 @@ body[data-bas-ia="1"]:not(:has(.bas-iax)) #view { padding-bottom: calc(28px + en
 .bas-dv-l button > svg { width: 16px; height: 16px; flex: none; color: var(--ink-3); }
 .bas-dv-ic { flex: none; width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; color: #fff; background: var(--c); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3); }
 .bas-dv-ic svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+/* valores nas respostas do assistente: número em destaque, numa pílula suave da cor do app */
+.ia-m.ia .ia-val { display: inline-block; padding: 0 7px; border-radius: 7px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; letter-spacing: -.01em;
+  color: var(--accent); background: color-mix(in srgb, var(--accent) 11%, transparent); }
+.ia-m.ia .ia-pct { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--ink); }
+.bas-iax-log .ia-m.ia .ia-val { color: #7FB2FF; background: rgba(127, 178, 255, .14); }
+:root[data-theme="light"] .bas-iax-log .ia-m.ia .ia-val { color: var(--accent); background: color-mix(in srgb, var(--accent) 11%, transparent); }
+.bas-iax-log .ia-m.ia .ia-pct { color: inherit; }

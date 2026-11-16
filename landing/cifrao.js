@@ -434,6 +434,8 @@ function criar(host) {
   desenhar(ator, REPOUSO);
 }
 function desenhar(a, act) {
+  // de pé (data-sem-giro): sem inclinar nem virar de lado; só os olhos, pulos e expressões
+  if (a.host.hasAttribute('data-sem-giro')) act = { ...act, rotation: lim(act.rotation, .05), yaw: lim(act.yaw, .18), pitch: lim(act.pitch, .12), skew: 0 };
   const cy = Math.cos(act.yaw), cp = Math.cos(act.pitch), sy = Math.sin(act.yaw), sp = Math.sin(act.pitch), dot = act.dot || 0;
   a.grupo.setAttribute('transform', `translate(${act.x * 1000} ${act.y * 1000}) translate(500 520) rotate(${act.rotation * 180 / Math.PI}) skewX(${(act.skew || 0) * 57.3}) scale(${Math.min(1.13, act.scaleX)} ${Math.min(1.13, act.scaleY)}) translate(-500 -520)`);
   // Giro em torno do eixo vertical: a silhueta estreita até o perfil; de costas, os olhos somem.
