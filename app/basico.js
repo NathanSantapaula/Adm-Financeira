@@ -65,11 +65,51 @@ function basicoBarra() {
   document.body.dataset.basFolha = t && BAS_FORMS.has(t.t) ? '1' : ''; document.body.dataset.basPerfil = a === 'perfil' && !t ? '1' : '';
   const av = basAvisosNovos();
   // botão da IA separado, à esquerda da barra: fundo em degradê neon que se move, vidro por cima e o Cifrão dentro
-  $('#tabbar').innerHTML = `<button class="bas-ia-fab${av ? ' alerta' : ''}" ${basIr('ia')} aria-label="Assistente${av ? `: ${av} avisos novos` : ''}"><span class="bas-ia-fab-bg" aria-hidden="true"></span><span class="cifrao" aria-hidden="true"></span></button><div class="bas-tabs"><span class="bas-tab-lente" aria-hidden="true"></span>${basAbas().map(([k, l, i]) => `<button data-act="bas-aba" data-v="${k}" ${a === k ? 'aria-current="page"' : ''}>${i}<span>${l}</span></button>`).join('')}</div>`;
-  basTabLigar();
+  $('#tabbar').innerHTML = `<button class="bas-ia-fab${av ? ' alerta' : ''}" data-act="bas-ia-fab" aria-label="Assistente${av ? `: ${av} avisos novos` : ''}. Segure para o Cifrão passear pela tela."><span class="bas-ia-ondas" aria-hidden="true"><i></i><i></i><i></i></span><span class="cifrao" aria-hidden="true"></span></button><div class="bas-tabs"><span class="bas-tab-lente" aria-hidden="true"></span>${basAbas().map(([k, l, i]) => `<button data-act="bas-aba" data-v="${k}" ${a === k ? 'aria-current="page"' : ''}>${i}<span>${l}</span></button>`).join('')}</div>`;
+  basTabLigar(); basIaFabLigar();
 }
 // barra de abas no jeito do iPhone: uma lente de vidro marca a aba e desliza até a nova; segurar e arrastar leva a lente
 // com o dedo (ou o mouse) por cima das abas, e soltar abre a aba onde ela parou
+// botão da IA: tocar abre o assistente; segurar faz o Cifrão sair da bolinha e passear pela tela,
+// parando nas informações e comentando cada uma; tocar nele (ou na bolinha) o leva de volta
+const BAS_CIF_FALAS = [
+  ['.bas-noite-v', 'Esse é tudo o que você tem hoje.'], ['.bas-var', 'Aqui eu mostro quanto o patrimônio mudou.'], ['.bas-noite-par', 'Entrou e saiu no período, lado a lado.'],
+  ['.bas-gt-v', 'Isso é o que você gastou no período.'], ['.bas-gt-pilha', 'Toque nos cartões para ver cada um.'], ['.bas-gt-acoes', 'Anote um gasto ou veja as entradas por aqui.'],
+  ['.bas-onde', 'Veja para onde foi cada real.'], ['.bas-ult', 'Seus últimos gastos ficam aqui.'], ['.bas-ev-v', 'Seu patrimônio mês a mês. Arraste o dedo no gráfico!'],
+  ['.bas-sonho', 'Seu sonho! Cada aporte te aproxima dele.'], ['.bas-pt-acoes', 'Proventos, carteira e investir, tudo aqui.'], ['.bas-disp', 'Isso é o que dá para investir agora.'],
+];
+function basIaFabLigar() {
+  const b = document.querySelector('.bas-ia-fab'); if (!b || b.dataset.lig) return; b.dataset.lig = '1'; let t = 0;
+  b.addEventListener('pointerdown', () => { clearTimeout(t); t = setTimeout(() => { S.basCifPasseio = true; basVibra && basVibra(20); basCifPasseio(b); }, 480); });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach((ev) => b.addEventListener(ev, () => clearTimeout(t)));
+  b.addEventListener('contextmenu', (e) => e.preventDefault());
+}
+function basCifPasseio(fab) {
+  if (document.querySelector('.bas-cif-solto')) return;
+  const alvos = BAS_CIF_FALAS.flatMap(([q, f]) => [...document.querySelectorAll(`#view ${q}`)].slice(0, 1).map((el) => ({ el, f })))
+    .filter(({ el }) => { const r = el.getBoundingClientRect(); return r.width && r.bottom > 60 && r.top < innerHeight - 140; }).slice(0, 4);
+  const w = document.createElement('div'); w.className = 'bas-cif-solto'; w.setAttribute('aria-live', 'polite');
+  w.innerHTML = '<span class="bas-cif-corpo"><span class="cifrao"></span></span><span class="bas-cif-fala"></span>';
+  document.body.appendChild(w); fab.classList.add('vazia');
+  const corpo = w.querySelector('.bas-cif-corpo'); const fala = w.querySelector('.bas-cif-fala'); const host = () => w.querySelector('.cifrao');
+  const rf = fab.getBoundingClientRect(); let x = rf.left + rf.width / 2 - 32, y = rf.top + rf.height / 2 - 32; w.style.transform = `translate(${x}px, ${y}px)`;
+  const expr = (n) => { const h = host(); if (h) h.dispatchEvent(new CustomEvent('cifrao:expressao', { detail: n })); };
+  const anda = (nx, ny) => new Promise((ok) => { corpo.classList.toggle('esq', nx < x); w.classList.add('andando'); const d = Math.hypot(nx - x, ny - y); const ms = Math.max(500, Math.min(1500, d * 3));
+    w.style.transition = `transform ${ms}ms cubic-bezier(.45, .05, .35, 1)`; x = nx; y = ny; w.style.transform = `translate(${x}px, ${y}px)`; setTimeout(() => { w.classList.remove('andando'); ok(); }, ms); });
+  const espera = (ms) => new Promise((ok) => setTimeout(ok, ms));
+  let parar = false; const fim = async () => { if (parar) return; parar = true; fala.classList.remove('on'); const r = fab.getBoundingClientRect(); await anda(r.left + r.width / 2 - 32, r.top + r.height / 2 - 32);
+    w.classList.add('entra'); await espera(260); w.remove(); fab.classList.remove('vazia'); S.basCifPasseio = false; };
+  w.addEventListener('click', fim); setTimeout(() => fab.addEventListener('click', fim, { once: true }), 700); // espera passar o clique que solta o toque longo
+  (async () => {
+    await espera(150); expr('hop'); await espera(500);
+    for (const { el, f } of alvos) { if (parar) return; const r = el.getBoundingClientRect();
+      const nx = Math.max(8, Math.min(innerWidth - 72, r.left + Math.min(r.width - 64, 24))); const ny = Math.max(70, Math.min(innerHeight - 220, r.top - 58));
+      await anda(nx, ny); if (parar) return; expr(['wink', 'notice', 'proud', 'gelatina'][Math.floor(Math.random() * 4)]);
+      fala.textContent = f; fala.classList.toggle('dir', nx > innerWidth / 2); fala.classList.add('on'); await espera(2300); fala.classList.remove('on'); await espera(250); }
+    if (!alvos.length) { fala.textContent = 'Oi! Toque em mim para eu voltar.'; fala.classList.add('on'); await espera(2200); }
+    fim();
+  })();
+}
 function basTabLigar() {
   { const b = document.querySelector('#tabbar .bas-tabs'); if (b && b.dataset.lig) return; }
   const bar = document.querySelector('#tabbar .bas-tabs'); if (!bar) return; const lente = bar.querySelector('.bas-tab-lente'); const bts = [...bar.querySelectorAll('button')];
@@ -1796,6 +1836,7 @@ function basAcao(act, ds, el) {
     case 'bas-arco': basArco(el); return true;
     case 'bas-ccv': basCcVer(); return true;
     case 'bas-ult-todos': basUltPop(); return true;
+    case 'bas-ia-fab': if (S.basCifPasseio) return true; basAbrir('ia'); return true;
     case 'bas-ev-jan': S.basEvJan = +ds.v; basSom('toque'); render(); return true;
     case 'bas-arco-abrir': { const b = document.querySelector('.bas-roda'); if (b && b.dataset.sel) basAbrir('categoria', { area: b.dataset.sel }); return true; }
     case 'bas-ia-aba': S.basIaAba = ['avisos', 'duvidas'].includes(ds.v) ? ds.v : 'conversa'; basSom('toque'); render(); return true;

@@ -2201,3 +2201,42 @@ body[data-ui="basico"][data-screen="app"] .tabbar { left: calc(50% + 34px); widt
   0%, 100% { box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .55), inset 0 2px 0 rgba(255, 255, 255, .45), 0 0 0 2px color-mix(in srgb, var(--neg) 70%, transparent), 0 0 0 0 color-mix(in srgb, var(--neg) 55%, transparent), 0 12px 26px -10px rgba(0, 10, 80, .65); }
   50% { box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .55), inset 0 2px 0 rgba(255, 255, 255, .45), 0 0 0 2.5px var(--neg), 0 0 0 9px color-mix(in srgb, var(--neg) 0%, transparent), 0 12px 26px -10px rgba(0, 10, 80, .65); } }
 @media (prefers-reduced-motion: reduce) { .bas-ia-fab-bg, .bas-ia-fab.alerta { animation: none; } .bas-ia-fab.alerta { box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .55), 0 0 0 2.5px var(--neg); } }
+
+/* ===== Botão da IA, rodada 3: à direita da barra, pequeno e recolhido; ao toque cresce. Dentro, ondas azuis em movimento ===== */
+body[data-ui="basico"][data-screen="app"] .tabbar { left: calc(50% - 30px); width: min(300px, calc(100% - 96px)); }
+.bas-ia-fab { right: auto; left: calc(100% + 10px); width: 52px; height: 52px; animation: none; --cif-size: 28px;
+  background: linear-gradient(180deg, var(--bas-azul-3), color-mix(in srgb, var(--bas-azul-2) 70%, var(--bas-azul-3)));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .28), inset 0 1.5px 0 rgba(255, 255, 255, .35), 0 8px 20px -8px rgba(0, 10, 80, .6);
+  transition: transform 320ms cubic-bezier(.3, 1.6, .5, 1), box-shadow 220ms ease; }
+.bas-ia-fab:active { transform: scale(1.22); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .4), inset 0 1.5px 0 rgba(255, 255, 255, .45), 0 0 0 4px color-mix(in srgb, var(--bas-ciano) 30%, transparent), 0 12px 28px -8px color-mix(in srgb, var(--bas-azul-1) 70%, transparent); }
+.bas-ia-fab-bg { display: none; }
+.bas-ia-fab::after { background: radial-gradient(90% 55% at 35% 10%, rgba(255, 255, 255, .45), transparent 60%); -webkit-backdrop-filter: none; backdrop-filter: none; }
+/* três ondas sobrepostas que correm de lado em velocidades diferentes */
+.bas-ia-ondas { position: absolute; inset: 0; z-index: -1; border-radius: 50%; overflow: hidden; }
+.bas-ia-ondas i { position: absolute; left: 0; bottom: 0; width: 200%; height: 70%;
+  -webkit-mask: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 40' preserveAspectRatio='none'%3E%3Cpath d='M0 20 Q25 4 50 20 T100 20 T150 20 T200 20 V40 H0Z'/%3E%3C/svg%3E") 0 0 / 50% 100% repeat-x;
+  mask: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 40' preserveAspectRatio='none'%3E%3Cpath d='M0 20 Q25 4 50 20 T100 20 T150 20 T200 20 V40 H0Z'/%3E%3C/svg%3E") 0 0 / 50% 100% repeat-x;
+  animation: bas-ia-onda 5s linear infinite; }
+.bas-ia-ondas i:nth-child(1) { background: color-mix(in srgb, var(--bas-azul-1) 85%, transparent); height: 62%; }
+.bas-ia-ondas i:nth-child(2) { background: color-mix(in srgb, var(--bas-ciano) 55%, transparent); height: 50%; animation-duration: 7.5s; animation-direction: reverse; }
+.bas-ia-ondas i:nth-child(3) { background: color-mix(in srgb, var(--bas-azul-2) 90%, transparent); height: 36%; animation-duration: 3.8s; }
+@keyframes bas-ia-onda { to { transform: translateX(-50%); } }
+.bas-ia-fab.vazia .cifrao { opacity: 0; transform: scale(.4); }
+.bas-ia-fab .cifrao { transition: opacity 200ms, transform 260ms cubic-bezier(.3, 1.6, .5, 1); }
+/* com aviso novo, a borda pulsa em vermelho */
+.bas-ia-fab.alerta { animation: bas-ia-alerta2 1.6s ease-in-out infinite; }
+@keyframes bas-ia-alerta2 { 0%, 100% { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .28), 0 0 0 2px color-mix(in srgb, var(--neg) 75%, transparent), 0 0 0 0 color-mix(in srgb, var(--neg) 50%, transparent), 0 8px 20px -8px rgba(0, 10, 80, .6); }
+  50% { box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .28), 0 0 0 2.5px var(--neg), 0 0 0 9px color-mix(in srgb, var(--neg) 0%, transparent), 0 8px 20px -8px rgba(0, 10, 80, .6); } }
+/* o Cifrão solto pela tela: anda balançando, vira para o lado em que vai e fala num balão */
+.bas-cif-solto { position: fixed; left: 0; top: 0; z-index: 120; width: 64px; height: 64px; --cif-size: 64px; --cif-body: #fff; --cif-eyes: #06122A; cursor: pointer; }
+.bas-cif-corpo { display: block; width: 64px; height: 64px; filter: drop-shadow(0 6px 10px rgba(0, 10, 60, .45)); }
+.bas-cif-corpo.esq { transform: scaleX(-1); }
+.bas-cif-solto .cifrao { display: block; width: 64px; height: 64px; } .bas-cif-solto .cifrao > svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.bas-cif-solto.andando .cifrao { animation: bas-cif-passo .32s ease-in-out infinite alternate; }
+@keyframes bas-cif-passo { from { transform: translateY(0) rotate(-4deg); } to { transform: translateY(-6px) rotate(4deg); } }
+.bas-cif-solto.entra { transition: transform 240ms ease, opacity 240ms ease !important; opacity: 0; }
+.bas-cif-solto .cifrao { filter: drop-shadow(0 0 1.5px rgba(6, 18, 42, .9)); }
+.bas-cif-fala { position: absolute; left: 50%; bottom: calc(100% + 6px); translate: -20% 0; width: max-content; max-width: 220px; padding: 9px 13px; border-radius: 16px; font-size: 14px; font-weight: 600; line-height: 1.3;
+  color: var(--ink); background: var(--surface); box-shadow: 0 10px 26px -10px rgba(0, 0, 0, .45), inset 0 0 0 .5px var(--line); opacity: 0; transform: translateY(6px) scale(.9); transition: opacity 180ms, transform 220ms cubic-bezier(.3, 1.5, .5, 1); pointer-events: none; }
+.bas-cif-fala.dir { translate: -80% 0; } .bas-cif-fala.on { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .bas-ia-ondas i, .bas-ia-fab.alerta, .bas-cif-solto.andando .cifrao { animation: none; } }
