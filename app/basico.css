@@ -1734,27 +1734,38 @@ body[data-ui="basico"] { --bas-azul: #0A84FF; --bas-azul-1: #3b6cff; --bas-azul-
 .bas-gt-d .inst-ic.bas-gt-logo i { width: 100%; height: 100%; background: rgba(255, 255, 255, .6) !important; filter: none !important; }
 .bas-gt-d .inst-ic.bas-gt-logo b { font-size: 20px; font-style: italic; color: rgba(255, 255, 255, .6) !important; }
 
-/* ===== Liquid Glass (exagerado) em todos os botões do App: vidro que recebe luz de todo lado e devolve ===== */
+/* ===== Liquid Glass, pelas diretrizes da Apple ("Adopting Liquid Glass"):
+   - vidro só na camada de controles e navegação (barra de cima, período, ações, botões flutuantes), nunca no conteúdo;
+   - sem fundo pintado por cima do vidro: ele é transparente, desfoca e satura o que está atrás, com a borda pegando a luz;
+   - cor com moderação: só a ação principal é "prominent" (vidro tingido na cor de destaque), o resto é vidro neutro;
+   - formas em cápsula e círculo, concêntricas; ao toque o vidro cresce um pouco e acende;
+   - reduzir transparência deixa fosco e sólido; mais contraste dá borda definida; reduzir movimento tira a escala. ===== */
 body[data-ui="basico"] {
-  --lg-fundo: rgba(255, 255, 255, .22); --lg-borda: rgba(255, 255, 255, .7);
-  --lg-luz: radial-gradient(120% 90% at 20% 0%, rgba(255, 255, 255, .85), rgba(255, 255, 255, 0) 55%), radial-gradient(90% 70% at 85% 110%, rgba(255, 255, 255, .45), rgba(255, 255, 255, 0) 60%), linear-gradient(180deg, rgba(255, 255, 255, .35), rgba(255, 255, 255, .04) 50%, rgba(255, 255, 255, .18));
-  --lg-sombra: inset 0 1.5px 0 rgba(255, 255, 255, .95), inset 0 -1.5px 1px rgba(255, 255, 255, .45), inset 1.5px 0 0 rgba(255, 255, 255, .5), inset -1.5px 0 0 rgba(255, 255, 255, .3),
-    inset 8px 10px 16px -10px rgba(255, 255, 255, .9), inset -10px -12px 20px -12px color-mix(in srgb, var(--accent) 55%, transparent),
-    0 10px 26px -10px rgba(0, 20, 60, .35), 0 2px 6px rgba(0, 20, 60, .1);
+  --lg-bg: rgba(255, 255, 255, .42); --lg-bg-on: rgba(255, 255, 255, .62); --lg-aro: rgba(255, 255, 255, .75); --lg-aro-b: rgba(255, 255, 255, .28);
+  --lg-sombra: 0 1px 1.5px rgba(0, 0, 0, .06), 0 8px 22px -10px rgba(0, 0, 0, .22); --lg-txt: var(--ink); --lg-desfoque: blur(14px) saturate(190%);
 }
-:root[data-theme="oled"] body[data-ui="basico"], :root[data-theme="dark"] body[data-ui="basico"] { --lg-fundo: rgba(255, 255, 255, .08); --lg-borda: rgba(255, 255, 255, .32); }
-body[data-ui="basico"] :is(.bas-per, .bas-circ, .olho, .bell, .bas-gt-chip, .btn:not(.primary), .bas-ccv-ver, .bas-lim-add button) {
-  border: 1px solid var(--lg-borda) !important; background-color: var(--lg-fundo) !important; background-image: var(--lg-luz) !important;
-  -webkit-backdrop-filter: blur(22px) saturate(200%) brightness(1.08); backdrop-filter: blur(22px) saturate(200%) brightness(1.08); box-shadow: var(--lg-sombra) !important;
-  transition: transform 180ms var(--ease-out), box-shadow 180ms ease; }
-body[data-ui="basico"] :is(.bas-inv-pl, .btn.primary) {
-  border: 1px solid rgba(255, 255, 255, .75) !important; color: #fff !important;
-  background-color: color-mix(in srgb, var(--accent) 78%, transparent) !important; background-image: var(--lg-luz) !important;
-  -webkit-backdrop-filter: blur(22px) saturate(200%); backdrop-filter: blur(22px) saturate(200%);
-  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, .95), inset 0 -2px 2px rgba(255, 255, 255, .4), inset 8px 10px 16px -10px rgba(255, 255, 255, .9), inset -10px -12px 18px -10px rgba(0, 10, 60, .45),
-    0 12px 28px -10px color-mix(in srgb, var(--accent) 80%, transparent), 0 0 0 4px color-mix(in srgb, var(--accent) 12%, transparent) !important; }
-body[data-ui="basico"] :is(.bas-per, .bas-circ, .olho, .bell, .bas-gt-chip, .bas-inv-pl, .btn, .bas-ccv-ver):active { transform: scale(.94); }
-@media (prefers-reduced-transparency: reduce) { body[data-ui="basico"] :is(.bas-per, .bas-circ, .olho, .bell, .bas-gt-chip, .bas-inv-pl, .btn) { -webkit-backdrop-filter: none; backdrop-filter: none; background-image: none !important; } }
+:root[data-theme="oled"] body[data-ui="basico"] { --lg-bg: rgba(255, 255, 255, .08); --lg-bg-on: rgba(255, 255, 255, .16); --lg-aro: rgba(255, 255, 255, .32); --lg-aro-b: rgba(255, 255, 255, .08); --lg-sombra: 0 1px 1.5px rgba(0, 0, 0, .3), 0 8px 22px -10px rgba(0, 0, 0, .6); }
+/* vidro claro sobre fundo colorido (o azul de Gastos): mais transparente, rótulo branco */
+.bas-gt-bg { --lg-bg: rgba(255, 255, 255, .14); --lg-bg-on: rgba(255, 255, 255, .26); --lg-aro: rgba(255, 255, 255, .55); --lg-aro-b: rgba(255, 255, 255, .15); --lg-txt: #fff; }
+body[data-ui="basico"] :is(.olho, .bell, .bas-circ, .bas-per, .bas-gt-chip, .bas-ct2-b) {
+  color: var(--lg-txt) !important; background: var(--lg-bg) !important; border: 0 !important;
+  -webkit-backdrop-filter: var(--lg-desfoque); backdrop-filter: var(--lg-desfoque);
+  box-shadow: inset 0 1px 0 var(--lg-aro), inset 0 -1px 0 var(--lg-aro-b), inset 0 0 0 .5px var(--lg-aro-b), var(--lg-sombra) !important;
+  transition: transform 260ms cubic-bezier(.3, 1.6, .5, 1), background-color 160ms ease, box-shadow 160ms ease; }
+/* a ação principal: vidro "prominent", tingido na cor de destaque, rótulo branco */
+body[data-ui="basico"] :is(.bas-inv-pl, .bas-folha-b .btn.primary, .btn.primary) {
+  color: #fff !important; border: 0 !important; background: color-mix(in srgb, var(--accent) 88%, transparent) !important;
+  -webkit-backdrop-filter: var(--lg-desfoque); backdrop-filter: var(--lg-desfoque);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45), inset 0 -1px 0 rgba(0, 0, 0, .12), 0 1px 1.5px rgba(0, 0, 0, .08), 0 10px 24px -10px color-mix(in srgb, var(--accent) 70%, transparent) !important;
+  transition: transform 260ms cubic-bezier(.3, 1.6, .5, 1), filter 160ms ease; }
+/* ao toque: cresce um pouco e acende, como o vidro interativo */
+body[data-ui="basico"] :is(.olho, .bell, .bas-circ, .bas-per, .bas-gt-chip, .bas-ct2-b):active { transform: scale(1.06); background: var(--lg-bg-on) !important; }
+body[data-ui="basico"] :is(.bas-inv-pl, .btn.primary):active { transform: scale(1.04); filter: brightness(1.12); }
+@media (prefers-reduced-transparency: reduce) {
+  body[data-ui="basico"] :is(.olho, .bell, .bas-circ, .bas-per, .bas-gt-chip, .bas-ct2-b) { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--surface) !important; color: var(--ink) !important; }
+  body[data-ui="basico"] :is(.bas-inv-pl, .btn.primary) { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--accent) !important; } }
+@media (prefers-contrast: more) { body[data-ui="basico"] :is(.olho, .bell, .bas-circ, .bas-per, .bas-gt-chip, .bas-ct2-b, .bas-inv-pl, .btn.primary) { box-shadow: inset 0 0 0 1.5px currentColor !important; } }
+@media (prefers-reduced-motion: reduce) { body[data-ui="basico"] :is(.olho, .bell, .bas-circ, .bas-per, .bas-gt-chip, .bas-ct2-b, .bas-inv-pl, .btn.primary):active { transform: none; } }
 
 /* ===== Cartões: frente da pilha com aproximação, logo e bandeira; escolher o cartão; gastos do cartão ===== */
 .bas-gt-d { align-items: center; }
