@@ -374,23 +374,35 @@ function criar(host) {
   const id = `cifrao-${++serial}`;
   const svg = document.createElementNS(NS, 'svg');
   svg.setAttribute('viewBox', '0 0 1000 1000'); svg.setAttribute('aria-hidden', 'true'); svg.setAttribute('focusable', 'false');
-  svg.innerHTML = `<defs><clipPath id="${id}-c">${CORPO}</clipPath></defs>
+  // volume de massinha inflada: o contorno vira relevo (alfa borrado), luz difusa do alto à esquerda faz a sombra lilás por dentro,
+  // um brilho especular forte no alto e uma luz azul na borda direita, tudo recortado pelo próprio desenho
+  const vol = host.closest('[data-ui="basico"]') || host.hasAttribute('data-volume');
+  const FILTRO = vol ? `<filter id="${id}-v" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="34" result="rel"/>
+      <feDiffuseLighting in="rel" surfaceScale="9" diffuseConstant="1.05" lighting-color="#D6D1FF" result="dif"><feDistantLight azimuth="235" elevation="52"/></feDiffuseLighting>
+      <feComposite in="SourceGraphic" in2="dif" operator="arithmetic" k1=".9" k2=".14" result="tom"/>
+      <feSpecularLighting in="rel" surfaceScale="9" specularConstant="1.25" specularExponent="34" lighting-color="#FFFFFF" result="esp"><fePointLight x="330" y="120" z="520"/></feSpecularLighting>
+      <feSpecularLighting in="rel" surfaceScale="9" specularConstant=".9" specularExponent="10" lighting-color="#46B6FF" result="aro"><feDistantLight azimuth="-10" elevation="18"/></feSpecularLighting>
+      <feComposite in="tom" in2="esp" operator="arithmetic" k2="1" k3=".75" result="t2"/>
+      <feComposite in="t2" in2="aro" operator="arithmetic" k2="1" k3=".85" result="t3"/>
+      <feComposite in="t3" in2="SourceAlpha" operator="in"/></filter>` : '';
+  svg.innerHTML = `<defs><clipPath id="${id}-c">${CORPO}</clipPath>${FILTRO}</defs>
   <g data-ator>
     <g data-marcas fill="none" stroke="var(--cif-body)" stroke-width="34" stroke-linecap="round" opacity="0"><path d="M760 215 815 150M815 275 890 245M700 165 712 95"/></g>
     <text data-duvida x="850" y="230" font-size="300" font-weight="800" font-family="-apple-system, Inter, sans-serif" fill="var(--cif-body)" text-anchor="middle" opacity="0">?</text>
     <g data-brilhos fill="var(--cif-body)" opacity="0">${'<path d="M0 -60 L13 -13 L60 0 L13 13 L0 60 L-13 13 L-60 0 L-13 -13Z"/>'.repeat(3)}</g>
     <g data-volume>
-      <g data-cifrao fill="var(--cif-body)">${CORPO}</g>
+      <g data-cifrao fill="var(--cif-body)"${vol ? ` filter="url(#${id}-v)"` : ''}>${CORPO}</g>
       <circle data-dot cx="500" cy="520" r="330" fill="var(--cif-body)" opacity="0"/>
       <circle data-aro cx="500" cy="520" r="250" fill="none" stroke="var(--cif-eyes)" stroke-width="26" opacity="0"/>
-      <g clip-path="url(#${id}-c)"><g data-face fill="var(--cif-eyes)"><g data-left><path data-le/></g><g data-right><path data-re/></g></g></g>
+      <g clip-path="url(#${id}-c)"><g data-face fill="var(--cif-eyes)"><g data-left><path data-le/>${vol ? '<ellipse data-lb cx="382" cy="390" rx="21" ry="27" fill="#fff"/>' : ''}</g><g data-right><path data-re/>${vol ? '<ellipse data-rb cx="534" cy="349" rx="21" ry="27" fill="#fff"/>' : ''}</g></g></g>
     </g>
   </g>`;
   host.appendChild(svg);
   const q = (s) => svg.querySelector(s);
   const ator = { host, svg, atencao: novaAtencao(20261111 + serial * 327), visivel: true, elapsed: 0, seq: 'notice', seqT: 0, gestoEm: 6500 + serial * 1700, gestoI: 0,
     atual: { ...REPOUSO }, origem: { ...REPOUSO }, grupo: q('[data-ator]'), volume: q('[data-volume]'), cifrao: q('[data-cifrao]'), dot: q('[data-dot]'), face: q('[data-face]'),
-    marcas: q('[data-marcas]'), aro: q('[data-aro]'), brilhos: q('[data-brilhos]'), duvida: q('[data-duvida]'), left: q('[data-left]'), right: q('[data-right]'), le: q('[data-le]'), re: q('[data-re]') };
+    marcas: q('[data-marcas]'), aro: q('[data-aro]'), brilhos: q('[data-brilhos]'), duvida: q('[data-duvida]'), left: q('[data-left]'), right: q('[data-right]'), le: q('[data-le]'), re: q('[data-re]'), lb: q('[data-lb]'), rb: q('[data-rb]') };
   const TOQUE = ['gelatina', 'wink', 'hop', 'brilha', 'spin', 'timido', 'milestone', 'flip', 'proud', 'confuso', 'danca', 'espirro', 'soluco', 'derrete', 'segue', 'notice', 'glance-right'];
   let ultimo = 0, serie = 0, saco = [], antes = '';
   // Cada toque tira uma reação de um saco embaralhado: todas aparecem antes de repetir. Séries rápidas e o toque depois de muito tempo parado têm reação própria.
@@ -440,6 +452,7 @@ function desenhar(a, act) {
     const sp2 = (side === 'left' ? -70 : 70) * (act.eyeSpacing - 1);
     a[side].setAttribute('transform', `translate(${sp2 + act.gazeX * 1000} ${act.gazeY * 1000}) rotate(${-18.6 + act.eyeTilt * 180 / Math.PI} ${cx} ${oy})`);
     a[side === 'left' ? 'le' : 're'].setAttribute('d', olhoD(cx, oy, w, h, smile));
+    const bri = a[side === 'left' ? 'lb' : 'rb']; if (bri) bri.setAttribute('opacity', String(Math.max(0, (1 - wink * 1.6) * (1 - smile * 1.4) * Math.min(1, ey))));
   }
 }
 const vis = new IntersectionObserver((es) => { for (const e of es) for (const a of atores) if (a.host === e.target) a.visivel = e.isIntersecting; }, { rootMargin: '80px' });
