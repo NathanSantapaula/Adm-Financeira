@@ -2644,3 +2644,11 @@ body[data-bas-ia="1"]:not(:has(.bas-iax)) #view { padding-bottom: calc(28px + en
 @keyframes bas-st-troca { from { opacity: 0; transform: translateY(8px); filter: blur(3px); } }
 .bas-iax-orb { pointer-events: auto; cursor: pointer; }
 @media (prefers-reduced-motion: reduce) { .bas-iax-st .ok.troca { animation: none; } }
+/* Seus cartões: a folga das bordas é pela largura da tela (a porcentagem era da coluna de conteúdo e deixava o cartão fora do meio),
+   então a tela já abre com o cartão principal no centro; os pontos ficam parados e um indicador desliza entre eles */
+.bas-rc-fila { padding-left: calc(50vw - 57px); padding-right: calc(50vw - 57px); }
+.bas-ccv-p { position: relative; width: max-content; margin-inline: auto; }
+.bas-ccv-p i, .bas-ccv-p i.on { width: 7px; border-radius: 50%; background: var(--ink-3); opacity: .35; transition: opacity 200ms; }
+.bas-ccv-p i.on { opacity: 0; }
+.bas-ccv-ind { position: absolute; left: 0; top: 0; width: 20px; height: 7px; border-radius: 4px; background: var(--accent); transition: transform 320ms cubic-bezier(.2, .85, .2, 1); }
+@media (prefers-reduced-motion: reduce) { .bas-ccv-ind { transition: none; } }
