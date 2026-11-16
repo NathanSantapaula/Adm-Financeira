@@ -1900,3 +1900,17 @@ svg.bas-cr-chip path { fill: none; stroke: rgba(92, 66, 22, .55) !important; str
 .bas-ct2-card { margin-bottom: -44px; }
 /* o cartão entra só na borda da folha e para antes do primeiro bloco */
 .bas-ct2-card { margin-bottom: -30px; } .bas-ct2-folha { padding-top: 48px; }
+
+/* ===== "Para onde foi o dinheiro": barra única e lista curta ===== */
+.bas-on2 { padding: 18px 18px 8px; }
+.bas-on2-bar { display: flex; gap: 3px; height: 10px; margin-bottom: 8px; }
+.bas-on2-bar i { min-width: 4px; border-radius: 99px; background: var(--bc); }
+.bas-on2-ls { list-style: none; margin: 0; padding: 0; }
+.bas-on2-l { width: 100%; display: grid; grid-template-columns: 10px 1fr auto 44px; align-items: center; gap: 12px; padding: 12px 0; border: 0; border-bottom: 1px solid var(--line); background: none; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+.bas-on2-ls li:last-child .bas-on2-l { border-bottom: 0; }
+.bas-on2-l > i { width: 10px; height: 10px; border-radius: 50%; background: var(--bc); }
+.bas-on2-n { display: flex; flex-direction: column; min-width: 0; font-size: 16px; font-weight: 600; }
+.bas-on2-n em { font-style: normal; font-size: 13px; font-weight: 500; color: var(--pos); } .bas-on2-n em.perto { color: var(--warn); } .bas-on2-n em.passou { color: var(--neg); }
+.bas-on2-l b { font-size: 16px; font-weight: 600; white-space: nowrap; } .bas-on2-l small { font-size: 14px; color: var(--ink-3); text-align: right; }
+.bas-on2-lim { display: block; width: 100%; margin-top: 4px; padding: 12px 0 10px; border: 0; border-top: 1px solid var(--line); background: none; font: inherit; font-size: 15px; font-weight: 600; color: var(--accent); cursor: pointer; }
+.bas-cal-b svg { width: 20px; height: 20px; }
