@@ -1239,8 +1239,8 @@ function basCtwLigar() {
   const vai = (i) => { sel = i; const d = D[i]; w.classList.toggle('tem-sel', i >= 0);
     w.querySelectorAll('.bas-ctw-s').forEach((g) => g.classList.toggle('on', +g.dataset.i === i)); w.querySelectorAll('[data-ctw-i]').forEach((b) => b.classList.toggle('on', +b.dataset.ctwI === i));
     const tx = q('.bas-ctw-tx'); tx.classList.remove('troca'); void tx.offsetWidth; tx.classList.add('troca');
-    q('[data-ctw-k]').textContent = d ? d.p : 'Total investido'; q('[data-ctw-v]').innerHTML = d ? d.v : w.dataset.total;
-    q('[data-ctw-n]').textContent = d ? d.n : 'Sua carteira'; q('[data-ctw-s]').textContent = d ? d.sub : w.dataset.resumo;
+    q('[data-ctw-k]').textContent = d ? d.sub : 'Total investido'; q('[data-ctw-v]').innerHTML = d ? d.v : w.dataset.total;
+    q('[data-ctw-n]').textContent = d ? d.n : 'Sua carteira'; q('[data-ctw-s]').textContent = d ? '' : w.dataset.resumo;
     const t = q('[data-ctw-t]'); t.hidden = !(d && d.t); t.textContent = d ? d.t : ''; t.className = d ? d.tk : '';
     if (typeof basSom === 'function') basSom('toque'); if (typeof basVibra === 'function') basVibra(8); };
   const toca = (i) => vai(i === sel ? -1 : i); // tocar de novo na mesma parte volta ao anel inteiro
@@ -1249,37 +1249,70 @@ function basCtwLigar() {
   const anel = q('.bas-ctw-r'); let x0 = null; anel.addEventListener('pointerdown', (e) => { x0 = e.clientX; });
   anel.addEventListener('pointerup', (e) => { if (x0 != null && Math.abs(e.clientX - x0) > 40) { const dir = e.clientX < x0 ? 1 : -1; vai(sel < 0 ? (dir > 0 ? 0 : D.length - 1) : (sel + dir + D.length) % D.length); } x0 = null; });
 }
-// onde investir o dinheiro do mês: o disponível (E.disponivelAporte) vem preenchido, o cliente pode trocar o valor e a divisão
-// pelos alvos (E.rebalance, sem vender nada) aparece na hora; "Registrar" soma cada parte ao aporte do mês de cada ativo
+// onde investir o dinheiro do mês: o disponível (E.disponivelAporte) vem preenchido e é dividido pelos alvos (E.rebalance, sem
+// vender nada); cada valor pode ser trocado, um ativo pode sair (×) e o + inclui outro que você já tem ou um novo. "Registrar"
+// soma tudo ao aporte do mês de uma vez (o novo entra por ativoInserir, a mesma regra do cadastro).
 function basTelaOndeInvestir() {
   const { M } = cartAnalise(); const D = M.D || {}; const disp = Math.max(0, +D.disponivel || 0); const comAlvo = M.sumAlvo > 0;
   const its = M.items.map((i) => ({ id: i.a.id, n: i.a.nome, c: i.a.classe || '', w: i.alvo, v: i.valor, pr: i.preco || 0 }));
-  const corpo = !comAlvo ? `<div class="card bas-ct-def bas-oi-sem"><span class="bas-n"><b>Primeiro, seus alvos</b><small>Diga quanto quer em cada investimento. Com isso o app divide o aporte do mês por você.</small></span></div><button class="btn primary lg bas-cta" ${basIr('alvos')}>Definir meus alvos</button>`
-    : `<div class="card bas-oi-c"><label class="bas-oi-v"><small>Vou investir</small><span><i>R$</i><input data-oi-v inputmode="decimal" value="${disp ? esc(nf.format(disp)) : ''}" placeholder="0,00" aria-label="Quanto vai investir"></span></label>
-        ${disp > 0 ? `<button class="bas-oi-tudo" data-oi-tudo="${esc(nf.format(disp))}">Usar o disponível · ${brl0(disp)}</button>` : ''}</div>
-      <ul class="card bas-oi-l" data-oi-l></ul>
-      <button class="btn primary lg bas-cta bas-oi-reg" data-act="bas-oi-reg" ${temRecurso('aporte_simples') ? '' : 'disabled'}>Registrar em ${esc(MES_LONGO[S.mes])}</button>`;
-  return `<div class="bas-pg bas-pg-oi" data-oi="${esc(JSON.stringify(its))}"><div class="bas-gt-bg bas-pt-bg">
+  const classes = [...new Set(S.plan.ativos.map((a) => a.classe).filter(Boolean))].concat(["CDB's", 'Tesouro Direto', 'Ações BR', 'Fundos Imobiliários', "ETF's"]).filter((c, i, l) => l.indexOf(c) === i);
+  return `<div class="bas-pg bas-pg-oi" data-oi="${esc(JSON.stringify(its))}" data-alvo="${comAlvo ? 1 : 0}"><div class="bas-gt-bg bas-pt-bg">
     <header class="bas-pv2-h"><button class="bell bas-cal-b" data-act="bas-voltar" aria-label="Voltar">${I_VOLTA}</button><b>Onde investir</b><span class="bas-noite-r">${olhoHtml()}</span></header>
     <small class="bas-pv2-k">Disponível para investir em ${esc(MES_LONGO[S.mes])}</small><b class="bas-pv2-t">${basCent(disp)}</b>
-    <p class="bas-pv2-var"><span>${disp > 0 ? 'O que sobrou do mês e ainda não foi aplicado.' : 'Nada sobrando por enquanto. Você ainda pode simular um valor.'}</span></p>
-  </div><div class="bas-gt-folha">${corpo}</div></div>`;
+    <p class="bas-pv2-var"><span>${comAlvo ? 'Dividido pelos seus alvos. Ajuste como quiser.' : 'Defina seus alvos para o app dividir por você.'}</span></p>
+  </div><div class="bas-gt-folha">
+    <div class="card bas-oi-c"><label class="bas-oi-v"><small>Vou investir</small><span><i>R$</i><input data-oi-v inputmode="decimal" value="${disp ? esc(nf.format(disp)) : ''}" placeholder="0,00" aria-label="Quanto vai investir"></span></label>
+      <div class="bas-oi-at">${disp > 0 ? `<button data-oi-tudo="${esc(nf.format(disp))}">Usar o disponível</button>` : ''}${comAlvo ? '<button data-oi-sug>Dividir pelos alvos</button>' : `<button ${basIr('alvos')}>Definir alvos</button>`}</div></div>
+    <div class="bas-ch bas-oi-ch"><h2 class="bas-h2">Para onde vai</h2><small data-oi-soma></small></div>
+    <ul class="card bas-oi-l" data-oi-l></ul>
+    <button class="bas-oi-mais" data-oi-mais aria-expanded="false">${I.plus}<span>Adicionar ativo</span></button>
+    <div class="card bas-oi-add" data-oi-add hidden>
+      <div class="bas-oi-ex" data-oi-ex></div>
+      <div class="bas-oi-novo"><b>Ativo novo</b><input data-oi-nn placeholder="Nome (ex.: PETR4, CDB Banco X)" aria-label="Nome do ativo novo">
+        <input data-oi-nc list="bas-dl-oi" placeholder="Classe (ex.: Ações BR)" aria-label="Classe do ativo novo"><datalist id="bas-dl-oi">${classes.map((c) => `<option value="${esc(c)}"></option>`).join('')}</datalist>
+        <div class="bas-oi-tp" role="group" aria-label="Tipo"><button class="on" data-oi-tp="BOLSA DE VALORES">Bolsa</button><button data-oi-tp="RENDA FIXA">Renda fixa</button></div>
+        <button class="btn primary bas-cta" data-oi-novo>Adicionar ativo novo</button></div></div>
+    <button class="btn primary lg bas-cta bas-oi-reg" data-act="bas-oi-reg" ${temRecurso('aporte_simples') ? '' : 'disabled'}>Registrar em ${esc(MES_LONGO[S.mes])}</button>
+  </div></div>`;
 }
 function basOiLigar() {
   const pg = document.querySelector('.bas-pg-oi[data-oi]'); const inp = pg && pg.querySelector('[data-oi-v]'); if (!inp || inp.dataset.lig) return; inp.dataset.lig = '1';
-  const its = JSON.parse(pg.dataset.oi); const lista = pg.querySelector('[data-oi-l]'); const reg = pg.querySelector('.bas-oi-reg');
-  const conta = () => { const v = Math.max(0, parseReais(inp.value || '0') || 0); const rb = E.rebalance(its.map((i) => ({ w: i.w, v: i.v })), v);
-    const L = its.map((i, k) => Object.assign({}, i, { s: Math.round((rb.alloc[k] || 0) * 100) / 100 })).filter((i) => i.s > 0.004).sort((a, b) => b.s - a.s);
-    pg.dataset.alloc = JSON.stringify(L.map((i) => [i.id, i.s])); if (reg) reg.disabled = !L.length || !temRecurso('aporte_simples');
-    lista.innerHTML = L.length ? L.map((i) => `<li><span class="bas-ct-lg sm" style="--bc:${BAS_CT_COR[0]}">${esc(basSigla(i.n))}</span><span class="bas-ct-an"><b>${esc(i.n)}</b><small>${esc(i.c)}${i.pr > 0 && i.s >= i.pr ? ` · ${Math.floor(i.s / i.pr)} ${Math.floor(i.s / i.pr) === 1 ? 'cota' : 'cotas'}` : ''}</small></span><i style="--p:${((i.s / v) * 100).toFixed(1)}%"></i><b class="bas-ct-pv">+${basCent(i.s)}</b></li>`).join('')
-      : `<li class="bas-oi-vz">${v > 0 ? 'Sua carteira já está no alvo: aporte na mesma proporção.' : 'Digite um valor para ver a divisão.'}</li>`; };
-  inp.addEventListener('input', conta); const tudo = pg.querySelector('[data-oi-tudo]'); if (tudo) tudo.addEventListener('click', () => { inp.value = tudo.dataset.oiTudo; conta(); });
-  conta();
+  const its = JSON.parse(pg.dataset.oi); const comAlvo = pg.dataset.alvo === '1'; const lista = pg.querySelector('[data-oi-l]'); const reg = pg.querySelector('.bas-oi-reg'); const add = pg.querySelector('[data-oi-add]');
+  let linhas = []; // { id (ou null para ativo novo), n, c, tipo, s }
+  const num = (x) => Math.max(0, parseReais(String(x || '0')) || 0); const fmt = (v) => (v ? nf.format(v) : '');
+  const sugere = () => { const v = num(inp.value); if (!comAlvo) return; const rb = E.rebalance(its.map((i) => ({ w: i.w, v: i.v })), v);
+    const novos = linhas.filter((l) => !l.id); linhas = its.map((i, k) => ({ id: i.id, n: i.n, c: i.c, s: Math.round((rb.alloc[k] || 0) * 100) / 100 })).filter((l) => l.s > 0.004).sort((a, b) => b.s - a.s).concat(novos); };
+  const soma = () => linhas.reduce((t, l) => t + (+l.s || 0), 0);
+  const status = () => { const v = num(inp.value); const t = soma(); const el = pg.querySelector('[data-oi-soma]'); const dif = Math.round((v - t) * 100) / 100;
+    el.textContent = !linhas.length ? '' : Math.abs(dif) < 0.01 ? `${brl(t)} · tudo distribuído` : dif > 0 ? `${brl(t)} · faltam ${brl(dif)}` : `${brl(t)} · ${brl(-dif)} a mais`;
+    el.className = Math.abs(dif) < 0.01 ? 'ok' : dif < 0 ? 'neg' : ''; if (reg) reg.disabled = !linhas.some((l) => l.s > 0.004) || !temRecurso('aporte_simples');
+    pg.dataset.alloc = JSON.stringify(linhas.filter((l) => l.s > 0.004)); };
+  const desenha = () => { lista.innerHTML = linhas.length ? linhas.map((l, k) => `<li data-k="${k}"><span class="bas-ct-lg sm" style="--bc:${l.id ? BAS_CT_COR[0] : BAS_CT_COR[3]}">${esc(basSigla(l.n))}</span><span class="bas-ct-an"><b>${esc(l.n)}</b><small>${l.id ? esc(l.c) : `Novo · ${esc(l.c)}`}</small></span>
+      <label class="bas-oi-in"><i>R$</i><input data-oi-s="${k}" inputmode="decimal" value="${esc(fmt(l.s))}" placeholder="0,00" aria-label="Quanto em ${esc(l.n)}"></label><button class="bas-oi-x" data-oi-x="${k}" aria-label="Tirar ${esc(l.n)}">${I.x}</button></li>`).join('')
+    : `<li class="bas-oi-vz">${comAlvo ? 'Digite quanto vai investir ou adicione um ativo.' : 'Adicione os ativos em que vai investir.'}</li>`; status(); exRefaz(); };
+  const exRefaz = () => { const ex = pg.querySelector('[data-oi-ex]'); const fora = its.filter((i) => !linhas.some((l) => l.id === i.id));
+    ex.innerHTML = fora.length ? `<b>Que você já tem</b><div class="bas-oi-chips">${fora.map((i) => `<button data-oi-add-id="${esc(i.id)}">${esc(i.n)}</button>`).join('')}</div>` : ''; };
+  inp.addEventListener('input', () => { sugere(); desenha(); });
+  pg.addEventListener('input', (e) => { const k = e.target.dataset.oiS; if (k == null) return; linhas[+k].s = num(e.target.value); status(); });
+  pg.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b || !pg.contains(b)) return; const d = b.dataset;
+    if (d.oiTudo) { inp.value = d.oiTudo; sugere(); desenha(); }
+    else if (d.oiSug != null) { sugere(); desenha(); }
+    else if (d.oiX != null) { linhas.splice(+d.oiX, 1); desenha(); }
+    else if (d.oiMais != null) { add.hidden = !add.hidden; b.setAttribute('aria-expanded', String(!add.hidden)); if (!add.hidden) add.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+    else if (d.oiAddId) { const i = its.find((x) => x.id === d.oiAddId); if (i) { linhas.push({ id: i.id, n: i.n, c: i.c, s: 0 }); desenha(); const q = lista.querySelector(`[data-oi-s="${linhas.length - 1}"]`); if (q) q.focus(); } }
+    else if (d.oiTp) { pg.querySelectorAll('[data-oi-tp]').forEach((x) => x.classList.toggle('on', x === b)); }
+    else if (d.oiNovo != null) { const n = pg.querySelector('[data-oi-nn]').value.trim(); const c = pg.querySelector('[data-oi-nc]').value.trim(); if (!n || !c) { toast('Preencha o nome e a classe do ativo novo.'); return; }
+      linhas.push({ id: null, n, c, tipo: (pg.querySelector('[data-oi-tp].on') || {}).dataset?.oiTp || 'BOLSA DE VALORES', s: 0 }); pg.querySelector('[data-oi-nn]').value = ''; pg.querySelector('[data-oi-nc]').value = ''; add.hidden = true; desenha();
+      const q = lista.querySelector(`[data-oi-s="${linhas.length - 1}"]`); if (q) q.focus(); }
+    else return; if (typeof basSom === 'function') basSom('toque'); });
+  sugere(); desenha();
 }
 function basOiRegistrar() {
   const pg = document.querySelector('.bas-pg-oi'); if (!pg || !temRecurso('aporte_simples')) return; const L = JSON.parse(pg.dataset.alloc || '[]'); if (!L.length) return; const m = S.mes;
-  L.forEach(([id, s]) => { const a = S.plan.ativos.find((x) => x.id === id); if (a) a.ap[m] = E.r2((+a.ap[m] || 0) + s); });
-  touch('plan'); basRetorno('pago'); basFechar(); toast(`Aportes registrados em ${MES_LONGO[m]}.`);
+  L.forEach((l) => { let a = l.id ? S.plan.ativos.find((x) => x.id === l.id) : null;
+    if (!a && !l.id) { const tipo = l.tipo === 'RENDA FIXA' ? 'RENDA FIXA' : 'BOLSA DE VALORES'; a = ativoInserir({ tipo, classe: matchCase(l.c, suggest('classe', { tipo })), grupo: null, subgrupo: null, nome: l.n }); }
+    if (a) a.ap[m] = E.r2((+a.ap[m] || 0) + (+l.s || 0)); });
+  touch('plan'); basRetorno('pago'); basFechar(); toast(`${L.length === 1 ? 'Aporte registrado' : `${L.length} aportes registrados`} em ${MES_LONGO[m]}.`);
 }
 // editar o ativo: nome, tipo e classe (em todos os anos) e excluir; o alvo da carteira acompanha a troca de nome ou classe
 function basTelaAtivoEd(o) {
@@ -2221,26 +2254,33 @@ function basTelaProventos() {
     ${L.length ? basSecao(`Quem pagou ${frase}`, `<small class="bas-pv2-q">${L.length} ${L.length === 1 ? 'ativo' : 'ativos'} · ${brl0(tl)}</small>`, `<ul class="card bas-pv2-ls">${L.map(linha).join('')}</ul>`) : basCard(basVazio(`Nenhum provento ${frase}.`))}
   </div></div>`;
 }
-// alvos da carteira, refeitos: por classe, com o valor e o % de hoje, um campo claro por ativo, o total ao vivo e atalhos
+// alvos da carteira, refeitos no visual novo: no alto o total dos alvos com a barra por classe e os atalhos; cada classe num
+// cartão com o alvo dela contra o de hoje; cada ativo com o alvo (− campo +) e uma régua com o hoje (traço) e o alvo (preenchido)
 function basTelaAlvos() {
-  const A = S.plan.ativos; if (!A.length) return basDet('Alvos da carteira', basCard(basVazio('Registre um investimento primeiro.')));
+  const A = S.plan.ativos; if (!A.length) return basDet('Seus alvos', basCard(basVazio('Registre um investimento primeiro.')));
   const { M } = cartAnalise(); const pos = {}; M.items.forEach((i) => { pos[i.a.id] = i; }); const total = M.items.reduce((s, i) => s + i.valor, 0);
   const grupos = {}; A.forEach((a) => { (grupos[a.classe || 'Outros'] = grupos[a.classe || 'Outros'] || []).push(a); });
-  const cls = Object.keys(grupos);
-  return basForm('alvos', 'Alvos da carteira', `<div class="bas-al-top card"><div class="bas-al-tot"><small>Total dos alvos</small><b data-al-tot>0%</b><span class="bas-al-st" data-al-st></span></div><span class="bas-al-bar" aria-hidden="true"><i data-al-bar></i></span>
-      <div class="bas-al-at"><button type="button" class="bas-sn-bt" data-act="bas-al-igual">Dividir igual</button><button type="button" class="bas-sn-bt" data-act="bas-al-100">Ajustar para 100%</button><button type="button" class="bas-sn-bt" data-act="bas-al-zero">Zerar</button></div></div>
-    <p class="bas-p">Diga quanto de cada investimento você quer ter. Combine com o ${esc(primeiroNome())}. O app usa isso para mostrar onde colocar cada aporte.</p>
-    ${cls.map((c, k) => `<section class="bas-al-g"><header><i style="--bc:${PAL[k % 6]}"></i><b>${esc(c)}</b><small data-al-cls="${k}">0%</small></header>
+  const cls = Object.keys(grupos).sort((x, y) => grupos[y].reduce((s, a) => s + ((pos[a.id] || {}).valor || 0), 0) - grupos[x].reduce((s, a) => s + ((pos[a.id] || {}).valor || 0), 0));
+  const cor = (k) => BAS_CT_COR[k % BAS_CT_COR.length];
+  return basForm('alvos', 'Seus alvos', `<div class="bas-al-top card"><div class="bas-al-tot"><small>Total dos alvos</small><b data-al-tot>0%</b><span class="bas-al-st" data-al-st></span></div>
+      <span class="bas-al-seg" aria-hidden="true">${cls.map((c, k) => `<i data-al-seg="${k}" style="--bc:${cor(k)}"></i>`).join('')}</span>
+      <div class="bas-al-at"><button type="button" data-act="bas-al-igual">Dividir igual</button><button type="button" data-act="bas-al-100">Fechar 100%</button><button type="button" data-act="bas-al-zero">Zerar</button></div></div>
+    ${cls.map((c, k) => { const hojeC = total > 0 ? grupos[c].reduce((s, a) => s + ((pos[a.id] || {}).valor || 0), 0) / total : 0;
+      return `<section class="bas-al-g card"><header><i style="--bc:${cor(k)}"></i><b>${esc(c)}</b><small>hoje ${pct(hojeC)} · alvo <em data-al-cls="${k}">0%</em></small></header>
       ${grupos[c].map((a) => { const e = cartEntry(E.ativoKey(a), false); const it = pos[a.id] || { valor: 0 }; const atual = total > 0 ? it.valor / total : 0;
-        return `<div class="bas-al-l"><span class="bas-n"><b>${esc(a.nome)}</b><small>${brl0(it.valor)} · hoje ${pct(atual)}</small></span><span class="bas-al-in"><button type="button" data-act="bas-al-passo" data-d="-5" aria-label="Menos 5%">−</button><input name="a:${esc(a.id)}" data-al="${k}" inputmode="decimal" value="${e && e.alvo ? esc(String(e.alvo).replace('.', ',')) : ''}" placeholder="0" aria-label="Alvo de ${esc(a.nome)} em %"><i>%</i><button type="button" data-act="bas-al-passo" data-d="5" aria-label="Mais 5%">+</button></span></div>`; }).join('')}</section>`).join('')}`);
+        return `<div class="bas-al-l" style="--h:${(atual * 100).toFixed(1)}%;--bc:${cor(k)}"><div class="bas-al-lt"><span class="bas-n"><b>${esc(a.nome)}</b><small>${brl0(it.valor)} · hoje ${pct(atual)}</small></span>
+          <span class="bas-al-in"><button type="button" data-act="bas-al-passo" data-d="-5" aria-label="Menos 5%">−</button><input name="a:${esc(a.id)}" data-al="${k}" inputmode="decimal" value="${e && e.alvo ? esc(String(e.alvo).replace('.', ',')) : ''}" placeholder="0" aria-label="Alvo de ${esc(a.nome)} em %"><i>%</i><button type="button" data-act="bas-al-passo" data-d="5" aria-label="Mais 5%">+</button></span></div>
+          <span class="bas-al-rg" aria-hidden="true"><i></i><b></b></span></div>`; }).join('')}</section>`; }).join('')}
+    <p class="bas-p bas-al-dica">O traço mostra quanto cada ativo pesa hoje; a barra, o alvo. Combine os alvos com o ${esc(primeiroNome())}.</p>`);
 }
 function basAlSoma() {
   const f = document.querySelector('.bas-form[data-t="alvos"]'); if (!f) return; const ins = [...f.querySelectorAll('input[data-al]')]; const v = (x) => { const n = parseFloat(String(x.value).replace(',', '.')); return Number.isFinite(n) ? n : 0; };
   const tot = ins.reduce((s, x) => s + v(x), 0); const porC = {}; ins.forEach((x) => { porC[x.dataset.al] = (porC[x.dataset.al] || 0) + v(x); });
-  f.querySelector('[data-al-tot]').textContent = `${tot.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`; const b = f.querySelector('[data-al-bar]'); b.style.width = Math.min(100, tot) + '%';
+  f.querySelector('[data-al-tot]').textContent = `${tot.toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`; const b = f.querySelector('[data-al-bar]'); if (b) b.style.width = Math.min(100, tot) + '%';
   const ok = Math.abs(tot - 100) < 0.05; const st = f.querySelector('[data-al-st]'); st.textContent = ok ? 'Fechou 100%' : tot > 100 ? `${(tot - 100).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}% a mais` : tot > 0 ? `Faltam ${(100 - tot).toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%` : 'Comece pelo mais importante';
   f.querySelector('.bas-al-top').className = `bas-al-top card ${ok ? 'ok' : tot > 100 ? 'neg' : ''}`;
-  Object.keys(porC).forEach((k) => { const el = f.querySelector(`[data-al-cls="${k}"]`); if (el) el.textContent = `${porC[k].toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`; });
+  Object.keys(porC).forEach((k) => { const el = f.querySelector(`[data-al-cls="${k}"]`); if (el) el.textContent = `${porC[k].toLocaleString('pt-BR', { maximumFractionDigits: 1 })}%`; const sg = f.querySelector(`[data-al-seg="${k}"]`); if (sg) sg.style.flexGrow = porC[k]; });
+  ins.forEach((x) => { const row = x.closest('.bas-al-l'); if (row) row.style.setProperty('--p', Math.min(100, v(x)) + '%'); });
 }
 function basAlAcao(act, el) {
   const f = document.querySelector('.bas-form[data-t="alvos"]'); if (!f) return; const ins = [...f.querySelectorAll('input[data-al]')]; const v = (x) => { const n = parseFloat(String(x.value).replace(',', '.')); return Number.isFinite(n) ? n : 0; };
