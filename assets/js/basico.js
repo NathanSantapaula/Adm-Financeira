@@ -1876,16 +1876,29 @@ function basMetaDispHtml() {
   return meta + disp;
 }
 // proventos: o ano (fichas), importar e o gráfico mês a mês em que tocar num mês mostra quem pagou
+// Proventos, refeito no jeito do Patrimônio (mas como subpágina): topo azul com voltar, calendário e olho; o recebido no período em destaque,
+// a variação contra o período anterior e as barras do ano (o período aceso, o mês tocado com o valor); embaixo, Registrar e Importar
+// e quem pagou no período, cada um com a sua parte.
 function basTelaProventos() {
-  const C = S.C; const anos = Object.keys(S.plans).map(Number).sort(); const sel = S.basProvMes != null ? S.basProvMes : S.mes;
-  const vals = C.faturamento; const mx = Math.max(1, ...vals); const ult = S.year === NOW_Y ? NOW_M : 11; const meses = vals.filter((v, i) => i <= ult && v > 0).length;
-  const L = S.plan.ativos.filter((a) => Math.abs(+a.pr[sel] || 0) > 0.005).sort((x, y) => y.pr[sel] - x.pr[sel]);
-  const barras = `<div class="bas-pv-g" role="group" aria-label="Proventos mês a mês. Toque num mês.">${vals.map((v, i) => `<button class="${i === sel ? 'on' : ''}${i > ult ? ' fut' : ''}" data-act="bas-prov-mes" data-m="${i}" style="--h:${v > 0 ? Math.max(5, (v / mx) * 100).toFixed(1) : 2}%;--i:${i}" aria-label="${MES_LONGO[i]}: ${esc(brl(v))}" aria-pressed="${i === sel}">${i === sel && v > 0 ? `<small>${brl0(v)}</small>` : ''}<i></i><b>${MES[i][0]}</b></button>`).join('')}</div>`;
-  return basDet('Proventos', `<div class="bas-pv-anos">${anos.map((y) => `<button class="${y === S.year ? 'on' : ''}" data-act="bas-prov-ano" data-y="${y}" aria-pressed="${y === S.year}">${y}</button>`).join('')}</div>
-    <section class="bas-ev bas-pv-card"><small class="bas-ev-k">Recebido em ${S.year}</small><b class="bas-ev-v">${basCent(C.T.faturamento)}</b><p class="bas-noite-s">${meses ? `Média de ${brl0(C.T.faturamento / Math.max(1, meses))} nos ${meses} ${meses === 1 ? 'mês que pagou' : 'meses que pagaram'}` : 'Ainda sem proventos neste ano'}</p>${barras}
-      <div class="bas-noite-par"><span><small>${cap(MES_LONGO[sel])}</small><b>${basCent(vals[sel])}</b></span><span><small>Pagadores</small><b>${L.length}</b></span></div></section>
-    <div class="bas-dupla bas-pv-acoes">${S.plan.ativos.length ? `<button class="btn primary bas-cta" ${basIr('provento')}>${I.plus}Registrar</button>` : ''}<button class="btn bas-cta" data-act="bas-importar">${I_IMP}Importar</button></div>
-    ${L.length ? basSecao(`Quem pagou em ${MES_LONGO[sel]}`, '', `<ul class="bas-ativ">${L.map((a, i) => basRow(basIr('provento', { id: a.id }), esc(basIniciais(a.nome)), esc(a.nome), esc(a.classe || ''), `<b class="pos">${basCent(a.pr[sel])}</b>`, PAL[i % 6])).join('')}</ul>`) : basCard(basVazio(`Nenhum provento em ${MES_LONGO[sel]}.`))}`);
+  const C = S.C; const vals = C.faturamento; const j = basJan(); const ult = S.year === NOW_Y ? NOW_M : 11; const sel = S.basProvMes != null ? S.basProvMes : j.ate;
+  const soma = (de, ate) => { let t = 0; for (let m = Math.max(0, de); m <= Math.min(11, ate); m++) t += +vals[m] || 0; return t; };
+  const tot = soma(j.de, j.ate); const n = j.ate - j.de + 1; const ant = j.de - n >= 0 ? soma(j.de - n, j.de - 1) : null;
+  const dif = ant != null ? tot - ant : null; const up = dif == null || dif >= 0; const pctv = ant > 0 ? Math.abs(dif) / ant : null;
+  const mx = Math.max(1, ...vals);
+  const barras = vals.map((v, i) => { const dentro = i >= j.de && i <= j.ate; return `<button class="${dentro ? 'in' : 'fora'}${i === sel ? ' on' : ''}${i > ult ? ' fut' : ''}" data-act="bas-prov-mes" data-m="${i}" style="--h:${v > 0 ? Math.max(6, (v / mx) * 78).toFixed(1) : 3}%" aria-label="${MES_LONGO[i]}: ${esc(brl(v))}" aria-pressed="${i === sel}">${i === sel && v > 0 ? `<small>${brl0(v)}</small>` : ''}<i></i><b>${MES[i][0]}</b></button>`; }).join('');
+  // quem pagou no período: soma por ativo, com a parte de cada um
+  const L = S.plan.ativos.map((a) => { let t = 0; for (let m = j.de; m <= j.ate; m++) t += +a.pr[m] || 0; return { a, t }; }).filter((x) => Math.abs(x.t) > 0.005).sort((x, y) => y.t - x.t);
+  const linha = (x, i) => `<li><button class="bas-pv2-l" ${basIr('provento', { id: x.a.id })}><span class="bas-pv2-ini" style="--bc:${PAL[i % 6]}">${esc(basIniciais(x.a.nome))}</span><span class="bas-pv2-n"><b>${esc(x.a.nome)}</b><small>${esc(x.a.classe || 'Ativo')}</small><i style="--p:${tot > 0 ? Math.max(3, (x.t / tot) * 100).toFixed(1) : 0}%"></i></span><b class="bas-pv2-v">${basCent(x.t)}</b></button></li>`;
+  return `<div class="bas-pg bas-pg-prov"><div class="bas-gt-bg bas-pt-bg bas-pv2-bg">
+    <header class="bas-pv2-h"><button class="bell bas-cal-b" data-act="bas-voltar" aria-label="Voltar">${I_VOLTA}</button><b>Proventos</b><span class="bas-noite-r"><button class="bell bas-cal-b" ${basIr('periodo')} aria-label="Período: ${esc(basJanRot())}, ${S.year}">${I_CAL}</button>${olhoHtml()}</span></header>
+    <small class="bas-pv2-k">Recebido ${esc(basJanFrase())}</small>
+    <b class="bas-pv2-t">${basCent(tot)}</b>
+    <p class="bas-pv2-var">${pctv != null ? `<span class="bas-ev-pct${up ? '' : ' neg'}">${up ? '↑' : '↓'} ${pct(pctv, 1)}</span>` : ''}<span>${dif != null ? `${up ? '+' : '−'}${brl0(Math.abs(dif))} contra o período anterior` : `${S.year}`}</span></p>
+    <div class="bas-pv2-g" role="group" aria-label="Proventos mês a mês. Toque num mês.">${barras}</div>
+  </div><div class="bas-gt-folha">
+    <div class="bas-pg-per bas-gt-acoes">${S.plan.ativos.length ? `<button class="bas-inv-pl" ${basIr('provento')}>${I.plus}<span>Registrar</span></button>` : ''}<button class="bas-circ bas-en-bt" data-act="bas-importar">${I_IMP}<span>Importar</span></button></div>
+    ${L.length ? basSecao(`Quem pagou ${basJanFrase()}`, `<small class="bas-pv2-q">${L.length} ${L.length === 1 ? 'ativo' : 'ativos'}</small>`, `<ul class="card bas-pv2-ls">${L.map(linha).join('')}</ul>`) : basCard(basVazio(`Nenhum provento ${basJanFrase()}.`))}
+  </div></div>`;
 }
 // alvos da carteira, refeitos: por classe, com o valor e o % de hoje, um campo claro por ativo, o total ao vivo e atalhos
 function basTelaAlvos() {
