@@ -2561,3 +2561,11 @@ html:has(body[data-bas-ia="1"]), body[data-bas-ia="1"] { overflow: hidden; overs
 .bas-cif-solto .bas-cif-corpo { filter: none !important; }
 .bas-cif-solto .cifrao { filter: drop-shadow(0 6px 10px rgba(0, 10, 60, .4)) !important; }
 :root[data-theme="light"] .bas-cif-solto .cifrao { filter: drop-shadow(0 6px 12px rgba(6, 18, 42, .32)) !important; }
+/* bolinha sem o Cifrão: fica a sombra dele marcada no lugar (silhueta escura, sem olhos), e a bola apaga um pouco, respirando devagar */
+.bas-ia-fab.vazia .cifrao { opacity: 1; transform: none; --cif-body: rgba(0, 12, 70, .42); --cif-eyes: transparent; filter: blur(.6px); }
+.bas-ia-fab.vazia { filter: saturate(.55) brightness(.92); animation: bas-fab-espera 2.8s ease-in-out infinite; }
+.bas-ia-fab.vazia::after { opacity: .5; }
+@keyframes bas-fab-espera { 50% { filter: saturate(.4) brightness(.86); } }
+@media (prefers-reduced-motion: reduce) { .bas-ia-fab.vazia { animation: none; } }
+.bas-ia-fab.vazia { filter: saturate(.85) brightness(.96); } @keyframes bas-fab-espera { 50% { filter: saturate(.7) brightness(.9); } }
+.bas-ia-fab.vazia .cifrao { filter: none; --cif-body: rgba(0, 8, 50, .5); }
