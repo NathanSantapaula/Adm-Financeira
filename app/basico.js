@@ -62,7 +62,32 @@ function basCat(fixa) {
 function basicoBarra() {
   $('#topo').innerHTML = ''; $('#side').innerHTML = ''; const a = basAba(); const t = basTopoPilha();
   document.body.dataset.basFolha = t && BAS_FORMS.has(t.t) ? '1' : '';
-  $('#tabbar').innerHTML = `<div class="bas-tabs">${basAbas().map(([k, l, i]) => `<button data-act="bas-aba" data-v="${k}" ${a === k ? 'aria-current="page"' : ''}>${i}<span>${l}</span></button>`).join('')}</div>`;
+  $('#tabbar').innerHTML = `<div class="bas-tabs"><span class="bas-tab-lente" aria-hidden="true"></span>${basAbas().map(([k, l, i]) => `<button data-act="bas-aba" data-v="${k}" ${a === k ? 'aria-current="page"' : ''}>${i}<span>${l}</span></button>`).join('')}</div>`;
+  basTabLigar();
+}
+// barra de abas no jeito do iPhone: uma lente de vidro marca a aba e desliza até a nova; segurar e arrastar leva a lente
+// com o dedo (ou o mouse) por cima das abas, e soltar abre a aba onde ela parou
+function basTabLigar() {
+  { const b = document.querySelector('#tabbar .bas-tabs'); if (b && b.dataset.lig) return; }
+  const bar = document.querySelector('#tabbar .bas-tabs'); if (!bar) return; const lente = bar.querySelector('.bas-tab-lente'); const bts = [...bar.querySelectorAll('button')];
+  const pos = (b) => ({ x: b.offsetLeft, w: b.offsetWidth });
+  const por = (x, w, anima) => { lente.style.transition = anima ? '' : 'none'; lente.style.width = `${w}px`; lente.style.transform = `translateX(${x}px)`; };
+  const atual = bts.find((b) => b.hasAttribute('aria-current')) || bts[0]; const p = pos(atual);
+  if (!p.w) { S.basTabX = null; return; } // barra escondida (formulário ou globo): mede no próximo desenho
+  // a lente sai de onde estava antes do desenho e desliza até a aba nova
+  if (S.basTabX != null && S.basTabX !== p.x) { por(S.basTabX, S.basTabW || p.w, false); requestAnimationFrame(() => requestAnimationFrame(() => por(p.x, p.w, true))); } else por(p.x, p.w, false);
+  S.basTabX = p.x; S.basTabW = p.w; bar.dataset.lig = '1';
+  let x0 = null, ox = 0, arr = false;
+  const perto = (cx) => bts.reduce((m, b) => (Math.abs(b.offsetLeft + b.offsetWidth / 2 - cx) < Math.abs(m.offsetLeft + m.offsetWidth / 2 - cx) ? b : m));
+  bar.addEventListener('pointerdown', (e) => { x0 = e.clientX; ox = bar.getBoundingClientRect().left; arr = false; });
+  bar.addEventListener('pointermove', (e) => { if (x0 == null) return; if (!arr && Math.abs(e.clientX - x0) > 6) { arr = true; bar.classList.add('arrasta'); bar.setPointerCapture(e.pointerId); }
+    if (!arr) return; const cx = Math.max(p.w / 2, Math.min(bar.clientWidth - p.w / 2, e.clientX - ox)); por(cx - p.w / 2, p.w, false);
+    const b = perto(cx); bts.forEach((x) => x.classList.toggle('sob', x === b)); });
+  const solta = (e) => { if (x0 == null) return; x0 = null; if (!arr) return; bar.classList.remove('arrasta'); bts.forEach((x) => x.classList.remove('sob'));
+    const b = perto(e.clientX - ox); const q = pos(b); S.basTabX = parseFloat(lente.style.transform.slice(11)) || q.x; por(q.x, q.w, true);
+    if (b !== atual) { S.basTabX = q.x; b.click(); } };
+  bar.addEventListener('pointerup', solta); bar.addEventListener('pointercancel', solta);
+  bar.addEventListener('click', (e) => { if (arr) { arr = false; if (!e.isTrusted) return; e.stopPropagation(); e.preventDefault(); } }, true);
 }
 // cabeçalho das telas empilhadas: voltar (ou cancelar, nos formulários) e o título grande
 const basNav = (titulo, form, extra) => `<header class="bas-nav"><button type="button" class="bas-voltar" data-act="bas-voltar">${form ? 'Cancelar' : I_VOLTA + '<span>Voltar</span>'}</button>${form ? '' : `<span class="bas-nav-r">${extra || ''}${olhoHtml()}</span>`}</header><h1 class="bas-tit">${titulo}</h1>`;
@@ -1716,7 +1741,8 @@ function basObHtml() { return basEscolhe() ? `<div class="bas-ob"><p class="qn">
 // ações data-act do modo Básico (chamadas pelo default do onClick em main.js)
 function basAcao(act, ds, el) {
   switch (act) {
-    case 'bas-aba': if (S.basAba !== ds.v || basPilha().length) basSom('toque'); basTransicao('aba', () => { basLimpar(); S.basAba = ds.v; render(); window.scrollTo(0, 0); }); return true;
+    case 'bas-aba': { const l = document.querySelector('.bas-tab-lente'); if (l && l.style.transform) S.basTabX = parseFloat(l.style.transform.slice(11)) || S.basTabX; }
+      if (S.basAba !== ds.v || basPilha().length) basSom('toque'); basTransicao('aba', () => { basLimpar(); S.basAba = ds.v; render(); window.scrollTo(0, 0); }); return true;
     case 'bas-mes': S.mes = Math.max(0, Math.min(11, S.mes + +ds.d)); render(); return true;
     case 'bas-abrir': basAbrir(ds.t, { id: ds.id, area: ds.area, op: ds.op, modo: ds.modo }); return true;
     case 'bas-rolar': { const a = document.getElementById(ds.alvo); if (a) a.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }); return true; }

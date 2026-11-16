@@ -1968,3 +1968,24 @@ body[data-ui="basico"] .bas-gt-folha .bas-gt-acoes > .bas-inv-pl {
 .bas-pop.sai { animation: bas-pop-fundo 240ms ease reverse forwards; } .bas-pop.sai .bas-pop-f { animation: bas-pop-sobe 240ms ease-in reverse forwards; }
 @keyframes bas-pop-fundo { from { background: rgba(0, 0, 0, 0); } } @keyframes bas-pop-sobe { from { transform: translateY(100%); } }
 @media (prefers-reduced-motion: reduce) { .bas-pop, .bas-pop-f, .bas-pop.sai, .bas-pop.sai .bas-pop-f { animation: none; } }
+
+/* ===== Barra de abas em Liquid Glass, no jeito do iPhone ===== */
+body[data-ui="basico"][data-screen="app"] .tabbar { background: var(--lg-bg) !important; border: 0 !important;
+  -webkit-backdrop-filter: blur(18px) saturate(190%); backdrop-filter: blur(18px) saturate(190%);
+  box-shadow: inset 0 1px 0 var(--lg-aro), inset 0 -1px 0 var(--lg-aro-b), inset 0 0 0 .5px var(--lg-aro-b), 0 1px 2px rgba(0, 0, 0, .06), 0 14px 34px -14px rgba(0, 0, 0, .3) !important; }
+.bas-tabs { position: relative; touch-action: none; user-select: none; }
+.bas-tabs button { position: relative; z-index: 1; background: transparent !important; }
+.bas-tabs button[aria-current="page"] { background: transparent !important; color: var(--accent); }
+.bas-tabs button.sob { color: var(--accent); }
+/* a lente: vidro mais claro que desliza com mola; ao arrastar ela cresce um pouco e fica mais transparente, como uma gota */
+.bas-tab-lente { position: absolute; left: 0; top: 5px; bottom: 5px; border-radius: 999px; pointer-events: none;
+  background: color-mix(in srgb, var(--accent) 12%, var(--lg-bg-on));
+  box-shadow: inset 0 1px 0 var(--lg-aro), inset 0 -1px 0 var(--lg-aro-b), inset 0 0 0 .5px var(--lg-aro-b), 0 4px 12px -6px rgba(0, 0, 0, .25);
+  transition: transform 420ms cubic-bezier(.3, 1.35, .45, 1), width 300ms ease, scale 220ms ease, background-color 200ms ease; }
+.bas-tabs.arrasta .bas-tab-lente { scale: 1.12 1.18; background: color-mix(in srgb, var(--accent) 8%, rgba(255, 255, 255, .28));
+  -webkit-backdrop-filter: blur(2px) saturate(160%) brightness(1.1); backdrop-filter: blur(2px) saturate(160%) brightness(1.1); }
+@media (prefers-reduced-motion: reduce) { .bas-tab-lente { transition: none; } .bas-tabs.arrasta .bas-tab-lente { scale: none; } }
+@media (prefers-reduced-transparency: reduce) { body[data-ui="basico"][data-screen="app"] .tabbar { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--surface) !important; } }
+/* Entradas e + Gasto: vidro neutro, sem a luz azul */
+body[data-ui="basico"] .bas-gt-folha .bas-gt-acoes > :is(.bas-en-bt, .bas-inv-pl) { color: var(--lg-txt) !important; background: var(--lg-bg) !important;
+  box-shadow: inset 0 1px 0 var(--lg-aro), inset 0 -1px 0 var(--lg-aro-b), inset 0 0 0 .5px var(--lg-aro-b), var(--lg-sombra) !important; }
