@@ -2885,3 +2885,8 @@ html[data-vt="cc"]::view-transition-group(bas-cc-oficial) { animation-duration: 
 :root[data-theme="light"] .bas-pt-bg > .bas-ev .bas-ev-p { background: #fff !important; }
 /* fichas de banco: espaço para a sombra (não é cortada) e a primeira não encosta na borda ao alinhar */
 .bas-ccn-bancos { padding: 6px 16px 22px; margin-bottom: -14px; scroll-padding-inline: 16px; }
+/* espaço no fim de cada tela: só quando a barra de abas aparece (e do tamanho dela); sem a barra (Novo cartão, Personalizar,
+   formulários, Dúvidas, Avisos, cartões), sobra apenas o respiro da borda do iPhone */
+body[data-ui="basico"] .main { padding-bottom: calc(118px + env(safe-area-inset-bottom, 0px)); }
+body[data-ui="basico"][data-bas-ia="1"] .main, body[data-ui="basico"][data-bas-folha="1"] .main { padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px)); }
+body[data-ui="basico"] .bas-pg { padding-bottom: 0; }
