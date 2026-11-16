@@ -165,7 +165,7 @@ const basLancJan = () => { const j = basJan(); return S.plan.lancamentos.filter(
 // a variação do patrimônio no período: do fim do mês anterior ao período até o fim dele (E.variacao)
 // a variação do patrimônio numa pílula de vidro, em frase: "Cresceu R$ 1.200 (0,8%) em novembro", "Caiu…" ou "Sem variação…"; a seta vai num círculo na cor do sentido
 const basVarChip = (V, rec) => { if (V.va == null) return ''; const z = Math.abs(V.dif) < 0.5; const up = V.dif >= 0;
-  return `<p class="bas-var"><span class="bas-var-p${z ? '' : up ? ' pos' : ' neg'}"><i aria-hidden="true">${z ? '–' : up ? '↑' : '↓'}</i>${z ? `Sem variação ${esc(basJanFrase())}` : `${up ? 'Cresceu' : 'Caiu'} ${brl0(Math.abs(V.dif))} (${pct(Math.abs(V.va), 1)}) ${esc(basJanFrase())}`}${rec ? ' · seu maior patrimônio' : ''}</span></p>`; };
+  return `<p class="bas-var"><span class="bas-var-p${z ? '' : up ? ' pos' : ' neg'}"><i aria-hidden="true">${z ? '–' : up ? '↑' : '↓'}</i>${z ? `Sem variação ${esc(basJanFrase())}` : `${up ? '+' : '−'}${brl0(Math.abs(V.dif))} · ${pct(Math.abs(V.va), 1)} ${esc(basJanFrase())}`}</span></p>`; };
 const basVarPatr = (C) => { const j = basJan(); const base = j.de > 0 ? C.patrimonio[j.de - 1] : C.patrimonioBase; const fim = C.patrimonio[j.ate]; const va = E.variacao(fim, base); return { dif: fim - base, va }; };
 function basTelaPeriodo() {
   const anos = Object.keys(S.plans).map(Number).sort(); const j = basJan(); const ini = S.basPerIni; const ref = S.year === NOW_Y ? NOW_M : 11;
@@ -871,7 +871,8 @@ function basCartoesHtml() {
     return `<button class="bas-cc-c" role="listitem" ${basCcEstilo(x.k).attr} ${basIr('cartao', { id: x.k })} aria-label="${esc(i[1])}: ver os gastos"><span class="bas-cc-t"><span class="bas-cc-nfc" aria-hidden="true">${CC_NFC}</span>${instIcone(x.k)}</span><span class="bas-cc-n">${esc(i[1])}</span><span class="bas-cc-v"><small>${esc(cap(basJanFrase()))}</small><b>${basCent(x.v)}</b></span><span class="bas-cc-p">${pct(x.v / (sai || 1))}</span></button>`; }).join('')}</div>`) : '';
 }
 // topo de Gastos: o total em destaque e os cartões translúcidos empilhados; tocar abre os cartões na tela, para rodar de lado
-const basGastoInsts = () => { const j = basJan(); const ents = []; for (let m = j.de; m <= j.ate; m++) entradasMes(m).forEach((e) => ents.push(e)); return E.gastosPorInst(ents).filter((x) => instDe(x.k)).sort((a, b) => b.v - a.v); };
+const basGastoInsts = () => { const j = basJan(); const ents = []; for (let m = j.de; m <= j.ate; m++) entradasMes(m).forEach((e) => ents.push(e));
+  const l = E.gastosPorInst(ents).filter((x) => instDe(x.k)); instMinhas().forEach((k) => { if (instDe(k) && !l.some((x) => x.k === k)) l.push({ k, v: 0 }); }); return l.sort((a, b) => b.v - a.v); };
 function basGastoTopoHtml(sai, orc) {
   const insts = basGastoInsts(); const uso = orc > 0 ? sai / orc : null;
   // cartões translúcidos com a textura do modelo de cada um; na frente, aproximação, logo do banco e bandeira, translúcidos, sem valor
@@ -897,8 +898,8 @@ function basCcVer() {
 }
 function basTelaCartoes() {
   const insts = basGastoInsts(); const tot = insts.reduce((s, x) => s + x.v, 0);
-  return basDet('Seus cartões', insts.length ? `<div class="bas-rc-fila" role="list">${insts.map((x) => { const i = instDe(x.k); return `<button class="bas-rc-i" role="listitem" ${basIr('cartao', { id: x.k })} aria-label="${esc(i[1])}: ver os gastos">${basCartaoFace(x.k)}<span class="bas-rc-n"><small>${esc(i[1])}</small><b>${basCent(x.v)}</b><em>${pct(x.v / (tot || 1))} dos gastos ${esc(basJanFrase())}</em></span></button>`; }).join('')}</div>
-    ${insts.length > 1 ? `<div class="bas-ccv-p" aria-hidden="true">${insts.map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div>` : ''}` : basCard(basVazio('Nenhum cartão com gasto no período.')));
+  return basDet('Seus cartões', insts.length ? `<div class="bas-rc-fila" role="list">${insts.map((x) => { const i = instDe(x.k); return `<button class="bas-rc-i" role="listitem" ${basIr('cartao', { id: x.k })} aria-label="${esc(i[1])}: ver os gastos">${basCartaoFace(x.k)}<span class="bas-rc-n"><small>${esc(i[1])}</small><b>${basCent(x.v)}</b><em>${x.v > 0 ? `${pct(x.v / (tot || 1))} dos gastos ${esc(basJanFrase())}` : `sem gastos ${esc(basJanFrase())}`}</em></span></button>`; }).join('')}<button class="bas-rc-i bas-rc-add" role="listitem" ${basIr('planejamento')} aria-label="Adicionar um cartão"><span class="bas-rc-novo" aria-hidden="true"><i>${I.plus}</i><b>Adicionar cartão</b><small>Escolha o seu banco</small></span><span class="bas-rc-n"><small>Novo</small><b>&nbsp;</b><em>&nbsp;</em></span></button></div>
+    <div class="bas-ccv-p" aria-hidden="true">${insts.concat([0]).map((_, i) => `<i class="${i ? '' : 'on'}"></i>`).join('')}</div>` : basCard(basVazio('Nenhum cartão com gasto no período.')));
 }
 // fila em leque: o cartão do meio fica de frente e os vizinhos giram e encolhem conforme a distância (--d, --a)
 // arrastar o cartão para o lado troca para o cartão vizinho (a mesma ordem de "Seus cartões", em loop), sem empilhar outra tela
