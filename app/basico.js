@@ -745,7 +745,7 @@ function basIaxLigar() {
 function basDesenhar() {
   const st = document.getElementById('bas-o3');
   if (st) { const falhou = () => st.classList.add('sem-3d'); if (typeof o3Ligar === 'function') o3Ligar(st, st.dataset.tipo, falhou); else falhou(); }
-  basIaxLigar(); basCifVe(); { const f = document.querySelector('.bas-form'); if (f && f.querySelector('[name="areaIc"]') && !f.dataset.ic) { f.dataset.ic = '1'; f.addEventListener('change', (e) => { if (e.target.name !== 'area') return; const r = f.querySelector(`[name="areaIc"][value="${basCatIcId(e.target.value)}"]`); if (r) r.checked = true; }); } } { const on = document.querySelector('.bas-cce-m.on'); const col = on && on.parentElement; if (col && !col.dataset.vis) { col.dataset.vis = '1'; col.scrollTop = on.offsetTop - col.clientHeight / 2 + on.offsetHeight / 2; } } basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
+  basIaxLigar(); basCifVe(); basGfLigar(); { const f = document.querySelector('.bas-form'); if (f && f.querySelector('[name="areaIc"]') && !f.dataset.ic) { f.dataset.ic = '1'; f.addEventListener('change', (e) => { if (e.target.name !== 'area') return; const r = f.querySelector(`[name="areaIc"][value="${basCatIcId(e.target.value)}"]`); if (r) r.checked = true; }); } } { const on = document.querySelector('.bas-cce-m.on'); const col = on && on.parentElement; if (col && !col.dataset.vis) { col.dataset.vis = '1'; col.scrollTop = on.offsetTop - col.clientHeight / 2 + on.offsetHeight / 2; } } basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
   const wr = document.querySelector('.bas-wr'); if (wr && !wr.dataset.lig) { wr.dataset.lig = '1'; basWrIr(wr, 0); }
   const sq = document.querySelector('[data-sq-conta]'); if (sq && !sq.dataset.lig && !matchMedia('(prefers-reduced-motion: reduce)').matches) { sq.dataset.lig = '1'; const alvo = +sq.dataset.sqConta; const t0 = performance.now();
     const passo = (t) => { const k = Math.min(1, (t - t0) / 900); sq.textContent = Math.round(alvo * (1 - Math.pow(1 - k, 3))); if (k < 1 && sq.isConnected) requestAnimationFrame(passo); }; if (alvo > 0) requestAnimationFrame(passo); }
@@ -868,24 +868,71 @@ function basTelaGastoVer(o) {
     <h2 class="bas-gv-g">Em números</h2>
     <ul class="card bas-gv-l">${lin(`Do total de ${MES_LONGO[m]}`, `${Math.round(parte * 100)}%`)}${iguais.length > 1 ? lin(`Vezes com ${esc(nome)}`, `${iguais.length} · ${basCent(somaIg)}`) : ''}</ul></div>`;
 }
+// Gasto, refeito: o valor grande no alto, o nome, como é (uma vez, todo mês ou parcelado, sempre dá para trocar, inclusive ao editar),
+// quando, a categoria em fichas com ícone (nova categoria abre o nome e o ícone) e o banco em fichas com a logo. Menos texto, tudo à mão.
 function basTelaGasto(o, it) {
   const p = S.plan; const l = !it && o.id ? p.lancamentos.find((x) => x.id === o.id) : null; if (o.id && !l && !it) return basSumiu();
   const a0 = l ? l.area : it ? it.area : o.area || ''; const usadas = p.despesas.map((x) => x.area).concat(p.lancamentos.map((x) => x.area));
-  const areas = [...new Set(BAS_AREAS.concat(usadas, a0 ? [a0] : []).filter(Boolean))].slice(0, 16);
-  // um gasto só: uma vez (com data), todo mês (até dezembro) ou parcelado; os dois últimos são gravados como no SaaS (previsto em plan.despesas)
-  const tipo = it ? (it.parcel ? 'parc' : 'mes') : o.modo === 'parc' || o.modo === 'mes' ? o.modo : 'uma';
-  // inteligente: o último banco usado já vem marcado e o nome conhecido lembra categoria e banco
-  const mem = basMemGastos(); const pc = it && it.parcel; const ini = pc ? { ano: pc.ano, mes: pc.mes } : { ano: S.year, mes: S.mes };
+  const areas = [...new Set((a0 ? [a0] : []).concat(BAS_AREAS, usadas).filter(Boolean))].slice(0, 18);
+  const pc = it && it.parcel; const tipo = it ? (pc ? 'parc' : 'mes') : l ? 'uma' : o.modo === 'parc' || o.modo === 'mes' ? o.modo : 'uma';
+  const mem = basMemGastos();
   const i0 = l ? l.inst || '' : it ? it.inst || '' : instDe(o.inst || '') ? o.inst : ([...(p.lancamentos || [])].reverse().find((x) => x.inst && instMinhas().includes(x.inst)) || {}).inst || '';
-  return basForm(it ? 'conta' : 'gasto', l || it ? 'Editar gasto' : 'Novo gasto', `${l || it ? '' : `<button type="button" class="bas-imp" data-act="bas-importar">${I_IMP}<span class="bas-n"><b>Importar do extrato</b><small>Traz os gastos do banco ou do cartão de um arquivo</small></span>${I.chev}</button>`}${l ? '' : basChips('tipo', [['uma', 'Uma vez'], ['mes', 'Todo mês'], ['parc', 'Parcelado']], tipo, 'Como é o gasto')}
-    <div class="bas-blk" data-blk="val">${basValor('valor', l ? Math.abs(l.valor) : it && !pc ? +it.valores[S.mes] || 0 : 0, it && !pc ? `Quanto foi? Vale de ${MES_LONGO[S.mes]} em diante` : 'Quanto foi?')}</div>
-    ${l ? '' : `<div class="bas-blk" data-blk="parc">${basValor('total', pc ? pc.total : 0, 'Valor total da compra')}${basCampo('n', 'Em quantas vezes?', pc ? pc.n : 10, 'inputmode="numeric" maxlength="3"')}<p class="bas-p">A primeira parcela cai em ${MES_LONGO[ini.mes]} de ${ini.ano}.</p></div>`}
-    ${basCampo('desc', 'Com o quê?', l ? l.desc : it ? it.nome : '', 'placeholder="Ex.: Mercado, Aluguel, Celular" list="bas-dl-desc" autocomplete="off"')}<datalist id="bas-dl-desc">${[...mem.values()].map((x) => `<option value="${esc(x.desc)}">`).join('')}</datalist>
+  const v0 = l ? Math.abs(l.valor) : pc ? pc.total : it ? +it.valores[S.mes] || 0 : 0;
+  // data: a do gasto; numa conta que vira "uma vez", o dia 1 do mês dela (nunca pula para hoje); gasto novo, hoje (no mês aberto)
+  const d0 = l ? l.data : it ? `${S.year}-${pad2(S.mes + 1)}-01` : basDataMes(S.mes);
+  const hoje = basHoje(); const ontem = (() => { const d = new Date(Date.now() - 864e5); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; })();
+  const seg = [['uma', 'Uma vez'], ['mes', 'Todo mês'], ['parc', 'Parcelado']].map(([v, n]) => `<label><input type="radio" name="tipo" value="${v}" ${v === tipo ? 'checked' : ''}><span>${n}</span></label>`).join('');
+  const cat = areas.map((a) => `<label class="bas-gf-c"><input type="radio" name="area" value="${esc(a)}" ${a === a0 ? 'checked' : ''}><span><i aria-hidden="true">${basCatIc(a)}</i>${esc(a)}</span></label>`).join('')
+    + `<label class="bas-gf-c bas-gf-nova"><input type="radio" name="area" value=""><span><i aria-hidden="true">${I.plus}</i>Nova</span></label>`;
+  const bancos = ['', ...new Set(instMinhas().concat(i0 ? [i0] : []))].filter((v) => !v || instDe(v)).map((v) => `<label class="bas-gf-b"><input type="radio" name="inst" value="${v}" ${v === i0 ? 'checked' : ''}><span>${v ? instIcone(v) + esc(instDe(v)[1]) : 'Sem banco'}</span></label>`).join('');
+  return basForm(it ? 'conta' : 'gasto', l || it ? 'Editar gasto' : 'Novo gasto', `<div class="bas-gf">
+    <label class="bas-gf-v"><span class="bas-gf-rot"><b class="r-uma">Quanto foi?</b><b class="r-mes">Quanto por mês?</b><b class="r-parc">Valor total da compra</b></span><span class="bas-gf-vin"><i aria-hidden="true">R$</i><input name="valor" inputmode="decimal" placeholder="0,00" value="${v0 ? esc(nf.format(v0)) : ''}" data-foco autocomplete="off"></span></label>
+    <input class="bas-gf-nome" name="desc" value="${esc(l ? l.desc : it ? it.nome : '')}" placeholder="Com o quê? Ex.: Mercado, Aluguel" list="bas-dl-desc" autocomplete="off" aria-label="Com o quê?"><datalist id="bas-dl-desc">${[...mem.values()].map((x) => `<option value="${esc(x.desc)}">`).join('')}</datalist>
     <p class="bas-p bas-lembra" aria-live="polite" hidden></p>
-    ${basChips('area', areas.map((a) => [a, a]), a0, 'Categoria')}${basCampo('areaNova', 'Ou escreva outra categoria', '', 'placeholder="Ex.: Pets"')}${basCatIcEscolha(basCatIcId(a0))}
-    <fieldset class="bas-fs"><legend>Pago com</legend><div class="bas-chips bas-inst">${['', ...new Set(instMinhas().concat(i0 ? [i0] : []))].filter((v) => !v || instDe(v)).map((v) => `<label class="bas-chip"><input type="radio" name="inst" value="${v}" ${v === i0 ? 'checked' : ''}><span>${v ? instIcone(v) + esc(instDe(v)[1]) : 'Não informar'}</span></label>`).join('')}<button type="button" class="bas-chip-add" ${basIr('planejamento')}>${I.plus}${instMinhas().length ? 'Bancos' : 'Escolher bancos'}</button></div></fieldset>
-    <label class="bas-fl bas-blk" data-blk="data"><span>Quando</span><input type="date" name="data" value="${esc(l ? l.data : basDataMes(S.mes))}" min="${S.year}-01-01" max="${S.year}-12-31"></label>
-    ${l ? '' : `<p class="bas-p bas-blk" data-blk="mesp">Vale de ${MES_LONGO[S.mes]} até dezembro.</p>`}`, { excluir: l || it ? 'Excluir gasto' : '' });
+    <div class="bas-gf-seg" role="radiogroup" aria-label="Como é o gasto">${seg}</div>
+    <div class="bas-blk bas-gf-quando" data-blk="data"><button type="button" class="bas-gf-dia${d0 === hoje ? ' on' : ''}" data-gf-dia="${hoje}">Hoje</button><button type="button" class="bas-gf-dia${d0 === ontem ? ' on' : ''}" data-gf-dia="${ontem}">Ontem</button><input type="date" name="data" value="${esc(d0)}" min="${S.year}-01-01" max="${S.year}-12-31" aria-label="Data do gasto"></div>
+    <p class="bas-blk bas-gf-info" data-blk="mesp">Todo mês, de ${MES_LONGO[S.mes]} até dezembro.</p>
+    <div class="bas-blk bas-gf-parc" data-blk="parc"><button type="button" data-gf-n="-1" aria-label="Menos parcelas">−</button><input name="n" inputmode="numeric" maxlength="3" value="${pc ? pc.n : 10}" aria-label="Número de parcelas"><button type="button" data-gf-n="1" aria-label="Mais parcelas">+</button><span class="bas-gf-pt" data-gf-pt></span></div>
+    <p class="bas-gf-k">Categoria</p><div class="bas-gf-cs" role="radiogroup" aria-label="Categoria">${cat}</div>
+    <div class="bas-gf-novaq"><input name="areaNova" placeholder="Nome da categoria, ex.: Pets" autocomplete="off" aria-label="Nova categoria">${basCatIcEscolha('outros')}</div>
+    <p class="bas-gf-k">Pago com</p><div class="bas-gf-bs" role="radiogroup" aria-label="Pago com">${bancos}</div>
+    ${l || it ? '' : `<button type="button" class="bas-gf-imp" data-act="bas-importar">${I_IMP}Importar do extrato</button>`}
+  </div>`, { excluir: l || it ? 'Excluir gasto' : '' });
+}
+// uma gravação para os três jeitos, criando, editando ou trocando o tipo (gasto do dia ⇄ conta de todo mês ⇄ parcelado)
+function basSalvarGasto(f, d, t, ok) {
+  const p = S.plan; const m = S.mes; const v = parseReais(d.valor || '');
+  const l = t.t === 'gasto' && t.id ? p.lancamentos.find((x) => x.id === t.id) : null; const it = t.t === 'conta' && t.id ? p.despesas.find((x) => x.id === t.id) : null;
+  const area = (d.areaNova || '').trim() || d.area || (it && it.area) || (l && l.area) || 'Outros'; const desc = (d.desc || '').trim();
+  if (!(v > 0)) return basErro(f, d.tipo === 'parc' ? 'Informe o valor total da compra.' : 'Informe quanto foi, como 25,90.');
+  if (!desc && d.tipo !== 'uma') return basErro(f, 'Diga com o quê, como Aluguel.');
+  const tiraLanc = () => { if (l) { desfazerBaixa(l); p.lancamentos = p.lancamentos.filter((x) => x !== l); } };
+  const tiraConta = () => { if (it) { p.lancamentos.forEach((x) => { if (x.itemId === it.id) delete x.itemId; }); p.despesas = p.despesas.filter((x) => x !== it); } };
+  if (d.tipo === 'uma') {
+    const dt = E.parseDataISO(d.data); if (!dt || dt.ano !== S.year) return basErro(f, `Escolha uma data de ${S.year}.`);
+    const nome = desc || area;
+    if (l) { if (l.itemId && basMesDe(l.data) !== dt.mes) { desfazerBaixa(l); delete l.itemId; } Object.assign(l, { data: d.data, desc: nome, area, inst: d.inst || '', valor: E.r2(l.valor < 0 ? -v : v) }); S.mes = dt.mes; ok('Gasto atualizado.'); return; }
+    tiraConta();
+    const nl = { id: uid(), origem: 'manual', data: d.data, desc: nome, valor: E.r2(v), cat: basCat(false), area, sub: '', inst: d.inst || '' }; p.lancamentos.push(nl); let msg = it ? 'Gasto atualizado.' : 'Gasto anotado.';
+    if (!it) { const fx = E.acharFixo(p.despesas, nome, dt.ano, dt.mes); if (fx) { nl.itemId = fx.id; nl.cat = fx.cat; fx.baixas = Object.assign({}, fx.baixas, { [dt.ano + '-' + dt.mes]: nl.id }); msg = `Conta “${fx.nome}” já conta como gasto de ${MES_LONGO[dt.mes]}.`; } }
+    S.mes = dt.mes; ok(msg); return;
+  }
+  tiraLanc();
+  const alvo = it || { id: uid(), sub: '', valores: z12() }; Object.assign(alvo, { nome: desc, area, inst: d.inst || '' });
+  if (d.tipo === 'parc') { const n = parseInt(d.n, 10); if (!(n >= 1 && n <= 120)) return basErro(f, 'Informe de 1 a 120 parcelas.');
+    alvo.cat = alvo.cat || basCat(false); alvo.parcel = Object.assign({ ano: S.year, mes: m }, alvo.parcel, { total: E.r2(v), n }); alvo.valores = z12(); }
+  else { alvo.cat = alvo.cat || basCat(true); if (alvo.parcel) { delete alvo.parcel; alvo.valores = z12(); } fillFrom(alvo.valores, E.r2(v), m); }
+  if (!it) p.despesas.push(alvo); ok(it || l ? 'Gasto atualizado.' : d.tipo === 'parc' ? 'Compra parcelada anotada.' : 'Gasto de todo mês anotado.');
+}
+// botões da tela: Hoje/Ontem, mais e menos parcelas e a conta das parcelas ao vivo
+function basGfLigar() {
+  const f = document.querySelector('.bas-form .bas-gf'); if (!f || f.dataset.lig) return; f.dataset.lig = '1';
+  const dt = f.querySelector('[name="data"]'); const n = f.querySelector('[name="n"]'); const val = f.querySelector('[name="valor"]'); const pt = f.querySelector('[data-gf-pt]');
+  const conta = () => { if (!pt) return; const t = parseReais(val.value || ''); const k = parseInt(n.value, 10) || 0; pt.textContent = t > 0 && k > 0 ? `${k}× de ${brl(t / k)}` : 'vezes'; };
+  const dias = () => f.querySelectorAll('[data-gf-dia]').forEach((b) => b.classList.toggle('on', b.dataset.gfDia === dt.value));
+  f.addEventListener('click', (e) => { const b = e.target.closest('[data-gf-dia], [data-gf-n]'); if (!b) return; e.preventDefault();
+    if (b.dataset.gfDia) { dt.value = b.dataset.gfDia; dias(); } else { n.value = Math.max(1, Math.min(120, (parseInt(n.value, 10) || 0) + +b.dataset.gfN)); conta(); } basSom('toque'); });
+  dt && dt.addEventListener('change', dias); n && n.addEventListener('input', conta); val && val.addEventListener('input', conta); conta();
 }
 // conta do mês: gasto fixo ou parcela
 function basTelaConta(o) {
@@ -1978,32 +2025,10 @@ function basErro(f, msg) { const e = f.querySelector('.bas-err'); e.textContent 
 function basSalvar(f) {
   const t = basTopoPilha(); if (!t || t.t !== f.dataset.t) return;
   const d = Object.fromEntries(new FormData(f)); const p = S.plan; const m = S.mes; const val = (k) => parseReais(d[k] || '');
-  { const ar = (d.areaNova || '').trim() || d.area; if (d.areaIc && ar) basCatIcGrava(ar, d.areaIc); }
+  { const ar = (d.areaNova || '').trim(); if (d.areaIc && ar) basCatIcGrava(ar, d.areaIc); } // ícone só para categoria nova
   const ok = (msg) => { basRetorno(t.t === 'aporte' || t.t === 'provento' ? 'pago' : 'ok'); touch(['perfil', 'objetivo', 'alvos'].includes(t.t) ? 'profile' : 'plan'); basFechar(); if (msg) toast(msg); };
   switch (t.t) {
-    case 'gasto': if (!t.id && (d.tipo === 'mes' || d.tipo === 'parc')) { d.nome = (d.desc || '').trim(); d.modo = d.tipo; d.area = (d.areaNova || '').trim() || d.area; } else {
-      const l = t.id ? p.lancamentos.find((x) => x.id === t.id) : null; const v = val('valor'); if (!(v > 0)) return basErro(f, 'Informe quanto foi, como 25,90.');
-      const dt = E.parseDataISO(d.data); if (!dt || dt.ano !== S.year) return basErro(f, `Escolha uma data de ${S.year}.`);
-      const area = (d.areaNova || '').trim() || d.area || 'Outros'; const desc = (d.desc || '').trim() || area;
-      if (l) { if (l.itemId && basMesDe(l.data) !== dt.mes) { desfazerBaixa(l); delete l.itemId; } Object.assign(l, { data: d.data, desc, area, inst: d.inst || '', valor: E.r2(l.valor < 0 ? -v : v) }); S.mes = dt.mes; ok('Gasto atualizado.'); return; }
-      const nl = { id: uid(), origem: 'manual', data: d.data, desc, valor: E.r2(v), cat: basCat(false), area, sub: '', inst: d.inst || '' }; p.lancamentos.push(nl); let msg = 'Gasto anotado.';
-      // o mesmo cuidado do Completo: cumpre a conta fixa do mês (não conta duas vezes) ou vira conta até dezembro
-      const fx = E.acharFixo(p.despesas, desc, dt.ano, dt.mes); if (fx) { nl.itemId = fx.id; nl.cat = fx.cat; fx.baixas = Object.assign({}, fx.baixas, { [dt.ano + '-' + dt.mes]: nl.id }); msg = `Conta “${fx.nome}” marcada como paga.`; }
-      S.mes = dt.mes; ok(msg); return;
-    } // todo mês e parcelado seguem para a gravação da conta, logo abaixo
-    case 'conta': {
-      const it = p.despesas.find((x) => x.id === t.id); if (!it) { basFechar(); return; }
-      const nome = (d.desc || '').trim(); const area = (d.areaNova || '').trim() || d.area || it.area || 'Contas'; if (!nome) return basErro(f, 'Diga com o quê, como Aluguel.');
-      if (d.tipo === 'uma') { // vira um gasto só: sai a conta, os pagamentos já anotados continuam como gastos comuns
-        const v = val('valor'); if (!(v > 0)) return basErro(f, 'Informe quanto foi, como 25,90.'); const dt = E.parseDataISO(d.data); if (!dt || dt.ano !== S.year) return basErro(f, `Escolha uma data de ${S.year}.`);
-        p.lancamentos.forEach((l) => { if (l.itemId === it.id) delete l.itemId; }); p.despesas = p.despesas.filter((x) => x !== it);
-        p.lancamentos.push({ id: uid(), origem: 'manual', data: d.data, desc: nome, valor: E.r2(v), cat: basCat(false), area, sub: '', inst: d.inst || '' }); S.mes = dt.mes; ok('Gasto atualizado.'); return; }
-      Object.assign(it, { nome, area, inst: d.inst || '' });
-      if (d.tipo === 'parc') { const total = val('total'); const n = parseInt(d.n, 10); if (!(total > 0)) return basErro(f, 'Informe o valor total da compra.'); if (!(n >= 1 && n <= 120)) return basErro(f, 'Informe de 1 a 120 parcelas.');
-        it.parcel = Object.assign({ ano: S.year, mes: m }, it.parcel, { total: E.r2(total), n }); it.valores = z12(); ok('Gasto atualizado.'); return; }
-      const v = val('valor'); if (!(v > 0)) return basErro(f, 'Informe o valor por mês.');
-      if (it.parcel) { delete it.parcel; it.valores = z12(); } fillFrom(it.valores, E.r2(v), m); ok('Gasto atualizado.'); return;
-    }
+    case 'gasto': case 'conta': return basSalvarGasto(f, d, t, ok);
     case 'conta-f': {
       const it = t.id ? p.despesas.find((x) => x.id === t.id) : null; const nome = (d.nome || '').trim(); if (!nome) return basErro(f, 'Diga com o quê, como Aluguel.');
       const area = d.area || 'Contas';
