@@ -1,7 +1,7 @@
 /* Política de privacidade e termos de uso (LGPD, Lei 13.709/2018). Puro, sem DOM: o app abre num modal (openTerms em ui.js)
    e a página pública privacidade.html desenha o mesmo texto. Mudou o texto? Troque POLITICA_VERSAO: o aceite gravado no perfil guarda a versão. */
 'use strict';
-const POLITICA_VERSAO = '2026-11-06';
+const POLITICA_VERSAO = '2026-11-16';
 function politicaHtml(cfg, nuvem) {
   const e = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const marca = e(cfg.marca || 'AVEN'); const quem = e(cfg.controlador || cfg.consultor || ''); const cons = e(cfg.consultor || '');
@@ -26,6 +26,7 @@ function politicaHtml(cfg, nuvem) {
     '<b>Prestar o serviço que você contratou</b> (organizar finanças, calcular orçamento, metas e carteira): execução de contrato (art. 7º, V).',
     `<b>Atendimento pelo consultor</b> (ver seu cadastro e o diagnóstico; e, no plano Assessoria, o planejamento detalhado): consentimento (art. 7º, I), dado no cadastro e na contratação do plano.`,
     '<b>Leitura de PDF por inteligência artificial:</b> consentimento, a cada uso.',
+    '<b>Respostas do assistente por inteligência artificial:</b> execução de contrato (art. 7º, V), só quando você faz uma pergunta.',
     '<b>Segurança da conta e prevenção de fraudes:</b> legítimo interesse (art. 7º, IX).',
     '<b>Cumprir obrigações legais ou atender autoridades</b>, quando houver: obrigação legal (art. 7º, II).',
   ]) + '<p>Os dados financeiros são usados só para o seu planejamento. Não vendemos, alugamos nem usamos seus dados para publicidade.</p>')}
@@ -35,6 +36,7 @@ function politicaHtml(cfg, nuvem) {
     '<b>Supabase</b> (banco de dados e login): guarda os dados com acesso restrito por conta. Os servidores podem ficar fora do Brasil; essa transferência internacional segue o art. 33 da LGPD, com as garantias contratuais do provedor.',
     '<b>GitHub Pages</b> (hospedagem do site) e as redes de entrega jsDelivr, cdnjs e Google Fonts: recebem o endereço IP do aparelho para entregar as páginas, bibliotecas e fontes, sem acesso aos seus dados financeiros.',
     '<b>Anthropic</b> (provedor de inteligência artificial): só recebe o PDF quando você usa a leitura por IA, para extrair os lançamentos.',
+    '<b>Groq</b> (inteligência artificial do assistente, servidores nos Estados Unidos): quando você faz uma pergunta ao assistente, recebe a pergunta e um resumo em números do seu planejamento (entradas, gastos por categoria, sobra, metas e sonhos), sem nome, e-mail, telefone ou ativos, só para escrever a resposta.',
     '<b>Autoridades</b>, apenas quando a lei ou uma ordem judicial exigir.',
   ]))}
   ${sec('5. Por quanto tempo guardamos', `<p>Enquanto a sua conta existir. Ao excluir a conta, o cadastro, o perfil, o diagnóstico, os planejamentos e a assinatura são apagados na hora; cópias de segurança automáticas do provedor expiram em alguns dias. O PDF da leitura por IA é apagado logo após a leitura. No modo demonstração, tudo fica só neste navegador e some ao limpar os dados do site.</p>`)}

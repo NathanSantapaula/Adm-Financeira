@@ -62,7 +62,7 @@ function basCat(fixa) {
 // abas embaixo (no lugar do menu lateral e do topo); some nas telas de formulário
 function basicoBarra() {
   $('#topo').innerHTML = ''; $('#side').innerHTML = ''; const a = basAba(); const t = basTopoPilha();
-  document.body.dataset.basFolha = t && BAS_FORMS.has(t.t) ? '1' : ''; document.body.dataset.basPerfil = a === 'perfil' && !t ? '1' : ''; document.body.dataset.basIa = t && t.t === 'ia' && (S.basIaAba || 'conversa') === 'conversa' ? '1' : '';
+  document.body.dataset.basFolha = t && BAS_FORMS.has(t.t) ? '1' : ''; document.body.dataset.basPerfil = a === 'perfil' && !t ? '1' : ''; document.body.dataset.basIa = t && (t.t === 'duvidas' || (t.t === 'ia' && (S.basIaAba || 'conversa') === 'conversa')) ? '1' : '';
   const av = basAvisosNovos();
   // botão da IA separado, à esquerda da barra: fundo em degradê neon que se move, vidro por cima e o Cifrão dentro
   $('#tabbar').innerHTML = `<button class="bas-ia-fab${av ? ' alerta' : ''}${document.querySelector('.bas-cif-solto') ? ' vazia' : ''}" data-act="bas-ia-fab" aria-label="Assistente${av ? `: ${av} avisos novos` : ''}. Segure e arraste para o Cifrão andar pela tela."><span class="cifrao" aria-hidden="true"></span></button><div class="bas-tabs"><span class="bas-tab-lente" aria-hidden="true"></span>${basAbas().map(([k, l, i]) => `<button data-act="bas-aba" data-v="${k}" ${a === k ? 'aria-current="page"' : ''}>${i}<span>${l}</span></button>`).join('')}</div>`;
@@ -425,10 +425,9 @@ function basPerfil() {
   const cli = S.isAdmin && Store.mode === 'cloud' ? basSecao('Consultor', '', `<ul class="bas-ativ">${basRow(basIr('clientes'), I.clientes, 'Clientes', 'Cadastros e planos', I.chev)}</ul>`) : '';
   // Perfil no jeito de app: degradê azul no alto com fechar, a foto com a câmera, o nome e "Editar perfil"; embaixo, a folha com as opções em lista
   const lin = (a, icone, nome, dir) => `<li><button class="bas-pf-li" ${a}><span class="bas-pf-ic" aria-hidden="true">${icone}</span><span class="bas-pf-nm">${nome}</span>${dir || ''}${I.chev}</button></li>`;
-  const I_CAM = ic('<path d="M4 8h3l2-2.5h6L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>');
   const I_TEMA = ic('<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>');
   const I_SD = ic('<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>');
-  const topoPf = `<div class="bas-gt-bg bas-pf-bg"><header class="bas-pf-h"><button class="bas-circ bas-pf-volta" data-act="bas-aba" data-v="${esc(S.basAbaAntes || 'inicio')}" aria-label="Fechar">${I.x}</button></header>
+  const topoPf = `<div class="bas-gt-bg bas-pf-bg"><header class="bas-pf-h"><button class="bas-circ bas-pf-volta" data-act="bas-aba" data-v="${esc(S.basAbaAntes || 'inicio')}" aria-label="Fechar">${I.x}</button>${typeof aberturaPode === 'function' && aberturaPode() ? `<button class="bas-pf-globo" data-act="bas-globo" aria-label="Globo do seu Patrimônio" title="Globo do seu Patrimônio"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.7 3.9 5.7 3.9 9s-1.3 6.3-3.9 9c-2.6-2.7-3.9-5.7-3.9-9S9.4 5.7 12 3z"/></svg></button>` : ''}</header>
     <div class="bas-pf-eu"><label class="bas-pf-av" for="av-file" aria-label="Trocar a foto de perfil">${avatarHtml(p)}<span class="bas-pf-pen" aria-hidden="true">${I_CAM}</span></label><input id="av-file" type="file" accept="image/jpeg,image/png,image/webp" hidden>
       <b>${esc(p.nome || 'Você')}</b>${p.email ? `<small>${esc(p.email)}</small>` : ''}</div></div>`;
   const lista = `<ul class="card bas-pf-l">${lin(basIr('perfil'), I.user, 'Dados pessoais')}${lin(basIr('planejamento'), I_PLANO, 'Planejamento', `<small>${instMinhas().length} ${instMinhas().length === 1 ? 'banco' : 'bancos'}</small>`)}${lin(basIr('saude'), I_SD, 'Saúde financeira', H.nota == null ? '' : `<small>${H.nota} de 100</small>`)}
@@ -526,6 +525,8 @@ const basSemAcento = (t) => String(t || '').toLowerCase().normalize('NFD').repla
 // pergunta de ajuda sobre o app ("como", "onde", "o que é"...) vira o guia de mais palavras em comum
 function basGuiaAchar(q) {
   const t = basSemAcento(q); if (!/\b(como|onde|cade|o que e|pra que|para que|nao (sei|acho|consigo)|ajuda|consigo|da pra|tem como|mostra)\b/.test(t)) return null;
+  // só é dúvida de uso do app com um verbo de ação ("onde mais gastei?" é pergunta sobre o dinheiro, não guia)
+  if (!/\b(registr|lanc|anot|adicion|coloc|cri|defin|import|escond|mud|troc|vej|ver\b|abr|edit|exclu|apag|organiz|mex|us[ao]r?\b|faz|fac)/.test(t)) return null;
   let melhor = null; let max = 0; basGuias().forEach((g) => { const n = g.k.filter((k) => new RegExp(`\\b${k}`).test(t)).length; if (n > max) { max = n; melhor = g; } });
   return melhor;
 }
@@ -567,7 +568,7 @@ function basIaTela() {
   const st = iaEstado(); const ult = st.msgs.slice().reverse().find((m) => m.de === 'eu');
   const card = (q, rot, val, ic0) => `<button class="bas-iax-c" data-act="ia-perg" data-q="${esc(q)}"><small>${esc(rot)}</small><b>${val}</b><span class="bas-iax-cr"><span class="bas-iax-ci" aria-hidden="true">${ic0}</span><span class="bas-iax-ca" aria-hidden="true">${I.chev}</span></span></button>`;
   return `<div class="bas-iax"><span class="bas-iax-brilho" aria-hidden="true"></span>
-    <header class="bas-iax-h"><button class="bas-iax-b" data-act="bas-voltar" aria-label="Voltar">${I_VOLTA}</button><span class="bas-iax-hr"><button class="bas-iax-b" data-act="bas-ia-aba" data-v="duvidas" aria-label="Dúvidas">?</button><button class="bas-iax-b" ${basIr('avisos-tela')} aria-label="Avisos${av ? `: ${av} novos` : ''}">${I_IA_SINO}${av ? '<i class="bas-iax-pt"></i>' : ''}</button></span></header>
+    <header class="bas-iax-h"><button class="bas-iax-b" data-act="bas-voltar" aria-label="Voltar">${I_VOLTA}</button><span class="bas-iax-hr"><button class="bas-iax-b" ${basIr('duvidas')} aria-label="Dúvidas">?</button><button class="bas-iax-b" ${basIr('avisos-tela')} aria-label="Avisos${av ? `: ${av} novos` : ''}">${I_IA_SINO}${av ? '<i class="bas-iax-pt"></i>' : ''}</button></span></header>
     <div class="bas-iax-topo"><span class="bas-iax-orb" aria-hidden="true"><span class="cifrao"></span></span><p class="bas-iax-st"><span class="ok">Como posso ajudar?</span><span class="pe">Pensando…</span></p></div>
     <div class="ia-log bas-iax-log" data-ia-log="b" role="log" aria-live="polite">${st.msgs.length ? iaLogHtml('b') : ''}</div>
     <div class="bas-iax-cs">${card(E.IA_FICHAS.aporte, 'Dá para investir', basCent(D.disponivel), I.inv)}${card(E.IA_FICHAS.gastos, `Gastou ${basJanFrase()}`, basCent(sai), I.despesas)}</div>
@@ -735,10 +736,22 @@ function basTelaCategoria(o) {
   return basDet(esc(area), `${basCard(`<small class="bas-k">${cap(MES_LONGO[m])}</small><b class="bas-big">${brl(tot)}</b>${basLimArea(area, tot)}<button class="btn primary lg bas-cta bas-add" ${basIr('gasto', { area })}>${I.plus}Gasto em ${esc(area)}</button>`, 'bas-hero')}
     ${contas.length + lanc.length ? basSecao('Gastos', '', `<ul class="bas-ativ">${contas.filter((x) => !x.pago).map(basContaLinha).join('')}${lanc.map(basLancLinha).join('')}</ul>`) : ''}`);
 }
+const I_CAM = ic('<path d="M4 8h3l2-2.5h6L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>');
+// Dados pessoais: foto, dados, contato, perfil de investidor (com refazer o teste) e a conta
 function basTelaPerfil() {
-  const p = S.profile;
-  return basForm('perfil', 'Meu perfil', `<div class="bas-av">${avatarHtml(p, 'lg')}</div>${basCampo('nome', 'Nome', p.nome, 'autocomplete="name" data-foco')}${basCampo('apelido', 'Como prefere ser chamado (opcional)', p.apelido)}
-    <p class="bas-p">E-mail: ${esc(p.email || '–')}</p>`);
+  const p = S.profile; const cloud = Store.mode === 'cloud'; const pf = p.perfilInvestidor && E.PERFIS[p.perfilInvestidor.resultado];
+  const desde = /^\d{4}-\d{2}/.test(String(p.criadoEm || '')) ? `${MES_LONGO[+p.criadoEm.slice(5, 7) - 1]} de ${p.criadoEm.slice(0, 4)}` : '';
+  const sec = (t, corpo) => `<h2 class="bas-dp-g">${t}</h2><div class="card bas-dp-c">${corpo}</div>`;
+  const inv = pf ? `<div class="bas-dp-pf"><span class="bas-dp-pf-n">${esc(pf.nome)}</span><p>${esc(pf.desc)}</p>
+      <div class="bas-dp-bar" aria-label="Referência: ${pf.alvo.rendaFixa}% renda fixa e ${pf.alvo.bolsa}% renda variável"><i style="width:${pf.alvo.rendaFixa}%"></i></div>
+      <div class="bas-dp-leg"><span><i class="rf"></i>Renda fixa ${pf.alvo.rendaFixa}%</span><span><i class="rv"></i>Renda variável ${pf.alvo.bolsa}%</span></div></div>`
+    : '<p class="bas-p bas-p0">Você ainda não respondeu o teste. Leva uns 2 minutos e ajuda o assessor a entender como você lida com risco.</p>';
+  return basForm('perfil', 'Dados pessoais', `<div class="bas-dp-eu"><label class="bas-dp-av" for="av-file" aria-label="Trocar a foto de perfil">${avatarHtml(p, 'lg')}<span class="bas-pf-pen" aria-hidden="true">${I_CAM}</span></label><input id="av-file" type="file" accept="image/jpeg,image/png,image/webp" hidden>
+      <b>${esc(p.apelido || p.nome || 'Seu nome')}</b>${desde ? `<small>No ${esc(CFG.marca || '')} desde ${desde}</small>` : ''}</div>
+    ${sec('Sobre você', `${basCampo('nome', 'Nome completo', p.nome, 'autocomplete="name" maxlength="80"')}${basCampo('apelido', 'Como prefere ser chamado', p.apelido, 'maxlength="80" placeholder="Opcional"')}${basCampo('profissao', 'Profissão', p.profissao, 'maxlength="60" autocomplete="organization-title" placeholder="Opcional"')}${basCampo('cidade', 'Cidade', p.cidade, 'maxlength="60" autocomplete="address-level2" placeholder="Opcional"')}`)}
+    ${sec('Contato', `<label class="bas-fl"><span>E-mail</span><input value="${esc(p.email || '')}" readonly aria-readonly="true"></label>${cloud ? '<p class="bas-dp-nota">O e-mail é o seu login e não muda aqui.</p>' : ''}${basCampo('whatsapp', 'WhatsApp', p.whatsapp, 'type="tel" inputmode="tel" autocomplete="tel" maxlength="20" placeholder="(11) 90000-0000"')}`)}
+    ${sec('Perfil de investidor', `${inv}<button type="button" class="btn bas-dp-ref" data-act="refazer-perfil">${pf ? 'Refazer o teste' : 'Fazer o teste'}</button>`)}
+    ${sec('Sua conta', `<ul class="bas-dp-l"><li><span>Plano</span><b>${esc(planLabel())}</b></li>${desde ? `<li><span>Membro desde</span><b>${desde}</b></li>` : ''}</ul>`)}`);
 }
 const basTelaContato = () => basDet(`Falar com o ${esc(primeiroNome())}`, basCard(`<p class="bas-p bas-p0">${esc(CFG.consultor)} atende você direto. Escolha o canal.</p><div class="bas-contato">${contactButtons()}</div>`));
 function basTelaAno() {
@@ -1694,7 +1707,7 @@ const basTelaClientes = () => basDet('Clientes', `<div class="bas-clientes">${vi
 document.addEventListener('change', (e) => { const t = e.target; if (!t.matches || !t.matches('input[data-bas-inst]')) return; instMinhaAlternar(t.dataset.basInst, t.checked); basSom('toque');
   const n = instMinhas().length; const c = document.querySelector('.bas-pj-n'); if (c) c.textContent = n ? `${n} ${n === 1 ? 'marcada' : 'marcadas'}` : 'Nenhuma'; });
 const BAS_TELAS = { gasto: basTelaGasto, conta: basTelaConta, 'conta-f': basTelaContaF, entrada: basTelaEntrada, aporte: basTelaAporte, meta: basTelaMeta,
-  objetivos: basTelaObjetivos, objetivo: basTelaObjetivo, categoria: basTelaCategoria, perfil: basTelaPerfil, contato: basTelaContato, ano: basTelaAno, ia: basTelaIa, saude: basTelaSaude, periodo: basTelaPeriodo, organizar: basTelaOrganizar, entradas: basTelaEntradas, sonhos: basTelaSonhos, 'sonho-det': basTelaSonhoDet, cartoes: basTelaCartoes, 'avisos-tela': basTelaAvisosNova, cartao: basTelaCartao, retro: basTelaRetro, conquista: basTelaConquista, sequencia: basTelaSequencia, constelacao: basTelaConstelacao, 'ano-hist': basTelaAnoHist, 'cartao-estilo': basTelaCartaoEstilo, 'ano-resumo': basTelaAnoResumo, historico: basTelaHistorico, raiox: basTelaRaioX, resumo: basTelaResumo, limite: basTelaLimite, avisos: basTelaAvisos, simular: basTelaSimular, alvos: basTelaAlvos, proventos: basTelaProventos, provento: basTelaProvento, carteira: basTelaCarteira, planejamento: basTelaPlanejamento, privacidade: () => basDet('Privacidade e termos', `<div class="card bas-pol">${politicaHtml(CFG, Store.mode === 'cloud')}</div>`), excluir: basTelaExcluir, ponto: basTelaPonto, clientes: basTelaClientes };
+  objetivos: basTelaObjetivos, objetivo: basTelaObjetivo, categoria: basTelaCategoria, perfil: basTelaPerfil, contato: basTelaContato, ano: basTelaAno, ia: basTelaIa, saude: basTelaSaude, periodo: basTelaPeriodo, organizar: basTelaOrganizar, entradas: basTelaEntradas, sonhos: basTelaSonhos, 'sonho-det': basTelaSonhoDet, cartoes: basTelaCartoes, 'avisos-tela': basTelaAvisosNova, duvidas: () => basDet('Dúvidas', basDuvidasHtml()).replace(olhoHtml(), ''), cartao: basTelaCartao, retro: basTelaRetro, conquista: basTelaConquista, sequencia: basTelaSequencia, constelacao: basTelaConstelacao, 'ano-hist': basTelaAnoHist, 'cartao-estilo': basTelaCartaoEstilo, 'ano-resumo': basTelaAnoResumo, historico: basTelaHistorico, raiox: basTelaRaioX, resumo: basTelaResumo, limite: basTelaLimite, avisos: basTelaAvisos, simular: basTelaSimular, alvos: basTelaAlvos, proventos: basTelaProventos, provento: basTelaProvento, carteira: basTelaCarteira, planejamento: basTelaPlanejamento, privacidade: () => basDet('Privacidade e termos', `<div class="card bas-pol">${politicaHtml(CFG, Store.mode === 'cloud')}</div>`), excluir: basTelaExcluir, ponto: basTelaPonto, clientes: basTelaClientes };
 
 /* ================= gravação (no mesmo formato do Completo) ================= */
 function basErro(f, msg) { const e = f.querySelector('.bas-err'); e.textContent = msg; e.hidden = false; return false; }
@@ -1790,7 +1803,7 @@ function basSalvar(f) {
       const alvo = g || Object.assign({ id: uid() }, L.length ? { modo: 'marco', pct: 0 } : { modo: 'fatia', pct: 100 }); Object.assign(alvo, dados); if (!g) L.push(alvo);
       if (d.foco || L.length === 1) S.profile.objetivoFoco = alvo.id; objSalvar(); ok(g ? 'Objetivo atualizado.' : 'Objetivo criado.'); return;
     }
-    case 'perfil': { const nome = (d.nome || '').trim(); if (!nome) return basErro(f, 'Informe o seu nome.'); S.profile.nome = nome.slice(0, 80); S.profile.apelido = (d.apelido || '').trim().slice(0, 80); ok('Perfil salvo.'); return; }
+    case 'perfil': { const nome = (d.nome || '').trim(); if (!nome) return basErro(f, 'Informe o seu nome.'); S.profile.nome = nome.slice(0, 80); S.profile.apelido = (d.apelido || '').trim().slice(0, 80); ['profissao', 'cidade'].forEach((k) => { S.profile[k] = (d[k] || '').trim().slice(0, 60); }); S.profile.whatsapp = (d.whatsapp || '').replace(/[^\d()+\- ]/g, '').trim().slice(0, 20); ok('Dados salvos.'); return; }
     default: return false;
   }
 }
