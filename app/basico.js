@@ -1101,6 +1101,7 @@ function basGastoTopoHtml(sai, orc) {
 const CC_BAND = {
   visa: '<svg class="bas-band" viewBox="0 8.1 24 7.8" role="img" aria-label="Visa"><path fill="currentColor" d="M9.112 8.262L5.97 15.758H3.92L2.374 9.775c-.094-.368-.175-.503-.461-.658C1.447 8.864.677 8.627 0 8.479l.046-.217h3.3a.904.904 0 01.894.764l.817 4.338 2.018-5.102zm8.033 5.049c.008-1.979-2.736-2.088-2.717-2.972.006-.269.262-.555.822-.628a3.66 3.66 0 011.913.336l.34-1.59a5.207 5.207 0 00-1.814-.333c-1.917 0-3.266 1.02-3.278 2.479-.012 1.079.963 1.68 1.698 2.04.756.367 1.01.603 1.006.931-.005.504-.602.725-1.16.734-.975.015-1.54-.263-1.992-.473l-.351 1.642c.453.208 1.289.39 2.156.398 2.037 0 3.37-1.006 3.377-2.564m5.061 2.447H24l-1.565-7.496h-1.656a.883.883 0 00-.826.55l-2.909 6.946h2.036l.405-1.12h2.488zm-2.163-2.656l1.02-2.815.588 2.815zm-8.16-4.84l-1.603 7.496H8.34l1.605-7.496z"/></svg>',
   // Mastercard em branco: os dois círculos na proporção real; a sobreposição mais clara mantém o sentido do símbolo
+  elo: '<svg class="bas-band" viewBox="0 0 2000 620" role="img" aria-label="Elo"><g fill="currentColor"><rect x="0" y="253" width="752" height="114"/><rect x="842" y="4" width="128" height="610"/><rect x="842" y="492" width="360" height="122"/><rect x="1780" y="253" width="220" height="114"/></g><path fill="currentColor" d="M690 510A311 311 0 1 1 763 310H651A199 199 0 1 0 604 438Z"/><path fill="currentColor" fill-rule="evenodd" d="M1541 -1a311 311 0 1 0 0.01 0ZM1541 121a189 189 0 1 1 -0.01 0Z"/></svg>',
   master: '<svg class="bas-band" viewBox="0 0 256 158" role="img" aria-label="Mastercard"><circle cx="79" cy="79" r="79" fill="currentColor" opacity=".55"/><circle cx="177" cy="79" r="79" fill="currentColor" opacity=".55"/></svg>' };
 const basBand = (k) => { const b = ((S.profile.cartaoEstilo || {})[k] || {}).b; if (CC_BAND[b]) return b; let h = 0; for (const c of k) h += c.charCodeAt(0); return h % 2 ? 'master' : 'visa'; };
 // o cartão "de verdade" em pé: é um cartão deitado (logo, chip, aproximação e bandeira nos lugares de sempre) girado 90°, como na mão
@@ -1623,6 +1624,7 @@ function basTelaCartaoEstilo(o) {
       <div class="bas-cce-ms" role="group" aria-label="Modelo do cartão">${CC_MODELOS.map(([m, n]) => bola(m, n)).join('')}</div>
       <div class="bas-cce-t"><h2 data-cce-n>${esc(nome(E0.m))}</h2><p data-cce-d>${esc(CC_DESC[E0.m] || '')}</p>
         <div class="bas-cce-cores${CC_COM_COR.includes(E0.m) ? '' : ' fora'}" data-cce-cores><small>Cor</small><div class="bas-cores" role="group" aria-label="Cor do cartão">${cores.map(([c, n]) => `<button style="--c:${c}" data-act="bas-cc-cor" data-id="${esc(o.id)}" data-v="${c}" aria-label="${esc(n)}" aria-pressed="${c.toLowerCase() === E0.c.toLowerCase()}"></button>`).join('')}</div></div>
+        <div class="bas-cce-bands" role="group" aria-label="Bandeira do cartão"><small>Bandeira</small><div>${[['visa', 'Visa'], ['master', 'Mastercard'], ['elo', 'Elo']].map(([b, n]) => `<button class="bas-cce-b${basBand(o.id) === b ? ' on' : ''} ${b}" data-act="bas-cc-band" data-id="${esc(o.id)}" data-v="${b}" aria-pressed="${basBand(o.id) === b}" aria-label="${n}">${CC_BAND[b]}</button>`).join('')}</div></div>
         <button class="btn primary lg bas-cta bas-cce-ok" data-act="bas-voltar">Pronto</button></div>
     </div>`).replace(olhoHtml(), '');
 }
@@ -1635,6 +1637,9 @@ function basCcGrava(k, campo, v) {
   const n = document.querySelector('[data-cce-n]'); if (n) { n.textContent = (CC_MODELOS.find((x) => x[0] === E0.m) || [, ''])[1]; n.classList.remove('troca'); void n.offsetWidth; n.classList.add('troca'); }
   const d = document.querySelector('[data-cce-d]'); if (d) d.textContent = CC_DESC[E0.m] || '';
   const cs = document.querySelector('[data-cce-cores]'); if (cs) cs.classList.toggle('fora', !CC_COM_COR.includes(E0.m));
+  if (campo === 'b') { const b = basBand(k); document.querySelectorAll('.bas-cce-b').forEach((x) => { const on = x.dataset.v === b; x.classList.toggle('on', on); x.setAttribute('aria-pressed', on); });
+    const cc = document.querySelector('.bas-cce-card'); const slot = cc && cc.querySelector('.bas-cr-b');
+    if (cc && slot) { cc.classList.add('band'); clearTimeout(cc._t); setTimeout(() => { slot.className = `bas-cr-b ${b} nova`; slot.innerHTML = CC_BAND[b]; }, 380); cc._t = setTimeout(() => cc.classList.remove('band'), 2000); } }
   const card = document.querySelector('.bas-cce-card'); if (card && campo === 'm') { card.classList.remove('gira'); void card.offsetWidth; card.classList.add('gira'); }
   basSom('toque');
 }
@@ -1998,6 +2003,7 @@ function basAcao(act, ds, el) {
     case 'bas-cq-share': basConquistaPng(+ds.q).then((b) => basEnviaPng(b, `${(CFG.marca || 'aven').toLowerCase()}-conquista-${ds.q}-meses.png`, 'Minha conquista')); return true;
     case 'bas-ah-ano': { const t = basTopoPilha(); if (t && t.t === 'ano-hist') { t.id = String(ds.y); basSom('toque'); render(); } return true; }
     case 'bas-cc-mod': if (instDe(ds.id) && CC_MODELOS.some((x) => x[0] === ds.m)) basCcGrava(ds.id, 'm', ds.m); return true;
+    case 'bas-cc-band': if (instDe(ds.id) && CC_BAND[ds.v]) basCcGrava(ds.id, 'b', ds.v); return true;
     case 'bas-cc-cor': if (instDe(ds.id) && /^#[0-9a-f]{6}$/i.test(ds.v || '')) basCcGrava(ds.id, 'c', ds.v); return true;
     case 'bas-gasto-rec': { const f = el.closest('form'); const x = basMemGastos().get(ds.k); if (f && x) { f.querySelector('[name="desc"]').value = x.desc; basGastoLembra(f, x, true); basSom('toque'); } return true; }
     case 'bas-prov-mes': S.basProvMes = +ds.m; basSom('toque'); render(); return true;
