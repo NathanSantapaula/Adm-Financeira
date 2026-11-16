@@ -2639,3 +2639,8 @@ body[data-bas-ia="1"]:not(:has(.bas-iax)) #view { padding-bottom: calc(28px + en
 .bas-iax-log .ia-m.ia .ia-val { color: #7FB2FF; background: rgba(127, 178, 255, .14); }
 :root[data-theme="light"] .bas-iax-log .ia-m.ia .ia-val { color: var(--accent); background: color-mix(in srgb, var(--accent) 11%, transparent); }
 .bas-iax-log .ia-m.ia .ia-pct { color: inherit; }
+/* frase viva ao lado do selo: troca com um deslize suave */
+.bas-iax-st .ok.troca { animation: bas-st-troca 420ms cubic-bezier(.2, .85, .2, 1) both; display: inline-block; }
+@keyframes bas-st-troca { from { opacity: 0; transform: translateY(8px); filter: blur(3px); } }
+.bas-iax-orb { pointer-events: auto; cursor: pointer; }
+@media (prefers-reduced-motion: reduce) { .bas-iax-st .ok.troca { animation: none; } }
