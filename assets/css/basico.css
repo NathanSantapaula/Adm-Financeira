@@ -2114,3 +2114,13 @@ body[data-ui="basico"] { --bas-ciano: #4fd1ff; }
 /* Entradas e + Gasto do mesmo tamanho e peso dos botões de Patrimônio */
 .bas-gt-acoes > button { height: 50px; font-size: 14px; font-weight: 600; gap: 5px; }
 .bas-gt-acoes > button svg { width: 17px; height: 17px; }
+
+/* ===== Perfil: seta para voltar, foto com caneta e nome; sem a barra de abas ===== */
+body[data-bas-perfil="1"] .tabbar { display: none !important; }
+.bas-pf-h { display: flex; align-items: center; justify-content: space-between; padding-top: 6px; }
+.bas-pf-volta { width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center; } .bas-pf-volta svg { width: 22px; height: 22px; }
+.bas-pf-eu { display: flex; align-items: center; gap: 22px; margin: 26px 0 22px; } .bas-pf-eu > b { font-size: 34px; font-weight: 700; letter-spacing: -.02em; }
+.bas-pf-av { position: relative; flex: none; cursor: pointer; } .bas-pf-av .av { width: 96px; height: 96px; font-size: 32px; }
+.bas-pf-pen { position: absolute; right: -4px; bottom: -4px; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; color: var(--ink);
+  background: var(--surface); box-shadow: 0 0 0 3px var(--bg), 0 4px 12px -4px rgba(0, 0, 0, .4); }
+.bas-pf-pen svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
