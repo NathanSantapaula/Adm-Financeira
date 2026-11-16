@@ -2162,3 +2162,12 @@ body[data-bas-perfil="1"] .tabbar { display: none !important; }
 .bas-pf-tema .seg button { padding: 6px 10px; font-size: 13px; }
 .bas-pf-tema { flex-wrap: wrap; row-gap: 10px; } .bas-pf-tema .bas-pf-nm { flex: 1 1 auto; }
 .bas-pf-tema .seg { flex: 1 1 100%; width: auto; margin: 0 0 0 36px; }
+
+/* tema: linha simples com três ícones pequenos à direita, o escolhido destacado */
+.bas-pf-tema { flex-wrap: nowrap; }
+.bas-pf-tema .bas-pf-nm { display: flex; flex-direction: column; } .bas-pf-tema .bas-pf-nm small { font-size: 13px; color: var(--ink-3); font-weight: 400; }
+.bas-pf-tm { display: flex; gap: 2px; padding: 3px; border-radius: 999px; background: var(--surface-2); }
+.bas-pf-tm button { width: 36px; height: 32px; border: 0; border-radius: 999px; background: none; color: var(--ink-3); display: grid; place-items: center; cursor: pointer; }
+.bas-pf-tm button svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+.bas-pf-tm button[aria-pressed="true"] { color: var(--ink); background: var(--surface); box-shadow: 0 1px 3px rgba(0, 0, 0, .15), inset 0 0 0 .5px var(--line); }
+.bas-pf-bg .bas-pf-eu { padding-bottom: 6px; }
