@@ -2813,3 +2813,10 @@ html[data-vt="cc"]::view-transition-group(bas-cc-oficial) { animation-duration: 
 .bas-gp-cb i { width: var(--w); background: #1D1D21; }
 .bas-gp-ob { margin: 0; text-align: center; font-size: 11px; letter-spacing: .06em; color: #8A8A92; }
 @media (prefers-reduced-motion: reduce) { .bas-gp.on .bas-gp-papel { animation: none; transform: none; } }
+/* pop-up do gasto: lápis de volta no topo (título no meio), e o papel sempre sai da boca ao abrir (animação própria, sem transição) */
+.bas-gp-h { grid-template-columns: 44px 1fr 44px; }
+.bas-gp-papel { transition: none !important; transform: translateY(-108%); }
+.bas-gp.on .bas-gp-papel { animation: bas-gp-imprime 1500ms 300ms cubic-bezier(.25, .75, .2, 1) both; }
+@keyframes bas-gp-imprime { 0% { transform: translateY(-108%); } 22% { transform: translateY(-78%); } 26% { transform: translateY(-76%); } 48% { transform: translateY(-46%); } 52% { transform: translateY(-44%); } 76% { transform: translateY(-14%); } 80% { transform: translateY(-12%); } 100% { transform: none; } }
+.bas-gp-papel ul { margin-bottom: 4px; }
+@media (prefers-reduced-motion: reduce) { .bas-gp-papel { transform: none; } }
