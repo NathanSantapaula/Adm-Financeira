@@ -345,7 +345,7 @@ function basInvestir() {
   // Investimento: pílula compacta na linha do período (aportar, resgatar ou importar ficam na tela que ela abre)
   const acoes = `<button class="bas-inv-pl" ${basIrInv()} aria-label="Investimento: aportar, resgatar ou importar">${I.plus}<span>Investir</span></button>`;
   const patrTopo = secs.patr || ''; delete secs.patr;
-  return `<div class="bas-pg bas-pg-i"><div class="bas-gt-bg bas-pt-bg">${basTopo()}${patrTopo}</div><div class="bas-gt-folha"><div class="bas-pg-per bas-pt-acoes">${extras}${acoes}</div>${basOrdenar('investir', secs)}<p class="bas-disc keep">Valores a custo, sem cotação de mercado. Sem promessa de rentabilidade.</p></div></div>`;
+  return `<div class="bas-pg bas-pg-i"><div class="bas-gt-bg bas-pt-bg">${basTopo()}${patrTopo}</div><div class="bas-gt-folha"><div class="bas-pg-per bas-pt-acoes">${extras}${acoes}</div>${basOrdenar('investir', secs)}<p class="bas-disc keep">Valores a custo, sem cotação de mercado.</p></div></div>`;
 }
 // o gráfico do patrimônio segue o dedo (manipulação direta): o mês mais perto do toque aparece em cima, sem redesenhar
 function basEvLigar() {
