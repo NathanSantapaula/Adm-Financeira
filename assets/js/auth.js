@@ -175,8 +175,8 @@ function obPremio(o, k) {
 }
 function onboardingHtml() {
   const o = S.ob; const N = OB_CONV.length; o.i = Math.max(0, Math.min(N, o.i || 0)); const fim = o.i >= N;
-  const orb = typeof iaOrb === 'function' ? iaOrb('obc-orb') : '<span class="obc-orb" aria-hidden="true"></span>';
-  const fala = (t, novo) => `<div class="obc-a${novo ? ' novo' : ''}">${orb}<p><span class="obc-dig" aria-hidden="true"><i></i><i></i><i></i></span><span class="obc-t">${esc(t)}</span></p></div>`;
+  // quem fala é o Cifrão, só na pergunta atual; o que já foi dito fica como texto limpo, sem ícone
+  const fala = (t, novo) => `<div class="obc-a${novo ? ' novo' : ''}">${novo ? '<span class="obc-cif" aria-hidden="true"><span class="cifrao"></span></span>' : ''}<p><span class="obc-dig" aria-hidden="true"><i></i><i></i><i></i></span><span class="obc-t">${esc(t)}</span></p></div>`;
   let hist = '';
   OB_CONV.slice(0, o.i).forEach((p) => { hist += fala(p.p(o)) + `<div class="obc-u"><p>${esc(p.r(o))}</p></div>`; const pr = OB_PREMIO_DE[p.id]; if (pr) hist += obPremio(o, pr); });
   let atual;
