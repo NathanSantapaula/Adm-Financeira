@@ -167,3 +167,14 @@ html:has(body[data-screen="onboarding"]), body[data-screen="onboarding"] { backg
 :root[data-theme="light"] .obc-u p { background: linear-gradient(155deg, #3D7BFF, #1638E8); box-shadow: 0 8px 18px -10px rgba(40, 90, 255, .7); }
 :root[data-theme="light"] .obc-pr-k, :root[data-theme="light"] .obc-chip-ic { color: #2A5BFF; }
 :root[data-theme="light"] .obc-barra i, :root[data-theme="light"] .obc-in button { background: linear-gradient(90deg, #3D7BFF, #1638E8); }
+/* topo do diagnóstico: uma linha só — voltar, título com a barra embaixo e o contador numa ficha */
+.obc-top-in { gap: 12px; padding: 7px 8px 7px 7px; }
+.obc-prog-t { margin-bottom: 7px; } .obc-prog-t span { display: none !important; } .obc-prog-t b { font-size: 15px; font-weight: 650; letter-spacing: -.01em; }
+.obc-barra { height: 4px; } .obc-barra i { background: linear-gradient(90deg, #3D7BFF, #22D3EE); }
+.obc-volta svg { width: 16px; height: 16px; }
+.obc-cnt { flex: none; min-width: 52px; height: 34px; padding: 0 12px; border-radius: 999px; display: grid; place-items: center; font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums;
+  color: var(--ink); background: var(--obc-card); box-shadow: inset 0 0 0 .5px var(--obc-aro); }
+.obc-cnt small { font-size: 12px; font-weight: 600; color: var(--ink-3); }
+.obc-cnt { display: inline-flex; align-items: baseline; justify-content: center; line-height: 34px; }
+:root[data-theme="light"] .obc-cnt { background: #F1F4FA; }
+.obc-volta svg { width: 18px; height: 18px; stroke-width: 2.2; }

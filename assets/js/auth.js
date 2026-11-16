@@ -199,7 +199,7 @@ function onboardingHtml() {
   return `<div class="obc"><header class="obc-top"><div class="obc-top-in">
       <button type="button" class="obc-volta" data-act="ob-back"${o.i ? '' : ' disabled'} aria-label="Voltar uma pergunta">${I.chev}</button>
       <div class="obc-prog"><div class="obc-prog-t"><b>Seu diagnóstico</b><span>${fim ? 'Completo' : `${o.i} de ${N} · cada resposta desbloqueia algo`}</span></div>
-        <span class="obc-barra" role="progressbar" aria-label="Progresso do diagnóstico" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></span></div></div></header>
+        <span class="obc-barra" role="progressbar" aria-label="Progresso do diagnóstico" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></span></div><span class="obc-cnt" aria-hidden="true">${fim ? 'Pronto' : `${o.i + 1}<small>/${N}</small>`}</span></div></header>
     <div class="obc-chat" aria-live="polite">${hist}${atual}</div></div>`;
 }
 // leva a conversa até a pergunta nova e põe o cursor no campo (só com mouse: no celular o teclado cobriria a conversa)

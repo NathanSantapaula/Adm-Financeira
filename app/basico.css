@@ -2486,3 +2486,23 @@ body[data-bas-ia="1"] .bas-ia-fab { display: none !important; }
 .bas-dp-l { list-style: none; margin: 0; padding: 0; } .bas-dp-l li { display: flex; justify-content: space-between; padding: 10px 2px; font-size: 15px; } .bas-dp-l li + li { border-top: .5px solid var(--line); }
 .bas-dp-l span { color: var(--ink-3); }
 .bas-pf-globo { width: 44px; padding: 0; justify-content: center; border-radius: 50%; } .bas-pf-globo svg { width: 22px; height: 22px; }
+/* ===== Perfil de investidor: cartão azul com a régua dos três perfis, comparação com a carteira e refazer ===== */
+.bas-pi-hero { position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 6px; padding: 22px 20px 20px; border-radius: 26px; color: #fff;
+  background: radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--bas-ciano) 45%, transparent), transparent 60%), linear-gradient(160deg, var(--bas-azul-1), var(--bas-azul-2) 55%, var(--bas-azul-3));
+  box-shadow: 0 22px 44px -24px color-mix(in srgb, var(--bas-azul-2) 80%, transparent), inset 0 1px 0 rgba(255, 255, 255, .3); }
+.bas-pi-hero small { font-size: 14px; opacity: .8; } .bas-pi-hero > b { font-size: 34px; font-weight: 700; letter-spacing: -.02em; line-height: 1.1; }
+.bas-pi-hero p { margin: 6px 0 0; font-size: 15px; line-height: 1.45; opacity: .9; }
+.bas-pi-regua { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 14px; }
+.bas-pi-regua span { display: flex; flex-direction: column; gap: 8px; } .bas-pi-regua i { height: 6px; border-radius: 999px; background: rgba(255, 255, 255, .22); }
+.bas-pi-regua .on i { background: #fff; } .bas-pi-regua .eu i { box-shadow: 0 0 12px rgba(255, 255, 255, .7); }
+.bas-pi-regua em { font-style: normal; font-size: 12px; opacity: .65; } .bas-pi-regua .eu em { opacity: 1; font-weight: 700; }
+.bas-pi-cmp { gap: 8px !important; } .bas-pi-l { display: flex; justify-content: space-between; align-items: baseline; font-size: 14px; } .bas-pi-l span { color: var(--ink-3); }
+.bas-pi-l ~ .bas-pi-l { margin-top: 8px; }
+.bas-pi-b { display: block; height: 10px; border-radius: 999px; overflow: hidden; background: color-mix(in srgb, #8B5CF6 60%, var(--accent)); } .bas-pi-b i { display: block; height: 100%; background: var(--accent); border-radius: 999px 0 0 999px; }
+.bas-pi-txt { margin: 8px 0 0; padding: 12px 14px; border-radius: 14px; font-size: 14px; line-height: 1.45; color: var(--ink-2); background: var(--surface-2); }
+.bas-pi-txt.ok { color: var(--pos); background: color-mix(in srgb, var(--pos) 10%, transparent); }
+.bas-pi-ref { margin-top: 18px; } .bas-pi-nota { text-align: center; margin-top: 10px; }
+.bas-pi-vz { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 28px 20px; text-align: center; border-radius: 26px; }
+.bas-pi-vz p { margin: 0 0 8px; color: var(--ink-2); line-height: 1.45; } .bas-pi-vz b { font-size: 20px; }
+.bas-pi-ic { width: 56px; height: 56px; border-radius: 18px; display: grid; place-items: center; color: #fff; background: linear-gradient(155deg, var(--bas-azul-1), var(--bas-azul-2)); } .bas-pi-ic svg { width: 26px; height: 26px; }
+.bas-pi-ref { width: 100%; justify-content: center; }
