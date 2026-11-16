@@ -2291,3 +2291,13 @@ body[data-ui="basico"][data-screen="app"] .tabbar { left: calc(50% - 30px); widt
 .card.bas-w-ano .bas-w-ano-g .fut i { background: rgba(255, 255, 255, .14); }
 .card.bas-w-ano .bas-w-ano-g .on i { outline: 0; box-shadow: 0 0 0 2px rgba(255, 255, 255, .9), 0 0 14px rgba(255, 255, 255, .55); }
 .card.bas-w-ano .bas-w-ano-g b { color: rgba(255, 255, 255, .6); } .card.bas-w-ano .bas-w-ano-g .on b { color: #fff; }
+/* "Seu ano" como os outros widgets: cartão claro (ou escuro no tema escuro) com os tokens; barras na cor de destaque, vermelho nos meses negativos */
+.card.bas-w-ano { color: var(--ink); background: var(--surface) !important; box-shadow: var(--spec, none), var(--shadow, 0 8px 24px -14px rgba(0, 0, 0, .25)) !important; }
+.card.bas-w-ano .bas-w-ano-h small, .card.bas-w-ano .bas-w-ano-h > span { color: var(--ink-3); }
+.card.bas-w-ano .bas-w-ano-h em { color: var(--pos); }
+.card.bas-w-ano .bas-w-ano-g .pos i { background: color-mix(in srgb, var(--accent) 55%, transparent); box-shadow: none; }
+.card.bas-w-ano .bas-w-ano-g .neg i { background: color-mix(in srgb, var(--neg) 60%, transparent); box-shadow: none; }
+.card.bas-w-ano .bas-w-ano-g .fut i { background: var(--line); }
+.card.bas-w-ano .bas-w-ano-g .on i { box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px currentColor; }
+.card.bas-w-ano .bas-w-ano-g .on.pos i { color: var(--accent); } .card.bas-w-ano .bas-w-ano-g .on.neg i { color: var(--neg); }
+.card.bas-w-ano .bas-w-ano-g b { color: var(--ink-3); } .card.bas-w-ano .bas-w-ano-g .on b { color: var(--ink); }
