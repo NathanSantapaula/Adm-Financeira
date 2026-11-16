@@ -3030,3 +3030,20 @@ body[data-ui="basico"][data-screen="app"] .tabbar { bottom: max(8px, calc(env(sa
 .bas-pv2-n i { display: block; height: 4px; margin-top: 6px; border-radius: 999px; background: linear-gradient(90deg, var(--accent) var(--p), var(--surface-2) var(--p)); }
 .bas-pv2-v { font-size: 16px; font-weight: 700; color: var(--pos); font-variant-numeric: tabular-nums; } .bas-pv2-v .bas-cent { opacity: .55; }
 @media (prefers-reduced-motion: reduce) { .bas-pv2-g i { transition: none; } }
+/* ===== Entradas, no jeito de Proventos mas com identidade própria: topo azul e verde-água, barras divididas entre renda fixa e extra ===== */
+.bas-pt-bg.bas-en2-bg { background: linear-gradient(180deg, #2F6BFF 0%, #1B4FD8 30%, #0E7C86 72%, #0A3B4A 100%) !important; }
+.bas-en2-leg { display: flex; gap: 14px; margin: 18px 0 0; font-size: 13px; color: rgba(255, 255, 255, .8); }
+.bas-en2-leg span { display: inline-flex; align-items: center; gap: 6px; } .bas-en2-leg i { width: 10px; height: 10px; border-radius: 3px; }
+.bas-en2-leg .fx, .bas-en2-col .fx { background: linear-gradient(180deg, #FFFFFF, #CFF8F0); } .bas-en2-leg .ex, .bas-en2-col .ex { background: #3EE6B8; }
+.bas-en2-g { display: grid; grid-template-columns: repeat(12, 1fr); gap: 6px; align-items: end; height: 170px; margin: 12px -2px 4px; }
+.bas-en2-g button { height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 8px; padding: 0; border: 0; background: none; font: inherit; cursor: pointer; }
+.bas-en2-col { display: flex; flex-direction: column; width: 100%; height: var(--h); border-radius: 8px; overflow: hidden; transition: height 600ms cubic-bezier(.2, .9, .2, 1), opacity 200ms; box-shadow: 0 0 14px rgba(62, 230, 184, .25); }
+.bas-en2-col .ex { flex: none; height: var(--p); } .bas-en2-col .fx { flex: 1; }
+.bas-en2-g button.fora .bas-en2-col { opacity: .3; box-shadow: none; } .bas-en2-g button.fut .bas-en2-col { opacity: .15; }
+.bas-en2-g b { font-size: 12px; font-weight: 600; color: rgba(255, 255, 255, .6); } .bas-en2-g button.in b { color: #fff; }
+.card.bas-en2-ks { display: grid; grid-template-columns: repeat(3, 1fr); padding: 14px 4px; border-radius: 22px; }
+.bas-en2-ks > span { display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; padding: 0 6px; }
+.bas-en2-ks > span + span { border-left: .5px solid var(--line); }
+.bas-en2-ks small { font-size: 12px; color: var(--ink-3); } .bas-en2-ks b { font-size: 19px; font-weight: 700; letter-spacing: -.01em; } .bas-en2-ks em { font-style: normal; font-size: 12px; color: var(--ink-3); }
+.bas-pg-ent .bas-pv2-v { color: var(--pos); }
+@media (prefers-reduced-motion: reduce) { .bas-en2-col { transition: none; } }
