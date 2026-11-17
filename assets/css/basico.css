@@ -3585,3 +3585,23 @@ li.on > .bas-ig-ck { background: var(--accent); box-shadow: 0 4px 10px -4px var(
 @media (prefers-reduced-motion: reduce) { .bas-ef-sh, .bas-ef-shf, .bas-ef-sh.sai, .bas-ef-sh.sai .bas-ef-shf { animation: none; } }
 /* o alvo no lugar do lápis, no limite da categoria */
 .bas-cat-ed svg { fill: none; stroke: currentColor; stroke-width: 1.8; }
+
+/* ===== Onde investir: adicionar ativo numa janela (Que já tenho | Ativo novo); classe escolhida entre as que existem ===== */
+.bas-oi-seg { display: grid; grid-template-columns: 1fr 1fr; margin: 0 0 14px; }
+.bas-pop-c [data-oi-p][hidden] { display: none; }
+.bas-pop-c [data-oi-p="ex"] .bas-mvp-b { margin-bottom: 6px; }
+.bas-pop-c .bas-inv-ls .bas-ct-at { grid-template-columns: auto 1fr auto; }
+.bas-pop-c .bas-inv-ls .bas-ct-at > svg { width: 22px; height: 22px; padding: 5px; box-sizing: content-box; border-radius: 50%; color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.bas-oi-novo2 { display: grid; gap: 10px; padding-bottom: 6px; }
+.bas-oi-novo2 input { width: 100%; height: 52px; padding: 0 18px; border: 0; border-radius: 18px; background: var(--bg); color: var(--ink); font: inherit; font-size: 16px; box-shadow: inset 0 0 0 1px var(--line); }
+.bas-oi-novo2 input:focus { outline: none; box-shadow: inset 0 0 0 2px var(--accent); } .bas-oi-novo2 input[hidden] { display: none; }
+.bas-oi-novo2 .bas-inv-k { margin: 8px 2px 0; }
+.bas-oi-cls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.bas-oi-cls button { display: flex; align-items: center; gap: 10px; min-width: 0; height: 48px; padding: 0 14px; border: 0; border-radius: 16px; background: var(--bg); color: var(--ink); font: inherit; font-size: 14px; font-weight: 600; text-align: left; box-shadow: inset 0 0 0 1px var(--line); transition: box-shadow 160ms, transform 160ms; }
+.bas-oi-cls button > i { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--bc); }
+.bas-oi-cls button { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bas-oi-cls button.outra { color: var(--accent); } .bas-oi-cls button.outra svg { width: 16px; height: 16px; flex: none; }
+.bas-oi-cls button.on { box-shadow: inset 0 0 0 2px var(--accent), 0 8px 18px -10px var(--accent); color: var(--accent); }
+.bas-oi-cls button:active { transform: scale(.97); }
+.bas-oi-novo2 .bas-cta { margin-top: 8px; }
+.bas-pop-c .bas-inv-ls .bas-ct-at > svg, .bas-oi-cls button.outra svg { fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }

@@ -1268,7 +1268,6 @@ function basCtwLigar() {
 function basTelaOndeInvestir() {
   const { M } = cartAnalise(); const D = M.D || {}; const disp = Math.max(0, +D.disponivel || 0); const comAlvo = M.sumAlvo > 0;
   const its = M.items.map((i) => ({ id: i.a.id, n: i.a.nome, c: i.a.classe || '', w: i.alvo, v: i.valor, pr: i.preco || 0 }));
-  const classes = [...new Set(S.plan.ativos.map((a) => a.classe).filter(Boolean))].concat(["CDB's", 'Tesouro Direto', 'Ações BR', 'Fundos Imobiliários', "ETF's"]).filter((c, i, l) => l.indexOf(c) === i);
   return `<div class="bas-pg bas-pg-oi" data-oi="${esc(JSON.stringify(its))}" data-alvo="${comAlvo ? 1 : 0}"><div class="bas-gt-bg bas-pt-bg">
     <header class="bas-pv2-h"><button class="bell bas-cal-b" data-act="bas-voltar" aria-label="Voltar">${I_VOLTA}</button><b>Onde investir</b><span class="bas-noite-r">${olhoHtml()}</span></header>
     <small class="bas-pv2-k">Disponível para investir em ${esc(MES_LONGO[S.mes])}</small><b class="bas-pv2-t">${basCent(disp)}</b>
@@ -1279,18 +1278,12 @@ function basTelaOndeInvestir() {
     <div class="bas-ch bas-oi-ch"><h2 class="bas-h2">Para onde vai</h2><small data-oi-soma></small></div>
     <ul class="card bas-oi-l" data-oi-l></ul>
     <button class="bas-oi-mais" data-oi-mais aria-expanded="false">${I.plus}<span>Adicionar ativo</span></button>
-    <div class="card bas-oi-add" data-oi-add hidden>
-      <div class="bas-oi-ex" data-oi-ex></div>
-      <div class="bas-oi-novo"><b>Ativo novo</b><input data-oi-nn placeholder="Nome (ex.: PETR4, CDB Banco X)" aria-label="Nome do ativo novo">
-        <input data-oi-nc list="bas-dl-oi" placeholder="Classe (ex.: Ações BR)" aria-label="Classe do ativo novo"><datalist id="bas-dl-oi">${classes.map((c) => `<option value="${esc(c)}"></option>`).join('')}</datalist>
-        <div class="bas-oi-tp" role="group" aria-label="Tipo"><button class="on" data-oi-tp="BOLSA DE VALORES">Bolsa</button><button data-oi-tp="RENDA FIXA">Renda fixa</button></div>
-        <button class="btn primary bas-cta" data-oi-novo>Adicionar ativo novo</button></div></div>
     <button class="btn primary lg bas-cta bas-oi-reg" data-act="bas-oi-reg" ${temRecurso('aporte_simples') ? '' : 'disabled'}>Registrar em ${esc(MES_LONGO[S.mes])}</button>
   </div></div>`;
 }
 function basOiLigar() {
   const pg = document.querySelector('.bas-pg-oi[data-oi]'); const inp = pg && pg.querySelector('[data-oi-v]'); if (!inp || inp.dataset.lig) return; inp.dataset.lig = '1';
-  const its = JSON.parse(pg.dataset.oi); const comAlvo = pg.dataset.alvo === '1'; const lista = pg.querySelector('[data-oi-l]'); const reg = pg.querySelector('.bas-oi-reg'); const add = pg.querySelector('[data-oi-add]');
+  const its = JSON.parse(pg.dataset.oi); const comAlvo = pg.dataset.alvo === '1'; const lista = pg.querySelector('[data-oi-l]'); const reg = pg.querySelector('.bas-oi-reg');
   let linhas = []; // { id (ou null para ativo novo), n, c, tipo, s }
   const num = (x) => Math.max(0, parseReais(String(x || '0')) || 0); const fmt = (v) => (v ? nf.format(v) : '');
   const sugere = () => { const v = num(inp.value); if (!comAlvo) return; const rb = E.rebalance(its.map((i) => ({ w: i.w, v: i.v })), v);
@@ -1302,21 +1295,40 @@ function basOiLigar() {
     pg.dataset.alloc = JSON.stringify(linhas.filter((l) => l.s > 0.004)); };
   const desenha = () => { lista.innerHTML = linhas.length ? linhas.map((l, k) => `<li data-k="${k}"><span class="bas-ct-lg sm" style="--bc:${l.id ? BAS_CT_COR[0] : BAS_CT_COR[3]}">${esc(basSigla(l.n))}</span><span class="bas-ct-an"><b>${esc(l.n)}</b><small>${l.id ? esc(l.c) : `Novo · ${esc(l.c)}`}</small></span>
       <label class="bas-oi-in"><i>R$</i><input data-oi-s="${k}" inputmode="decimal" value="${esc(fmt(l.s))}" placeholder="0,00" aria-label="Quanto em ${esc(l.n)}"></label><button class="bas-oi-x" data-oi-x="${k}" aria-label="Tirar ${esc(l.n)}">${I.x}</button></li>`).join('')
-    : `<li class="bas-oi-vz">${comAlvo ? 'Digite quanto vai investir ou adicione um ativo.' : 'Adicione os ativos em que vai investir.'}</li>`; status(); exRefaz(); };
-  const exRefaz = () => { const ex = pg.querySelector('[data-oi-ex]'); const fora = its.filter((i) => !linhas.some((l) => l.id === i.id));
-    ex.innerHTML = fora.length ? `<b>Que você já tem</b><div class="bas-oi-chips">${fora.map((i) => `<button data-oi-add-id="${esc(i.id)}">${esc(i.n)}</button>`).join('')}</div>` : ''; };
+    : `<li class="bas-oi-vz">${comAlvo ? 'Digite quanto vai investir ou adicione um ativo.' : 'Adicione os ativos em que vai investir.'}</li>`; status(); };
+  const foco = () => { const q = lista.querySelector(`[data-oi-s="${linhas.length - 1}"]`); if (q) q.focus(); };
+  // adicionar: janela com duas abas, "Que já tenho" (busca e lista por classe) e "Ativo novo" (nome e a classe escolhida entre as que já existem)
+  const classes = [...new Set(its.map((i) => i.c).filter(Boolean))]; const corC = (c) => BAS_CT_COR[Math.max(0, classes.indexOf(c)) % BAS_CT_COR.length];
+  const tipoDe = (c) => { const a = S.plan.ativos.find((x) => (x.classe || '') === c); return a ? (a.tipo === 'RENDA FIXA' ? 'RENDA FIXA' : 'BOLSA DE VALORES') : basEhRf({ classe: c }) ? 'RENDA FIXA' : 'BOLSA DE VALORES'; };
+  const abreAdd = () => { const fora = its.filter((i) => !linhas.some((l) => l.id === i.id)); const g = {}; fora.forEach((i) => { (g[i.c || 'Outros'] = g[i.c || 'Outros'] || []).push(i); });
+    let tpl = document.getElementById('bas-oi-tpl'); if (!tpl) { tpl = document.createElement('template'); tpl.id = 'bas-oi-tpl'; document.body.appendChild(tpl); }
+    const ab0 = fora.length ? 'ex' : 'novo';
+    tpl.innerHTML = `<div class="seg bas-oi-seg" role="tablist">${[['ex', 'Que já tenho'], ['novo', 'Ativo novo']].map(([k, l]) => `<button type="button" role="tab" class="${k === ab0 ? 'on' : ''}" data-oi-aba="${k}" aria-selected="${k === ab0}">${l}</button>`).join('')}</div>
+      <div data-oi-p="ex" ${ab0 === 'ex' ? '' : 'hidden'}>${fora.length ? `<label class="bas-mvp-b"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg><input type="search" data-oi-q placeholder="Buscar ativo ou classe" aria-label="Buscar ativo"></label>
+        <ul class="bas-inv-ls">${Object.keys(g).map((c) => `<li class="bas-inv-g" data-q="${esc(c.toLowerCase())}">${esc(c)}</li>${g[c].map((i) => `<li data-q="${esc(`${i.n} ${c}`.toLowerCase())}"><button type="button" class="bas-ct-at" data-oi-add-id="${esc(i.id)}"><span class="bas-ct-lg" style="--bc:${corC(i.c)}">${esc(basSigla(i.n))}</span><span class="bas-ct-an"><b>${esc(i.n)}</b><small>${esc(c)}</small></span>${I.plus}</button></li>`).join('')}`).join('')}</ul>` : '<p class="bas-mvp-vz">Todos os seus ativos já estão na lista.</p>'}</div>
+      <div data-oi-p="novo" class="bas-oi-novo2" ${ab0 === 'novo' ? '' : 'hidden'}><input data-oi-nn placeholder="Nome (ex.: PETR4, CDB Banco X)" aria-label="Nome do ativo novo">
+        <p class="bas-inv-k">Classe</p><div class="bas-oi-cls">${classes.map((c) => `<button type="button" data-oi-cl="${esc(c)}" style="--bc:${corC(c)}"><i></i>${esc(c)}</button>`).join('')}<button type="button" data-oi-cl="" class="outra">${I.plus}Outra</button></div>
+        <input data-oi-nc placeholder="Nome da classe nova (ex.: Ações BR)" aria-label="Classe nova" hidden>
+        <button type="button" class="btn primary lg bas-cta" data-oi-novo disabled>Adicionar</button></div>`;
+    const el = basUltPop('bas-oi-tpl', 'Adicionar ativo', 'Escolha um que você tem ou crie um novo'); if (!el) return;
+    const q = (x) => el.querySelector(x); let cl = null; const lis = [...el.querySelectorAll('.bas-inv-ls li')];
+    const pode = () => { q('[data-oi-novo]').disabled = !(q('[data-oi-nn]').value.trim() && (cl || (cl === '' && q('[data-oi-nc]').value.trim()))); };
+    const fecha = () => q('[data-pop="x"]').click();
+    el.addEventListener('input', (e) => { if (e.target.matches('[data-oi-q]')) { const t = e.target.value.trim().toLowerCase(); lis.forEach((li) => { li.hidden = !!t && !li.dataset.q.includes(t); }); } else pode(); });
+    el.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; const d = b.dataset;
+      if (d.oiAba) { el.querySelectorAll('[data-oi-aba]').forEach((x) => { x.classList.toggle('on', x === b); x.setAttribute('aria-selected', String(x === b)); }); el.querySelectorAll('[data-oi-p]').forEach((x) => { x.hidden = x.dataset.oiP !== d.oiAba; }); if (d.oiAba === 'novo') q('[data-oi-nn]').focus(); }
+      else if (d.oiAddId) { const i = its.find((x) => x.id === d.oiAddId); if (i) { linhas.push({ id: i.id, n: i.n, c: i.c, s: 0 }); fecha(); desenha(); foco(); } }
+      else if (d.oiCl != null) { cl = d.oiCl; el.querySelectorAll('[data-oi-cl]').forEach((x) => x.classList.toggle('on', x === b)); const nc = q('[data-oi-nc]'); nc.hidden = cl !== ''; if (cl === '') nc.focus(); pode(); }
+      else if (d.oiNovo != null) { const n = q('[data-oi-nn]').value.trim(); const c = cl || q('[data-oi-nc]').value.trim(); if (!n || !c) return;
+        linhas.push({ id: null, n, c, tipo: tipoDe(c), s: 0 }); fecha(); desenha(); foco(); }
+      else return; basSom('toque'); }); };
   inp.addEventListener('input', () => { sugere(); desenha(); });
   pg.addEventListener('input', (e) => { const k = e.target.dataset.oiS; if (k == null) return; linhas[+k].s = num(e.target.value); status(); });
   pg.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b || !pg.contains(b)) return; const d = b.dataset;
     if (d.oiTudo) { inp.value = d.oiTudo; sugere(); desenha(); }
     else if (d.oiSug != null) { sugere(); desenha(); }
     else if (d.oiX != null) { linhas.splice(+d.oiX, 1); desenha(); }
-    else if (d.oiMais != null) { add.hidden = !add.hidden; b.setAttribute('aria-expanded', String(!add.hidden)); if (!add.hidden) add.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
-    else if (d.oiAddId) { const i = its.find((x) => x.id === d.oiAddId); if (i) { linhas.push({ id: i.id, n: i.n, c: i.c, s: 0 }); desenha(); const q = lista.querySelector(`[data-oi-s="${linhas.length - 1}"]`); if (q) q.focus(); } }
-    else if (d.oiTp) { pg.querySelectorAll('[data-oi-tp]').forEach((x) => x.classList.toggle('on', x === b)); }
-    else if (d.oiNovo != null) { const n = pg.querySelector('[data-oi-nn]').value.trim(); const c = pg.querySelector('[data-oi-nc]').value.trim(); if (!n || !c) { toast('Preencha o nome e a classe do ativo novo.'); return; }
-      linhas.push({ id: null, n, c, tipo: (pg.querySelector('[data-oi-tp].on') || {}).dataset?.oiTp || 'BOLSA DE VALORES', s: 0 }); pg.querySelector('[data-oi-nn]').value = ''; pg.querySelector('[data-oi-nc]').value = ''; add.hidden = true; desenha();
-      const q = lista.querySelector(`[data-oi-s="${linhas.length - 1}"]`); if (q) q.focus(); }
+    else if (d.oiMais != null) abreAdd();
     else return; if (typeof basSom === 'function') basSom('toque'); });
   sugere(); desenha();
 }
