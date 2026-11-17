@@ -19,7 +19,7 @@ const BAS_NOMES = { basico: 'App', completo: 'SaaS' }; // nomes das duas versõe
 const basTrocaHtml = () => { const v = basInterface();
   return `<div class="seg bas-troca" role="group" aria-label="Versão do AVEN">${['basico', 'completo'].map((k) => `<button${v === k ? ' class="on"' : ''} data-act="bas-ui" data-v="${k}" aria-pressed="${v === k}">${BAS_NOMES[k]}</button>`).join('')}</div>`; };
 const BAS_ABAS = [['inicio', 'Início', I.geral], ['gastos', 'Gastos', I.despesas], ['investir', 'Patrimônio', I.inv]]; // o Perfil abre pelo botão do topo (`basEuBtn`)
-const BAS_FORMS = new Set(['gasto', 'conta', 'conta-f', 'entrada', 'aporte', 'ativo-ed', 'meta', 'objetivo', 'perfil', 'provento', 'limite', 'alvos', 'ponto', 'excluir', 'retro', 'importar', 'sonho-novo']); // telas de formulário (e a retrospectiva, em tela cheia) escondem as abas
+const BAS_FORMS = new Set(['gasto', 'conta', 'conta-f', 'entrada', 'aporte', 'ativo-ed', 'meta', 'objetivo', 'perfil', 'provento', 'limite', 'alvos', 'ponto', 'excluir', 'retro', 'importar', 'sonho-novo', 'voz']); // telas de formulário (e a retrospectiva, em tela cheia) escondem as abas
 const BAS_AREAS = ['Alimentação', 'Moradia', 'Transporte', 'Saúde', 'Lazer', 'Compras', 'Contas', 'Educação'];
 const I_VOLTA = ic('<path d="m15 6-6 6 6 6"/>');
 
@@ -674,7 +674,7 @@ function basIaTela() {
     <div class="bas-iax-cs">${card(E.IA_FICHAS.aporte, 'Dá para investir', basCent(D.disponivel), I.inv)}${card(E.IA_FICHAS.gastos, `Gastou ${basJanFrase()}`, basCent(sai), I.despesas)}</div>
     <div class="ia-fichas bas-iax-fi" data-ia-fichas role="group" aria-label="Sugestões de perguntas">${iaFichasHtml()}</div>
     <form class="ia-f bas-iax-f" data-form="ia" autocomplete="off"><input name="q" maxlength="300" placeholder="${ult ? esc(ult.txt) : 'Pergunte sobre o seu dinheiro'}" aria-label="Pergunta para o assistente" enterkeyhint="send">
-      <span class="bas-iax-fr"><button type="button" class="bas-iax-mais" data-act="ia-mais" aria-label="Mais perguntas">${I.plus}</button><span class="bas-iax-mod">${esc(CFG.marca || '')} Intelligence</span><button class="bas-iax-env" aria-label="Enviar">${I_IA_ENV}</button></span></form></div>`;
+      <span class="bas-iax-fr"><button type="button" class="bas-iax-mais" data-act="ia-mais" aria-label="Mais perguntas">${I.plus}</button><span class="bas-iax-mod">${esc(CFG.marca || '')} Intelligence</span><button type="button" class="bas-iax-voz" ${basIr('voz')} aria-label="Conversar por voz com o Cifrão">${I_MIC}</button><button class="bas-iax-env" aria-label="Enviar">${I_IA_ENV}</button></span></form></div>`;
 }
 function basTelaIa() {
   const aba = ['avisos', 'duvidas'].includes(S.basIaAba) ? S.basIaAba : 'conversa'; const av = basAvisosNovos();
@@ -824,7 +824,7 @@ function basIaxLigar() {
 function basDesenhar() {
   const st = document.getElementById('bas-o3');
   if (st) { const falhou = () => st.classList.add('sem-3d'); if (typeof o3Ligar === 'function') o3Ligar(st, st.dataset.tipo, falhou); else falhou(); }
-  basAhLigar(); basSn2Ligar(); basIaxLigar(); basCifVe(); basGfLigar(); basPeriodoRepinta(); { const f = document.querySelector('.bas-form'); if (f && f.querySelector('[name="areaIc"]') && !f.dataset.ic) { f.dataset.ic = '1'; f.addEventListener('change', (e) => { if (e.target.name !== 'area') return; const r = f.querySelector(`[name="areaIc"][value="${basCatIcId(e.target.value)}"]`); if (r) r.checked = true; }); } } { const on = document.querySelector('.bas-cce-m.on'); const col = on && on.parentElement; if (col && !col.dataset.vis) { col.dataset.vis = '1'; col.scrollTop = on.offsetTop - col.clientHeight / 2 + on.offsetHeight / 2; } } basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basAtLigar(); basEfLigar(); basCtwLigar(); basOiLigar(); basInvLigar(); basIgLigar(); basGfPickLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
+  basAhLigar(); basSn2Ligar(); basVozLigar(); basIaxLigar(); basCifVe(); basGfLigar(); basPeriodoRepinta(); { const f = document.querySelector('.bas-form'); if (f && f.querySelector('[name="areaIc"]') && !f.dataset.ic) { f.dataset.ic = '1'; f.addEventListener('change', (e) => { if (e.target.name !== 'area') return; const r = f.querySelector(`[name="areaIc"][value="${basCatIcId(e.target.value)}"]`); if (r) r.checked = true; }); } } { const on = document.querySelector('.bas-cce-m.on'); const col = on && on.parentElement; if (col && !col.dataset.vis) { col.dataset.vis = '1'; col.scrollTop = on.offsetTop - col.clientHeight / 2 + on.offsetHeight / 2; } } basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basAtLigar(); basEfLigar(); basCtwLigar(); basOiLigar(); basInvLigar(); basIgLigar(); basGfPickLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
   const wr = document.querySelector('.bas-wr'); if (wr && !wr.dataset.lig) { wr.dataset.lig = '1'; basWrIr(wr, 0); }
   const sq = document.querySelector('[data-sq-conta]'); if (sq && !sq.dataset.lig && !matchMedia('(prefers-reduced-motion: reduce)').matches) { sq.dataset.lig = '1'; const alvo = +sq.dataset.sqConta; const t0 = performance.now();
     const passo = (t) => { const k = Math.min(1, (t - t0) / 900); sq.textContent = Math.round(alvo * (1 - Math.pow(1 - k, 3))); if (k < 1 && sq.isConnected) requestAnimationFrame(passo); }; if (alvo > 0) requestAnimationFrame(passo); }
@@ -2185,6 +2185,82 @@ function basTelaSonhoNovo(o) {
     <div class="bas-sn2-fbts"><button class="btn primary lg bas-cta" data-act="bas-sn2-ver" data-id="${esc(st.id || '')}">Ver meu sonho</button><button class="btn lg bas-cta" data-act="bas-voltar">Voltar</button></div>`; }
   return `<div class="bas-pg bas-pg-sn2n" data-p="${st.p}">${barra}${corpo}</div>`;
 }
+// ===== Conversa por voz com o Cifrão (referência: telas de "coach" por voz) =====
+// ouve pelo reconhecimento de fala do aparelho, responde com a mesma IA da conversa escrita (iaEnviar) e fala com a voz em português do iPhone,
+// mais leve e amigável; as palavras acendem enquanto ele fala e os valores viram fichas, com o primeiro em destaque contando até o número
+const I_MIC = ic('<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/>');
+const I_TECLADO = ic('<rect x="3" y="6" width="18" height="12" rx="2.5"/><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h10"/>');
+const I_PAUSA = ic('<path d="M9 6.5v11M15 6.5v11"/>');
+function basTelaVoz() {
+  const nome = String(S.profile.apelido || S.profile.nome || '').trim().split(' ')[0];
+  return `<div class="bas-voz" data-est="parado">
+    <div class="bas-voz-painel" aria-hidden="true"><span class="bas-voz-pontos"></span><span class="bas-voz-luz"></span></div>
+    <header class="bas-voz-h"><button class="bas-voz-b" data-act="bas-voltar" aria-label="Voltar">${I_VOLTA}</button><b>Cifrão</b><button class="bas-voz-b" data-voz-troca aria-label="Trocar a voz do Cifrão">${I_IA_ASTER}</button></header>
+    <div class="bas-voz-c" aria-live="polite"><div class="bas-voz-num" data-voz-num hidden></div>
+      <p class="bas-voz-t" data-voz-t><span class="oi">Olá${nome ? `, ${esc(nome)}` : ''}</span><span class="cm">Como posso ajudar?</span></p><div class="bas-voz-cta" data-voz-cta></div></div>
+    <p class="bas-voz-dica" data-voz-dica>Toque no Cifrão e fale</p>
+    <div class="bas-voz-pe">
+      <button class="bas-voz-lado" data-act="bas-voltar" aria-label="Escrever em vez de falar">${I_TECLADO}</button>
+      <button class="bas-voz-orb" data-voz-orb aria-label="Falar com o Cifrão"><span class="bas-voz-ondas" aria-hidden="true"><i></i><i></i><i></i></span><span class="cifrao" data-sem-giro></span></button>
+      <button class="bas-voz-lado" data-voz-pausa aria-label="Parar a fala" disabled>${I_PAUSA}</button></div></div>`;
+}
+let basVozAtivo = null; // reconhecimento em andamento (para parar ao sair da tela)
+function basVozParar() { try { if (basVozAtivo) basVozAtivo.abort(); } catch (e) { /* já parado */ } basVozAtivo = null; try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) { /* sem voz */ } }
+function basVozVozes() { try { return (window.speechSynthesis ? speechSynthesis.getVoices() : []).filter((v) => /^pt[-_]BR/i.test(v.lang)); } catch (e) { return []; } }
+function basVozEscolhida() { const vs = basVozVozes(); const pref = S.profile.prefs && S.profile.prefs.vozCifrao;
+  return vs.find((v) => pref && v.name === pref) || vs.find((v) => /luciana/i.test(v.name)) || vs.find((v) => /felipe/i.test(v.name)) || vs.find((v) => /google/i.test(v.name)) || vs[0] || null; }
+function basVozLigar() {
+  const w = document.querySelector('.bas-voz'); if (!w) { if (basVozAtivo) basVozParar(); return; } if (w.dataset.lig) return; w.dataset.lig = '1';
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition; const fala = window.speechSynthesis;
+  const q$ = (x) => w.querySelector(x); const t = q$('[data-voz-t]'); const dica = q$('[data-voz-dica]'); const num = q$('[data-voz-num]'); const cta = q$('[data-voz-cta]'); const orb = q$('[data-voz-orb]'); const pausa = q$('[data-voz-pausa]');
+  const cif = (g) => { const h = orb.querySelector('.cifrao'); if (h && h.cifrao && g) h.cifrao.tocar(g); };
+  const est = (e, d) => { w.dataset.est = e; if (d != null) dica.textContent = d; };
+  let ouvindo = false; let fim = '';
+  // a resposta em palavras (que acendem enquanto ele fala); dinheiro e porcentagem viram fichas; o primeiro valor em destaque, contando
+  const mostra = (txt) => { let pos = 0; let html = '';
+    txt.split(/(R\$\s?[\d.]+(?:,\d{1,2})?|-?\d+(?:,\d+)?\s?%)/).forEach((p, k) => { if (!p) return;
+      if (k % 2) html += `<span class="bas-voz-ficha w" data-c="${pos}">${esc(p)}</span>`;
+      else p.split(/(\s+)/).forEach((x) => { if (!x) return; html += /^\s+$/.test(x) ? x : `<span class="w" data-c="${pos}">${esc(x)}</span>`; pos += x.length; });
+      if (k % 2) pos += p.length; });
+    t.innerHTML = html;
+    const m = txt.match(/R\$\s?[\d.]+(?:,\d{1,2})?/); num.hidden = !m;
+    if (m) { const alvo = parseReais(m[0].replace(/R\$\s?/, '')) || 0; num.innerHTML = `<b>${brl0(0)}</b>`; const b = num.firstChild; const t0 = performance.now();
+      const passo = (n) => { const k = Math.min(1, (n - t0) / 900); b.textContent = brl0(alvo * (1 - Math.pow(1 - k, 3))); if (k < 1 && b.isConnected) requestAnimationFrame(passo); }; requestAnimationFrame(passo); } };
+  const falar = (txt) => {
+    const ws = [...t.querySelectorAll('.w')]; const acende = (c) => ws.forEach((x) => x.classList.toggle('lido', +x.dataset.c <= c));
+    if (!fala) { acende(1e9); est('parado', 'Toque no Cifrão para continuar'); return; }
+    fala.cancel(); const u = new SpeechSynthesisUtterance(oculto() ? txt.replace(/R\$\s?•+/g, 'um valor escondido') : txt); const v = basVozEscolhida(); if (v) u.voice = v; u.lang = 'pt-BR'; u.rate = 1.03; u.pitch = 1.12;
+    let viuLimite = false; let tm = 0; let n = 0;
+    u.onboundary = (e) => { viuLimite = true; acende(e.charIndex); if (++n % 6 === 0) cif('sim'); };
+    u.onstart = () => { est('falando', 'Falando…'); pausa.disabled = false;
+      // sem eventos de palavra (alguns aparelhos), as palavras acendem num ritmo estimado
+      setTimeout(() => { if (viuLimite) return; let i = 0; tm = setInterval(() => { if (i >= ws.length) { clearInterval(tm); return; } ws[i++].classList.add('lido'); }, 300); }, 400); };
+    u.onend = u.onerror = () => { clearInterval(tm); acende(1e9); pausa.disabled = true; if (w.dataset.est === 'falando') est('parado', 'Toque no Cifrão para continuar'); };
+    fala.speak(u); };
+  const pergunta = (q) => { est('pensando', 'Pensando…'); t.innerHTML = `<span class="eu">${esc(q)}</span>`; cta.innerHTML = ''; num.hidden = true; cif('pensando');
+    const st = iaEstado(); if (st.pend) { est('parado', 'Ainda pensando na anterior. Tente de novo.'); return; } iaEnviar(q); const t0 = Date.now();
+    const espera = () => { if (!w.isConnected) return; if (st.pend && Date.now() - t0 < 20000) { setTimeout(espera, 120); return; }
+      const i = st.msgs.length - 1; const m = st.msgs[i]; if (!m || m.de !== 'ia') { est('parado', 'Não consegui responder. Tente de novo.'); return; }
+      const tmp = document.createElement('div'); tmp.innerHTML = iaMsgHtml(m, i); const txt = (tmp.querySelector('p') ? tmp.querySelector('p').textContent : '').replace(/\s+/g, ' ').trim(); const bt = tmp.querySelector('button');
+      mostra(txt); cta.innerHTML = bt ? bt.outerHTML : ''; cif('animado'); falar(txt); };
+    espera(); };
+  const ouvir = () => {
+    if (!SR) { est('parado', 'Este aparelho não liberou a fala no navegador. Use o teclado para escrever.'); return; }
+    if (fala) { try { fala.cancel(); fala.speak(new SpeechSynthesisUtterance('')); } catch (e) { /* sem voz */ } } // no iPhone a voz precisa de um toque para ser liberada
+    const rec = new SR(); basVozAtivo = rec; rec.lang = 'pt-BR'; rec.interimResults = true; rec.continuous = false; fim = '';
+    rec.onstart = () => { ouvindo = true; est('ouvindo', 'Estou ouvindo…'); t.innerHTML = '<span class="cm">Pode falar</span>'; num.hidden = true; cta.innerHTML = ''; cif('curioso'); basVibra(12); };
+    rec.onresult = (e) => { let fin = ''; let tmp = ''; for (const r of e.results) { if (r.isFinal) fin += r[0].transcript; else tmp += r[0].transcript; } fim = (fin || tmp).trim();
+      t.innerHTML = `<span class="eu">${esc(fin)}</span><span class="eu int">${esc(tmp)}</span>`; };
+    rec.onerror = (e) => { ouvindo = false; basVozAtivo = null; est('parado', e.error === 'not-allowed' || e.error === 'service-not-allowed' ? 'Libere o microfone e o ditado do iPhone para este site e tente de novo.' : e.error === 'no-speech' ? 'Não ouvi nada. Toque e fale de novo.' : 'Não consegui ouvir. Toque e tente de novo.'); };
+    rec.onend = () => { ouvindo = false; basVozAtivo = null; if (fim) pergunta(fim); else if (w.dataset.est === 'ouvindo') est('parado', 'Não ouvi nada. Toque e fale de novo.'); };
+    try { rec.start(); } catch (e) { est('parado', 'Não consegui abrir o microfone.'); } };
+  orb.addEventListener('click', () => { if (ouvindo && basVozAtivo) { basVozAtivo.stop(); return; } if (w.dataset.est === 'pensando') return; if (fala) fala.cancel(); ouvir(); });
+  pausa.addEventListener('click', () => { if (fala) fala.cancel(); });
+  // trocar a voz: passa pelas vozes em português do aparelho e diz uma frase de exemplo
+  q$('[data-voz-troca]').addEventListener('click', () => { const vs = basVozVozes(); if (!vs.length) { est(w.dataset.est, 'Este aparelho só tem uma voz em português.'); return; }
+    const at = basVozEscolhida(); const nv = vs[(vs.indexOf(at) + 1) % vs.length]; S.profile.prefs = Object.assign({}, S.profile.prefs, { vozCifrao: nv.name }); touch('profile');
+    est('parado', `Voz: ${nv.name.replace(/\s*\(.*\)/, '')}`); mostra('Oi! Eu sou o Cifrão. Posso ajudar com o seu dinheiro?'); falar('Oi! Eu sou o Cifrão. Posso ajudar com o seu dinheiro?'); });
+}
 function basSn2Criar() {
   const st = S.basSn2; const L = objLista(); if (L.length >= 12) { toast('Você chegou ao limite de 12 sonhos.'); return; }
   const v = parseReais(st.valor); if (!(v > 0)) { toast('Informe quanto o sonho custa.'); const i = document.querySelector('[data-sn2="valor"]'); if (i) i.focus(); return; }
@@ -2591,7 +2667,7 @@ const basTelaClientes = () => basDet('Clientes', `<div class="bas-clientes">${vi
 document.addEventListener('change', (e) => { const t = e.target; if (!t.matches || !t.matches('input[data-bas-inst]')) return; instMinhaAlternar(t.dataset.basInst, t.checked); basSom('toque');
   const n = instMinhas().length; const c = document.querySelector('.bas-pj-n'); if (c) c.textContent = n ? `${n} ${n === 1 ? 'marcada' : 'marcadas'}` : 'Nenhuma'; });
 const BAS_TELAS = { importar: basTelaImportar, gasto: basTelaGasto, conta: basTelaConta, 'conta-f': basTelaContaF, entrada: basTelaEntrada, aporte: basTelaAporte, meta: basTelaMeta,
-  objetivos: basTelaObjetivos, objetivo: basTelaObjetivo, 'sonho-novo': basTelaSonhoNovo, categoria: basTelaCategoria, perfil: basTelaPerfil, contato: basTelaContato, ano: basTelaAno, 'ano-hist': basTelaAnoHist, ia: basTelaIa, saude: basTelaSaude, periodo: basTelaPeriodo, organizar: basTelaOrganizar, entradas: basTelaEntradas, sonhos: basTelaSonhos, 'sonho-det': basTelaSonhoDet, cartoes: basTelaCartoes, 'avisos-tela': basTelaAvisosNova, 'gasto-ver': basTelaGastoVer, 'cartao-novo': basTelaCartaoNovo, 'perfil-inv': basTelaPerfilInv, duvidas: () => basDet('Dúvidas', basDuvidasHtml()).replace(olhoHtml(), ''), cartao: basTelaCartao, retro: basTelaRetro, conquista: basTelaConquista, sequencia: basTelaSequencia, constelacao: basTelaConstelacao, 'cartao-estilo': basTelaCartaoEstilo, historico: basTelaHistorico, raiox: basTelaRaioX, resumo: basTelaResumo, limite: basTelaLimite, avisos: basTelaAvisos, simular: basTelaSimular, alvos: basTelaAlvos, ativo: basTelaAtivo, 'ativo-ed': basTelaAtivoEd, aportar: basTelaOndeInvestir, proventos: basTelaProventos, provento: basTelaProvento, carteira: basTelaCarteira, planejamento: basTelaPlanejamento, privacidade: () => basDet('Privacidade e termos', `<div class="card bas-pol">${politicaHtml(CFG, Store.mode === 'cloud')}</div>`), excluir: basTelaExcluir, ponto: basTelaPonto, clientes: basTelaClientes };
+  objetivos: basTelaObjetivos, objetivo: basTelaObjetivo, 'sonho-novo': basTelaSonhoNovo, voz: basTelaVoz, categoria: basTelaCategoria, perfil: basTelaPerfil, contato: basTelaContato, ano: basTelaAno, 'ano-hist': basTelaAnoHist, ia: basTelaIa, saude: basTelaSaude, periodo: basTelaPeriodo, organizar: basTelaOrganizar, entradas: basTelaEntradas, sonhos: basTelaSonhos, 'sonho-det': basTelaSonhoDet, cartoes: basTelaCartoes, 'avisos-tela': basTelaAvisosNova, 'gasto-ver': basTelaGastoVer, 'cartao-novo': basTelaCartaoNovo, 'perfil-inv': basTelaPerfilInv, duvidas: () => basDet('Dúvidas', basDuvidasHtml()).replace(olhoHtml(), ''), cartao: basTelaCartao, retro: basTelaRetro, conquista: basTelaConquista, sequencia: basTelaSequencia, constelacao: basTelaConstelacao, 'cartao-estilo': basTelaCartaoEstilo, historico: basTelaHistorico, raiox: basTelaRaioX, resumo: basTelaResumo, limite: basTelaLimite, avisos: basTelaAvisos, simular: basTelaSimular, alvos: basTelaAlvos, ativo: basTelaAtivo, 'ativo-ed': basTelaAtivoEd, aportar: basTelaOndeInvestir, proventos: basTelaProventos, provento: basTelaProvento, carteira: basTelaCarteira, planejamento: basTelaPlanejamento, privacidade: () => basDet('Privacidade e termos', `<div class="card bas-pol">${politicaHtml(CFG, Store.mode === 'cloud')}</div>`), excluir: basTelaExcluir, ponto: basTelaPonto, clientes: basTelaClientes };
 
 /* ================= gravação (no mesmo formato do Completo) ================= */
 function basErro(f, msg) { const e = f.querySelector('.bas-err'); e.textContent = msg; e.hidden = false; return false; }
