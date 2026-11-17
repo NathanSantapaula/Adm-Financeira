@@ -3778,3 +3778,26 @@ body[data-ui="basico"] :is(.bas-gt-bg, .bas-noite) .vv-on {
 @media (prefers-reduced-motion: reduce) { body[data-ui="basico"] .vv-on { transform: none !important; } }
 /* Histórico sem a bolinha do ano: a divisória começa na margem */
 .bas-pg-hs .bas-pv2-ls li + li .bas-pv2-l::before { left: 16px; }
+
+/* ===== Análise do ano, versão 3: variação numa linha, colunas da sobra de cada mês com o detalhe do mês, e para onde foi o dinheiro ===== */
+.bas-ah3-var { display: flex; align-items: center; gap: 8px; margin: 8px 0 0; font-size: 15px; font-weight: 600; color: rgba(255, 255, 255, .9); }
+.bas-ah3-var span { font-size: 13px; font-weight: 700; color: rgba(255, 255, 255, .65); }
+.bas-ah3-g { margin-top: 26px; height: 170px; }
+.bas-ah3-g button:disabled { cursor: default; }
+.bas-ah3-m { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 14px; }
+.bas-ah3-m > small { grid-column: 1 / -1; font-size: 13px; font-weight: 600; color: rgba(255, 255, 255, .7); }
+.bas-ah3-m > span { display: grid; gap: 2px; padding: 10px 12px; border-radius: 16px; background: linear-gradient(155deg, rgba(255, 255, 255, .22), rgba(255, 255, 255, .06) 55%, rgba(255, 255, 255, .1)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5), inset 0 0 0 .5px rgba(255, 255, 255, .15); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); min-width: 0; }
+.bas-ah3-m em { font-style: normal; font-size: 12px; color: rgba(255, 255, 255, .7); } .bas-ah3-m b { font-size: 15px; font-weight: 700; color: #fff; font-variant-numeric: tabular-nums; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .bas-ah3-m b.neg { color: #FFB3BE; }
+.card.bas-ah3-on { padding: 18px 16px; border-radius: 22px; margin-bottom: 18px; }
+.bas-ah3-ont { display: block; font-size: 16px; margin-bottom: 14px; }
+.bas-ah3-bar { display: flex; gap: 3px; height: 14px; border-radius: 99px; overflow: hidden; }
+.bas-ah3-bar i { flex: 0 0 var(--p); background: var(--c); border-radius: 3px; transform-origin: left; animation: bas-ah3-cresce 700ms var(--ease-out) both; }
+@keyframes bas-ah3-cresce { from { transform: scaleX(0); } }
+.bas-ah3-leg { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 10px; }
+.bas-ah3-leg li { display: grid; grid-template-columns: 12px 1fr auto auto; align-items: center; gap: 10px; font-size: 14.5px; }
+.bas-ah3-leg li > i { width: 10px; height: 10px; border-radius: 50%; background: var(--c); }
+.bas-ah3-leg b { font-weight: 700; font-variant-numeric: tabular-nums; } .bas-ah3-leg small { min-width: 78px; text-align: right; font-size: 13px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.bas-ah3-v { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+@media (prefers-reduced-motion: reduce) { .bas-ah3-bar i { animation: none; } }
+.bas-pt-bg .bas-ah3-var.pos, .bas-pt-bg .bas-ah3-var.neg { color: rgba(255, 255, 255, .92) !important; }
+.bas-ah3-bar i { display: block; }
