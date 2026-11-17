@@ -1513,20 +1513,9 @@ function basTelaAnoHist(o) {
     <small class="bas-pv2-k">Patrimônio ${L.parcial ? `até ${MES_LONGO[L.meses - 1]}` : `no fim de ${ano}`}</small><b class="bas-pv2-t">${basCent(L.patrimonioFim)}</b>
     ${baseP > 0 && Math.abs(varP) >= 1 ? `<p class="bas-ah3-var ${varP >= 0 ? 'pos' : 'neg'}">${varP >= 0 ? '↗' : '↘'} ${brl0(Math.abs(varP))} ${varP >= 0 ? 'a mais' : 'a menos'} no ano <span>${pct(Math.abs(varP / baseP))}</span></p>` : ''}
     ${linha}`;
-  const mesC = `<section class="card bas-ah4-m" aria-live="polite"><div class="bas-ah4-mh"><b>${um ? cap(MES_LONGO[sel]) : `No ano${L.parcial ? ' até agora' : ''}`}</b>${um ? '<button class="lnk" data-act="bas-ah-mes" data-m="' + sel + '">Ver o ano</button>' : '<small>Toque num mês da linha</small>'}</div>
-      <div class="bas-ah4-c"><span><em>Entrou</em><b class="pos">${brl0(ent)}</b></span><span><em>Saiu</em><b>${brl0(gas)}</b></span><span><em>Sobrou</em><b class="${sob < 0 ? 'neg' : ''}">${brl0(sob)}</b></span></div>${ent > 0 ? `<p class="bas-ah4-g2"><span class="bas-ah4-gb"><i style="width:${Math.max(0, Math.min(100, (sob / ent) * 100)).toFixed(1)}%"></i></span><span>Você guardou <b>${pct(Math.max(0, sob / ent))}</b> do que entrou</span></p>` : ''}</section>`;
-  // para onde foi o que entrou no ano: gastos, investido e o que ficou parado
-  const inv = Math.max(0, Math.min(apl || 0, Math.max(0, L.entradas - L.gastos))); const parado = Math.max(0, L.entradas - L.gastos - inv); const totE = Math.max(1, L.entradas);
-  const fat = [['Gastos', L.gastos, 'var(--neg)'], ['Investido', inv, 'var(--accent)'], ['Ficou parado', parado, '#8E8E93']].filter((f) => f[1] > 0.5);
-  const onde = L.entradas > 0 ? `<section class="card bas-ah3-on"><b class="bas-ah3-ont">De cada R$ 100 que entraram</b>
-      <div class="bas-ah3-bar" aria-hidden="true">${fat.map(([n, v, c]) => `<i style="--p:${((v / totE) * 100).toFixed(1)}%;--c:${c}"></i>`).join('')}</div>
-      <ul class="bas-ah3-leg">${fat.map(([n, v, c]) => `<li><i style="--c:${c}"></i><span>${n}</span><b>R$ ${Math.round((v / totE) * 100)}</b><small>${brl0(v)}</small></li>`).join('')}</ul></section>` : '';
-  // destaques do ano: melhor mês, mês mais apertado, mês que mais gastou e proventos
-  const sobQ = (q) => (+q.entradas || 0) - (+q.gastos || 0);
-  const melhor = ser.length ? ser.reduce((b, q) => (sobQ(q) > sobQ(b) ? q : b)) : null; const pior = ser.length ? ser.reduce((b, q) => (sobQ(q) < sobQ(b) ? q : b)) : null; const caro = ser.length ? ser.reduce((b, q) => ((+q.gastos || 0) > (+b.gastos || 0) ? q : b)) : null;
-  const dest = (ic, cor, k0, t0, v0) => `<div class="card bas-ah5-d"><span class="bas-sa-ic" style="--bc:${cor}" aria-hidden="true">${ic}</span><small>${k0}</small><b>${t0}</b><em>${v0}</em></div>`;
-  const destaques = ser.length ? basSecao('Destaques do ano', '', `<div class="bas-ah5-ds">${dest(I_GASTO, 'var(--pos)', 'Melhor mês', cap(MES_LONGO[melhor.mes]), `sobrou ${brl0(sobQ(melhor))}`)}${dest(I_ENTRADA, sobQ(pior) < 0 ? 'var(--neg)' : '#FF9F0A', 'Mês mais apertado', cap(MES_LONGO[pior.mes]), `${sobQ(pior) < 0 ? 'faltou' : 'sobrou'} ${brl0(Math.abs(sobQ(pior)))}`)}${dest(I_CARTAO_GF, 'var(--neg)', 'Mais gastou', cap(MES_LONGO[caro.mes]), `saiu ${brl0(+caro.gastos || 0)}`)}${dest(I_PROV, '#F5B83D', 'Proventos', brl0(L.proventos || 0), 'recebidos no ano')}</div>`) : '';
-  const folha = `${mesC}${onde}${destaques}
+  const mesC = `<div class="bas-ah6-h" aria-live="polite"><b>${um ? cap(MES_LONGO[sel]) : `No ano${L.parcial ? ' até agora' : ''}`}</b>${um ? `<button class="lnk" data-act="bas-ah-mes" data-m="${sel}">Ver o ano</button>` : ''}</div>
+    <div class="bas-ah6-c"><div class="card"><em>Entrou</em><b class="pos">${brl0(ent)}</b></div><div class="card"><em>Saiu</em><b>${brl0(gas)}</b></div><div class="card"><em>Sobrou</em><b class="${sob < 0 ? 'neg' : ''}">${brl0(sob)}</b></div></div>`;
+  const folha = `${mesC}
     ${L.parcial ? `<p class="bas-disc keep">${ano} em andamento: valores até ${MES_LONGO[L.meses - 1]}.</p>` : ''}<p class="bas-disc keep">Patrimônio a custo: o que você informou ajustado pelos aportes, sem a variação de mercado.</p>`;
   return basPgAzul('bas-pg-ah', `Seu ${ano}`, topo, folha);
 }
