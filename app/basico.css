@@ -3856,3 +3856,23 @@ body[data-ui="basico"] :is(.bas-gt-bg, .bas[data-aba="inicio"] .bas-noite) .bas-
 .bas-ah7-dv { position: relative; z-index: 0; height: 104px; margin-top: -112px; pointer-events: none; }
 .bas-ah7-dv i { width: 52%; max-width: 16px; border-radius: 6px 6px 2px 2px; opacity: .85; }
 .bas-ah2-x { position: relative; z-index: 1; }
+
+/* ===== Gráfico do ano, acabamento (dataviz): barras de dividendo com quina de 4px só em cima, apoiadas numa base reta;
+   a linha do patrimônio ganha um anel na cor do fundo (separa das barras sem apagá-las) e brilho suave; só o mês escolhido acende ===== */
+.bas-ah7-dv { border-bottom: 1px solid rgba(255, 255, 255, .16); }
+.bas-ah7-dv i { width: 58%; max-width: 18px; border-radius: 4px 4px 0 0; opacity: .55;
+  background: linear-gradient(180deg, #FFE7A8 0%, #F7C14E 55%, #E9A82C 100%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55); transition: opacity 200ms ease; }
+.bas-ah7-dv span.on i { opacity: 1; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7), 0 0 16px rgba(255, 200, 80, .55); }
+.bas-ah4-h { fill: none; stroke: rgba(14, 24, 150, .92); stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.bas-ah4-l { stroke-width: 3 !important; filter: drop-shadow(0 0 6px rgba(255, 255, 255, .45)) !important; }
+.bas-ah4-p i { box-shadow: 0 0 0 3px rgba(14, 24, 150, .92); }
+.bas-ah4-p.on i { box-shadow: 0 0 0 3px rgba(14, 24, 150, .92), 0 0 0 6px rgba(255, 255, 255, .22), 0 0 18px #fff; }
+.bas-ah4-g .bas-hs-a { opacity: .7; }
+/* gráfico do ano, refinado: barras em vidro dourado com topo iluminado; só o ponto do mês escolhido aparece; anel da linha mais fino */
+.bas-ah7-dv i { opacity: 1; background: linear-gradient(180deg, rgba(255, 224, 150, .78) 0%, rgba(255, 200, 90, .42) 55%, rgba(255, 190, 70, .18) 100%); box-shadow: inset 0 2px 0 rgba(255, 240, 200, .95); }
+.bas-ah7-dv span.on i { background: linear-gradient(180deg, #FFF0C2 0%, #FFCF5C 50%, #F2A93B 100%); box-shadow: inset 0 2px 0 #fff, 0 0 18px rgba(255, 200, 80, .6); }
+.bas-ah4-h { stroke: rgba(16, 28, 170, .7); stroke-width: 7; }
+.bas-ah4-p i { box-shadow: none; }
+.bas-ah4-p:not(.on) i { opacity: 0; }
+.bas-ah4-p.on i { box-shadow: 0 0 0 3px rgba(16, 28, 170, .8), 0 0 0 6px rgba(255, 255, 255, .22), 0 0 18px #fff; }
+.bas-ah4-g .bas-hs-a { opacity: .9; }
