@@ -3705,3 +3705,9 @@ li.on > .bas-ig-ck { background: var(--accent); box-shadow: 0 4px 10px -4px var(
 /* os dois widgets: só a setinha para o lado, como nos outros cartões */
 .bas-ph-ir { width: auto; height: auto; background: none !important; color: var(--ink-3); }
 .bas-ph-ir svg { width: 18px; height: 18px; }
+/* setinha igual à dos outros cartões do Início: solta, cinza e no meio da altura do cartão */
+.bas-w-ph .bas-ph-ir, .bas-w-ano .bas-ph-ir { position: absolute; top: 50%; right: 16px; transform: translateY(-50%); width: 18px; height: 18px; display: block; color: var(--ink-3); }
+.bas-w-ph .bas-ph-ir svg, .bas-w-ano .bas-ph-ir svg { width: 18px; height: 18px; stroke-width: 1.8; }
+.bas-w-ph .bas-ph-h, .bas-w-ano .bas-w-az-h { padding-right: 26px; }
+.bas-w-ph .bas-ph-g, .bas-w-ph .bas-ph-x { margin-right: 26px; }
+.bas-w-ano .bas-cap { margin-right: 26px; }
