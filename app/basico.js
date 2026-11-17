@@ -1502,11 +1502,13 @@ function basTelaAnoHist(o) {
   const sel = S.basAhMes != null && ser.some((q) => q.mes === S.basAhMes) ? S.basAhMes : null; const um = sel != null;
   const W = 320; const Hh = 130; const vs = ser.map((q) => q.patrimonio); const mn = Math.min(...vs, L.patrimonioInicio); const mx = Math.max(...vs, 1); const fg = (mx - mn) * 0.15 || mx * 0.05 || 1;
   const xM = (m) => ((m + 0.5) / 12) * W; const yV = (v) => Hh - 8 - ((v - (mn - fg)) / ((mx + fg) - (mn - fg))) * (Hh - 34);
-  const PA = ser.map((q) => [xM(q.mes), yV(q.patrimonio)]); const dA = PA.length > 1 ? basCurva(PA) : ''; const ultQ = ser[ser.length - 1]; const foco = um ? sel : ultQ ? ultQ.mes : null;
+  const mxD = Math.max(1, ...ser.map((q) => +q.proventos || 0)); const PA = ser.map((q) => [xM(q.mes), yV(q.patrimonio)]); const dA = PA.length > 1 ? basCurva(PA) : ''; const ultQ = ser[ser.length - 1]; const foco = um ? sel : ultQ ? ultQ.mes : null;
   const linha = `<div class="bas-ah4-g"><svg viewBox="0 0 ${W} ${Hh}" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="bas-ah4g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".3"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
       ${dA ? `<path class="bas-hs-a" d="${dA} L${PA[PA.length - 1][0].toFixed(1)} ${Hh} L${PA[0][0].toFixed(1)} ${Hh} Z" fill="url(#bas-ah4g)"/><path class="bas-hs-l" d="${dA}"/>` : ''}</svg>
       ${ser.map((q) => { const on = q.mes === foco; return `<button class="bas-ah4-p${on ? ' on' : ''}" data-act="bas-ah-mes" data-m="${q.mes}" style="left:${((xM(q.mes) / W) * 100).toFixed(2)}%;top:${((yV(q.patrimonio) / Hh) * 100).toFixed(2)}%" aria-label="${cap(MES_LONGO[q.mes])}: ${esc(brl0(q.patrimonio))}" aria-pressed="${q.mes === sel}"><i></i>${on ? `<b>${tickFmt(q.patrimonio)}</b>` : ''}</button>`; }).join('')}</div>
-    <div class="bas-ah2-x" aria-hidden="true">${MES.map((n, m) => `<span class="${m === foco ? 'on' : ser.some((q) => q.mes === m) ? '' : 'fut'}">${n[0]}</span>`).join('')}</div>`;
+    <div class="bas-ah7-dv" aria-hidden="true">${MES.map((n, m) => { const q = ser.find((x0) => x0.mes === m); const d = q ? +q.proventos || 0 : 0; return `<span class="${m === foco ? 'on' : ''}"><i style="--h:${d > 0 ? Math.max(8, (d / mxD) * 100).toFixed(1) : 0}%"></i></span>`; }).join('')}</div>
+    <div class="bas-ah2-x" aria-hidden="true">${MES.map((n, m) => `<span class="${m === foco ? 'on' : ser.some((q) => q.mes === m) ? '' : 'fut'}">${n[0]}</span>`).join('')}</div>
+    <p class="bas-ah7-leg"><span><i class="l"></i>Patrimônio</span><span><i class="d"></i>Dividendos do mês</span></p>`;
   const qS = um ? ser.find((x0) => x0.mes === sel) : null;
   const ent = um ? +qS.entradas || 0 : L.entradas; const gas = um ? +qS.gastos || 0 : L.gastos; const sob = ent - gas;
   const topo = `<div class="bas-ah-anos bas-ah2-anos" role="group" aria-label="Escolher o ano">${anos.map((l) => `<button class="${l.ano === ano ? 'on' : ''}" data-act="bas-ah-ano" data-y="${l.ano}" aria-pressed="${l.ano === ano}">${l.ano}</button>`).join('')}</div>
@@ -1515,7 +1517,14 @@ function basTelaAnoHist(o) {
     ${linha}`;
   const mesC = `<div class="bas-ah6-h" aria-live="polite"><b>${um ? cap(MES_LONGO[sel]) : `No ano${L.parcial ? ' até agora' : ''}`}</b>${um ? `<button class="lnk" data-act="bas-ah-mes" data-m="${sel}">Ver o ano</button>` : ''}</div>
     <div class="bas-ah6-c"><div class="card"><em>Entrou</em><b class="pos">${brl0(ent)}</b></div><div class="card"><em>Saiu</em><b>${brl0(gas)}</b></div><div class="card"><em>Sobrou</em><b class="${sob < 0 ? 'neg' : ''}">${brl0(sob)}</b></div></div>`;
-  const folha = `${mesC}
+  // a análise do ano, como na tela antiga: melhor mês, mês mais apertado e o ano com a média por mês
+  const sobQ = (q) => (+q.entradas || 0) - (+q.gastos || 0); const nM = Math.max(1, ser.length);
+  const melhor = ser.length ? ser.reduce((b, q) => (sobQ(q) > sobQ(b) ? q : b)) : null; const pior = ser.length ? ser.reduce((b, q) => (sobQ(q) < sobQ(b) ? q : b)) : null;
+  const tile = (k0, q, ic, cor) => `<div class="card bas-sa-t"><span class="bas-sa-ic" style="--bc:${cor}" aria-hidden="true">${ic}</span><small>${k0}</small><b>${cap(MES_LONGO[q.mes])}</b><em>${basCent(sobQ(q))}</em></div>`;
+  const lin = ([nome, v, i0, cor]) => `<li><span class="bas-pv2-l"><span class="bas-pv2-ini" style="--bc:${cor}" aria-hidden="true">${i0}</span><span class="bas-pv2-n"><b>${nome}</b><small>${brl0(v / nM)} por mês</small></span><b class="bas-pv2-v">${basCent(v)}</b></span></li>`;
+  const analise = `${melhor ? `<div class="bas-sa-dupla">${tile('Melhor mês', melhor, I_GASTO, 'var(--pos)')}${tile('Mês mais apertado', pior, I_ENTRADA, sobQ(pior) < 0 ? 'var(--neg)' : '#FF9F0A')}</div>` : ''}
+    ${basSecao('No ano', '', `<ul class="card bas-pv2-ls">${[['Entrou', L.entradas || 0, I_ENTRADA, 'var(--pos)'], ['Saiu', L.gastos || 0, I_GASTO, 'var(--neg)'], ['Investido', (L.aplicado != null ? L.aplicado : L.aportes) || 0, I.inv, 'var(--accent)'], ['Proventos', L.proventos || 0, I_PROV, '#F5B83D']].map(lin).join('')}</ul>`)}`;
+  const folha = `${mesC}${analise}
     ${L.parcial ? `<p class="bas-disc keep">${ano} em andamento: valores até ${MES_LONGO[L.meses - 1]}.</p>` : ''}<p class="bas-disc keep">Patrimônio a custo: o que você informou ajustado pelos aportes, sem a variação de mercado.</p>`;
   return basPgAzul('bas-pg-ah', `Seu ${ano}`, topo, folha);
 }

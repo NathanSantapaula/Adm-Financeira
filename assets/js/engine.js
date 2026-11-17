@@ -676,7 +676,7 @@
       l.lacuna = !!(ant && l.ano - ant.ano > 1);
       if (ant) { l.entradasVar = ant.entradas > 0 && !l.parcial && !ant.parcial ? l.entradas / ant.entradas - 1 : null; l.gastosVar = ant.gastos > 0 && !l.parcial && !ant.parcial ? l.gastos / ant.gastos - 1 : null; }
     });
-    const serie = []; anos.forEach((l) => { for (let m = 0; m <= l.ult; m++) serie.push({ ano: l.ano, mes: m, patrimonio: r2(l.C.patrimonio[m]), entradas: r2(l.C.receita[m]), gastos: r2(l.C.despesas[m]) }); delete l.C; });
+    const serie = []; anos.forEach((l) => { for (let m = 0; m <= l.ult; m++) serie.push({ ano: l.ano, mes: m, patrimonio: r2(l.C.patrimonio[m]), entradas: r2(l.C.receita[m]), gastos: r2(l.C.despesas[m]), aplicado: r2(l.C.aplicado[m]), proventos: r2(l.C.faturamento[m]) }); delete l.C; });
     linhas.forEach((l) => { delete l.C; });
     const tot = (k) => r2(anos.reduce((a, l) => a + (l[k] || 0), 0));
     const totais = { anos: anos.length, meses: serie.length, entradas: tot('entradas'), gastos: tot('gastos'), sobra: tot('sobra'), aportes: tot('aportes'), aplicado: tot('aplicado'), proventos: tot('proventos'),
