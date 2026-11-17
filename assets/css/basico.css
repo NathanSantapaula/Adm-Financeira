@@ -4145,3 +4145,44 @@ body[data-ui="basico"] .bas-sn2-val input { font-size: 52px !important; font-wei
 .bas-voz-num .ct { font-size: .42em; font-weight: 650; opacity: .75; }
 .bas-voz-num { text-shadow: none; }
 @media (prefers-reduced-motion: reduce) { .bas-voz-part i { animation: none; } }
+
+/* ===== Sonhos, ajustes: azul forte do App nos cartões; criação em tela cheia com a roda própria; valor centralizado e prazo com − / + ===== */
+.bas-sn2-arte:not(.hero):not(.novo), :root:not([data-theme="light"]) .bas-sn2-arte:not(.hero):not(.novo) {
+  background: radial-gradient(85% 65% at 28% 16%, rgba(255, 255, 255, .34), transparent 60%), linear-gradient(160deg, #3B6CFF 0%, #1428F5 70%, #1020d0 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45), inset 0 0 0 .5px rgba(255, 255, 255, .18), 0 16px 32px -18px rgba(20, 40, 245, .85); }
+.bas-sn2-arte img { filter: drop-shadow(0 14px 18px rgba(3, 6, 40, .45)); }
+.bas-sn2-arte.novo { box-shadow: inset 0 0 0 1.5px color-mix(in srgb, #3B6CFF 55%, transparent); color: #3B6CFF; }
+.bas-sn2-t.novo b { color: #3B6CFF; } .bas-sn2-pb i { background: #3B6CFF; }
+/* criação: tela cheia de verdade, cabe sem rolar, botão sempre embaixo */
+.bas-pg-sn2n { position: fixed; inset: 0; z-index: 40; min-height: 0; display: flex; flex-direction: column; overflow: hidden;
+  padding: calc(10px + env(safe-area-inset-top, 0px)) 16px calc(14px + env(safe-area-inset-bottom, 0px)); background: var(--bg); }
+.bas-pg-sn2n::before { content: ""; position: absolute; left: 50%; top: -18%; width: 130%; height: 50%; translate: -50% 0; border-radius: 50%; background: radial-gradient(closest-side, rgba(59, 108, 255, .22), transparent); pointer-events: none; }
+.bas-sn2-nh { position: relative; padding-top: 0; }
+.bas-sn2-passo { position: relative; min-height: 0; justify-content: center; padding: 0 0 12px; }
+.bas-sn2-cta { position: relative; flex: none; margin-top: 12px; width: 100%; }
+.bas-sn2-cx { width: min(150px, 38vw); margin-bottom: 14px; } .bas-sn2-cx.sobe { width: min(116px, 30vw); }
+/* a roda própria: os itens empilhados no meio e posicionados pelo índice (o JS desenha), sem rolagem */
+.bas-sn2-roda { position: relative; display: block; width: calc(100% + 32px); height: 132px; margin: 16px -16px 0; padding: 0; overflow: hidden; touch-action: pan-y; cursor: grab; -webkit-user-select: none; user-select: none;
+  -webkit-mask: linear-gradient(90deg, transparent, #000 16%, #000 84%, transparent); mask: linear-gradient(90deg, transparent, #000 16%, #000 84%, transparent); scroll-snap-type: none; }
+.bas-sn2-roda:active { cursor: grabbing; }
+.bas-sn2-roda:focus-visible { outline: none; } .bas-sn2-roda:focus-visible .bas-sn2-ri.on .bas-sn2-arte { box-shadow: inset 0 0 0 2px #fff, 0 0 0 3px #3B6CFF; }
+.bas-sn2-ri { position: absolute; left: 50%; top: 50%; width: 72px; transition: none !important; will-change: transform; }
+.bas-sn2-ri .bas-sn2-arte { pointer-events: none; }
+.bas-sn2-ri.on .bas-sn2-arte { box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .9), 0 14px 28px -12px rgba(20, 40, 245, .9) !important; }
+/* valor: R$ pequeno em cima, número grande no centro exato */
+.bas-sn2-val { display: grid; justify-items: center; gap: 2px; width: 100%; margin-top: 18px; }
+.bas-sn2-val small { font-size: 15px; font-weight: 650; color: var(--ink-3); }
+body[data-ui="basico"] .bas-sn2-val input { width: 100% !important; max-width: none; text-align: center !important; font-size: 56px !important; line-height: 1.1; }
+/* prazo: − ano + ano, com "daqui a X anos"; e "Sem prazo" como escolha separada */
+.bas-sn2-prazo { display: grid; grid-template-columns: 52px minmax(0, 1fr) 52px; align-items: center; gap: 10px; width: min(320px, 100%); margin-top: 12px; padding: 8px; border-radius: 22px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line), var(--shadow); }
+.bas-sn2-prazo > button { width: 52px; height: 52px; border: 0; border-radius: 16px; font: inherit; font-size: 26px; font-weight: 500; color: var(--ink); background: color-mix(in srgb, var(--ink) 7%, transparent); cursor: pointer; transition: transform 160ms cubic-bezier(.3, 1.5, .5, 1); }
+.bas-sn2-prazo > button:active { transform: scale(.92); }
+.bas-sn2-prazo > span { display: grid; justify-items: center; gap: 2px; }
+.bas-sn2-prazo b { font-size: 26px; font-weight: 750; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.bas-sn2-prazo small { font-size: 12.5px; color: var(--ink-3); }
+.bas-sn2-semp { margin-top: 10px; height: 34px; padding: 0 14px; border: 0; border-radius: 999px; font: inherit; font-size: 13.5px; font-weight: 650; color: var(--ink-2); background: transparent; box-shadow: inset 0 0 0 1px var(--line); cursor: pointer; }
+.bas-sn2-semp.on { color: #fff; background: #3B6CFF; box-shadow: none; }
+.bas-sn2-anos { display: none; }
+@media (max-height: 700px) { .bas-sn2-cx { width: 110px; } .bas-sn2-tt { font-size: 24px; } .bas-sn2-val input { font-size: 46px !important; } }
+.bas-pg-sn2n { padding: calc(10px + env(safe-area-inset-top, 0px)) 16px calc(16px + env(safe-area-inset-bottom, 0px)) !important; }
+.bas-sn2-arte.novo, :root:not([data-theme="light"]) .bas-sn2-arte.novo { background: color-mix(in srgb, #3B6CFF 8%, transparent) !important; box-shadow: inset 0 0 0 1.5px color-mix(in srgb, #3B6CFF 55%, transparent) !important; }
