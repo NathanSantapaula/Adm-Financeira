@@ -4113,3 +4113,35 @@ body[data-ui="basico"] .bas-sn2-val input { font-size: 52px !important; font-wei
 .bas-voz-c { padding-bottom: calc(196px + env(safe-area-inset-bottom, 0px)); }
 .bas-voz-dica { bottom: calc(154px + env(safe-area-inset-bottom, 0px)); }
 .bas .bas-voz-num b { display: block; font-size: 54px; font-weight: 750; letter-spacing: -.03em; line-height: 1; color: #fff; }
+
+/* ===== Voz, acabamento 2: azul forte do App, recorte do mesmo centro do botão, trama fina com partículas de luz e números redesenhados ===== */
+.bas-voz { --vz-b: calc(126px + env(safe-area-inset-bottom, 0px)); background: #02040f; }
+.bas-voz-painel { bottom: var(--vz-b); border-radius: 34px;
+  background: linear-gradient(180deg, #03061F 0%, #040a2c 34%, #0b1891 66%, #1428F5 86%, #3B6CFF 100%);
+  -webkit-mask: radial-gradient(circle at 50% 100%, transparent 54px, #000 55px); mask: radial-gradient(circle at 50% 100%, transparent 54px, #000 55px); }
+.bas-voz-trama { position: absolute; inset: 0; background: radial-gradient(rgba(255, 255, 255, .2) .7px, transparent 1.15px) 0 0 / 6px 6px;
+  -webkit-mask: radial-gradient(130% 62% at 50% 100%, #000 0%, rgba(0, 0, 0, .45) 45%, transparent 75%); mask: radial-gradient(130% 62% at 50% 100%, #000 0%, rgba(0, 0, 0, .45) 45%, transparent 75%); }
+.bas-voz-luz { bottom: -34%; width: 150%; height: 72%; background: radial-gradient(closest-side, rgba(170, 196, 255, .95), rgba(59, 108, 255, .55) 42%, transparent); opacity: .6; filter: blur(14px); }
+.bas-voz-part { position: absolute; inset: 0; overflow: hidden; }
+.bas-voz-part i { position: absolute; left: var(--x); bottom: -8px; width: var(--s); height: var(--s); border-radius: 50%; background: #dfe8ff; box-shadow: 0 0 6px #9fbcff, 0 0 12px rgba(59, 108, 255, .8); opacity: 0;
+  animation: bas-voz-sobe var(--d) linear infinite; animation-delay: var(--k); }
+@keyframes bas-voz-sobe { 0% { opacity: 0; transform: translate(0, 0); } 15% { opacity: .9; } 70% { opacity: .5; } 100% { opacity: 0; transform: translate(12px, -48vh); } }
+/* o rodapé ocupa a faixa de baixo; o Cifrão fica com o centro exatamente na borda do painel, no meio do recorte */
+.bas-voz-pe { bottom: 0; height: var(--vz-b); padding: 18px 30px env(safe-area-inset-bottom, 0px); align-items: center; }
+.bas-voz-orb { top: -42px; width: 84px; height: 84px;
+  background: radial-gradient(circle at 32% 26%, #9db8ff 0%, #3B6CFF 36%, #1428F5 74%, #0c18b0 100%);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, .55), inset 0 -8px 16px rgba(3, 6, 31, .45), 0 0 0 1px rgba(255, 255, 255, .14), 0 16px 36px -10px rgba(20, 40, 245, .9); }
+.bas-voz-ondas i { border-color: rgba(120, 156, 255, .9); }
+/* texto e dica: a dica logo abaixo do texto, longe do botão */
+.bas-voz-c { padding-bottom: calc(var(--vz-b) + 72px); gap: 10px; }
+.bas-voz-dica { position: static; margin: 6px 0 0; font-size: 13px; color: rgba(255, 255, 255, .62); }
+/* números: na frase, branco com um grifo azul; em destaque, R$ e centavos menores, degradê branco-azulado */
+.bas-voz-ficha { margin: 0; padding: 0 2px; border-radius: 3px; box-shadow: none !important; font-weight: 700;
+  background: linear-gradient(180deg, transparent 58%, rgba(59, 108, 255, .55) 58%, rgba(59, 108, 255, .55) 94%, transparent 94%) !important; }
+.bas-voz-t .bas-voz-ficha.w.lido { color: #fff; background: linear-gradient(180deg, transparent 58%, rgba(110, 150, 255, .75) 58%, rgba(110, 150, 255, .75) 94%, transparent 94%) !important; }
+.bas .bas-voz-num b { font-size: 58px; font-weight: 750; letter-spacing: -.035em; color: transparent; -webkit-text-fill-color: transparent;
+  background: linear-gradient(180deg, #fff 35%, #b8cbff 100%); -webkit-background-clip: text; background-clip: text; text-shadow: none; filter: drop-shadow(0 8px 24px rgba(59, 108, 255, .55)); }
+.bas-voz-num .rs { font-size: .4em; font-weight: 650; vertical-align: .95em; margin-right: 6px; }
+.bas-voz-num .ct { font-size: .42em; font-weight: 650; opacity: .75; }
+.bas-voz-num { text-shadow: none; }
+@media (prefers-reduced-motion: reduce) { .bas-voz-part i { animation: none; } }
