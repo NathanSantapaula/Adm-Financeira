@@ -19,7 +19,7 @@ const BAS_NOMES = { basico: 'App', completo: 'SaaS' }; // nomes das duas versõe
 const basTrocaHtml = () => { const v = basInterface();
   return `<div class="seg bas-troca" role="group" aria-label="Versão do AVEN">${['basico', 'completo'].map((k) => `<button${v === k ? ' class="on"' : ''} data-act="bas-ui" data-v="${k}" aria-pressed="${v === k}">${BAS_NOMES[k]}</button>`).join('')}</div>`; };
 const BAS_ABAS = [['inicio', 'Início', I.geral], ['gastos', 'Gastos', I.despesas], ['investir', 'Patrimônio', I.inv]]; // o Perfil abre pelo botão do topo (`basEuBtn`)
-const BAS_FORMS = new Set(['gasto', 'conta', 'conta-f', 'entrada', 'aporte', 'ativo-ed', 'meta', 'objetivo', 'perfil', 'provento', 'limite', 'alvos', 'ponto', 'excluir', 'retro']); // telas de formulário (e a retrospectiva, em tela cheia) escondem as abas
+const BAS_FORMS = new Set(['gasto', 'conta', 'conta-f', 'entrada', 'aporte', 'ativo-ed', 'meta', 'objetivo', 'perfil', 'provento', 'limite', 'alvos', 'ponto', 'excluir', 'retro', 'importar']); // telas de formulário (e a retrospectiva, em tela cheia) escondem as abas
 const BAS_AREAS = ['Alimentação', 'Moradia', 'Transporte', 'Saúde', 'Lazer', 'Compras', 'Contas', 'Educação'];
 const I_VOLTA = ic('<path d="m15 6-6 6 6 6"/>');
 
@@ -823,7 +823,7 @@ function basIaxLigar() {
 function basDesenhar() {
   const st = document.getElementById('bas-o3');
   if (st) { const falhou = () => st.classList.add('sem-3d'); if (typeof o3Ligar === 'function') o3Ligar(st, st.dataset.tipo, falhou); else falhou(); }
-  basIaxLigar(); basCifVe(); basGfLigar(); basPeriodoRepinta(); { const f = document.querySelector('.bas-form'); if (f && f.querySelector('[name="areaIc"]') && !f.dataset.ic) { f.dataset.ic = '1'; f.addEventListener('change', (e) => { if (e.target.name !== 'area') return; const r = f.querySelector(`[name="areaIc"][value="${basCatIcId(e.target.value)}"]`); if (r) r.checked = true; }); } } { const on = document.querySelector('.bas-cce-m.on'); const col = on && on.parentElement; if (col && !col.dataset.vis) { col.dataset.vis = '1'; col.scrollTop = on.offsetTop - col.clientHeight / 2 + on.offsetHeight / 2; } } basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basAtLigar(); basEfLigar(); basCtwLigar(); basOiLigar(); basInvLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
+  basIaxLigar(); basCifVe(); basGfLigar(); basPeriodoRepinta(); { const f = document.querySelector('.bas-form'); if (f && f.querySelector('[name="areaIc"]') && !f.dataset.ic) { f.dataset.ic = '1'; f.addEventListener('change', (e) => { if (e.target.name !== 'area') return; const r = f.querySelector(`[name="areaIc"][value="${basCatIcId(e.target.value)}"]`); if (r) r.checked = true; }); } } { const on = document.querySelector('.bas-cce-m.on'); const col = on && on.parentElement; if (col && !col.dataset.vis) { col.dataset.vis = '1'; col.scrollTop = on.offsetTop - col.clientHeight / 2 + on.offsetHeight / 2; } } basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basAtLigar(); basEfLigar(); basCtwLigar(); basOiLigar(); basInvLigar(); basIgLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
   const wr = document.querySelector('.bas-wr'); if (wr && !wr.dataset.lig) { wr.dataset.lig = '1'; basWrIr(wr, 0); }
   const sq = document.querySelector('[data-sq-conta]'); if (sq && !sq.dataset.lig && !matchMedia('(prefers-reduced-motion: reduce)').matches) { sq.dataset.lig = '1'; const alvo = +sq.dataset.sqConta; const t0 = performance.now();
     const passo = (t) => { const k = Math.min(1, (t - t0) / 900); sq.textContent = Math.round(alvo * (1 - Math.pow(1 - k, 3))); if (k < 1 && sq.isConnected) requestAnimationFrame(passo); }; if (alvo > 0) requestAnimationFrame(passo); }
@@ -2468,7 +2468,7 @@ function basTelaPonto() {
 const basTelaClientes = () => basDet('Clientes', `<div class="bas-clientes">${viewClientes()}</div>`);
 document.addEventListener('change', (e) => { const t = e.target; if (!t.matches || !t.matches('input[data-bas-inst]')) return; instMinhaAlternar(t.dataset.basInst, t.checked); basSom('toque');
   const n = instMinhas().length; const c = document.querySelector('.bas-pj-n'); if (c) c.textContent = n ? `${n} ${n === 1 ? 'marcada' : 'marcadas'}` : 'Nenhuma'; });
-const BAS_TELAS = { gasto: basTelaGasto, conta: basTelaConta, 'conta-f': basTelaContaF, entrada: basTelaEntrada, aporte: basTelaAporte, meta: basTelaMeta,
+const BAS_TELAS = { importar: basTelaImportar, gasto: basTelaGasto, conta: basTelaConta, 'conta-f': basTelaContaF, entrada: basTelaEntrada, aporte: basTelaAporte, meta: basTelaMeta,
   objetivos: basTelaObjetivos, objetivo: basTelaObjetivo, categoria: basTelaCategoria, perfil: basTelaPerfil, contato: basTelaContato, ano: basTelaAno, ia: basTelaIa, saude: basTelaSaude, periodo: basTelaPeriodo, organizar: basTelaOrganizar, entradas: basTelaEntradas, sonhos: basTelaSonhos, 'sonho-det': basTelaSonhoDet, cartoes: basTelaCartoes, 'avisos-tela': basTelaAvisosNova, 'gasto-ver': basTelaGastoVer, 'cartao-novo': basTelaCartaoNovo, 'perfil-inv': basTelaPerfilInv, duvidas: () => basDet('Dúvidas', basDuvidasHtml()).replace(olhoHtml(), ''), cartao: basTelaCartao, retro: basTelaRetro, conquista: basTelaConquista, sequencia: basTelaSequencia, constelacao: basTelaConstelacao, 'ano-hist': basTelaAnoHist, 'cartao-estilo': basTelaCartaoEstilo, 'ano-resumo': basTelaAnoResumo, historico: basTelaHistorico, raiox: basTelaRaioX, resumo: basTelaResumo, limite: basTelaLimite, avisos: basTelaAvisos, simular: basTelaSimular, alvos: basTelaAlvos, ativo: basTelaAtivo, 'ativo-ed': basTelaAtivoEd, aportar: basTelaOndeInvestir, proventos: basTelaProventos, provento: basTelaProvento, carteira: basTelaCarteira, planejamento: basTelaPlanejamento, privacidade: () => basDet('Privacidade e termos', `<div class="card bas-pol">${politicaHtml(CFG, Store.mode === 'cloud')}</div>`), excluir: basTelaExcluir, ponto: basTelaPonto, clientes: basTelaClientes };
 
 /* ================= gravação (no mesmo formato do Completo) ================= */
@@ -2647,7 +2647,8 @@ function basAcao(act, ds, el) {
     case 'bas-partilhar': basSom('toque'); basPartilhar(); return true;
     case 'bas-rec-aplicar': basRecAplicar(el); return true;
     case 'bas-sons': S.profile.prefs.sons = !basSomLigado(); touch('profile'); if (basSomLigado()) basSom('ok'); return true;
-    case 'bas-importar': if (typeof abrirIngestao === 'function') abrirIngestao(); return true;
+    case 'bas-importar': basIngAbrir(); return true;
+    case 'bas-ig-t': case 'bas-ig-todos': case 'bas-ig-ok': case 'bas-ig-avancado': basIgAcao(act, ds); return true;
     case 'bas-avisos-lidos': notifMarcar('lidas', notifLista().filter((n) => !n.lida).map((n) => n.id)); render(); return true;
     case 'bas-aviso': { const n = notifLista().find((x) => x.id === ds.id); if (!n) return true; notifMarcar('lidas', [n.id]); const c = n.cta;
       if (!c) { render(); return true; }
@@ -2673,22 +2674,73 @@ function basAcao(act, ds, el) {
   }
 }
 
-// importar extrato no App: antes da prévia, uma análise animada (o arquivo é varrido e os passos acendem um a um);
-// só no App (o SaaS usa o mesmo ingest-ui.js) e só uma vez por arquivo; com "reduzir movimento", vai direto
+// importar extrato no App, numa tela própria (não o modal do SaaS): escolher o arquivo, uma análise animada e uma prévia
+// simples (tocar no lançamento tira ou põe; a pílula troca a categoria ou o tipo); um botão só para importar.
+// Usa o mesmo motor (ingLer, FPIngest, ingDefinir, aplicarIngestao); o ingest-ui.js chama renderIng, que aqui desenha a tela.
+const I_DOC = ic('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/>');
+const I_CADEADO = ic('<rect x="5" y="11" width="14" height="9.5" rx="2.5"/><path d="M8.5 11V8a3.5 3.5 0 0 1 7 0v3"/>');
+const BAS_IG_PASSOS = ['Lendo o arquivo', 'Reconhecendo as categorias', 'Procurando o que já foi importado', 'Separando gastos, entradas e investimentos'];
+function basIngAbrir() { if (!S.plan) { toast('Crie o planejamento do ano primeiro.'); return; } S.ingModo = 'banco'; S.ing = { estado: 'inicio' }; S.basIngOk = null; basAbrir('importar'); }
+const basIgArq = () => `<input id="bas-ig-f" type="file" accept=".csv,.ofx,.qfx,.txt,.xlsx,.xls${temRecurso('ia_pdf') ? ',.pdf' : ''}" hidden>`;
+function basTelaImportar() { return basDet('Importar extrato', `<div id="bas-ig" class="bas-ig">${basIgHtml()}</div>${basIgArq()}`); }
+function basIgHtml(passo) {
+  const g = S.ing || { estado: 'inicio' }; const ok = S.basIngOk;
+  if (ok) return `<div class="bas-ig-fim"><span class="bas-ig-ok" aria-hidden="true">${I.check}</span><b>Pronto!</b><p>${esc(ok)}</p><button class="btn primary lg bas-cta" data-act="bas-voltar">Concluir</button></div>`;
+  if (g.estado === 'inicio') return `<div class="bas-ig-hero"><span class="bas-ig-ic" aria-hidden="true">${I_DOC}<i></i><i></i></span>
+      <b>Traga seu extrato</b><p>Gastos, entradas e investimentos entram sozinhos, já com categoria. Você confere antes.</p></div>
+    <label class="btn primary lg bas-cta bas-ig-esc" for="bas-ig-f">Escolher arquivo</label>
+    <ol class="bas-ig-como"><li><i>1</i><span>No app do banco, exporte o extrato em <b>OFX</b> ou <b>CSV</b>. Da B3, o relatório em Excel.</span></li><li><i>2</i><span>Escolha o arquivo aqui.</span></li><li><i>3</i><span>Confira a lista e importe.</span></li></ol>
+    <p class="bas-ig-priv">${I_CADEADO}O arquivo é lido só no seu aparelho.</p>`;
+  if (g.estado === 'lendo' || passo != null) { const n = passo || 0; const fim = n >= BAS_IG_PASSOS.length && g.resumo;
+    return `<div class="bas-ia-an" role="status" aria-live="polite"><div class="bas-ia-doc" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><b class="bas-ia-scan"></b></div>
+      <b class="bas-ia-t">${fim ? `${g.resumo.total} ${g.resumo.total === 1 ? 'lançamento encontrado' : 'lançamentos encontrados'}` : 'Analisando seu extrato'}</b><small>${esc(g.nome || '')}</small>
+      <ol>${BAS_IG_PASSOS.map((p, i) => `<li class="${i < n ? 'ok' : i === n ? 'vai' : ''}"><span aria-hidden="true">${i < n ? '✓' : ''}</span>${p}</li>`).join('')}</ol></div>`; }
+  if (g.estado !== 'pronto') { const msg = g.estado === 'bloqueado' ? 'A leitura de PDF faz parte de outro plano. Exporte o extrato em OFX ou CSV no app do seu banco.' : g.msg || 'Não foi possível ler esse arquivo.';
+    return `<div class="bas-ig-hero erro"><span class="bas-ig-ic" aria-hidden="true">${I_DOC}</span><b>Não deu para ler</b><p>${esc(msg)}</p></div>
+      <label class="btn primary lg bas-cta bas-ig-esc" for="bas-ig-f">Escolher outro arquivo</label>${g.estado === 'mapear' ? '<button class="bas-ig-lnk" data-act="bas-ig-avancado">Ajustar as colunas do arquivo</button>' : ''}`; }
+  // prévia
+  const rows = g.rows.filter((t) => !t.duplicado); const dup = g.rows.length - rows.length; const R = g.resumo;
+  const areas = [...new Set(BAS_AREAS.concat((S.plan.lancamentos || []).map((x) => x.area), g.rows.map((x) => x.area)).filter(Boolean))];
+  const TIPOS = [['renda', 'Entrada'], ['investimento', 'Aporte ou resgate'], ['provento', 'Provento'], ['ignorar', 'Não importar']];
+  const rot = (t) => (t.destino === 'despesa' ? t.area || 'Sem categoria' : (TIPOS.find((x) => x[0] === t.destino) || [0, ''])[1]);
+  const pilula = (t) => `<label class="bas-ig-pl ${t.destino}"><span>${esc(rot(t))}</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg>
+    <select data-ig-cat="${t.idx}" aria-label="Categoria de ${esc(t.descricao)}" ${t.bloqueado ? 'disabled' : ''}><optgroup label="Gasto">${areas.map((a) => `<option value="a:${esc(a)}" ${t.destino === 'despesa' && t.area === a ? 'selected' : ''}>${esc(a)}</option>`).join('')}</optgroup>
+      <optgroup label="Não é gasto">${TIPOS.map(([v, l]) => `<option value="d:${v}" ${t.destino === v ? 'selected' : ''}>${l}</option>`).join('')}</optgroup></select></label>`;
+  const linha = (t) => `<li class="${t.incluir ? 'on' : ''}${t.bloqueado ? ' bloq' : ''}"><button class="bas-ig-ck" data-act="bas-ig-t" data-ig-t="${t.idx}" aria-pressed="${!!t.incluir}" aria-label="${t.incluir ? 'Tirar' : 'Incluir'} ${esc(t.descricao)}" ${t.bloqueado ? 'disabled' : ''}><i aria-hidden="true">${I.check}</i></button>
+    <span class="bas-ig-tx"><b>${esc(t.descricao)}</b><small>${esc(dataBR(t.data).slice(0, 5))}${t.bloqueado ? ` · ${esc(t.bloqueado)}` : ''}</small>${pilula(t)}</span><b class="bas-ig-v${t.valor > 0 ? ' in' : ''}">${t.valor > 0 ? '+' : '−'}${basCent(Math.abs(t.valor))}</b></li>`;
+  const tot = (d) => R.porDestino[d] || { n: 0, valor: 0 }; const n = R.incluidas;
+  const st = [['despesa', 'Gastos', ''], ['renda', 'Entradas', 'in'], ['investimento', 'Investimentos', ''], ['provento', 'Proventos', 'in']].filter(([d]) => tot(d).n);
+  return `<div class="card bas-ig-res"><div class="bas-ig-arq"><span aria-hidden="true">${I_DOC}</span><b>${esc(g.nome)}</b><label for="bas-ig-f">Trocar</label></div>
+      <p class="bas-ig-n"><b>${rows.length}</b> ${rows.length === 1 ? 'lançamento novo' : 'lançamentos novos'}</p>
+      ${st.length ? `<div class="bas-ig-st">${st.map(([d, l, c]) => `<span><small>${l}</small><b class="${c}">${basCent(Math.abs(tot(d).valor))}</b></span>`).join('')}</div>` : ''}
+      ${dup ? `<p class="bas-ig-dup">${dup} ${dup === 1 ? 'já estava' : 'já estavam'} no app e ${dup === 1 ? 'fica' : 'ficam'} de fora.</p>` : ''}</div>
+    ${rows.length ? `<div class="bas-ch bas-ch-f"><h2 class="bas-h2">Confira</h2><button class="bas-ult-ver" data-act="bas-ig-todos">${rows.every((t) => t.incluir || t.bloqueado) ? 'Tirar todos' : 'Incluir todos'}</button></div>
+    <p class="bas-ig-dica">Toque no círculo para tirar ou incluir. Na pílula, troque a categoria.</p><ul class="card bas-ig-ls">${rows.slice().sort((a, b) => (b.data > a.data ? 1 : -1)).map(linha).join('')}</ul>` : ''}
+    <div class="bas-ig-bar"><button class="btn primary lg bas-cta" data-act="bas-ig-ok" ${n ? '' : 'disabled'}>${n ? `Importar ${n} ${n === 1 ? 'lançamento' : 'lançamentos'}` : 'Nada para importar'}</button></div>`;
+}
+// redesenha só a tela de importar; a análise animada roda uma vez por arquivo (sem ela com "reduzir movimento")
+function basIgRepinta() {
+  const box = document.getElementById('bas-ig'); if (!box) return false; const g = S.ing || {};
+  if (g.estado === 'pronto' && !g.basVisto && !matchMedia('(prefers-reduced-motion: reduce)').matches) { g.basVisto = true; let n = 0;
+    const anda = () => { if (S.ing !== g || !box.isConnected) return; if (n <= BAS_IG_PASSOS.length) { box.innerHTML = basIgHtml(n); if (n === BAS_IG_PASSOS.length) basRetorno('ok'); n++; setTimeout(anda, n > BAS_IG_PASSOS.length ? 750 : 480); } else { box.innerHTML = basIgHtml(); box.classList.add('chega'); } };
+    anda(); return true; }
+  box.innerHTML = basIgHtml(); return true;
+}
 const basIngOrig = typeof renderIng === 'function' ? renderIng : null;
-if (basIngOrig) renderIng = function () {
-  const root = document.getElementById('ing-root'); const g = S.ing || {};
-  if (!root || document.body.dataset.ui !== 'basico') return basIngOrig();
-  const passos = ['Lendo o arquivo', 'Reconhecendo as categorias', 'Procurando o que já foi importado', 'Separando gastos, entradas e investimentos'];
-  const tela = (n, fim) => `<div class="bas-ia-an" role="status" aria-live="polite"><div class="bas-ia-doc" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><b class="bas-ia-scan"></b></div>
-    <b class="bas-ia-t">${fim ? esc(fim) : 'Analisando seu extrato'}</b><small>${esc(g.nome || '')}</small>
-    <ol>${passos.map((p, i) => `<li class="${i < n ? 'ok' : i === n ? 'vai' : ''}"><span aria-hidden="true">${i < n ? '✓' : ''}</span>${p}</li>`).join('')}</ol></div>`;
-  const ok = document.querySelector('#mform button[type=submit]');
-  if (g.estado === 'lendo') { root.innerHTML = tela(0); if (ok) ok.disabled = true; return; }
-  if (g.estado !== 'pronto' || g.basVisto || matchMedia('(prefers-reduced-motion: reduce)').matches) return basIngOrig();
-  g.basVisto = true; let n = 0; if (ok) ok.disabled = true;
-  const anda = () => { if (S.ing !== g || !root.isConnected) return; n++;
-    if (n <= passos.length) { root.innerHTML = tela(n, n === passos.length ? `${g.resumo ? g.resumo.total : ''} ${g.resumo && g.resumo.total === 1 ? 'lançamento encontrado' : 'lançamentos encontrados'}` : ''); if (n === passos.length) basRetorno('ok'); setTimeout(anda, n === passos.length ? 700 : 520); }
-    else { root.classList.add('bas-ing-chega'); basIngOrig(); } };
-  root.innerHTML = tela(0); setTimeout(anda, 520);
-};
+if (basIngOrig) renderIng = function () { if (document.body.dataset.ui === 'basico' && !document.getElementById('ing-root') && basIgRepinta()) return; return basIngOrig(); };
+function basIgLigar() {
+  if (document.body.dataset.igLig) return; document.body.dataset.igLig = '1';
+  document.addEventListener('change', (e) => { const el = e.target;
+    if (el.id === 'bas-ig-f') { const f = el.files && el.files[0]; el.value = ''; if (f) { S.basIngOk = null; ingLer(f); } return; }
+    if (el.dataset && el.dataset.igCat != null) { const t = S.ing && S.ing.rows[+el.dataset.igCat]; if (!t) return; const [k, v] = [el.value.slice(0, 2), el.value.slice(2)];
+      if (k === 'a:') { if (t.destino !== 'despesa') ingDefinir(t, 'destino', 'despesa'); ingDefinir(t, 'area', v); } else ingDefinir(t, 'destino', v);
+      S.ing.resumo = FPIngest.resumir(S.ing.rows); basIgRepinta(); basSom('toque'); } });
+}
+function basIgAcao(act, ds) {
+  const g = S.ing;
+  if (act === 'bas-ig-t') { const t = g && g.rows[+ds.igT]; if (!t || t.bloqueado) return; ingDefinir(t, 'incluir', null, !t.incluir); g.resumo = FPIngest.resumir(g.rows); basIgRepinta(); if (typeof basVibra === 'function') basVibra(6); return; }
+  if (act === 'bas-ig-todos') { const rows = g.rows.filter((t) => !t.duplicado && !t.bloqueado); const liga = !rows.every((t) => t.incluir); rows.forEach((t) => { t.incluir = liga && t.destino !== 'ignorar'; }); g.resumo = FPIngest.resumir(g.rows); basIgRepinta(); return; }
+  if (act === 'bas-ig-ok') { if (!g || !g.resumo || !g.resumo.incluidas) return; const R = g.resumo; const n = R.incluidas;
+    aplicarIngestao(); S.basIngOk = `${n} ${n === 1 ? 'lançamento entrou' : 'lançamentos entraram'} no seu ${S.year}. Se algo não ficou certo, toque em Desfazer no aviso.`; basRetorno('pago'); basIgRepinta(); return; }
+  if (act === 'bas-ig-avancado') { openModal({ title: 'Ajustar o arquivo', ok: 'Importar', wide: true, body: '<div id="ing-root" class="ing"></div>', onOk: () => { if (!S.ing || !S.ing.resumo || !S.ing.resumo.incluidas) return false; aplicarIngestao(); return true; } }); basIngOrig(); }
+}
