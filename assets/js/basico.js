@@ -823,7 +823,7 @@ function basIaxLigar() {
 function basDesenhar() {
   const st = document.getElementById('bas-o3');
   if (st) { const falhou = () => st.classList.add('sem-3d'); if (typeof o3Ligar === 'function') o3Ligar(st, st.dataset.tipo, falhou); else falhou(); }
-  basIaxLigar(); basCifVe(); basGfLigar(); basPeriodoRepinta(); { const f = document.querySelector('.bas-form'); if (f && f.querySelector('[name="areaIc"]') && !f.dataset.ic) { f.dataset.ic = '1'; f.addEventListener('change', (e) => { if (e.target.name !== 'area') return; const r = f.querySelector(`[name="areaIc"][value="${basCatIcId(e.target.value)}"]`); if (r) r.checked = true; }); } } { const on = document.querySelector('.bas-cce-m.on'); const col = on && on.parentElement; if (col && !col.dataset.vis) { col.dataset.vis = '1'; col.scrollTop = on.offsetTop - col.clientHeight / 2 + on.offsetHeight / 2; } } basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basAtLigar(); basEfLigar(); basCtwLigar(); basOiLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
+  basIaxLigar(); basCifVe(); basGfLigar(); basPeriodoRepinta(); { const f = document.querySelector('.bas-form'); if (f && f.querySelector('[name="areaIc"]') && !f.dataset.ic) { f.dataset.ic = '1'; f.addEventListener('change', (e) => { if (e.target.name !== 'area') return; const r = f.querySelector(`[name="areaIc"][value="${basCatIcId(e.target.value)}"]`); if (r) r.checked = true; }); } } { const on = document.querySelector('.bas-cce-m.on'); const col = on && on.parentElement; if (col && !col.dataset.vis) { col.dataset.vis = '1'; col.scrollTop = on.offsetTop - col.clientHeight / 2 + on.offsetHeight / 2; } } basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basAtLigar(); basEfLigar(); basCtwLigar(); basOiLigar(); basInvLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
   const wr = document.querySelector('.bas-wr'); if (wr && !wr.dataset.lig) { wr.dataset.lig = '1'; basWrIr(wr, 0); }
   const sq = document.querySelector('[data-sq-conta]'); if (sq && !sq.dataset.lig && !matchMedia('(prefers-reduced-motion: reduce)').matches) { sq.dataset.lig = '1'; const alvo = +sq.dataset.sqConta; const t0 = performance.now();
     const passo = (t) => { const k = Math.min(1, (t - t0) / 900); sq.textContent = Math.round(alvo * (1 - Math.pow(1 - k, 3))); if (k < 1 && sq.isConnected) requestAnimationFrame(passo); }; if (alvo > 0) requestAnimationFrame(passo); }
@@ -1195,7 +1195,9 @@ function basTelaAno() {
 function basTelaProvento(o) {
   const p = S.plan; const m = S.mes; const a = o.id ? p.ativos.find((x) => x.id === o.id) : null; if (o.id && !a) return basSumiu();
   if (a) return basForm('provento', esc(a.nome), basValor('valor', +a.pr[m] || 0, `Quanto pagou em ${MES_LONGO[m]}?`), { excluir: `Apagar o provento de ${MES_LONGO[m]}` });
-  return basForm('provento', 'Registrar provento', `${basValor('valor', 0, 'Quanto recebeu?')}${basChips('ativo', p.ativos.map((x) => [x.id, x.nome]), (p.ativos[0] || {}).id, 'De qual investimento')}<p class="bas-p">Fica registrado em ${MES_LONGO[m]} de ${S.year}.</p>`, { ok: 'Registrar' });
+  if (!p.ativos.length) return basDet('Novo provento', basCard(basVazio('Registre um investimento primeiro.')));
+  return basForm('provento', 'Novo provento', `<div class="bas-inv-v">${basValor('valor', 0, 'Quanto recebeu?')}</div>
+    <p class="bas-inv-k">De qual ativo</p>${basAtPick(o.ativo, true)}<p class="bas-inv-k">Mês</p>${basMesFaixa(m)}`, { ok: 'Registrar' });
 }
 // Minha carteira, no jeito dos apps de investimento premium (Robinhood, Wealthsimple, Revolut): uma linha limpa da evolução
 // no topo (a mesma do ativo, que segue o dedo), a alocação numa barra segmentada fina com as classes em lista (tocar abre os
@@ -1223,13 +1225,13 @@ function basCtwHtml(cls, total, comAlvo, its) {
     return `<g class="bas-ctw-s" data-i="${i}" style="--dx:${(Math.sin(meio) * 9).toFixed(1)}px;--dy:${(-Math.cos(meio) * 9).toFixed(1)}px;--d:${i * 70}ms" role="button" tabindex="0" aria-label="${esc(dados[i].n)}: ${esc(dados[i].p)}">
       <path class="c" d="${dd}"/><path class="l" d="${dd}"/><path class="g" d="${dd}"/><path class="b" d="M${h0x.toFixed(1)} ${h0y.toFixed(1)} A${R - 5} ${R - 5} 0 ${big} 1 ${h1x.toFixed(1)} ${h1y.toFixed(1)}"/></g>`; }).join('');
   const nAt = its.filter((i) => i.valor > 0.005).length;
-  return `<section class="bas-ctw" data-ctw="${esc(JSON.stringify(dados))}" data-total="${esc(basCent(total))}" data-resumo="${esc(`${nAt} ${nAt === 1 ? 'ativo' : 'ativos'} em ${vivas.length} ${vivas.length === 1 ? 'classe' : 'classes'}`)}">
-    <div class="bas-ctw-r"><svg viewBox="0 0 300 262" aria-label="Alocação por classe. Toque numa parte do anel."><defs>
+  return `<section class="bas-ctw" data-ctw="${esc(JSON.stringify(dados))}" data-total="${esc(basCent(total))}" data-resumo="${esc(`${nAt} ${nAt === 1 ? 'ativo' : 'ativos'} em ${vivas.length} ${vivas.length === 1 ? 'produto' : 'produtos'}`)}">
+    <div class="bas-ctw-r"><svg viewBox="0 0 300 262" aria-label="Alocação por produto. Toque numa parte do anel."><defs>
         <linearGradient id="ctw-onw" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".55" stop-color="#E4F6FF"/><stop offset="1" stop-color="#9FDCFF"/></linearGradient>
         <pattern id="ctw-lis" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)"><line x1="1" y1="0" x2="1" y2="7" style="stroke:#fff;stroke-width:1.8;stroke-opacity:.92"/></pattern>
         <radialGradient id="ctw-gl" gradientUnits="userSpaceOnUse" cx="110" cy="40" r="170"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".5" stop-color="#fff" stop-opacity=".08"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>${segs}</svg>
       <div class="bas-ctw-c"><small data-ctw-k>Total investido</small><b data-ctw-v>${basCent(total)}</b></div></div>
-    <div class="bas-ctw-tx" aria-live="polite"><b data-ctw-n>Sua carteira</b><span data-ctw-s>${esc(`${nAt} ${nAt === 1 ? 'ativo' : 'ativos'} em ${vivas.length} ${vivas.length === 1 ? 'classe' : 'classes'}`)}</span><em data-ctw-t hidden></em></div>
+    <div class="bas-ctw-tx" aria-live="polite"><b data-ctw-n>Sua carteira</b><span data-ctw-s>${esc(`${nAt} ${nAt === 1 ? 'ativo' : 'ativos'} em ${vivas.length} ${vivas.length === 1 ? 'produto' : 'produtos'}`)}</span><em data-ctw-t hidden></em></div>
     <div class="bas-ctw-pt" role="group" aria-label="Classes">${dados.map((d, i) => `<button data-ctw-i="${i}" aria-label="${esc(d.n)}"></button>`).join('')}</div>
   </section>`;
 }
@@ -1242,6 +1244,8 @@ function basCtwLigar() {
     q('[data-ctw-k]').textContent = d ? d.sub : 'Total investido'; q('[data-ctw-v]').innerHTML = d ? d.v : w.dataset.total;
     q('[data-ctw-n]').textContent = d ? d.n : 'Sua carteira'; q('[data-ctw-s]').textContent = d ? '' : w.dataset.resumo;
     const t = q('[data-ctw-t]'); t.hidden = !(d && d.t); t.textContent = d ? d.t : ''; t.className = d ? d.tk : '';
+    const pg = w.closest('.bas-pg'); if (pg) { pg.querySelectorAll('.bas-ct-vis, .bas-ct-al:not(.bas-ct-so)').forEach((x) => { x.hidden = !!d; });
+      pg.querySelectorAll('[data-ctw-lista]').forEach((x) => { x.hidden = +x.dataset.ctwLista !== i; }); const h = pg.querySelector('[data-ctw-h]'); if (h) h.textContent = d ? d.n : 'Minha carteira'; }
     if (typeof basSom === 'function') basSom('toque'); if (typeof basVibra === 'function') basVibra(8); };
   const toca = (i) => vai(i === sel ? -1 : i); // tocar de novo na mesma parte volta ao anel inteiro
   w.addEventListener('click', (e) => { const g = e.target.closest('.bas-ctw-s'); const b = e.target.closest('[data-ctw-i]'); if (g) toca(+g.dataset.i); else if (b) toca(+b.dataset.ctwI); });
@@ -1329,25 +1333,43 @@ function basSalvarAtivoEd(f, d, t, ok) {
   const k1 = E.ativoKey(a0); if (k1 !== k0) { (S.profile.carteira || []).forEach((e) => { if (e.k === k0) e.k = k1; }); touch('profile'); }
   ok('Ativo atualizado.');
 }
+const BAS_CT_VIS = [['classes', 'Classes'], ['produtos', 'Produtos'], ['ativos', 'Ativos']];
+// o grande grupo do ativo, lido do nome da classe cadastrada (e do tipo, para a renda fixa)
+function basMacro(a) {
+  const c = String(a.classe || '');
+  if (/mutual|exterior|internac|global|bdr|stock|reit/i.test(c)) return 'Internacional';
+  if (/previd/i.test(c)) return 'Previdência';
+  if (/imobili|fii/i.test(c)) return 'Fundos imobiliários';
+  if (/fundo|multimerc/i.test(c)) return 'Fundos';
+  if (a.tipo === 'RENDA FIXA' || /cdb|lc[ia]|cr[ia]|tesouro|deb[eê]n|poupan|renda fixa/i.test(c)) return 'Renda fixa';
+  return 'Ações e outros';
+}
 function basTelaCarteira() {
   const { M, K } = cartAnalise(); const total = M.total; const its = M.items.filter((i) => i.valor > 0.005 || i.alvo > 0); const comAlvo = M.sumAlvo > 0;
   const cls = K.classes.filter((c) => c.valor > 0.005 || c.alvo > 0).sort((a, b) => b.valor - a.valor); const corC = (c) => BAS_CT_COR[cls.indexOf(c) % BAS_CT_COR.length];
   const corDe = (classe) => { const c = cls.find((x) => (x.classe || '') === (classe || '')); return c ? corC(c) : BAS_CT_COR[0]; };
   // série de cada ativo (para as mini linhas)
   const series = new Map(); its.forEach((i) => series.set(i, basAtSerie(i.a)));
-  // alocação: barra segmentada e as classes; a aberta mostra os ativos dela
-  const aberta = S.basCartAbre;
-  const linhaAt = (i) => { const s = series.get(i) || []; return `<li><button class="bas-ct-at" ${basIr('ativo', { id: i.a.id })}><span class="bas-ct-lg" style="--bc:${corDe(i.a.classe)}">${esc(basSigla(i.a.nome))}</span><span class="bas-ct-an"><b>${esc(i.a.nome)}</b><small>${pct(total > 0 ? i.valor / total : 0, 1)}</small></span>${basSpark(s.slice(-12).map((p) => p.c))}<b class="bas-ct-av">${basCent(i.valor)}</b></button></li>`; };
-  const alocacao = total > 0 ? `<div class="card bas-ct-al">
-    <ul class="bas-ct-cl">${cls.filter((c) => c.valor > 0).map((c) => { const ab = aberta === (c.classe || ''); const lista = its.filter((i) => (i.a.classe || '') === (c.classe || '') && i.valor > 0.005).sort((a, b) => b.valor - a.valor);
-      return `<li class="${ab ? 'on' : ''}"><button class="bas-ct-ch" data-act="bas-cart-cl" data-v="${esc(c.classe || '')}" aria-expanded="${ab}"><i style="--bc:${corC(c)}"></i><span><b>${esc(c.classe || 'Outros')}</b><small>${pct(c.valor / total, 1)}</small></span><b class="bas-ct-cv">${basCent(c.valor)}</b><svg class="bas-ct-sc" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
-        ${ab ? `<ul class="bas-ct-ats">${lista.map(linhaAt).join('')}</ul>` : ''}</li>`; }).join('')}</ul></div>` : basCard(basVazio('Sua carteira aparece aqui quando você registrar o primeiro investimento.'));
+  const vivos = its.filter((i) => i.valor > 0.005).sort((a, b) => b.valor - a.valor); const pc = (v) => pct(total > 0 ? v / total : 0, 1);
+  const linhaAt = (i, prod) => { const s = series.get(i) || []; return `<li><button class="bas-ct-at" ${basIr('ativo', { id: i.a.id })}><span class="bas-ct-lg" style="--bc:${corDe(i.a.classe)}">${esc(basSigla(i.a.nome))}</span><span class="bas-ct-an"><b>${esc(i.a.nome)}</b><small>${prod ? `${esc(i.a.classe || 'Outros')} · ` : ''}${pc(i.valor)}</small></span>${basSpark(s.slice(-12).map((p) => p.c))}<b class="bas-ct-av">${basCent(i.valor)}</b></button></li>`; };
+  // três jeitos de ver: Classes (o grande grupo, por basMacro), Produtos (a classe cadastrada) e Ativos (os maiores; o resto no "Ver todos")
+  const vis = BAS_CT_VIS.some(([k]) => k === S.basCartVis) ? S.basCartVis : 'classes'; const aberta = S.basCartAbre;
+  const grupos = (chave) => { const g = new Map(); vivos.forEach((i) => { const k = chave(i.a); if (!g.has(k)) g.set(k, []); g.get(k).push(i); });
+    return [...g].map(([n, l]) => ({ n, l, v: l.reduce((t, i) => t + i.valor, 0) })).sort((x, y) => y.v - x.v); };
+  const corMacro = new Map(); const linhaG = (g, k, cor) => { const id = `${vis}:${g.n}`; const ab = aberta === id;
+    return `<li class="${ab ? 'on' : ''}"><button class="bas-ct-ch" data-act="bas-cart-cl" data-v="${esc(id)}" aria-expanded="${ab}"><i style="--bc:${cor}"></i><span><b>${esc(g.n)}</b><small>${pc(g.v)} · ${g.l.length} ${g.l.length === 1 ? 'ativo' : 'ativos'}</small></span><b class="bas-ct-cv">${basCent(g.v)}</b><svg class="bas-ct-sc" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg><span class="bas-ct-pb" aria-hidden="true"><i style="--bc:${cor};--p:${total > 0 ? ((g.v / total) * 100).toFixed(1) : 0}%"></i></span></button>
+      ${ab ? `<ul class="bas-ct-ats">${g.l.map((i) => linhaAt(i, vis === 'classes')).join('')}</ul>` : ''}</li>`; };
+  const TOP = 5; const corpo = vis === 'ativos' ? `<ul class="bas-ct-cl bas-ct-top">${vivos.slice(0, TOP).map((i) => linhaAt(i, true)).join('')}</ul>${vivos.length > TOP ? `<button class="bas-ct-mais" data-act="bas-cart-todos">Ver todos os ${vivos.length} ativos</button><template id="bas-ct-tpl"><ul class="bas-ct-cl bas-ct-top">${vivos.map((i) => linhaAt(i, true)).join('')}</ul></template>` : ''}`
+    : `<ul class="bas-ct-cl">${(vis === 'classes' ? grupos(basMacro) : grupos((a) => a.classe || 'Outros')).map((g, k) => linhaG(g, k, vis === 'classes' ? BAS_CT_COR[k % BAS_CT_COR.length] : corDe(g.n === 'Outros' ? '' : g.n))).join('')}</ul>`;
+  const alocacao = total > 0 ? `<div class="seg bas-ct-vis" role="tablist" aria-label="Ver a carteira por">${BAS_CT_VIS.map(([k, l]) => `<button role="tab" class="${vis === k ? 'on' : ''}" data-act="bas-cart-vis" data-v="${k}" aria-selected="${vis === k}">${l}</button>`).join('')}</div>
+    <div class="card bas-ct-al">${corpo}</div>${cls.filter((c) => c.valor > 0.005).map((c, k) => { const l = vivos.filter((i) => (i.a.classe || '') === (c.classe || ''));
+      return `<div class="card bas-ct-al bas-ct-so" data-ctw-lista="${k}" hidden><ul class="bas-ct-cl bas-ct-top">${l.map((i) => linhaAt(i, false)).join('')}</ul></div>`; }).join('')}` : basCard(basVazio('Sua carteira aparece aqui quando você registrar o primeiro investimento.'));
   return `<div class="bas-pg bas-pg-ctw"><div class="bas-gt-bg bas-pt-bg bas-ctw-bg">
     <header class="bas-pv2-h"><button class="bell bas-cal-b" data-act="bas-voltar" aria-label="Voltar">${I_VOLTA}</button><b>Minha carteira</b><span class="bas-noite-r">${olhoHtml()}</span></header>
     ${basCtwHtml(cls, total, comAlvo, its)}
   </div><div class="bas-gt-folha">
     ${its.length ? `<div class="bas-pg-per bas-gt-acoes"><button class="bas-circ bas-en-bt" ${basIr('alvos')}><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".8"/></svg><span>Alvos</span></button><button class="bas-inv-pl" ${basIr('aportar')}>${I.plus}<span>Onde investir</span></button></div>` : ''}
-    ${basSecao('Seus ativos', '', alocacao)}${basRecHtml()}
+    ${basSecao('<span data-ctw-h>Minha carteira</span>', '', alocacao)}${basRecHtml()}
     </div></div>`;
 }
 /* ---- App completo: limites, avisos, simulador do sonho e alvos da carteira ---- */
@@ -1570,15 +1592,30 @@ function basTelaCartoes() {
 // fila em leque: o cartão do meio fica de frente e os vizinhos giram e encolhem conforme a distância (--d, --a)
 // arrastar o cartão para o lado troca para o cartão vizinho (a mesma ordem de "Seus cartões", em loop), sem empilhar outra tela
 // "Ver tudo" dos Últimos gastos: todos os gastos do período numa janela que sobe de baixo; fecha no X, no fundo ou com Esc
-function basUltPop() {
-  const tpl = document.getElementById('bas-ult-tpl'); if (!tpl) return; const n = tpl.content.querySelectorAll('li').length;
-  const el = document.createElement('div'); el.className = 'bas-pop'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Todos os gastos');
-  el.innerHTML = `<div class="bas-pop-f"><span class="bas-pop-al" aria-hidden="true"></span><div class="bas-pop-h"><span><b>Todos os gastos</b><small>${n} ${n === 1 ? 'gasto' : 'gastos'} ${esc(basJanFrase())}</small></span><button class="bell" data-pop="x" aria-label="Fechar">${I.x}</button></div><div class="bas-pop-c"></div></div>`;
+function basUltPop(id = 'bas-ult-tpl', tit = 'Todos os gastos', sub0) {
+  const tpl = document.getElementById(id); if (!tpl) return; const n = tpl.content.querySelectorAll('li').length; const at = id === 'bas-ct-tpl';
+  const el = document.createElement('div'); el.className = 'bas-pop'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', tit);
+  el.innerHTML = `<div class="bas-pop-f"><span class="bas-pop-al" aria-hidden="true"></span><div class="bas-pop-h"><span><b>${tit}</b><small>${sub0 ? esc(sub0) : at ? `${n} ${n === 1 ? 'ativo' : 'ativos'}, do maior para o menor` : `${n} ${n === 1 ? 'gasto' : 'gastos'} ${esc(basJanFrase())}`}</small></span><button class="bell" data-pop="x" aria-label="Fechar">${I.x}</button></div><div class="bas-pop-c"></div></div>`;
   el.querySelector('.bas-pop-c').appendChild(tpl.content.cloneNode(true));
   const fechar = () => { document.removeEventListener('keydown', tecla); el.classList.add('sai'); setTimeout(() => el.remove(), 240); };
   const tecla = (e) => { if (e.key === 'Escape') fechar(); };
   el.addEventListener('click', (e) => { if (e.target === el || e.target.closest('[data-pop="x"]')) fechar(); else if (e.target.closest('[data-act]')) { document.removeEventListener('keydown', tecla); setTimeout(() => el.remove(), 0); } });
-  document.addEventListener('keydown', tecla); document.body.appendChild(el); basSom('toque');
+  document.addEventListener('keydown', tecla); document.body.appendChild(el); basSom('toque'); return el;
+}
+// todas as movimentações do ativo: período (3M, 6M, 1A, Tudo, contado a partir de hoje) e busca por tipo ou mês, sem redesenhar
+function basMovPop() {
+  const el = basUltPop('bas-mv-tpl', 'Movimentações'); if (!el) return; const sub = el.querySelector('.bas-pop-h small'); const lis = [...el.querySelectorAll('.bas-pop-c li')];
+  const PER = [['3', '3M'], ['6', '6M'], ['12', '1A'], ['0', 'Tudo']]; let per = '0', q = '';
+  el.querySelector('.bas-pop-c').insertAdjacentHTML('beforebegin', `<div class="bas-mvp-f"><label class="bas-mvp-b"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg><input type="search" placeholder="Buscar: aplicação, provento, março…" aria-label="Buscar movimentação"></label>
+    <div class="seg bas-mvp-p" role="group" aria-label="Período">${PER.map(([v, l]) => `<button class="${v === per ? 'on' : ''}" data-mvp="${v}" aria-pressed="${v === per}">${l}</button>`).join('')}</div></div><p class="bas-mvp-vz" hidden>Nada nesse período.</p>`);
+  const hoje = new Date(); const agora = hoje.getFullYear() * 12 + hoje.getMonth(); const sem = (t) => t.normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const filtra = () => { let n = 0; const qq = sem(q.trim().toLowerCase());
+    lis.forEach((li) => { const ok = (per === '0' || +li.dataset.ym > agora - +per) && (!qq || sem(li.dataset.q).includes(qq)); li.hidden = !ok; if (ok) n++; });
+    sub.textContent = `${n} ${n === 1 ? 'movimentação' : 'movimentações'}${per === '0' ? '' : ` em ${PER.find((p) => p[0] === per)[1].replace('M', ' meses').replace('1A', '12 meses')}`}`; el.querySelector('.bas-mvp-vz').hidden = n > 0; };
+  el.querySelector('input').addEventListener('input', (e) => { q = e.target.value; filtra(); });
+  el.querySelector('.bas-mvp-p').addEventListener('click', (e) => { const b = e.target.closest('[data-mvp]'); if (!b) return; per = b.dataset.mvp;
+    el.querySelectorAll('[data-mvp]').forEach((x) => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', String(x === b)); }); filtra(); basSom('toque'); });
+  filtra();
 }
 function basCtLigar() {
   const c = document.querySelector('.bas-ct2-card'); S.basCtDir = 0; if (!c || c.dataset.lig) return; c.dataset.lig = '1';
@@ -2126,18 +2163,45 @@ const I_LIMITE_IC = ic('<path d="M4.5 16a7.5 7.5 0 1 1 15 0"/><path d="M12 16l3.
    para onde foi e limites por área em Gastos, e a análise da saúde financeira com o rostinho ---- */
 const I_IMP = ic('<path d="M12 3.5v11m0 0-4-4m4 4 4-4"/><path d="M4.5 15.5v3a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-3"/>');
 // investimento (o mesmo do Novo aporte do SaaS): aportar ou resgatar, ativo que já tenho ou novo, tipo, classe, mês e valor; e importar
+// o ativo escolhido numa linha (Trocar abre a janela com busca, basInvLigar); a lista vai num template. ordem: por peso ou por proventos
+function basAtPick(selId, porProv) {
+  const p = S.plan; const { M } = cartAnalise(); const val = new Map(M.items.map((i) => [i.a.id, i.valor])); const pr = (a) => sum12(a.pr);
+  const ord = p.ativos.slice().sort((x, y) => (porProv ? pr(y) - pr(x) : 0) || (val.get(y.id) || 0) - (val.get(x.id) || 0));
+  const sel = (selId && p.ativos.find((x) => x.id === selId)) || ord[0]; if (!sel) return '';
+  const classes = [...new Set(p.ativos.map((x) => x.classe || ''))]; const cor = (a) => BAS_CT_COR[classes.indexOf(a.classe || '') % BAS_CT_COR.length];
+  const cara = (a) => `<span class="bas-ct-lg" style="--bc:${cor(a)}">${esc(basSigla(a.nome))}</span><span class="bas-ct-an"><b>${esc(a.nome)}</b><small>${esc(a.classe || 'Outros')}${porProv ? (pr(a) > 0 ? ` · ${brl0(pr(a))} no ano` : '') : val.get(a.id) > 0.005 ? ` · ${brl0(val.get(a.id))}` : ''}</small></span>`;
+  const grupos = {}; ord.forEach((a) => { (grupos[a.classe || 'Outros'] = grupos[a.classe || 'Outros'] || []).push(a); });
+  return `<input type="hidden" name="ativo" value="${esc(sel.id)}"><button type="button" class="card bas-inv-sel" data-inv-sel aria-label="Trocar o ativo">${cara(sel)}<em>Trocar</em></button>
+    <template id="bas-inv-tpl"><ul class="bas-inv-ls">${Object.keys(grupos).map((c) => `<li class="bas-inv-g" data-q="${esc(c.toLowerCase())}">${esc(c)}</li>${grupos[c].map((a) => `<li data-q="${esc(`${a.nome} ${c}`.toLowerCase())}"><button type="button" class="bas-ct-at" data-inv-id="${esc(a.id)}">${cara(a)}</button></li>`).join('')}`).join('')}</ul></template>`;
+}
+const basMesFaixa = (m0) => `<div class="bas-inv-mes" role="radiogroup" aria-label="Mês">${MES.map((m, i) => `<label><input type="radio" name="mes" value="${i}" ${i === m0 ? 'checked' : ''}><span>${m}</span></label>`).join('')}</div>`;
 function basTelaInvest(o) {
-  const p = S.plan; const tem = p.ativos.length > 0; const grupos = {}; p.ativos.forEach((a) => { (grupos[a.classe || 'Outros'] = grupos[a.classe || 'Outros'] || []).push(a); });
-  const tipos = [['RENDA FIXA', 'Renda fixa'], ['BOLSA DE VALORES', 'Bolsa de valores']];
-  const classes = [...new Set(p.ativos.map((a) => a.classe).filter(Boolean))].slice(0, 10);
-  return basForm('aporte', 'Investimento', `<button type="button" class="bas-imp" data-act="bas-importar">${I_IMP}<span class="bas-n"><b>Importar da B3 ou do extrato</b><small>Traz aportes, resgates e proventos de um arquivo</small></span>${I.chev}</button>
-    ${basChips('op', [['1', 'Aportar'], ['-1', 'Resgatar']], o.op === '-1' ? '-1' : '1', 'O que você quer fazer')}
-    ${tem ? basChips('modo', [['ex', 'Ativo que já tenho'], ['novo', 'Ativo novo']], 'ex', 'Onde') : '<input type="hidden" name="modo" value="novo">'}
-    ${tem ? `<div class="bas-blk" data-blk="ex"><fieldset class="bas-fs"><legend>Ativo</legend><div class="bas-ativos">${Object.keys(grupos).map((c) => `<p class="bas-ativos-c">${esc(c)}</p>${grupos[c].map((a, i) => `<label class="bas-ativo"><input type="radio" name="ativo" value="${esc(a.id)}" ${(o.ativo && p.ativos.some((x) => x.id === o.ativo) ? a.id === o.ativo : a === p.ativos[0]) ? 'checked' : ''}><span class="bas-ini" aria-hidden="true">${esc(basIniciais(a.nome))}</span>${basNome(esc(a.nome), `${brl0(sum12(a.ap))} aplicados em ${S.year}`)}<i class="bas-ativo-ok" aria-hidden="true">${I.check}</i></label>`).join('')}`).join('')}</div></fieldset></div>` : ''}
-    <div class="bas-blk" data-blk="novo">${basCampo('nome', 'Nome do ativo (código, banco ou título)', '', 'placeholder="Ex.: PETR4, CDB Banco X"')}${basChips('tipo', tipos, 'BOLSA DE VALORES', 'Tipo')}
-      ${basCampo('classe', 'Classe', '', 'list="bas-dl-classe" placeholder="Ex.: Ações, CDB, Fundos imobiliários"')}<datalist id="bas-dl-classe">${classes.concat(["CDB's", 'Tesouro Direto', 'Ações BR', 'Fundos Imobiliários', "ETF's", 'Criptoativos']).map((c) => `<option value="${esc(c)}"></option>`).join('')}</datalist></div>
-    <fieldset class="bas-fs"><legend>Mês</legend><div class="bas-meses-f">${MES.map((m, i) => `<label class="bas-chip"><input type="radio" name="mes" value="${i}" ${i === S.mes ? 'checked' : ''}><span>${m}</span></label>`).join('')}</div></fieldset>
-    ${basValor('valor', 0, 'Valor')}<p class="bas-p">O valor é somado ao que o ativo já tem no mês, em ${S.year}.</p>`, { ok: 'Registrar' });
+  const p = S.plan; const tem = p.ativos.length > 0;
+  const classes = [...new Set(p.ativos.map((a) => a.classe).filter(Boolean))].concat(["CDB's", 'Tesouro Direto', 'Ações BR', 'Fundos Imobiliários', "ETF's", 'Criptoativos']).filter((c, i, l) => l.indexOf(c) === i);
+  const op = o.op === '-1' ? '-1' : '1';
+  return basForm('aporte', 'Investimento', `<div class="bas-inv-op" role="radiogroup" aria-label="O que você quer fazer">${[['1', 'Aplicar'], ['-1', 'Resgatar']].map(([v, l]) => `<label><input type="radio" name="op" value="${v}" ${v === op ? 'checked' : ''}><span>${l}</span></label>`).join('')}</div>
+    <div class="bas-inv-v">${basValor('valor', 0, 'Quanto?')}</div>
+    <input type="hidden" name="modo" value="${tem ? 'ex' : 'novo'}">${tem ? `<p class="bas-inv-k">Em qual ativo</p>${basAtPick(o.ativo, false)}` : ''}
+    <div class="bas-inv-novo" ${tem ? 'hidden' : ''}>${basCampo('nome', 'Nome do ativo', '', 'placeholder="Ex.: PETR4, CDB Banco X"')}
+      ${basCampo('classe', 'Classe', '', 'list="bas-dl-classe" placeholder="Ex.: Ações, CDB, Fundos imobiliários"')}<datalist id="bas-dl-classe">${classes.map((c) => `<option value="${esc(c)}"></option>`).join('')}</datalist>
+      ${basChips('tipo', [['RENDA FIXA', 'Renda fixa'], ['BOLSA DE VALORES', 'Bolsa']], 'BOLSA DE VALORES', 'Tipo')}</div>
+    <p class="bas-inv-k">Mês</p>${basMesFaixa(S.mes)}
+    <button type="button" class="bas-inv-imp" data-act="bas-importar">${I_IMP}<span>Importar da B3 ou de um extrato</span>${I.chev}</button>`, { ok: 'Registrar' });
+}
+// escolher o ativo numa janela com busca (ou "Ativo novo"), sem a lista longa na tela
+function basInvLigar() {
+  const bt = document.querySelector('[data-inv-sel]'); if (!bt || bt.dataset.lig) return; bt.dataset.lig = '1'; const f = bt.closest('form');
+  const mes = f.querySelector('.bas-inv-mes input:checked'); if (mes) { const c = mes.parentElement.parentElement; c.scrollLeft = mes.parentElement.offsetLeft - c.clientWidth / 2 + mes.parentElement.offsetWidth / 2; }
+  const novo = f.querySelector('.bas-inv-novo'); const modo = f.querySelector('[name="modo"]'); const at = f.querySelector('[name="ativo"]');
+  bt.addEventListener('click', () => { const el = basUltPop('bas-inv-tpl', 'Escolha o ativo', 'Toque para escolher'); if (!el) return; const lis = [...el.querySelectorAll('.bas-pop-c li')];
+    el.querySelector('.bas-pop-c').insertAdjacentHTML('beforebegin', `<div class="bas-mvp-f"><label class="bas-mvp-b"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg><input type="search" placeholder="Buscar ativo ou classe" aria-label="Buscar ativo"></label>
+      ${novo ? `<button type="button" class="bas-inv-mais" data-inv-novo>${I.plus}<span>Ativo novo</span></button>` : ''}</div>`);
+    el.querySelector('input').addEventListener('input', (e) => { const q = e.target.value.trim().toLowerCase(); lis.forEach((li) => { li.hidden = !!q && !li.dataset.q.includes(q); }); });
+    const fecha = () => el.querySelector('[data-pop="x"]').click();
+    el.addEventListener('click', (e) => { const b = e.target.closest('[data-inv-id], [data-inv-novo]'); if (!b) return;
+      if (b.dataset.invId) { at.value = b.dataset.invId; if (modo) modo.value = 'ex'; if (novo) novo.hidden = true; bt.innerHTML = `${b.innerHTML}<em>Trocar</em>`; }
+      else { modo.value = 'novo'; novo.hidden = false; bt.innerHTML = `<span class="bas-ct-lg" style="--bc:var(--accent)">${I.plus}</span><span class="bas-ct-an"><b>Ativo novo</b><small>Preencha embaixo</small></span><em>Trocar</em>`; setTimeout(() => { const n = novo.querySelector('[name="nome"]'); if (n) n.focus(); }, 260); }
+      fecha(); }); });
 }
 const sum12 = (a) => (a || []).reduce((s, v) => s + (+v || 0), 0);
 // tela do ativo, no jeito de corretora: a posição (a custo) mês a mês desde o primeiro registro, em velas ou linha,
@@ -2187,7 +2251,9 @@ function basTelaAtivo(o) {
   const NOME = { ap: 'Aplicação', rs: 'Resgate', pr: 'Provento' }; const IC = { ap: '↑', rs: '↓', pr: '◆' };
   const linha = (x) => { const ed = x.t !== 'pr' && x.p.y === S.year && temRecurso('aporte_simples');
     return `<li><button class="bas-at-mv ${x.t}" ${ed ? basIr('aporte', { id: a.id, mes: x.p.m }) : 'disabled'}><span class="bas-at-mi" aria-hidden="true">${IC[x.t]}</span><span class="bas-pv2-n"><b>${NOME[x.t]}</b><small>${esc(basAtMes(x.p, true))}</small></span><b class="bas-at-mvv">${x.t === 'rs' ? '−' : '+'}${basCent(Math.abs(x.v))}</b></button></li>`; };
-  const movs = mov.length ? basSecao('Movimentações', `<small class="bas-pv2-q">${mov.length}</small>`, `<ul class="card bas-pv2-ls">${mov.slice(0, 40).map(linha).join('')}</ul>`) : basCard(basVazio('Nenhuma movimentação ainda.'));
+  // as 5 mais novas na tela; "Ver tudo" abre a janela com período e busca (basMovPop), sobre a lista inteira guardada num template
+  const linhaT = (x) => linha(x).replace('<li>', `<li data-ym="${x.p.y * 12 + x.p.m}" data-q="${esc(`${NOME[x.t]} ${basAtMes(x.p, true)}`.toLowerCase())}">`);
+  const movs = mov.length ? basSecao('Movimentações', mov.length > 5 ? `<button class="bas-ult-ver" data-act="bas-at-movs">Ver tudo</button>` : '', `<ul class="card bas-pv2-ls">${mov.slice(0, 5).map(linha).join('')}</ul>${mov.length > 5 ? `<template id="bas-mv-tpl"><ul class="bas-pv2-ls">${mov.map(linhaT).join('')}</ul></template>` : ''}`) : basCard(basVazio('Nenhuma movimentação ainda.'));
   const pode = temRecurso('aporte_simples');
   const bar = pode ? `<div class="bas-at-bar"><button class="bas-at-b rs" ${basIr('aporte', { modo: 'nova', op: '-1', ativo: a.id })}>Resgatar</button><button class="bas-at-b ap" ${basIr('aporte', { modo: 'nova', op: '1', ativo: a.id })}>Aplicar</button></div>` : '';
   return `<div class="bas-pg bas-pg-at"><div class="bas-gt-bg bas-pt-bg bas-at-bg">
@@ -2461,7 +2527,8 @@ function basSalvar(f) {
       if (!temRecurso('proventos')) return false;
       const v = val('valor'); if (Number.isNaN(v) || v < 0 || (!t.id && !(v > 0))) return basErro(f, 'Informe o valor, como 35,20.');
       if (t.id) { const a = p.ativos.find((x) => x.id === t.id); if (a) a.pr[m] = E.r2(v); ok('Provento atualizado.'); return; }
-      const a = p.ativos.find((x) => x.id === d.ativo); if (!a) return basErro(f, 'Escolha de qual investimento.'); a.pr[m] = E.r2((+a.pr[m] || 0) + v); ok(`Provento de ${a.nome} registrado.`); return;
+      const a = p.ativos.find((x) => x.id === d.ativo); if (!a) return basErro(f, 'Escolha de qual investimento.'); const mm = d.mes != null && d.mes !== '' ? Math.max(0, Math.min(11, +d.mes)) : m;
+      a.pr[mm] = E.r2((+a.pr[mm] || 0) + v); ok(`Provento de ${a.nome} registrado em ${MES_LONGO[mm]}.`); return;
     }
     case 'excluir': { if (String(d.conf || '').trim().toUpperCase() !== 'EXCLUIR') return basErro(f, 'Escreva EXCLUIR para confirmar.');
       basLimpar(); excluirConta().catch((e) => toast(e && e.amigavel ? e.message : 'Não foi possível excluir a conta agora.')); return; }
@@ -2523,6 +2590,9 @@ function basAcao(act, ds, el) {
       if (S.basAba !== ds.v || basPilha().length) basSom('toque'); basTransicao('aba', () => { basLimpar(); S.basAba = ds.v; render(); window.scrollTo(0, 0); }); return true;
     case 'bas-mes': S.mes = Math.max(0, Math.min(11, S.mes + +ds.d)); render(); return true;
     case 'bas-oi-reg': basOiRegistrar(); return true;
+    case 'bas-cart-vis': S.basCartVis = ds.v; S.basCartAbre = null; render(); return true;
+    case 'bas-at-movs': basMovPop(); return true;
+    case 'bas-cart-todos': basUltPop('bas-ct-tpl', 'Todos os ativos'); return true;
     case 'bas-cart-cl': S.basCartAbre = S.basCartAbre === ds.v ? null : ds.v; basSom('toque'); render(); return true;
     case 'bas-at-r': S.basAtR = ds.v; render(); return true;
     case 'bas-at-modo': S.basAtModo = ds.v; render(); return true;
@@ -2602,3 +2672,23 @@ function basAcao(act, ds, el) {
     default: return false;
   }
 }
+
+// importar extrato no App: antes da prévia, uma análise animada (o arquivo é varrido e os passos acendem um a um);
+// só no App (o SaaS usa o mesmo ingest-ui.js) e só uma vez por arquivo; com "reduzir movimento", vai direto
+const basIngOrig = typeof renderIng === 'function' ? renderIng : null;
+if (basIngOrig) renderIng = function () {
+  const root = document.getElementById('ing-root'); const g = S.ing || {};
+  if (!root || document.body.dataset.ui !== 'basico') return basIngOrig();
+  const passos = ['Lendo o arquivo', 'Reconhecendo as categorias', 'Procurando o que já foi importado', 'Separando gastos, entradas e investimentos'];
+  const tela = (n, fim) => `<div class="bas-ia-an" role="status" aria-live="polite"><div class="bas-ia-doc" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><b class="bas-ia-scan"></b></div>
+    <b class="bas-ia-t">${fim ? esc(fim) : 'Analisando seu extrato'}</b><small>${esc(g.nome || '')}</small>
+    <ol>${passos.map((p, i) => `<li class="${i < n ? 'ok' : i === n ? 'vai' : ''}"><span aria-hidden="true">${i < n ? '✓' : ''}</span>${p}</li>`).join('')}</ol></div>`;
+  const ok = document.querySelector('#mform button[type=submit]');
+  if (g.estado === 'lendo') { root.innerHTML = tela(0); if (ok) ok.disabled = true; return; }
+  if (g.estado !== 'pronto' || g.basVisto || matchMedia('(prefers-reduced-motion: reduce)').matches) return basIngOrig();
+  g.basVisto = true; let n = 0; if (ok) ok.disabled = true;
+  const anda = () => { if (S.ing !== g || !root.isConnected) return; n++;
+    if (n <= passos.length) { root.innerHTML = tela(n, n === passos.length ? `${g.resumo ? g.resumo.total : ''} ${g.resumo && g.resumo.total === 1 ? 'lançamento encontrado' : 'lançamentos encontrados'}` : ''); if (n === passos.length) basRetorno('ok'); setTimeout(anda, n === passos.length ? 700 : 520); }
+    else { root.classList.add('bas-ing-chega'); basIngOrig(); } };
+  root.innerHTML = tela(0); setTimeout(anda, 520);
+};
