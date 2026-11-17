@@ -3706,3 +3706,6 @@ li.on > .bas-ig-ck { background: var(--accent); box-shadow: 0 4px 10px -4px var(
 .bas-w-ph .bas-ph-ir, .bas-w-ano .bas-ph-ir { position: absolute; top: 14px; right: 14px; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
 .bas-w-ph .bas-ph-ir svg, .bas-w-ano .bas-ph-ir svg { width: 16px; height: 16px; }
 .bas-w-ph .bas-ph-h, .bas-w-ano .bas-w-az-h { padding-right: 40px; }
+/* Seu ano: as colunas de Proventos; mês que faltou dinheiro em vermelho */
+.bas-sa-g button.neg i { background: linear-gradient(180deg, #FFC2CB, #FF6B81 55%, #E5354F) !important; box-shadow: 0 0 14px rgba(255, 77, 106, .45); }
+.bas-sa-g button.neg.on i { box-shadow: 0 0 0 2px #fff, 0 0 22px rgba(255, 107, 129, .8) !important; }
