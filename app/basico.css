@@ -3515,3 +3515,19 @@ li.on > .bas-ig-ck { background: var(--accent); box-shadow: 0 4px 10px -4px var(
 .bas-ig-ok { width: 92px; height: 92px; display: grid; place-items: center; border-radius: 50%; color: #fff; background: var(--pos); box-shadow: 0 20px 40px -16px var(--pos); animation: bas-ia-ok 500ms cubic-bezier(.2, 1.4, .4, 1); }
 .bas-ig-ok svg { width: 44px; height: 44px; stroke-width: 3; }
 @media (prefers-reduced-motion: reduce) { .bas-ig-ic i, .bas-ig.chega > *, .bas-ig-ok { animation: none; } }
+
+/* ===== Categoria de gastos, refeita no fundo azul: ícone em vidro, total grande, limite em branco; ícone muda pelo lápis ===== */
+.bas-cat-top { display: grid; justify-items: center; text-align: center; padding: 6px 0 4px; }
+.bas-cat-ic { width: 76px; height: 76px; margin: 4px 0 14px; display: grid; place-items: center; border-radius: 26px; color: #fff;
+  background: linear-gradient(160deg, rgba(255, 255, 255, .32), rgba(255, 255, 255, .1)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55), inset 0 0 0 1px rgba(255, 255, 255, .22), 0 18px 34px -16px rgba(0, 0, 0, .55);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+.bas-cat-ic svg { width: 36px; height: 36px; }
+.bas-cat-top .bas-pv2-k { margin: 0; } .bas-cat-top .bas-pv2-t { margin-top: 2px; }
+.bas-cat-lim { width: 100%; max-width: 340px; margin-top: 14px; }
+.bas-cat-lim .bas-bar { height: 8px; border-radius: 8px; background: rgba(255, 255, 255, .18); overflow: hidden; }
+.bas-cat-lim .bas-bar i { background: linear-gradient(90deg, #fff, color-mix(in srgb, var(--bas-azul-1) 30%, #fff)); box-shadow: 0 0 12px rgba(255, 255, 255, .6); }
+.bas-cat-lim .bas-p { margin: 10px 0 0; color: rgba(255, 255, 255, .8); font-size: 14px; }
+.bas-cat-lim .lnk { color: #fff; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.bas-pg-cat .bas-gt-acoes { justify-content: center; } .bas-cat-add { margin: 0 !important; width: 100%; justify-content: center; }
+.bas-pop-c > .bas-catic-g { padding: 4px 2px 8px; }
+.bas-pg-cat .bas-gt-acoes > .bas-cat-add { flex: 1; }
