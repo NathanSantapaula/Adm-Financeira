@@ -2064,18 +2064,22 @@ function basWidgetsInicio(secs) {
   // Patrimônio ano a ano: linha de verdade, ponto a ponto, com cada mês de cada ano (H.serie, a mesma da linha do tempo do SaaS);
   // cada ano numa seção separada por divisória; o dedo mostra o mês exato; tocar num ano abre os números dele
   const H = histDados(); const t = H.totais || {}; const ult = S.year === NOW_Y ? NOW_M : 11;
-  // Patrimônio ano a ano: o crescimento em cima e uma escada de barras, uma por ano (até 5), com o valor de cada uma; o ano de agora aceso. Com um ano só, os meses dele
+  // Patrimônio ano a ano: uma linha que sobe, um ponto por ano (até 5) com o valor curto, e o crescimento em percentual; com um ano só, os meses dele
   const anosH = (H.anos || []).filter((l) => l.preenchido).slice(-5); const porAno = anosH.length > 1;
-  const itH = porAno ? anosH.map((l) => ({ k: String(l.ano), v: l.patrimonioFim, on: l.ano === S.year, at: basIr('ano-hist', { id: l.ano }), lb: `Análise de ${l.ano}` }))
-    : C.patrimonio.slice(0, ult + 1).map((v, m) => ({ k: MES[m][0], v, on: m === ult, at: basIr('ano-hist', { id: S.year }), lb: cap(MES_LONGO[m]) }));
-  const mxH = Math.max(1, ...itH.map((x) => x.v)); const upH = (t.crescimento || 0) >= 0;
-  const cabH = porAno && t.crescimento ? `<b class="bas-ph-v ${upH ? 'pos' : 'neg'}">${upH ? '+' : '−'}${brl0(Math.abs(t.crescimento))}</b><small>desde ${anosH[0].ano}${t.crescimentoPct != null ? ` · ${upH ? '+' : '−'}${pct(Math.abs(t.crescimentoPct))}` : ''}</small>`
-    : `<b class="bas-ph-v">${brl0(C.patrimonio[ult])}</b><small>seu patrimônio em ${MES_LONGO[ult]}</small>`;
-  secs.historico = `<section class="card bas-w-ph"><button class="bas-ph-h" ${basIr('historico')} aria-label="Ver o histórico completo"><span class="bas-ph-t"><small>Patrimônio ano a ano</small>${cabH}</span><span class="bas-ph-ir" aria-hidden="true">${I.chev}</span></button>
-    <div class="bas-ph-g${porAno ? '' : ' meses'}" style="--n:${itH.length}">${itH.map((x, k) => `<button class="${x.on ? 'on' : ''}" ${x.at} aria-label="${esc(x.lb)}: ${esc(brl0(x.v))}" style="--h:${Math.max(4, (x.v / mxH) * 100).toFixed(1)};--i:${k}">${porAno ? `<small>${tickFmt(x.v)}</small>` : ''}<i></i><b>${x.k}</b></button>`).join('')}</div></section>`;
+  const ptsH = porAno ? anosH.map((l) => ({ k: String(l.ano), v: l.patrimonioFim })) : C.patrimonio.slice(0, ult + 1).map((v, m) => ({ k: MES[m][0], v }));
+  const WH = 320; const HH = 110; const vsH = ptsH.map((q) => q.v); const mnH = Math.min(...vsH); const mxH = Math.max(...vsH); const foH = (mxH - mnH) * 0.2 || mxH * 0.05 || 1;
+  const PH = ptsH.map((q, k) => [ptsH.length > 1 ? 18 + (k / (ptsH.length - 1)) * (WH - 36) : WH / 2, HH - 6 - ((q.v - (mnH - foH)) / ((mxH + foH) - (mnH - foH))) * (HH - 30)]);
+  const dH = PH.length > 1 ? basCurva(PH) : ''; const xH = (q) => ((q[0] / WH) * 100).toFixed(2); const upH = (t.crescimento || 0) >= 0;
+  const subH = porAno && t.crescimentoPct != null ? `<em class="bas-ph-c${upH ? '' : ' neg'}">${upH ? '↑' : '↓'} ${pct(Math.abs(t.crescimentoPct))}</em>desde ${anosH[0].ano}` : `mês a mês em ${S.year}`;
+  secs.historico = `<button class="card bas-w-ph" ${basIr('historico')} aria-label="Patrimônio ano a ano. Ver o histórico completo">
+    <span class="bas-ph-h"><span class="bas-ph-t"><b>Patrimônio ano a ano</b><small>${subH}</small></span><span class="bas-ph-ir" aria-hidden="true">${I.chev}</span></span>
+    <span class="bas-ph-g" aria-hidden="true"><svg viewBox="0 0 ${WH} ${HH}" preserveAspectRatio="none"><defs><linearGradient id="bas-ph-gr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="g0"/><stop offset="1" class="g1"/></linearGradient></defs>
+      ${dH ? `<path class="bas-ph-a" d="${dH} L${PH[PH.length - 1][0].toFixed(1)} ${HH} L${PH[0][0].toFixed(1)} ${HH} Z" fill="url(#bas-ph-gr)"/><path class="bas-ph-l" d="${dH}"/>` : ''}</svg>
+      ${PH.map((q, k) => `<i class="bas-ph-d${k === PH.length - 1 ? ' fim' : ''}${k === 0 && PH.length > 1 ? ' ini' : ''}" style="left:${xH(q)}%;top:${((q[1] / HH) * 100).toFixed(2)}%">${porAno || k === PH.length - 1 ? `<b>${tickFmt(ptsH[k].v)}</b>` : ''}</i>`).join('')}</span>
+    <span class="bas-ph-x" aria-hidden="true">${PH.map((q, k) => `<span class="${k === PH.length - 1 ? 'on' : ''}" style="left:${xH(q)}%">${ptsH[k].k}</span>`).join('')}</span></button>`;
   // Seu ano: a sobra de cada mês numa fileira de 12 cápsulas de luz (verde quando sobra, vermelho quando falta; os meses que vêm, apagados)
   secs.seuano = `<button class="card bas-w-ano bas-w-az" ${basIr('ano-resumo')}><span class="bas-w-az-h"><small>Seu ${S.year}</small><span class="bas-w-az-lk" aria-hidden="true">Ver${I.chev}</span></span>
-    <b class="bas-w-az-v">${basCent(C.T.investAlocado)}</b><span class="bas-w-az-s">${C.T.poupanca != null ? `<em class="bas-w-az-c${C.T.poupanca < 0 ? ' neg' : ''}">${pct(C.T.poupanca)}</em>do que entrou ficou com você` : 'sobraram no ano'}</span>${basCapsulas(C.investAlocado, ult)}</button>`;
+    <span class="bas-w-az-s">${C.T.poupanca != null ? `<em class="bas-w-az-c${C.T.poupanca < 0 ? ' neg' : ''}">${pct(C.T.poupanca)}</em>do que entrou ficou com você` : `sobraram ${tickFmt(C.T.investAlocado)} no ano`}</span>${basCapsulas(C.investAlocado, ult)}</button>`;
   // Resumo do mês: um story em miniatura, inclinado e brilhando, pronto para compartilhar
   const mR = S.mes; const Dr = E.disponivelAporte({ C, mes: mR, metaMes: C.metaAporteMes }); const topR = Math.max(1, C.receita[mR], C.despesas[mR], Dr.aportado);
   secs.resumo = `<div class="card bas-w-res"><div class="bas-w-res-t"><small>Resumo de ${MES_LONGO[mR]}</small><b>Seu mês num story</b><span>Uma imagem com o que entrou, saiu e foi investido.</span>
