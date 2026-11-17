@@ -3661,3 +3661,22 @@ li.on > .bas-ig-ck { background: var(--accent); box-shadow: 0 4px 10px -4px var(
 .bas-w-az .bas-cap b { color: var(--ink-3); } .bas-w-az .bas-cap .on b { color: var(--ink); }
 .bas-w-az .bas-cap .on i { outline-color: color-mix(in srgb, var(--accent) 60%, transparent); }
 @media (prefers-reduced-motion: reduce) { .bas-cap i, .bas-hs-a, .bas-hs-l, .bas-hs-d.fim { animation: none; opacity: 1; stroke-dashoffset: 0; } }
+
+/* ===== Patrimônio ano a ano, refeito: o crescimento em cima e uma escada de barras por ano ===== */
+.card.bas-w-ph { display: block; margin-top: 14px; padding: 16px 16px 14px; border-radius: 24px; }
+.bas-ph-h { width: 100%; display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.bas-ph-t { display: grid; gap: 2px; min-width: 0; }
+.bas-ph-t > small:first-child { font-size: 13px; font-weight: 600; color: var(--ink-3); }
+.bas-ph-v { font-size: 24px; font-weight: 750; letter-spacing: -.02em; font-variant-numeric: tabular-nums; color: var(--ink); } .bas-ph-v.pos { color: var(--pos); } .bas-ph-v.neg { color: var(--neg); }
+.bas-ph-t > small:last-child { font-size: 13px; color: var(--ink-3); }
+.bas-ph-ir { flex: none; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.bas-ph-ir svg { width: 16px; height: 16px; }
+.bas-ph-g { display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: 10px; align-items: stretch; height: 150px; margin-top: 16px; }
+.bas-ph-g button { height: 100%; min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 6px; padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; }
+.bas-ph-g i { width: 100%; max-width: 56px; height: calc((100% - 44px) * var(--h) / 100); border-radius: 14px 14px 8px 8px; background: color-mix(in srgb, var(--accent) 28%, transparent); transform-origin: bottom; animation: bas-barra 700ms var(--ease-out) both; animation-delay: calc(var(--i) * 70ms); transition: filter 160ms; }
+.bas-ph-g .on i { background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 60%, #fff), var(--accent)); box-shadow: 0 10px 24px -10px var(--accent); }
+.bas-ph-g button:active i { filter: brightness(1.15); }
+.bas-ph-g small { font-size: 12px; font-weight: 700; white-space: nowrap; color: var(--ink-2); font-variant-numeric: tabular-nums; } .bas-ph-g .on small { color: var(--accent); }
+.bas-ph-g b { font-size: 12px; font-weight: 600; color: var(--ink-3); } .bas-ph-g .on b { color: var(--ink); }
+.bas-ph-g.meses { gap: 4px; } .bas-ph-g.meses i { border-radius: 6px; } .bas-ph-g.meses i { height: calc((100% - 22px) * var(--h) / 100); }
+@media (prefers-reduced-motion: reduce) { .bas-ph-g i { animation: none; } }
