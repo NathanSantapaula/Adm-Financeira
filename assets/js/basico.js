@@ -397,10 +397,10 @@ function basTelaEntradas() {
 
 /* ---- peças compartilhadas pelas listas ---- */
 const basContas = (m) => E.contasMes({ despesas: S.plan.despesas, carry: E.carryItems(S.plans, S.year), ano: S.year, mes: m });
-const basContaLinha = (x) => basRow(basIr('gasto-ver', { id: x.id, op: 'conta', modo: S.mes }), x.inst ? instIcone(x.inst) : I_CONTA, esc(x.nome), x.parcela ? `parcela ${x.parcela.i} de ${x.parcela.n}` : 'todo mês',
+const basContaLinha = (x) => basRow(basIr('gasto-ver', { id: x.id, op: 'conta', modo: S.mes }), x.inst ? instIcone(x.inst) : `<span class="bas-catic-i">${basCatIc(x.area)}</span>`, esc(x.nome), `${esc(x.area || 'Outros')} · ${x.parcela ? `parcela ${x.parcela.i} de ${x.parcela.n}` : 'todo mês'}`,
   `<span class="bas-v"><b>${basCent(x.valor)}</b>${S.year > NOW_Y || (S.year === NOW_Y && S.mes > NOW_M) ? '<em class="bas-st">Previsto</em>' : ''}</span>`);
 const basLancLinha = (l) => { const d = E.parseDataISO(l.data);
-  return basRow(basIr('gasto-ver', { id: l.id }), `<span class="bas-catic-i">${basCatIc(l.area)}</span>`, esc(l.desc || l.area), `${esc(l.area)} · ${pad2(d.dia)}/${pad2(d.mes + 1)}`, `<b${l.valor < 0 ? ' class="pos"' : ''}>${l.valor < 0 ? '+' : '−'}${basCent(Math.abs(l.valor))}</b>`); };
+  return basRow(basIr('gasto-ver', { id: l.id }), l.inst ? instIcone(l.inst) : `<span class="bas-catic-i">${basCatIc(l.area)}</span>`, esc(l.desc || l.area), `${esc(l.area || 'Outros')} · ${pad2(d.dia)}/${pad2(d.mes + 1)}`, `<span class="bas-v"><b>${basCent(Math.abs(l.valor))}</b></span>`); };
 
 /* ---- Gastos: "Para onde foi". Anel interativo (tocar destaca a categoria e mostra o valor; tocar de novo abre),
    anel fino de fora com o uso do limite, cartões por banco, contas numa linha do tempo e o + flutuante ---- */
@@ -416,7 +416,7 @@ function basGastos() {
   const todos = basLancJan().concat(contas).sort((x, y) => (x.data < y.data ? 1 : x.data > y.data ? -1 : x.conta ? 1 : -1));
   const quando = (l) => { if (l.conta) return l.parcela ? `parcela ${l.parcela.i} de ${l.parcela.n}` : `todo mês · ${MES[l.mm].toLowerCase()}`; const d = E.parseDataISO(l.data); const hj = new Date(); const ont = new Date(hj - 864e5);
     return d.ano === hj.getFullYear() && d.mes === hj.getMonth() && d.dia === hj.getDate() ? 'Hoje' : d.ano === ont.getFullYear() && d.mes === ont.getMonth() && d.dia === ont.getDate() ? 'Ontem' : `${d.dia} ${MES[d.mes].toLowerCase()}`; };
-  const linha = (l) => `<li><button class="bas-ult-l" ${l.conta ? basIr('gasto-ver', { id: l.id, op: 'conta', modo: l.mm }) : basIr('gasto-ver', { id: l.id })}><span class="bas-ult-ic bas-catic-i">${basCatIc(l.area)}</span><span class="bas-ult-n"><b>${esc(l.desc || l.area)}</b><small>${esc(quando(l))} · ${esc(l.area)}</small></span><b class="bas-ult-v${l.valor < 0 ? ' pos' : ''}">${l.valor < 0 ? '+' : '−'}${brl(Math.abs(l.valor))}</b></button></li>`;
+  const linha = (l) => `<li><button class="bas-ult-l" ${l.conta ? basIr('gasto-ver', { id: l.id, op: 'conta', modo: l.mm }) : basIr('gasto-ver', { id: l.id })}><span class="bas-ult-ic bas-catic-i">${basCatIc(l.area)}</span><span class="bas-ult-n"><b>${esc(l.desc || l.area)}</b><small>${esc(quando(l))} · ${esc(l.area)}</small></span><b class="bas-ult-v">${brl(Math.abs(l.valor))}</b></button></li>`;
   secs.ultimos = todos.length ? basSecao('Últimos gastos', todos.length > 5 ? `<button class="bas-ult-ver" data-act="bas-ult-todos">Ver tudo</button>` : '',
     `<ul class="card bas-ult">${todos.slice(0, 5).map(linha).join('')}</ul>${todos.length > 5 ? `<template id="bas-ult-tpl"><ul class="bas-ult">${todos.map(linha).join('')}</ul></template>` : ''}`) : '';
   return `<div class="bas-pg bas-pg-g"><div class="bas-gt-bg">${basTopo()}
@@ -823,7 +823,7 @@ function basIaxLigar() {
 function basDesenhar() {
   const st = document.getElementById('bas-o3');
   if (st) { const falhou = () => st.classList.add('sem-3d'); if (typeof o3Ligar === 'function') o3Ligar(st, st.dataset.tipo, falhou); else falhou(); }
-  basIaxLigar(); basCifVe(); basGfLigar(); basPeriodoRepinta(); { const f = document.querySelector('.bas-form'); if (f && f.querySelector('[name="areaIc"]') && !f.dataset.ic) { f.dataset.ic = '1'; f.addEventListener('change', (e) => { if (e.target.name !== 'area') return; const r = f.querySelector(`[name="areaIc"][value="${basCatIcId(e.target.value)}"]`); if (r) r.checked = true; }); } } { const on = document.querySelector('.bas-cce-m.on'); const col = on && on.parentElement; if (col && !col.dataset.vis) { col.dataset.vis = '1'; col.scrollTop = on.offsetTop - col.clientHeight / 2 + on.offsetHeight / 2; } } basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basAtLigar(); basEfLigar(); basCtwLigar(); basOiLigar(); basInvLigar(); basIgLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
+  basIaxLigar(); basCifVe(); basGfLigar(); basPeriodoRepinta(); { const f = document.querySelector('.bas-form'); if (f && f.querySelector('[name="areaIc"]') && !f.dataset.ic) { f.dataset.ic = '1'; f.addEventListener('change', (e) => { if (e.target.name !== 'area') return; const r = f.querySelector(`[name="areaIc"][value="${basCatIcId(e.target.value)}"]`); if (r) r.checked = true; }); } } { const on = document.querySelector('.bas-cce-m.on'); const col = on && on.parentElement; if (col && !col.dataset.vis) { col.dataset.vis = '1'; col.scrollTop = on.offsetTop - col.clientHeight / 2 + on.offsetHeight / 2; } } basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basAtLigar(); basEfLigar(); basCtwLigar(); basOiLigar(); basInvLigar(); basIgLigar(); basGfPickLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
   const wr = document.querySelector('.bas-wr'); if (wr && !wr.dataset.lig) { wr.dataset.lig = '1'; basWrIr(wr, 0); }
   const sq = document.querySelector('[data-sq-conta]'); if (sq && !sq.dataset.lig && !matchMedia('(prefers-reduced-motion: reduce)').matches) { sq.dataset.lig = '1'; const alvo = +sq.dataset.sqConta; const t0 = performance.now();
     const passo = (t) => { const k = Math.min(1, (t - t0) / 900); sq.textContent = Math.round(alvo * (1 - Math.pow(1 - k, 3))); if (k < 1 && sq.isConnected) requestAnimationFrame(passo); }; if (alvo > 0) requestAnimationFrame(passo); }
@@ -971,9 +971,9 @@ function basTelaGasto(o, it) {
     <div class="bas-blk bas-gf-quando" data-blk="data"><button type="button" class="bas-gf-dia${d0 === hoje ? ' on' : ''}" data-gf-dia="${hoje}">Hoje</button><input type="date" name="data" value="${esc(d0)}" min="${S.year}-01-01" max="${S.year}-12-31" aria-label="Data do gasto"></div>
     <p class="bas-blk bas-gf-info" data-blk="mesp">Todo mês, de ${MES_LONGO[S.mes]} até dezembro.</p>
     <div class="bas-blk bas-gf-parc" data-blk="parc"><button type="button" data-gf-n="-1" aria-label="Menos parcelas">−</button><input name="n" inputmode="numeric" maxlength="3" value="${pc ? pc.n : 10}" aria-label="Número de parcelas"><button type="button" data-gf-n="1" aria-label="Mais parcelas">+</button><span class="bas-gf-pt" data-gf-pt></span></div>
-    <p class="bas-gf-k">Categoria</p><div class="bas-gf-cs" role="radiogroup" aria-label="Categoria">${cat}</div>
+    <p class="bas-gf-k">Categoria</p><button type="button" class="card bas-inv-sel bas-gf-sel" data-gf-pick="area" aria-label="Trocar a categoria"></button><div class="bas-gf-cs" role="radiogroup" aria-label="Categoria">${cat}</div>
     <div class="bas-gf-novaq"><input name="areaNova" placeholder="Nome da categoria, ex.: Pets" autocomplete="off" aria-label="Nova categoria">${basCatIcEscolha('outros')}</div>
-    <p class="bas-gf-k">Pago com</p><div class="bas-gf-bs" role="radiogroup" aria-label="Pago com">${bancos}</div>
+    <p class="bas-gf-k">Pago com</p><button type="button" class="card bas-inv-sel bas-gf-sel" data-gf-pick="inst" aria-label="Trocar o banco"></button><div class="bas-gf-bs" role="radiogroup" aria-label="Pago com">${bancos}</div>
     ${l || it ? '' : `<button type="button" class="bas-gf-imp" data-act="bas-importar">${I_IMP}Importar do extrato</button>`}
   </div>`, { excluir: l || it ? 'Excluir gasto' : '' });
 }
@@ -989,7 +989,7 @@ function basSalvarGasto(f, d, t, ok) {
   if (d.tipo === 'uma') {
     const dt = E.parseDataISO(d.data); if (!dt || dt.ano !== S.year) return basErro(f, `Escolha uma data de ${S.year}.`);
     const nome = desc || area;
-    if (l) { if (l.itemId && basMesDe(l.data) !== dt.mes) { desfazerBaixa(l); delete l.itemId; } Object.assign(l, { data: d.data, desc: nome, area, inst: d.inst || '', valor: E.r2(l.valor < 0 ? -v : v) }); S.mes = dt.mes; ok('Gasto atualizado.'); return; }
+    if (l) { if (l.itemId && basMesDe(l.data) !== dt.mes) { desfazerBaixa(l); delete l.itemId; } Object.assign(l, { data: d.data, desc: nome, area, inst: d.inst || '', valor: E.r2(v) }); S.mes = dt.mes; ok('Gasto atualizado.'); return; }
     tiraConta();
     const nl = { id: uid(), origem: 'manual', data: d.data, desc: nome, valor: E.r2(v), cat: basCat(false), area, sub: '', inst: d.inst || '' }; p.lancamentos.push(nl); let msg = it ? 'Gasto atualizado.' : 'Gasto anotado.';
     if (!it) { const fx = E.acharFixo(p.despesas, nome, dt.ano, dt.mes); if (fx) { nl.itemId = fx.id; nl.cat = fx.cat; fx.baixas = Object.assign({}, fx.baixas, { [dt.ano + '-' + dt.mes]: nl.id }); msg = `Conta “${fx.nome}” já conta como gasto de ${MES_LONGO[dt.mes]}.`; } }
@@ -1060,21 +1060,23 @@ function basTelaEntrada(o) {
     <small class="bas-ef-k0">Vai entrar em ${esc(MES_LONGO[S.mes])}</small>
     <div class="bas-ef-v" aria-live="polite"><i>R$</i><b data-ef-v>${v0 ? esc(nf.format(v0)) : '0'}</b><span class="bas-ef-cur" aria-hidden="true"></span></div>
     <input type="hidden" name="valor" value="${v0 ? esc(nf.format(v0)) : ''}">
-    <section class="card bas-ef-c fechado">
-      <div class="bas-ef-ch"><button type="button" class="bas-ef-abre" data-ef-abre aria-expanded="false"><small>De onde vem</small><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><button type="button" class="bas-ef-mais" data-ef-mais aria-expanded="false">Ajustar</button></div>
+    <section class="card bas-ef-c">
       <div class="bas-ef-fonte"><span class="bas-ef-ic" data-ef-ic aria-hidden="true">${ic(BAS_REN_IC[ic0][1])}</span>
-        <span class="bas-ef-fn"><input name="nome" value="${esc(r ? r.nome : '')}" placeholder="Salário, freela, aluguel…" aria-label="De onde veio?" enterkeyhint="done"><small data-ef-sub></small></span></div>
-      <ul class="bas-ef-num"><li><span>Por mês</span><b data-ef-mes>–</b></li><li><span>Até dezembro</span><b data-ef-ano>–</b></li><li><span>Da renda média</span><b data-ef-pct>–</b></li></ul>
-      <div class="bas-ef-opc" hidden>
-        <fieldset class="bas-fs bas-catic"><legend>Ícone</legend><div class="bas-catic-g">${Object.keys(BAS_REN_IC).map((k) => `<label title="${esc(BAS_REN_IC[k][0])}"><input type="radio" name="rendaIc" value="${k}" ${k === ic0 ? 'checked' : ''}><span aria-label="${esc(BAS_REN_IC[k][0])}">${ic(BAS_REN_IC[k][1])}</span></label>`).join('')}</div></fieldset>
+        <span class="bas-ef-fn"><input name="nome" value="${esc(r ? r.nome : '')}" placeholder="De onde vem? Ex.: salário" aria-label="De onde veio?" enterkeyhint="done"><small data-ef-sub></small></span>
+        ${recentes.length ? '<button type="button" class="bas-ef-src-b" data-ef-src>Fontes</button>' : ''}</div>
+      <div class="bas-ef-l2">${basSw('todo', r ? 'Usar até dezembro' : 'Entra todo mês', '', !r)}<button type="button" class="bas-ef-aj" data-ef-mais>Ajustes</button></div>
+      <ul class="bas-ef-num" hidden><li><b data-ef-mes></b></li><li><b data-ef-ano></b></li><li><b data-ef-pct></b></li></ul>
+    </section>
+    <div class="bas-ef-sh" data-ef-sh="opc" hidden><div class="bas-ef-shf"><span class="bas-pop-al" aria-hidden="true"></span><div class="bas-pop-h"><span><b>Ajustes da entrada</b><small>Tipo, uso e ícone</small></span><button type="button" class="btn primary bas-ef-pronto" data-ef-fecha>Pronto</button></div>
+      <div class="bas-ef-opc">
         ${basChips('cat', cats.map((c) => [c.id, c.nome]), r ? r.cat : 'fixa', 'Tipo de renda')}
         ${basChips('uso', [['livre', 'Pode investir'], ['gasto', 'Só para gastos']], r && r.soGasto ? 'gasto' : 'livre', 'Esse dinheiro pode ser investido?')}
         <div class="bas-blk" data-blk="ben">${basChips('inst', [...new Set(['ifood', ...instMinhas(), ...(r && r.inst ? [r.inst] : [])])].filter((v) => instDe(v) && v !== 'dinheiro' && v !== 'outra').map((v) => [v, instDe(v)[1]]), (r && r.inst) || 'ifood', 'Em qual cartão ele cai?')}
           <p class="bas-p">Os gastos pagos com este cartão usam esse saldo, e o que sobrar nele não entra no que dá para investir.</p></div>
-      </div>
-      ${basSw('todo', r ? 'Usar este valor até dezembro' : 'Entra todo mês', r ? `Troca o valor de ${MES_LONGO[S.mes]} em diante.` : `De ${MES_LONGO[S.mes]} até dezembro.`, !r)}
-    </section>
-    ${recentes.length ? `<div class="bas-ef-rec" role="group" aria-label="Fontes que você já tem">${recentes.map((x) => `<button type="button" data-ef-rec data-nome="${esc(x.nome)}" data-ic="${basRenIcId(x)}" data-cat="${esc(x.cat || '')}" data-uso="${x.soGasto ? 'gasto' : 'livre'}" data-v="${esc(nf.format(+((x.valores || [])[S.mes] || (x.valores || []).filter((y) => +y > 0).slice(-1)[0] || 0)))}">${ic(BAS_REN_IC[basRenIcId(x)][1])}<span>${esc(x.nome)}</span></button>`).join('')}</div>` : ''}
+        <fieldset class="bas-fs bas-catic"><legend>Ícone</legend><div class="bas-catic-g">${Object.keys(BAS_REN_IC).map((k) => `<label title="${esc(BAS_REN_IC[k][0])}"><input type="radio" name="rendaIc" value="${k}" ${k === ic0 ? 'checked' : ''}><span aria-label="${esc(BAS_REN_IC[k][0])}">${ic(BAS_REN_IC[k][1])}</span></label>`).join('')}</div></fieldset>
+      </div></div></div>
+    ${recentes.length ? `<div class="bas-ef-sh" data-ef-sh="src" hidden><div class="bas-ef-shf"><span class="bas-pop-al" aria-hidden="true"></span><div class="bas-pop-h"><span><b>Suas fontes</b><small>Toque para repetir</small></span><button type="button" class="bell" data-ef-fecha aria-label="Fechar">${I.x}</button></div>
+      <div class="bas-ef-rec" role="group" aria-label="Fontes que você já tem">${recentes.map((x) => `<button type="button" data-ef-rec data-nome="${esc(x.nome)}" data-ic="${basRenIcId(x)}" data-cat="${esc(x.cat || '')}" data-uso="${x.soGasto ? 'gasto' : 'livre'}" data-v="${esc(nf.format(+((x.valores || [])[S.mes] || (x.valores || []).filter((y) => +y > 0).slice(-1)[0] || 0)))}"><i>${ic(BAS_REN_IC[basRenIcId(x)][1])}</i><span>${esc(x.nome)}</span></button>`).join('')}</div></div></div>` : ''}
     <div class="bas-ef-pe"><p class="bas-err" role="alert" hidden></p><button class="btn primary lg bas-cta bas-ef-ok" type="submit">${r ? 'Salvar' : 'Anotar entrada'}</button>
       <div class="bas-ef-tec" role="group" aria-label="Teclado numérico">${['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((k) => tecla(k)).join('')}${tecla(',', 'vírgula')}${tecla('0')}${tecla('x', 'apagar')}</div></div>
   </form>`;
@@ -1100,9 +1102,11 @@ function basEfLigar() {
   // nome conhecido escolhe o ícone sozinho (se o cliente ainda não escolheu um)
   let icMexeu = false; f.querySelectorAll('[name="rendaIc"]').forEach((x) => x.addEventListener('change', () => { icMexeu = true; }));
   f.querySelector('[name="nome"]').addEventListener('input', (e) => { if (icMexeu) return; const k = basRenIcId({ nome: e.target.value }); const rr = f.querySelector(`[name="rendaIc"][value="${k}"]`); if (rr && k !== 'outros') { rr.checked = true; icone(); } });
-  // o cartão começa enxuto (ícone e nome); a seta abre os números e o "Entra todo mês"
-  const ab = f.querySelector('[data-ef-abre]'); ab.addEventListener('click', () => { const c = f.querySelector('.bas-ef-c'); const fe = c.classList.toggle('fechado'); ab.setAttribute('aria-expanded', String(!fe)); if (fe) { f.querySelector('.bas-ef-opc').hidden = true; mais.textContent = 'Ajustar'; } });
-  const mais = f.querySelector('[data-ef-mais]'); mais.addEventListener('click', () => { const op = f.querySelector('.bas-ef-opc'); op.hidden = !op.hidden; mais.setAttribute('aria-expanded', String(!op.hidden)); mais.textContent = op.hidden ? 'Ajustar' : 'Pronto'; });
+  // fontes e ajustes abrem em janelas que sobem de baixo; fecham no Pronto, no X, no fundo ou ao escolher uma fonte
+  const sh = (k, abre) => { const e = f.querySelector(`[data-ef-sh="${k}"]`); if (!e) return; if (abre) { e.hidden = false; e.classList.remove('sai'); basSom('toque'); } else { e.classList.add('sai'); setTimeout(() => { e.hidden = true; e.classList.remove('sai'); }, 220); } };
+  const mais = f.querySelector('[data-ef-mais]'); mais.addEventListener('click', () => sh('opc', true));
+  const src = f.querySelector('[data-ef-src]'); if (src) src.addEventListener('click', () => sh('src', true));
+  f.querySelectorAll('[data-ef-sh]').forEach((e) => e.addEventListener('click', (ev) => { if (ev.target === e || ev.target.closest('[data-ef-fecha]') || ev.target.closest('[data-ef-rec]')) sh(e.dataset.efSh, false); }));
   f.querySelectorAll('[data-ef-rec]').forEach((b) => b.addEventListener('click', () => { const d = b.dataset; f.querySelector('[name="nome"]').value = d.nome;
     [['rendaIc', d.ic], ['cat', d.cat], ['uso', d.uso]].forEach(([n, v]) => { const x = f.querySelector(`[name="${n}"][value="${v}"]`); if (x) x.checked = true; }); icMexeu = true; icone();
     if (!parseReais(txt || '0') && d.v && d.v !== '0,00') { txt = d.v.replace(/\./g, '').replace(/,00$/, ''); mostra(); } else conta();
@@ -1144,10 +1148,15 @@ const basLimArea = (area, tot) => { const lim = S.plan.settings.limites || {}; c
 function basTelaCategoria(o) {
   const m = S.mes; const area = o.area; const tot = E.gastosAreaMes(S.plan, E.carryItems(S.plans, S.year), m)[area] || 0;
   const contas = basContas(m).itens.filter((x) => (x.area || 'Outros') === area); const lanc = basLancMes(m).filter((l) => (l.area || 'Outros') === area);
-  const ics = `<div class="bas-catic-g bas-catic-tela" role="group" aria-label="Ícone da categoria">${Object.keys(BAS_CAT_IC).map((k) => `<button class="${k === basCatIcId(area) ? 'on' : ''}" data-act="bas-cat-ic" data-area="${esc(area)}" data-v="${k}" aria-label="${esc(BAS_CAT_IC[k][0])}" aria-pressed="${k === basCatIcId(area)}">${ic(BAS_CAT_IC[k][1])}</button>`).join('')}</div>`;
-  return basDet(esc(area), `${basCard(`<span class="bas-catic-big" aria-hidden="true">${basCatIc(area)}</span><small class="bas-k">${cap(MES_LONGO[m])}</small><b class="bas-big">${brl(tot)}</b>${basLimArea(area, tot)}<button class="btn primary lg bas-cta bas-add" ${basIr('gasto', { area })}>${I.plus}Gasto em ${esc(area)}</button>`, 'bas-hero')}
-    ${basSecao('Ícone da categoria', '', `<div class="card bas-catic-c">${ics}</div>`)}
-    ${contas.length + lanc.length ? basSecao('Gastos', '', `<ul class="bas-ativ">${contas.filter((x) => !x.pago).map(basContaLinha).join('')}${lanc.map(basLancLinha).join('')}</ul>`) : ''}`);
+  const ics = `<template id="bas-catic-tpl"><div class="bas-catic-g bas-catic-tela" role="group" aria-label="Ícone da categoria">${Object.keys(BAS_CAT_IC).map((k) => `<button class="${k === basCatIcId(area) ? 'on' : ''}" data-act="bas-cat-ic" data-area="${esc(area)}" data-v="${k}" aria-label="${esc(BAS_CAT_IC[k][0])}" aria-pressed="${k === basCatIcId(area)}">${ic(BAS_CAT_IC[k][1])}</button>`).join('')}</div></template>`;
+  const n = contas.filter((x) => !x.pago).length + lanc.length;
+  return `<div class="bas-pg bas-pg-cat"><div class="bas-gt-bg bas-pt-bg bas-cat-bg">
+    <header class="bas-pv2-h"><button class="bell bas-cal-b" data-act="bas-voltar" aria-label="Voltar">${I_VOLTA}</button><b>${esc(area)}</b><span class="bas-noite-r"><button class="bell bas-cal-b" data-act="bas-cat-ed" aria-label="Editar o ícone" title="Editar o ícone">${I.edit}</button>${olhoHtml()}</span></header>
+    <div class="bas-cat-top"><span class="bas-cat-ic" aria-hidden="true">${basCatIc(area)}</span><small class="bas-pv2-k">Gastos em ${esc(MES_LONGO[m])}</small><b class="bas-pv2-t">${basCent(tot)}</b>${basCatLim(area, tot)}</div>
+  </div><div class="bas-gt-folha">
+    <div class="bas-pg-per bas-gt-acoes"><button class="bas-inv-pl bas-cat-add" ${basIr('gasto', { area })}>${I.plus}<span>Novo gasto</span></button></div>
+    ${n ? basSecao('Gastos', `<small class="bas-pv2-q">${n}</small>`, `<ul class="bas-ativ">${contas.filter((x) => !x.pago).map(basContaLinha).join('')}${lanc.map(basLancLinha).join('')}</ul>`) : basCard(basVazio(`Nenhum gasto em ${esc(area)} em ${esc(MES_LONGO[m])}.`))}
+  </div></div>${ics}`;
 }
 const I_CAM = ic('<path d="M4 8h3l2-2.5h6L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>');
 // perfil de investidor: a régua dos três perfis com o seu marcado, a sua carteira de hoje contra a referência do perfil e refazer o teste
@@ -2610,6 +2619,7 @@ function basAcao(act, ds, el) {
     case 'bas-cq-share': basConquistaPng(+ds.q).then((b) => basEnviaPng(b, `${(CFG.marca || 'aven').toLowerCase()}-conquista-${ds.q}-meses.png`, 'Minha conquista')); return true;
     case 'bas-ah-ano': { const t = basTopoPilha(); if (t && t.t === 'ano-hist') { t.id = String(ds.y); basSom('toque'); render(); } return true; }
     case 'bas-cc-mod': if (instDe(ds.id) && CC_MODELOS.some((x) => x[0] === ds.m)) basCcGrava(ds.id, 'm', ds.m); return true;
+    case 'bas-cat-ed': basUltPop('bas-catic-tpl', 'Ícone da categoria', 'Escolha como ela aparece'); return true;
     case 'bas-cat-ic': basCatIcGrava(ds.area, ds.v); basSom('toque'); render(); return true;
     case 'bas-ccn-banco': if (instDe(ds.v)) { S.basCcNovo = ds.v; basSom('toque'); render(); } return true;
     case 'bas-ccn-ok': if (instDe(ds.id)) { instMinhaAlternar(ds.id, true); S.basCcNovo = null; basRetorno('ok'); basFechar(); toast(`Cartão ${instDe(ds.id)[1]} adicionado.`); } return true;
@@ -2743,4 +2753,31 @@ function basIgAcao(act, ds) {
   if (act === 'bas-ig-ok') { if (!g || !g.resumo || !g.resumo.incluidas) return; const R = g.resumo; const n = R.incluidas;
     aplicarIngestao(); S.basIngOk = `${n} ${n === 1 ? 'lançamento entrou' : 'lançamentos entraram'} no seu ${S.year}. Se algo não ficou certo, toque em Desfazer no aviso.`; basRetorno('pago'); basIgRepinta(); return; }
   if (act === 'bas-ig-avancado') { openModal({ title: 'Ajustar o arquivo', ok: 'Importar', wide: true, body: '<div id="ing-root" class="ing"></div>', onOk: () => { if (!S.ing || !S.ing.resumo || !S.ing.resumo.incluidas) return false; aplicarIngestao(); return true; } }); basIngOrig(); }
+}
+
+// Novo gasto: categoria e banco numa linha cada (como o ativo no Investimento); tocar abre a janela com a grade para escolher.
+// Os rádios de antes continuam no formulário (escondidos), então lembrar o último gasto, "Nova" categoria e a gravação seguem iguais.
+function basGfPickLigar() {
+  const f = document.querySelector('.bas-form [data-gf-pick]') && document.querySelector('[data-gf-pick]').closest('form'); if (!f || f.dataset.pick) return; f.dataset.pick = '1';
+  const conteudo = (r) => { const sp = r && r.parentElement.querySelector('span'); if (!sp) return ['', 'Escolha']; const i = sp.querySelector('i, .inst-ic, svg, img'); const ic = i ? (i.tagName === 'I' ? i.innerHTML : i.outerHTML) : ''; return [ic, sp.textContent.trim()]; };
+  const pinta = () => f.querySelectorAll('[data-gf-pick]').forEach((b) => { const k = b.dataset.gfPick; const r = f.querySelector(`[name="${k}"]:checked`); const [ic, nome] = conteudo(r);
+    b.innerHTML = `<span class="bas-ct-lg bas-gf-lg${k === 'inst' && r && r.value ? ' banco' : ''}" style="--bc:var(--accent)">${ic || (k === 'inst' ? I_CARTAO_GF : I.plus)}</span><span class="bas-ct-an"><b>${esc(nome || 'Escolha')}</b></span><em>Trocar</em>`; });
+  f.addEventListener('change', pinta); f.addEventListener('input', () => requestAnimationFrame(pinta)); pinta();
+  f.addEventListener('click', (e) => { const b = e.target.closest('[data-gf-pick]'); if (!b) return; const k = b.dataset.gfPick; const rs = [...f.querySelectorAll(`[name="${k}"]`)];
+    let tpl = document.getElementById('bas-gf-tpl'); if (!tpl) { tpl = document.createElement('template'); tpl.id = 'bas-gf-tpl'; document.body.appendChild(tpl); }
+    tpl.innerHTML = `<div class="bas-gf-grid${k === 'inst' ? ' bancos' : ''}">${rs.map((r, i) => { const [ic, nome] = conteudo(r); return `<button type="button" class="bas-gf-op${r.checked ? ' on' : ''}" data-gf-i="${i}"><span class="bas-gf-oi${k === 'inst' && r.value ? ' banco' : ''}">${ic || (k === 'inst' ? I_CARTAO_GF : I.plus)}</span><b>${esc(nome)}</b></button>`; }).join('')}</div>`;
+    const el = basUltPop('bas-gf-tpl', k === 'area' ? 'Categoria' : 'Pago com', k === 'area' ? 'Onde esse gasto entra' : 'Banco ou cartão do pagamento'); if (!el) return;
+    el.addEventListener('click', (ev) => { const o = ev.target.closest('[data-gf-i]'); if (!o) return; const r = rs[+o.dataset.gfI]; r.checked = true; r.dispatchEvent(new Event('change', { bubbles: true }));
+      pinta(); basSom('toque'); el.querySelector('[data-pop="x"]').click(); if (k === 'area' && !r.value) setTimeout(() => { const n = f.querySelector('[name="areaNova"], [name="nova"], [data-blk="nova"] input'); if (n) n.focus(); }, 260); }); });
+}
+const I_CARTAO_GF = ic('<rect x="3" y="6" width="18" height="12.5" rx="2.5"/><path d="M3 10.5h18"/>');
+
+// limite da categoria num cartão de vidro sobre o azul: o limite com o lápis ao lado, a barra e, embaixo, o usado e o que ainda cabe
+function basCatLim(area, tot) {
+  const lim = S.plan.settings.limites || {}; const L = E.analiseLimites(lim, { [area]: tot })[0];
+  if (!(L && E.norm(L.area) === E.norm(area))) return `<button class="bas-cat-lim vazio" ${basIr('limite', { area })}>${I_LIMITE_IC}<span>Definir um limite por mês</span>${I.chev}</button>`;
+  const passou = L.sit === 'passou'; const uso = Math.max(0, Math.min(1, L.uso || 0));
+  return `<div class="bas-cat-lim${passou ? ' passou' : ''}"><div class="bas-cat-lh"><span><small>Limite do mês</small><b>${brl0(L.limite)}</b></span><button class="bas-cat-ed" ${basIr('limite', { area })} aria-label="Mudar o limite"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".8"/></svg></button></div>
+    <span class="bas-cat-bar" aria-hidden="true"><i style="width:${(uso * 100).toFixed(1)}%"></i></span>
+    <div class="bas-cat-lr"><span><small>Usado</small><b>${pct(L.uso || 0)}</b></span><span><small>${passou ? 'Passou' : 'Ainda cabe'}</small><b>${brl(Math.abs(L.falta))}</b></span></div></div>`;
 }
