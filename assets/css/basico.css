@@ -3709,3 +3709,19 @@ li.on > .bas-ig-ck { background: var(--accent); box-shadow: 0 4px 10px -4px var(
 /* Seu ano: as colunas de Proventos; mês que faltou dinheiro em vermelho */
 .bas-sa-g button.neg i { background: linear-gradient(180deg, #FFC2CB, #FF6B81 55%, #E5354F) !important; box-shadow: 0 0 14px rgba(255, 77, 106, .45); }
 .bas-sa-g button.neg.on i { box-shadow: 0 0 0 2px #fff, 0 0 22px rgba(255, 107, 129, .8) !important; }
+/* sem a grade e os fios guia; o valor do ano atual no mesmo balão dos outros (pedido do Nathan) */
+.bas-ph-gr, .bas-ph-gd { display: none; }
+.bas-ph-d.fim b { color: var(--ink-2); background: var(--surface-2, color-mix(in srgb, var(--ink) 6%, transparent)); box-shadow: 0 2px 8px -4px rgba(0, 0, 0, .3); font-size: 12px; }
+.bas-ph-g .g0 { stop-color: var(--accent); stop-opacity: .28; } .bas-ph-g .g1 { stop-color: var(--accent); stop-opacity: 0; }
+/* Seu ano (widget): as colunas de Proventos no cartão normal; o mês atual aceso, com o valor num balão */
+.bas-w-ano .bas-cap { position: relative; gap: 6px; height: 132px; margin-top: 18px; }
+.bas-w-ano .bas-cap > span { position: relative; gap: 8px; }
+.bas-w-ano .bas-cap i { max-width: none; height: calc(var(--h) * .6); border-radius: 8px; outline: 0 !important; background: color-mix(in srgb, var(--accent) 28%, transparent); box-shadow: none; }
+.bas-w-ano .bas-cap .neg i { background: color-mix(in srgb, var(--neg) 35%, transparent); box-shadow: none; }
+.bas-w-ano .bas-cap .fut i { background: var(--line); }
+.bas-w-ano .bas-cap .on i { background: linear-gradient(180deg, #B8FBFF, #38D6FF 55%, #3D8BFF); box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px #38D6FF, 0 0 18px rgba(56, 214, 255, .45); }
+.bas-w-ano .bas-cap .on.neg i { background: linear-gradient(180deg, #FFC2CB, #FF6B81 55%, #E5354F); box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px #FF6B81, 0 0 18px rgba(255, 107, 129, .45); }
+.bas-w-ano .bas-cap small { position: absolute; bottom: calc(var(--h) * .6 + 30px); left: 50%; translate: -50% 0; padding: 3px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 700; white-space: nowrap; color: var(--ink); background: var(--surface-2, color-mix(in srgb, var(--ink) 8%, transparent)); box-shadow: 0 2px 8px -4px rgba(0, 0, 0, .3); }
+.bas-w-ano .bas-cap > span:nth-last-child(-n+2) small { left: auto; right: 0; translate: 0 0; }
+/* o preenchimento do gráfico não leva contorno (os ícones do App dão contorno a todo svg) */
+.bas .bas-ph-g svg, .bas-ph-a { stroke: none; }
