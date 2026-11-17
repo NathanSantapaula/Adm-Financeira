@@ -3558,3 +3558,30 @@ li.on > .bas-ig-ck { background: var(--accent); box-shadow: 0 4px 10px -4px var(
 .bas-gf-op.on { box-shadow: inset 0 0 0 2px var(--accent), 0 8px 18px -10px var(--accent); } .bas-gf-op.on b { color: var(--accent); }
 .bas-gf-op:active { transform: scale(.96); }
 .bas-gf-oi:not(.banco) svg, .bas-gf-lg:not(.banco) svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ===== Nova entrada, refeita: cabe na tela (teclado sempre à vista), fonte numa linha, "todo mês" e Ajustes; fontes e ajustes em janelas de baixo ===== */
+.bas-form.bas-ef { min-height: 0; height: calc(100dvh - 40px - env(safe-area-inset-top, 0px)); overflow: hidden; }
+.bas-ef-pe { margin-top: auto; padding-bottom: max(10px, env(safe-area-inset-bottom, 0px)); }
+.bas-ef-tec { gap: 8px !important; } .bas-ef-tec .bas-ef-k { height: clamp(44px, 6.4dvh, 56px) !important; min-height: 0 !important; }
+.bas-ef-k0 { margin-top: clamp(8px, 2dvh, 22px); } .bas-ef-v b { font-size: clamp(40px, 6.5dvh, 54px); }
+.card.bas-ef-c { margin-top: clamp(10px, 2dvh, 18px); padding: 14px 16px; gap: 12px; }
+.bas-ef-fonte { gap: 12px; } .bas-ef-ic { width: 46px; height: 46px; }
+.bas-ef-fn input { font-size: 17px !important; font-weight: 650; }
+.bas-ef-src-b, .bas-ef-aj { flex: none; height: 34px; padding: 0 14px; border: 0; border-radius: 999px; font: inherit; font-size: 13.5px; font-weight: 700; color: var(--accent); background: color-mix(in srgb, var(--accent) 11%, transparent); cursor: pointer; }
+.bas-ef-l2 { display: flex; align-items: center; gap: 12px; padding-top: 12px; border-top: .5px solid var(--line); }
+.bas-ef-l2 > :first-child { flex: 1; min-width: 0; margin: 0; padding: 0; background: none; box-shadow: none; }
+.bas-ef-sh { position: fixed; inset: 0; z-index: 95; display: flex; align-items: flex-end; justify-content: center; background: rgba(0, 0, 0, .35); animation: bas-pop-fundo 240ms ease; }
+.bas-ef-sh[hidden] { display: none; }
+.bas-ef-shf { width: 100%; max-width: 520px; max-height: 82dvh; overflow-y: auto; overscroll-behavior: contain; padding: 8px 18px max(20px, env(safe-area-inset-bottom)); border-radius: 28px 28px 0 0; background: var(--surface); box-shadow: 0 -20px 50px -20px rgba(0, 0, 0, .45); animation: bas-pop-sobe 340ms cubic-bezier(.2, .9, .25, 1); display: flex; flex-direction: column; }
+.bas-ef-sh.sai { animation: bas-pop-fundo 220ms ease reverse forwards; } .bas-ef-sh.sai .bas-ef-shf { animation: bas-pop-sobe 220ms ease-in reverse forwards; }
+.bas-ef-pronto { height: 38px; padding: 0 18px; border-radius: 999px; font-size: 14.5px; }
+.bas-ef-shf .bas-ef-opc { display: grid; gap: 14px; padding-bottom: 6px; }
+.bas-ef-shf .bas-ef-rec { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; overflow: visible; margin: 0; padding: 4px 0 8px; }
+.bas-ef-shf .bas-ef-rec button { display: grid; justify-items: center; gap: 8px; height: auto; padding: 14px 6px 12px; border: 0; border-radius: 20px; background: var(--bg); color: var(--ink); font: inherit; box-shadow: inset 0 0 0 1px var(--line); }
+.bas-ef-shf .bas-ef-rec button i { width: 46px; height: 46px; display: grid; place-items: center; border-radius: 15px; color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.bas-ef-shf .bas-ef-rec button i svg { width: 22px; height: 22px; }
+.bas-ef-shf .bas-ef-rec button span { font-size: 13px; font-weight: 600; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bas-ef-shf .bas-ef-rec button:active { transform: scale(.96); }
+@media (prefers-reduced-motion: reduce) { .bas-ef-sh, .bas-ef-shf, .bas-ef-sh.sai, .bas-ef-sh.sai .bas-ef-shf { animation: none; } }
+/* o alvo no lugar do lápis, no limite da categoria */
+.bas-cat-ed svg { fill: none; stroke: currentColor; stroke-width: 1.8; }
