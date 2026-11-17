@@ -4199,3 +4199,44 @@ body[data-ui="basico"] .bas-sn2-val input { width: 100% !important; max-width: n
   box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, .45), inset 0 -1px 0 rgba(255, 255, 255, .1), inset 0 0 0 1px rgba(255, 255, 255, .12), inset 0 0 22px rgba(59, 108, 255, .14), 0 18px 34px -20px rgba(20, 40, 245, .6) !important; }
 :root[data-theme="light"] .bas-sn2-t .bas-sn2-arte { background: radial-gradient(90% 60% at 30% 12%, rgba(255, 255, 255, .95), transparent 60%), linear-gradient(155deg, rgba(255, 255, 255, .75), rgba(255, 255, 255, .45) 50%, rgba(255, 255, 255, .65)) !important;
   box-shadow: inset 0 1.5px 0 #fff, inset 0 0 0 1px rgba(59, 108, 255, .16), inset 0 0 22px rgba(59, 108, 255, .1), 0 18px 34px -20px rgba(20, 40, 245, .35) !important; }
+
+/* ===== Detalhe do sonho, parte de baixo simples: quanto falta e quando chega; simulador "E se eu guardar mais?" ===== */
+.card.bas-sdt { display: block; padding: 18px; border-radius: 24px; margin-bottom: 12px; }
+.bas-sdt-v { display: block; margin-top: 4px; font-size: 32px; font-weight: 750; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.bas-sdt-bar { display: block; height: 10px; margin: 14px 0 10px; border-radius: 99px; overflow: hidden; background: color-mix(in srgb, var(--ink) 9%, transparent); }
+.bas-sdt-bar i { display: block; height: 100%; min-width: 10px; border-radius: inherit; background: linear-gradient(90deg, #3B6CFF, #1428F5); }
+.bas-sdt-bl { display: flex; justify-content: space-between; gap: 10px; }
+.bas-sdt-bl span { display: flex; flex-direction: column; font-size: 12.5px; color: var(--ink-3); } .bas-sdt-bl span + span { text-align: right; }
+.bas-sdt-bl b { margin-top: 2px; font-size: 15px; font-weight: 650; color: var(--ink); font-variant-numeric: tabular-nums; }
+.bas-sdt-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; } .bas-sdt-h .bas-sn-st { margin-top: 0; }
+.bas-sdt-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+.bas-sdt-2 span { display: flex; flex-direction: column; gap: 3px; padding: 12px 14px; border-radius: 16px; background: color-mix(in srgb, var(--ink) 5%, transparent); }
+.bas-sdt-2 small { font-size: 12.5px; color: var(--ink-3); } .bas-sdt-2 b { font-size: 19px; font-weight: 700; letter-spacing: -.01em; }
+.bas-sdt-2 b.ok { color: var(--pos); } .bas-sdt-2 b.atencao { color: var(--warn); } .bas-sdt-2 b.baixo { color: var(--neg); }
+.bas-sdt-dica { margin: 12px 0 0; font-size: 14.5px; line-height: 1.45; color: var(--ink-2); } .bas-sdt-dica b { color: var(--ink); font-weight: 650; }
+.card.bas-sdt-sim { width: 100%; display: flex; align-items: center; gap: 14px; padding: 14px 16px; border: 0; border-radius: 22px; margin-bottom: 6px; font: inherit; color: inherit; text-align: left; cursor: pointer; }
+.bas-sdt-sim:active { transform: scale(.98); }
+.bas-sdt-sim > span:nth-child(2) { flex: 1; display: flex; flex-direction: column; gap: 2px; } .bas-sdt-sim b { font-size: 15.5px; font-weight: 650; } .bas-sdt-sim small { font-size: 12.5px; color: var(--ink-3); }
+.bas-sdt-sim-i { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 14px; color: #fff; background: linear-gradient(160deg, #3B6CFF, #1428F5); }
+.bas-sdt-sim-i svg { width: 20px; height: 20px; } .bas-sdt-sim > svg { width: 18px; height: 18px; color: var(--ink-3); }
+.bas-sn2-cta { display: grid; gap: 8px; justify-items: center; } .bas-sn2-cta .btn { width: 100%; }
+.bas-sn2-del { color: var(--neg) !important; font-weight: 650; padding: 6px 12px; }
+/* simulador */
+.card.bas-sm2-c { padding: 18px; border-radius: 24px; margin-bottom: 12px; text-align: center; }
+.bas-sm2-v { display: grid; grid-template-columns: 48px minmax(0, 1fr) 48px; align-items: center; gap: 8px; margin: 12px 0 6px; }
+.bas-sm2-v > button { width: 48px; height: 48px; border: 0; border-radius: 16px; font: inherit; font-size: 24px; color: var(--ink); background: color-mix(in srgb, var(--ink) 7%, transparent); cursor: pointer; }
+.bas-sm2-v > button:active { transform: scale(.92); }
+.bas-sm2-v label { display: flex; align-items: baseline; justify-content: center; gap: 6px; min-width: 0; }
+.bas-sm2-v label i { font-style: normal; font-size: 15px; font-weight: 650; color: var(--ink-3); }
+body[data-ui="basico"] .bas-sm2-v input { width: 100%; min-width: 0; max-width: 190px; padding: 0; border: 0; background: none; box-shadow: none; text-align: center; font-size: 36px !important; font-weight: 750; letter-spacing: -.03em; color: var(--ink); font-variant-numeric: tabular-nums; }
+.bas-sm2-rg { width: 100%; height: 32px; accent-color: #3B6CFF; }
+.card.bas-sm2-r { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 20px 18px; border-radius: 24px; margin-bottom: 12px; text-align: center; }
+.bas-sm2-d { font-size: 34px; font-weight: 750; letter-spacing: -.03em; } .bas-sm2-r .bas-sn-st { margin-top: 0; }
+.bas-sm2-j { margin: 4px 0 0; font-size: 14px; line-height: 1.45; color: var(--ink-2); } .bas-sm2-j b { color: var(--ink); font-weight: 650; }
+.card.bas-sm2-cmp { list-style: none; margin: 0 0 12px; padding: 4px 16px; border-radius: 22px; }
+.bas-sm2-cmp li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 0; } .bas-sm2-cmp li + li { border-top: 1px solid var(--line); }
+.bas-sm2-cmp span { display: flex; flex-direction: column; font-size: 14.5px; font-weight: 600; } .bas-sm2-cmp small { font-size: 12.5px; font-weight: 500; color: var(--ink-3); }
+.bas-sm2-cmp b { display: flex; flex-direction: column; align-items: flex-end; font-size: 16px; font-weight: 700; } .bas-sm2-cmp li.on b { color: #3B6CFF; }
+.bas-sm2-cmp em { font-style: normal; font-size: 12px; font-weight: 650; } .bas-sm2-cmp em.pos { color: var(--pos); } .bas-sm2-cmp em.neg { color: var(--neg); }
+:root:not([data-theme="light"]) .bas-sm2-cmp li.on b { color: #7FA0FF; }
+.bas-sm2-v label i { flex: none; white-space: nowrap; }

@@ -1133,7 +1133,7 @@ function basTelaMeta() {
 }
 function basTelaObjetivos() {
   const A = objAnalise(); const foco = S.profile.objetivoFoco;
-  return basDet('Meus objetivos', `${A.itens.length ? basCard(`<ul class="bas-l">${A.itens.map((g, i) => `<li><button ${basIr('objetivo', { id: g.id })}>${objIcone(g, i)}<span class="bas-cl">${basNome(esc(objNomeDe(g)) + (g.id === foco ? ' <em class="bas-tag">Principal</em>' : ''), `${brl0(g.saldo)} de ${brl0(g.valor)}${g.ano ? ' até ' + g.ano : ''}`)}<b>${pct(g.progresso)}</b>${basBarra(g.progresso).replace('bas-bar', 'bas-bar fina')}</span>${I.chev}</button></li>`).join('')}</ul>`) : basCard(basVazio('Nenhum objetivo ainda.'))}
+  return basDet('Meus objetivos', `${A.itens.length ? basCard(`<ul class="bas-l">${A.itens.map((g, i) => `<li><button ${basIr('sonho-novo', { edit: g.id })}>${objIcone(g, i)}<span class="bas-cl">${basNome(esc(objNomeDe(g)) + (g.id === foco ? ' <em class="bas-tag">Principal</em>' : ''), `${brl0(g.saldo)} de ${brl0(g.valor)}${g.ano ? ' até ' + g.ano : ''}`)}<b>${pct(g.progresso)}</b>${basBarra(g.progresso).replace('bas-bar', 'bas-bar fina')}</span>${I.chev}</button></li>`).join('')}</ul>`) : basCard(basVazio('Nenhum objetivo ainda.'))}
     <button class="btn primary lg bas-cta bas-add" ${basIr('sonho-novo')}>${I.plus}Novo sonho</button><p class="bas-disc keep">Projeção ilustrativa, sem promessa de rentabilidade.</p>`);
 }
 function basTelaObjetivo(o) {
@@ -1440,7 +1440,37 @@ function basJcOut(v) {
       <span class="bas-jc-x" aria-hidden="true"><b>hoje</b><b>${Math.round(v.anos / 2) || ''}${v.anos > 1 ? ' anos' : ''}</b><b>${v.anos} ${v.anos === 1 ? 'ano' : 'anos'}</b></span></div>
     ${J.metas.length ? basSecao('Quando chega em cada sonho', '', `<ul class="bas-ativ bas-jc-sn">${J.metas.map((m, i) => `<li><span class="bas-row">${objIcone(m.g, i)}${basNome(esc(m.nome), brl0(m.valor))}<b class="${m.meses != null && m.meses <= nS ? 'pos' : ''}">${basPrazoTxt(m.meses)}</b></span></li>`).join('')}</ul>`) : ''}`;
 }
+function basSimOut(g, v, tx) {
+  const R = E.simularObjetivo({ patrimonio: g.saldo, aporte: g.aporte, extra: v - g.aporte, retornoBase: tx, retorno: tx, alvo: g.valor });
+  const h = new Date(); const pz = g.ano ? (g.ano - h.getFullYear()) * 12 + 11 - h.getMonth() : null; const m = R.sim.meses;
+  let tag = ''; if (m != null && pz != null) { const d = pz - m; tag = d === 0 ? '<span class="bas-sn-st ok">Bem no prazo</span>' : d > 0 ? `<span class="bas-sn-st ok">${basPrazoTxt(d)} antes do prazo</span>` : `<span class="bas-sn-st atencao">${basPrazoTxt(-d)} depois do prazo</span>`; }
+  const ganho = R.diferenca != null && R.diferenca !== 0 ? (R.diferenca > 0 ? `<em class="pos">${basPrazoTxt(R.diferenca)} mais cedo</em>` : `<em class="neg">${basPrazoTxt(-R.diferenca)} mais tarde</em>`) : '';
+  return `<div class="card bas-sm2-r"><small class="bas-k">Você chega lá em</small><b class="bas-sm2-d">${m == null ? 'Fora do alcance' : m === 0 ? 'Já chegou' : basMesAno(m)}</b>${tag}
+      ${m > 0 ? `<p class="bas-sm2-j">Até lá você guarda <b>${brl0(R.sim.aportado - g.saldo)}</b> e os juros somam <b>${brl0(R.sim.juros)}</b>.</p>` : ''}</div>
+    <ul class="card bas-sm2-cmp"><li><span>Como está hoje<small>${brl0(g.aporte)} por mês</small></span><b>${R.base.meses == null ? 'fora do alcance' : basMesAno(R.base.meses)}</b></li>
+      <li class="on"><span>Com o novo valor<small>${brl0(v)} por mês</small></span><b>${m == null ? 'fora do alcance' : basMesAno(m)}${ganho}</b></li></ul>`;
+}
+function basSimAtualiza(f) { const g = objAnalise().itens.find((x) => x.id === f.dataset.id); if (!g) return;
+  const v = Math.max(0, parseReais(f.querySelector('[data-sim-v]').value) || 0); const r = f.querySelector('[data-sim-r]'); if (r && +r.value !== v) r.value = Math.min(+r.max, v);
+  f.querySelector('.bas-sm2-out').innerHTML = basSimOut(g, v, +f.dataset.tx); }
+const basInt = (n) => Math.round(+n || 0).toLocaleString('pt-BR'); // só para o campo de edição
 function basTelaSimular(o) {
+  const gS = o.id ? objAnalise().itens.find((x) => x.id === o.id) : objFoco(objAnalise());
+  if (gS && gS.valor > 0) { const tx = +S.profile.retornoAnual || 10; const v0 = Math.round(gS.aporte) || 0; const mx = Math.max(1000, Math.ceil(Math.max(v0 * 3, (gS.necessario || 0) * 1.5) / 100) * 100);
+    return basDet('E se eu guardar mais?', `<form class="bas-sm2" data-id="${esc(gS.id)}" data-tx="${tx}" onsubmit="return false">
+      <div class="card bas-sm2-c"><small class="bas-k">Quanto você guarda por mês para ${esc(objNomeDe(gS))}?</small>
+        <div class="bas-sm2-v"><button type="button" data-sim-d="-100" aria-label="Menos 100 reais">−</button><label><i>R$</i><input data-sim-v inputmode="decimal" value="${esc(basInt(v0))}" aria-label="Valor por mês"></label><button type="button" data-sim-d="100" aria-label="Mais 100 reais">+</button></div>
+        <input type="range" class="bas-sm2-rg" data-sim-r min="0" max="${mx}" step="50" value="${Math.min(mx, v0)}" aria-label="Arraste para mudar o valor por mês"></div>
+      <div class="bas-sm2-out" aria-live="polite">${basSimOut(gS, v0, tx)}</div></form>
+      <p class="bas-disc keep">Conta feita com rendimento de ${String(tx).replace(".", ",")}% ao ano, só para comparar. Não é promessa: investimentos podem render menos.</p>`); }
+  return basTelaJc(o);
+}
+// régua, campo e − / + mudam só o resultado, sem render()
+document.addEventListener('input', (e) => { const f = e.target.closest && e.target.closest('form.bas-sm2'); if (!f) return;
+  if (e.target.matches('[data-sim-r]')) f.querySelector('[data-sim-v]').value = basInt(+e.target.value); basSimAtualiza(f); });
+document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('[data-sim-d]'); if (!b) return; const f = b.closest('form.bas-sm2'); const inp = f.querySelector('[data-sim-v]');
+  inp.value = basInt(Math.max(0, (parseReais(inp.value) || 0) + +b.dataset.simD)); basVibra(6); basSimAtualiza(f); });
+function basTelaJc(o) {
   const g = o.id ? objAnalise().itens.find((x) => x.id === o.id) : objFoco(objAnalise()); const C = S.C; const ult = S.year === NOW_Y ? NOW_M : 11;
   const v0 = { inicial: Math.round(g ? g.saldo : C.patrimonio[ult]) || 0, aporte: Math.round(g ? g.aporte : +S.plan.settings.metaAporte || 0) || 0, taxa: +S.profile.retornoAnual || 10, anos: 10 };
   const campo = (k, rot, val, suf) => `<label class="bas-jc-f"><span>${rot}</span><span class="bas-jc-in">${suf ? '' : '<i>R$</i>'}<input data-jc="${k}" inputmode="decimal" value="${esc(nf.format(val))}">${suf ? `<i>${suf}</i>` : ''}</span></label>`;
@@ -2148,23 +2178,33 @@ function basTelaSonhoDet(o) {
   const topo = `<div class="bas-sn2-palco"><div class="bas-o3 bas-sn2-o3" id="bas-o3" data-tipo="${esc(tipo)}">${obj3dHtml(tipo)}<span class="bas-o3-ic" aria-hidden="true">${objIcone(g, 0)}</span></div></div>
     <small class="bas-pv2-k">${principal ? 'Seu sonho principal' : 'Guardado para ele'}</small><b class="bas-pv2-t">${basCent(g.saldo)}</b>
     <p class="bas-pv2-var"><span class="bas-ev-pct">${pct(g.progresso)}</span><span>de ${brl0(g.valor)}</span></p>`;
-  const prazo = g.ano ? String(g.ano) : '–'; const prev = g.previsto ? `${cap(MES_LONGO[g.previsto.mes]).slice(0, 3)}/${g.previsto.ano}` : '–';
-  const lin = (n, v, ic, cor) => `<li><span class="bas-pv2-l"><span class="bas-pv2-ini" style="--bc:${cor}" aria-hidden="true">${ic}</span><span class="bas-pv2-n"><b>${n}</b></span><b class="bas-pv2-v bas-sn2-v">${v}</b></span></li>`;
-  const folha = `<div class="card bas-sn2-meta"><span class="bas-sn2-m1">${basAnel(g.progresso, 58, `<b>${Math.round(Math.min(1, g.progresso || 0) * 100)}%</b>`, BAS_SN_COR[g.status] || '')}<span><small>Meta</small><b>${brl0(g.valor)}</b></span></span><i aria-hidden="true"></i><span class="bas-sn2-m2"><small>${g.ano ? 'Prazo' : 'Previsto para'}</small><b>${g.ano ? prazo : prev}</b>${g.ano && g.previsto ? `<em>chega em ${prev}</em>` : ''}</span></div>
-    <section class="card bas-sn2-st"><span class="bas-sn-st ${BAS_SN_COR[g.status] || ''}">${esc(cap(BAS_OBJ_ST[g.status] || ''))}</span><p>${esc(objFrase(g))}</p></section>
-    <div class="bas-sn2-acs"><button class="btn primary lg" ${basIrInv()}>${I.plus}Guardar dinheiro</button>${basPago() ? `<button class="btn lg" ${basIr('simular', { id: g.id })}>E se eu investir mais?</button>` : ''}</div>
-    ${basSecao('Os números', '', `<ul class="card bas-pv2-ls">${lin('Falta', brl0(g.falta), I_GASTO, 'var(--accent)')}${lin('Vai por mês', brl0(g.aporte), I.inv, 'var(--pos)')}${g.necessario != null ? lin('Precisa por mês', brl0(g.necessario), I_PROV, '#F5B83D') : ''}${lin('Do patrimônio', g.modo === 'marco' ? 'todo' : `${g.pct}%`, I.inv, '#30B0C7')}</ul>`)}
-    <div class="bas-sn2-lks">${principal ? '' : `<button class="lnk strong" data-act="bas-foco" data-id="${esc(g.id)}" data-volta="1">Tornar o principal</button>`}<button class="lnk strong" ${basIr('objetivo', { id: g.id })}>Editar sonho</button></div>`;
+  const ma = (p) => (p ? `${MES[p.mes].toLowerCase()}/${p.ano}` : '');
+  const cor = BAS_SN_COR[g.status] || ''; const falta = Math.max(0, g.falta || 0);
+  const dica = g.status === 'concluido' ? 'Você já chegou lá. Parabéns!'
+    : g.status === 'atrasado' && g.necessario != null ? `Guardando <b>${brl0(g.necessario)}</b> por mês${g.necessario > g.aporte ? `, ${brl0(g.necessario - g.aporte)} a mais do que hoje,` : ''} você chega até ${g.ano}.`
+    : g.status === 'no-prazo' ? `Guardando <b>${brl0(g.aporte)}</b> por mês você chega a tempo. Continue assim.`
+    : esc(objFrase(g));
+  const folha = `<div class="card bas-sdt"><small class="bas-k">Falta para chegar</small><b class="bas-sdt-v">${basCent(falta)}</b>
+      <span class="bas-sdt-bar" aria-hidden="true"><i style="width:${basSnPct(g)}%"></i></span>
+      <span class="bas-sdt-bl"><span>Guardado<b>${brl0(g.saldo)}</b></span><span>Meta<b>${brl0(g.valor)}</b></span></span></div>
+    <div class="card bas-sdt"><div class="bas-sdt-h"><small class="bas-k">Quando você chega lá</small>${g.status !== 'sem-valor' ? `<span class="bas-sn-st ${cor}">${esc(cap(BAS_OBJ_ST[g.status] || ''))}</span>` : ''}</div>
+      <div class="bas-sdt-2"><span><small>Você quer</small><b>${g.ano || 'Sem prazo'}</b></span><span><small>No ritmo de hoje</small><b class="${cor}">${g.status === 'concluido' ? 'Já chegou' : ma(g.previsto) || 'Sem previsão'}</b></span></div>
+      <p class="bas-sdt-dica">${dica}</p></div>
+    <div class="bas-sn2-acs"><button class="btn primary lg" ${basIrInv()}>${I.plus}Guardar dinheiro</button></div>
+    ${basPago() && g.status !== 'concluido' ? `<button class="card bas-sdt-sim" ${basIr('simular', { id: g.id })}><span class="bas-sdt-sim-i" aria-hidden="true">${I_REC}</span><span><b>E se eu guardar mais?</b><small>Veja quando você chega com outro valor por mês</small></span>${I.chev}</button>` : ''}
+    <div class="bas-sn2-lks">${principal ? '' : `<button class="lnk strong" data-act="bas-foco" data-id="${esc(g.id)}" data-volta="1">Tornar o principal</button>`}<button class="lnk strong" ${basIr('sonho-novo', { edit: g.id })}>Editar sonho</button></div>`;
   return basPgAzul('bas-pg-sn2d', esc(objNomeDe(g)), topo, folha);
 }
 // Criar um sonho, no jeito do fluxo do Believe: roda curva para o tipo, nome, valor e prazo; o cartão se forma em pontinhos e nasce com confete
 const BAS_SN2_PASSOS = 3;
 function basTelaSonhoNovo(o) {
-  if (!o.ini) { o.ini = 1; S.basSn2 = { p: 0, tipo: 'viagem', nome: '', valor: '', ano: NOW_Y + 3 }; }
+  if (!o.ini) { o.ini = 1; const ge = o.edit && objLista().find((x) => x.id === o.edit);
+    S.basSn2 = ge ? { p: 0, ed: ge.id, tipo: ge.tipo || 'outro', nome: ge.nome || '', valor: ge.valor ? (ge.valor % 1 ? nf.format(ge.valor) : basInt(ge.valor)) : '', ano: ge.ano || null }
+      : { p: 0, tipo: 'viagem', nome: '', valor: '', ano: NOW_Y + 3 }; }
   const st = S.basSn2; const tipos = OBJETIVOS; const nomeT = (t) => (tipos.find((x) => x[0] === t) || [, 'Sonho'])[1];
   const barra = st.p < BAS_SN2_PASSOS ? `<div class="bas-sn2-nh"><button class="bas-gp-x" ${st.p ? `data-act="bas-sn2-ir" data-p="${st.p - 1}"` : 'data-act="bas-voltar"'} aria-label="${st.p ? 'Voltar' : 'Fechar'}">${st.p ? I_VOLTA : I.x}</button><span class="bas-sn2-prog" aria-label="Passo ${st.p + 1} de ${BAS_SN2_PASSOS}">${[0, 1, 2].map((k) => `<i class="${k <= st.p ? 'on' : ''}"></i>`).join('')}</span><span class="bas-sn2-nh-v" aria-hidden="true"></span></div>` : '';
   let corpo = '';
-  if (st.p === 0) corpo = `<div class="bas-sn2-passo"><span class="bas-sn2-cx" aria-hidden="true">${basSnArte({ tipo: st.tipo }, 0, 'cx')}</span><small class="bas-sn2-q">O que você quer conquistar?</small><h2 class="bas-sn2-tt" data-sn2-nome>${esc(nomeT(st.tipo))}</h2>
+  if (st.p === 0) corpo = `<div class="bas-sn2-passo"><span class="bas-sn2-cx" aria-hidden="true">${basSnArte({ tipo: st.tipo }, 0, 'cx')}</span><small class="bas-sn2-q">${st.ed ? 'Editar sonho' : 'O que você quer conquistar?'}</small><h2 class="bas-sn2-tt" data-sn2-nome>${esc(nomeT(st.tipo))}</h2>
       <div class="bas-sn2-roda" role="listbox" tabindex="0" aria-label="Tipo de sonho. Deslize ou use as setas.">${tipos.map(([k, n], i) => `<button class="bas-sn2-ri${k === st.tipo ? ' on' : ''}" data-sn2-tipo="${k}" data-i="${i}" role="option" aria-selected="${k === st.tipo}" aria-label="${esc(n)}" tabindex="-1">${basSnArte({ tipo: k }, 0, 'ri')}</button>`).join('')}</div>
       <p class="bas-sn2-dica">Deslize para escolher</p></div>
     <button class="btn primary lg bas-cta bas-sn2-cta" data-act="bas-sn2-ir" data-p="1">Continuar</button>`;
@@ -2176,7 +2216,7 @@ function basTelaSonhoNovo(o) {
       <small class="bas-sn2-q2">Para quando?</small>
       <div class="bas-sn2-prazo" data-sn2-prazo><button type="button" data-act="bas-sn2-ano" data-d="-1" aria-label="Um ano antes">−</button><span><b data-sn2-ano>${st.ano || 'Sem prazo'}</b><small data-sn2-anos>${st.ano ? `daqui a ${st.ano - NOW_Y} ${st.ano - NOW_Y === 1 ? 'ano' : 'anos'}` : 'você pode definir depois'}</small></span><button type="button" data-act="bas-sn2-ano" data-d="1" aria-label="Um ano depois">+</button></div>
       <button type="button" class="bas-sn2-semp${st.ano ? '' : ' on'}" data-act="bas-sn2-ano" data-v="0">Sem prazo</button></div>
-    <button class="btn primary lg bas-cta bas-sn2-cta" data-act="bas-sn2-criar">Criar meu sonho</button>`;
+    <div class="bas-sn2-cta"><button class="btn primary lg bas-cta" data-act="bas-sn2-criar">${st.ed ? 'Salvar alterações' : 'Criar meu sonho'}</button>${st.ed ? '<button class="lnk bas-sn2-del" data-act="bas-sn2-del">Excluir sonho</button>' : ''}</div>`;
   else if (st.p === 3) corpo = `<div class="bas-sn2-forma" aria-live="polite"><small class="bas-sn2-q">Criando seu sonho</small><div class="bas-sn2-pontos" aria-hidden="true">${Array.from({ length: 48 }, (_, k) => `<i style="--k:${k};--x:${(k % 8)};--y:${Math.floor(k / 8)}"></i>`).join('')}</div><p class="bas-sn2-dica">Organizando o plano mês a mês…</p></div>`;
   else { const g = objAnalise().itens.find((x) => x.id === st.id) || { tipo: st.tipo, nome: st.nome, valor: parseReais(st.valor) || 0, ano: st.ano, progresso: 0 };
     corpo = `<div class="bas-sn2-fim"><small class="bas-sn2-q">Sonho criado</small><div class="bas-sn2-conf" aria-hidden="true">${Array.from({ length: 26 }, (_, k) => `<i style="--k:${k};--a:${(k * 137) % 360}deg;--d:${70 + ((k * 53) % 90)}px;--c:${['#FFC94D', '#5AC8FA', '#30D158', '#FF6B81', '#B48CFF'][k % 5]}"></i>`).join('')}</div>
@@ -2262,7 +2302,10 @@ function basVozLigar() {
     est('parado', `Voz: ${nv.name.replace(/\s*\(.*\)/, '')}`); mostra('Oi! Eu sou o Cifrão. Posso ajudar com o seu dinheiro?'); falar('Oi! Eu sou o Cifrão. Posso ajudar com o seu dinheiro?'); });
 }
 function basSn2Criar() {
-  const st = S.basSn2; const L = objLista(); if (L.length >= 12) { toast('Você chegou ao limite de 12 sonhos.'); return; }
+  const st = S.basSn2; const L = objLista();
+  if (st.ed) { const g = L.find((x) => x.id === st.ed); const v = parseReais(st.valor); if (!g) return; if (!(v > 0)) { toast('Informe quanto o sonho custa.'); return; }
+    Object.assign(g, { tipo: st.tipo, nome: (st.nome || '').trim(), valor: E.r2(v), ano: st.ano || null }); objSalvar(); basSom('ok'); basRetorno('ok'); basFechar(); toast('Sonho atualizado.'); return; }
+  if (L.length >= 12) { toast('Você chegou ao limite de 12 sonhos.'); return; }
   const v = parseReais(st.valor); if (!(v > 0)) { toast('Informe quanto o sonho custa.'); const i = document.querySelector('[data-sn2="valor"]'); if (i) i.focus(); return; }
   const alvo = Object.assign({ id: uid() }, L.length ? { modo: 'marco', pct: 0 } : { modo: 'fatia', pct: 100 }, { tipo: st.tipo, nome: (st.nome || '').trim(), valor: E.r2(v), ano: st.ano || null });
   L.push(alvo); if (L.length === 1 || !S.profile.objetivoFoco) S.profile.objetivoFoco = alvo.id; objSalvar(); st.id = alvo.id; st.p = 3; basSom('ok'); render();
@@ -2829,6 +2872,9 @@ function basAcao(act, ds, el) {
       if (b) b.textContent = st.ano || 'Sem prazo'; if (sm) sm.textContent = st.ano ? `daqui a ${n} ${n === 1 ? 'ano' : 'anos'}` : 'você pode definir depois';
       document.querySelector('.bas-sn2-semp')?.classList.toggle('on', !st.ano); basSom('toque'); basVibra(6); return true; }
     case 'bas-sn2-criar': basSn2Criar(); return true;
+    case 'bas-sn2-del': { const st = S.basSn2; if (!st || !st.ed) return true; if (!el.dataset.ok) { el.dataset.ok = '1'; el.textContent = 'Toque de novo para excluir'; return true; }
+      const pr = S.profile; pr.objetivos = objLista().filter((x) => x.id !== st.ed); if (pr.objetivoFoco === st.ed) pr.objetivoFoco = pr.objetivos[0] ? pr.objetivos[0].id : null; objSalvar();
+      const pl = basPilha(); const ant = pl[pl.length - 2]; if (ant && ant.t === 'sonho-det') pl.splice(pl.length - 2, 1); basRetorno('apaga'); basFechar(); toast('Sonho excluído.'); return true; }
     case 'bas-sn2-ver': { const id = ds.id; basFechar(); setTimeout(() => basAbrir('sonho-det', { id }), 380); return true; }
     case 'bas-ah-mes': S.basAhMes = S.basAhMes === +ds.m ? null : +ds.m; basSom('toque'); render(); return true;
     case 'bas-ah-ano': { const t = basTopoPilha(); if (t && t.t === 'ano-hist') { t.id = String(ds.y); S.basAhMes = null; basSom('toque'); render(); } return true; }
