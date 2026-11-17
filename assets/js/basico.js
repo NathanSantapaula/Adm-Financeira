@@ -903,6 +903,11 @@ function basGastoPop(id, conta, mm) {
   const chave = basSemAcento(nome); const iguais = p.lancamentos.filter((x) => basSemAcento(x.desc || x.area || '') === chave); const somaIg = iguais.reduce((t, x) => t + (+x.valor || 0), 0);
   const fixo = l.itemId && p.despesas.find((x) => x.id === l.itemId);
   const lin = (k, v, cls) => `<li><span>${k}</span><b${cls ? ` class="${cls}"` : ''}>${v}</b></li>`;
+  // a última linha é a mesma em todo comprovante: quantas vezes e quanto no total (na parcela, a compra inteira)
+  const itC = l.conta && p.despesas.find((x) => x.id === l.id); const mesesC = itC ? (itC.valores || []).filter((v) => +v > 0) : [];
+  const vezes = l.conta && l.parcela ? lin(`Parcelas de ${esc(nome)}`, `${l.parcela.n} · ${basCent((+l.valor || 0) * l.parcela.n)}`)
+    : l.conta ? lin(`Vezes com ${esc(nome)}`, `${mesesC.length || 1} · ${basCent(mesesC.length ? mesesC.reduce((t, v) => t + (+v || 0), 0) : +l.valor || 0)}`)
+    : lin(`Vezes com ${esc(nome)}`, `${iguais.length || 1} · ${basCent(iguais.length ? somaIg : +l.valor || 0)}`);
   const w = document.createElement('div'); w.className = 'bas-gp'; w.setAttribute('role', 'dialog'); w.setAttribute('aria-modal', 'true'); w.setAttribute('aria-label', `Gasto: ${nome}`);
   w.innerHTML = `<button class="bas-gp-fundo" data-act="bas-gp-fechar" aria-label="Fechar"></button>
     <div class="bas-gp-f"><i class="bas-gp-alca" aria-hidden="true"></i>
@@ -913,7 +918,7 @@ function basGastoPop(id, conta, mm) {
       <div class="bas-gp-fenda"><span class="bas-gp-boca" aria-hidden="true"><i></i></span><div class="bas-gp-saida"><div class="bas-gp-papel">
         <div class="bas-gp-marca"><b>${esc(CFG.marca || '')}</b><small>Comprovante nº ${esc(String(l.id).replace(/\W/g, '').slice(-8).toUpperCase().padStart(8, '0'))}</small></div>
         <div class="bas-gp-t"><b>${esc(nome)}</b><b>Total ${basCent(+l.valor || 0)}</b></div>
-        <ul>${lin(l.conta ? 'Mês' : 'Data', l.conta ? esc(cap(MES_LONGO[l.mm])) : esc(cap(data)))}${lin('Pago com', inst ? `${instIcone(l.inst)} ${esc(inst[1])}` : 'Não informado')}${lin('Tipo', l.conta ? (l.parcela ? `Parcela ${l.parcela.i} de ${l.parcela.n}` : 'Todo mês') : fixo ? 'Conta do mês' : 'Gasto do dia')}${lin('Origem', l.conta ? (l.parcela ? 'Compra parcelada' : 'Conta fixa') : l.origem === 'manual' ? 'Anotado por você' : 'Extrato')}${lin(`Do total de ${MES_LONGO[m]}`, `${Math.round(parte * 100)}%`)}${iguais.length > 1 ? lin(`Vezes com ${esc(nome)}`, `${iguais.length} · ${basCent(somaIg)}`) : ''}</ul>
+        <ul>${lin('Data', l.conta ? `${esc(cap(MES_LONGO[l.mm]))} de ${S.year}` : esc(cap(data)))}${lin('Pago com', inst ? `${instIcone(l.inst)} ${esc(inst[1])}` : 'Não informado')}${lin('Tipo', l.conta ? (l.parcela ? `Parcela ${l.parcela.i} de ${l.parcela.n}` : 'Todo mês') : fixo ? 'Conta do mês' : 'Gasto do dia')}${lin('Origem', l.conta ? (l.parcela ? 'Compra parcelada' : 'Conta fixa') : l.origem === 'manual' ? 'Anotado por você' : 'Extrato')}${lin(`Do total de ${MES_LONGO[m]}`, `${Math.round(parte * 100)}%`)}${vezes}</ul>
       </div></div><span class="bas-gp-labio" aria-hidden="true"></span></div>
       <div class="bas-gp-as"><button ${basIr('gasto', { area: l.area })}>${I_REC}Lançar de novo</button><button ${basIr('categoria', { area: l.area })}>${I_RAIOX}Ver a categoria</button></div>
     </div>`;
