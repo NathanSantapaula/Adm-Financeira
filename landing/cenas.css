@@ -198,7 +198,7 @@
 
 
 /* ───── Rodada azul: hero, conversa e final no mesmo azul do painel; Cifrão 3D parado nos pousos. ───── */
-:root { --azul: linear-gradient(180deg, #3B6CFF 0%, #1428F5 42%, #03061F 100%); } /* o mesmo degradê do topo das telas do App (pedido do Nathan) */
+:root { --azul: radial-gradient(120% 90% at 85% 0%, #58B4FF, #0A84FF 36%, #0B49C9 72%, #062A7A); }
 :root[data-theme="dark"] { --bg: #0A63E0; --text: #fff; --muted: #ffffffb8; --muted-strong: #ffffffde; --surface-raised: #ffffff29; --line: #ffffff33; --line-strong: #ffffff4d; --button-bg: #fff; --button-text: #0B49C9; --hero-glow: transparent; --cif-body: #fff; --cif-eyes: #0B3FA8; }
 body { background: none; }
 /* O azul fica numa camada presa à tela: no iPhone, fundo "fixed" no body não funciona. */
