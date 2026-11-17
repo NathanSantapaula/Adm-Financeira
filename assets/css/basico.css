@@ -3645,6 +3645,7 @@ li.on > .bas-ig-ck { background: var(--accent); box-shadow: 0 4px 10px -4px var(
 /* widgets do Início: o desenho novo na cor normal dos cartões (só as telas têm o topo azul) */
 .card.bas-w-az { position: relative; overflow: hidden; display: block; text-align: left; }
 .card.bas-w-ano.bas-w-az { padding: 18px; }
+.bas-w-hl2.bas-w-az .bas-hl-g { height: 120px; } .bas-w-hl2.bas-w-az .bas-hl-anos button { padding: 6px 4px; }
 .bas-w-az-h { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .bas-w-az-h > small { font-size: 13px; font-weight: 650; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); }
 .bas-w-az-lk { display: inline-flex; align-items: center; gap: 2px; height: 30px; padding: 0 8px 0 12px; border: 0; border-radius: 99px; background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); font: inherit; font-size: 13px; font-weight: 650; }

@@ -2078,7 +2078,7 @@ function basWidgetsInicio(secs) {
   const ult0 = P[P.length - 1];
   const upH = (t.crescimento || 0) >= 0;
   secs.historico = `<section class="card bas-w-hist bas-w-hl2 bas-w-az"><span class="bas-w-az-h"><small>Patrimônio ano a ano</small><button class="bas-w-az-lk" ${basIr('historico')}>Detalhes${I.chev}</button></span>
-    <b class="bas-w-az-v">${basCent(C.patrimonio[ult])}</b><span class="bas-w-az-s">${anosH.length > 1 && t.crescimento ? `<em class="bas-w-az-c${upH ? '' : ' neg'}">${upH ? '↑' : '↓'} ${brl0(Math.abs(t.crescimento))}</em>desde ${anosH[0].ano}` : `seu patrimônio em ${MES_LONGO[ult]}`}</span>
+    <span class="bas-w-az-s">${anosH.length > 1 && t.crescimento ? `<em class="bas-w-az-c${upH ? '' : ' neg'}">${upH ? '↑' : '↓'} ${brl0(Math.abs(t.crescimento))}</em>desde ${anosH[0].ano}` : `seu patrimônio em ${MES_LONGO[ult]}`}</span>
     <div class="bas-hl-g" data-pts='${esc(JSON.stringify(P.map((q) => [+q[0].toFixed(1), +q[1].toFixed(1)])))}' data-w="${WH}" data-h="${HH}" role="img" aria-label="Patrimônio mês a mês. Arraste o dedo para ver cada mês.">
       <svg viewBox="0 0 ${WH} ${HH}" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="bas-hg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="h0"/><stop offset="1" class="h1"/></linearGradient></defs>
         ${anosV.map((a, k) => `<rect class="bas-hl-sec${a === S.year ? ' on' : ''}" x="${(k * SW + 2).toFixed(1)}" y="0" width="${(SW - 4).toFixed(1)}" height="${HH}" rx="12"/>`).join('')}
