@@ -3544,3 +3544,13 @@ body[data-screen="auth"] .main:has(.cad) { padding: 0; }
   .ab-esq .ab-saud, .ab-esq .ab-tit { display: none; }
   .ab-ano, .ab-olho { background: var(--sheen) padding-box, linear-gradient(160deg, color-mix(in srgb, var(--ab-acc) 10%, var(--glass-strong)), var(--glass-strong)) padding-box, var(--rim) border-box; box-shadow: var(--shadow-lg); }
 }
+
+/* ===== Um azul só (pedido do Nathan): o degradê do topo das telas do App nos botões principais e no fundo das telas de entrada do App; a página inicial do site não muda ===== */
+:root { --azul-1: #3B6CFF; --azul-2: #1428F5; --azul-3: #03061F;
+  --azul-bt: linear-gradient(160deg, var(--azul-1) 0%, var(--azul-2) 100%); }
+body[data-ui][data-screen]:not([data-screen="landing"]) :is(.btn.primary, .ck-b .btn.primary), body[data-ui="basico"][data-screen] :is(.btn.primary, .ck-b .btn.primary, .hp-btn:not(.vidro):not(.ghost)) {
+  color: #fff !important; border-color: transparent !important; background: var(--azul-bt) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .38), inset 0 -1px 0 rgba(0, 0, 0, .14), 0 10px 24px -10px rgba(20, 40, 245, .75) !important; }
+html:has(body[data-ui="basico"]:is([data-screen="landing"], [data-screen="auth"], [data-screen="onboarding"], [data-screen="checkout"])),
+body[data-ui="basico"]:is([data-screen="landing"], [data-screen="auth"], [data-screen="onboarding"], [data-screen="checkout"]) {
+  background: var(--azul-3) linear-gradient(180deg, var(--azul-1) 0, var(--azul-2) 240px, var(--azul-3) 720px) no-repeat !important; }
