@@ -3539,3 +3539,8 @@ body[data-screen="auth"] .main:has(.cad) { padding: 0; }
   body[data-ui="completo"] .welcome .greet, body[data-ui="completo"] .welcome h1.wh { display: none; }
   body[data-ui="completo"] .welcome .htools :is(.olho, .year-pill, .per-pill, button.bell) { background: var(--glass) !important; -webkit-backdrop-filter: blur(20px) saturate(1.6); backdrop-filter: blur(20px) saturate(1.6); box-shadow: inset 0 0 0 .5px var(--glass-edge, rgba(255, 255, 255, .25)) !important; border-color: transparent !important; }
 }
+/* globo no celular: sem a saudação e a frase do topo; ano e olho no mesmo vidro do cartão "Ao vivo / Fora do ar" (pedido do Nathan) */
+@media (max-width: 900px) {
+  .ab-esq .ab-saud, .ab-esq .ab-tit { display: none; }
+  .ab-ano, .ab-olho { background: var(--sheen) padding-box, linear-gradient(160deg, color-mix(in srgb, var(--ab-acc) 10%, var(--glass-strong)), var(--glass-strong)) padding-box, var(--rim) border-box; box-shadow: var(--shadow-lg); }
+}
