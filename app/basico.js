@@ -1526,8 +1526,7 @@ function basTelaAnoHist(o) {
     ${baseP > 0 && Math.abs(varP) >= 1 ? `<p class="bas-ah3-var"><span class="bas-ah8-p ${varP >= 0 ? 'pos' : 'neg'}"><i aria-hidden="true">${varP >= 0 ? '↑' : '↓'}</i>${brl0(Math.abs(varP))} ${varP >= 0 ? 'a mais' : 'a menos'} no ano <em>${pct(Math.abs(varP / baseP))}</em></span></p>` : ''}
     ${linha}`;
   const mesC = `<div class="bas-ah6-h" aria-live="polite"><b data-ahk="t">${um ? cap(MES_LONGO[sel]) : `No ano${L.parcial ? ' até agora' : ''}`}</b><button class="lnk" data-act="bas-ah-ano-todo" ${um ? '' : 'hidden'}>Ver o ano</button></div>
-    <div class="bas-ah6-c"><div class="card"><em>Entrou</em><b class="pos" data-ahk="ent">${brl0(ent)}</b></div><div class="card"><em>Gastos</em><b data-ahk="gas">${brl0(gas)}</b></div><div class="card"><em>Sobrou</em><b class="${sob < 0 ? 'neg' : ''}" data-ahk="sob">${brl0(sob)}</b></div></div>
-    <div class="bas-ah6-c dois"><div class="card"><em>Aportes</em><b class="inv" data-ahk="apo">${brl0(apo)}</b></div><div class="card"><em>Dividendos</em><b class="div" data-ahk="div">${brl0(div)}</b></div></div>`;
+    <div class="bas-ah6-c"><div class="card"><em>Gastos</em><b data-ahk="gas">${brl0(gas)}</b></div><div class="card"><em>Aportes</em><b class="inv" data-ahk="apo">${brl0(apo)}</b></div><div class="card"><em>Dividendos</em><b class="div" data-ahk="div">${brl0(div)}</b></div></div>`;
   // a análise do ano, como na tela antiga: melhor mês, mês mais apertado e o ano com a média por mês
   const sobQ = (q) => (+q.entradas || 0) - (+q.gastos || 0); const nM = Math.max(1, ser.length);
   const melhor = ser.length ? ser.reduce((b, q) => (sobQ(q) > sobQ(b) ? q : b)) : null; const pior = ser.length ? ser.reduce((b, q) => (sobQ(q) < sobQ(b) ? q : b)) : null;
