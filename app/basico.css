@@ -3923,3 +3923,135 @@ body[data-ui="basico"] .card.bas-sonho { background: var(--reflexo) padding-box,
 .bas-tabs button { transition: transform 260ms cubic-bezier(.3, 1.5, .5, 1), color 160ms ease; }
 .bas-tabs.arrasta button.sob, .bas-tabs.voa button[aria-current="page"], .bas-tabs.aperta button[aria-current="page"] { transform: scale(1.14); color: var(--accent) !important; }
 @media (prefers-reduced-motion: reduce) { .bas-tabs button { transition: none; } .bas-tabs :is(button.sob, button[aria-current="page"]) { transform: none !important; } }
+
+/* ===================== Sonhos, refeitos (lista, detalhe, criação e widget) ===================== */
+/* arte do sonho: o objeto 3D numa telinha arredondada em degradê da cor de destaque, flutuando de leve */
+.bas-sn2-arte { position: relative; display: grid; place-items: center; aspect-ratio: 1; width: 100%; border-radius: 28px; overflow: hidden; isolation: isolate;
+  background: radial-gradient(90% 70% at 30% 18%, rgba(255, 255, 255, .75), transparent 60%), linear-gradient(160deg, color-mix(in srgb, var(--accent) 16%, #fff) 0%, color-mix(in srgb, var(--accent) 38%, #fff) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7), 0 14px 30px -18px color-mix(in srgb, var(--accent) 70%, transparent); }
+:root:not([data-theme="light"]) .bas-sn2-arte { background: radial-gradient(90% 70% at 30% 18%, color-mix(in srgb, var(--accent) 40%, transparent), transparent 62%), linear-gradient(160deg, color-mix(in srgb, var(--accent) 34%, #10142a) 0%, color-mix(in srgb, var(--accent) 16%, #0b0d18) 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .14), 0 16px 34px -20px color-mix(in srgb, var(--accent) 80%, transparent); }
+.bas-sn2-arte img { position: relative; z-index: 1; width: 78%; height: 78%; object-fit: contain; filter: drop-shadow(0 14px 18px rgba(10, 20, 60, .28)); animation: bas-sn2-flut 5.5s ease-in-out infinite; animation-delay: calc(var(--i, 0) * -.9s); }
+@keyframes bas-sn2-flut { 50% { transform: translateY(-5px) rotate(-2deg); } }
+.bas-sn2-ic { position: absolute; inset: 0; display: grid; place-items: center; }
+.bas-sn2-ic .obj-ic { width: 44%; height: 44%; border-radius: 30%; }
+.bas-sn2-ic .obj-ic svg { width: 56%; height: 56%; }
+.bas-sn2-arte:has(img:not([hidden])) .bas-sn2-ic { display: none; }
+.bas-sn2-arte.novo { color: var(--accent); background: transparent; box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--accent) 35%, transparent); }
+.bas-sn2-arte.novo svg { width: 30px; height: 30px; }
+/* Meus sonhos: o principal flutuando no topo azul */
+.bas-sn2-hero { display: grid; justify-items: center; text-align: center; padding: 4px 0 6px; }
+.bas-sn2-flut { width: 150px; margin: 4px 0 10px; animation: bas-sn2-flut 6s ease-in-out infinite; }
+.bas-sn2-arte.hero { border-radius: 40px; background: radial-gradient(80% 60% at 30% 20%, rgba(255, 255, 255, .42), transparent 62%), linear-gradient(160deg, rgba(255, 255, 255, .26), rgba(255, 255, 255, .06)) !important;
+  -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, .7), inset 0 0 0 1px rgba(255, 255, 255, .18), 0 24px 44px -20px rgba(0, 0, 40, .6) !important; }
+.bas-sn2-arte.hero img { animation: none; }
+.bas-sn2-hero .bas-pv2-k { margin: 0; }
+.bas-sn2-hn { display: block; margin-top: 2px; font-size: 26px; font-weight: 750; letter-spacing: -.02em; color: #fff; }
+.bas-sn2-hv { margin: 4px 0 0; font-size: 17px; font-weight: 700; color: #fff; font-variant-numeric: tabular-nums; } .bas-sn2-hv span { font-weight: 500; color: rgba(255, 255, 255, .72); }
+.bas-sn2-hb { display: block; width: min(260px, 80%); height: 8px; margin-top: 14px; border-radius: 99px; background: rgba(255, 255, 255, .18); overflow: hidden; }
+.bas-sn2-hb i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #fff, #CFE3FF); box-shadow: 0 0 12px rgba(255, 255, 255, .6); animation: bas-ah3-cresce 900ms cubic-bezier(.2, .9, .25, 1) both; transform-origin: left; }
+.bas-sn2-hp { margin-top: 8px; font-size: 13px; font-weight: 600; color: rgba(255, 255, 255, .78); }
+.bas-sn2-hero.vazio .bas-sn2-hv span { font-size: 15px; }
+/* a grade: cartões grandes como bolsos, entrando um a um */
+.bas-sn2-g { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 14px; }
+.bas-sn2-t { position: relative; display: grid; gap: 3px; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: center; cursor: pointer; animation: bas-sn2-entra 520ms cubic-bezier(.2, .9, .25, 1) both; animation-delay: calc(var(--i, 0) * 60ms); -webkit-tap-highlight-color: transparent; }
+@keyframes bas-sn2-entra { from { opacity: 0; transform: translateY(14px) scale(.96); } }
+.bas-sn2-t .bas-sn2-arte { margin-bottom: 8px; transition: transform 220ms cubic-bezier(.3, 1.5, .5, 1); }
+.bas-sn2-t:active .bas-sn2-arte { transform: scale(.96); }
+.bas-sn2-t b { font-size: 15.5px; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bas-sn2-t small { font-size: 13px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.bas-sn2-pb { display: block; width: 60%; height: 4px; margin: 6px auto 0; border-radius: 99px; background: color-mix(in srgb, var(--accent) 14%, transparent); overflow: hidden; }
+.bas-sn2-pb i { display: block; height: 100%; border-radius: inherit; background: var(--accent); }
+.bas-sn2-pri { position: absolute; top: 10px; left: 10px; z-index: 2; padding: 3px 9px; border-radius: 99px; font-style: normal; font-size: 11px; font-weight: 700; color: var(--accent); background: rgba(255, 255, 255, .85); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+:root:not([data-theme="light"]) .bas-sn2-pri { background: rgba(10, 12, 24, .6); color: #fff; }
+.bas-sn2-t.novo b { color: var(--accent); }
+/* Detalhe: o objeto 3D grande girando no topo, como o "pocket" aberto */
+.bas-sn2-palco { display: grid; place-items: center; margin: -6px 0 4px; }
+.bas-sn2-o3 { position: relative; width: 230px; height: 230px; }
+.bas-sn2-o3 .ob3d, .bas-sn2-o3 .ob3d-gl { position: absolute; inset: 0; width: 100%; height: 100%; }
+.bas-sn2-o3 .bas-o3-ic { position: absolute; inset: 0; display: none; place-items: center; }
+.bas-sn2-o3.sem-3d .bas-o3-ic { display: grid; } .bas-sn2-o3.sem-3d .bas-o3-ic .obj-ic { width: 110px; height: 110px; border-radius: 32px; } .bas-sn2-o3.sem-3d .bas-o3-ic svg { width: 56px; height: 56px; }
+.bas-pg-sn2d .bas-pv2-k { margin-top: 0; }
+.card.bas-sn2-meta { display: grid; grid-template-columns: 1fr 1px 1fr; align-items: center; gap: 14px; padding: 16px; border-radius: 22px; margin-bottom: 12px; }
+.bas-sn2-meta > i { align-self: stretch; background: var(--line); }
+.bas-sn2-m1 { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.bas-sn2-m1 b, .bas-sn2-m2 b { display: block; font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.bas-sn2-meta small { display: block; font-size: 12.5px; color: var(--ink-3); }
+.bas-sn2-m2 em { display: block; font-style: normal; font-size: 12px; color: var(--accent); margin-top: 2px; }
+.card.bas-sn2-st { padding: 16px; border-radius: 22px; margin-bottom: 14px; }
+.bas-sn2-st p { margin: 10px 0 0; font-size: 14.5px; line-height: 1.45; color: var(--ink-2); }
+.bas-sn2-acs { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 18px; }
+.bas-sn2-acs .btn { width: 100%; justify-content: center; gap: 8px; } .bas-sn2-acs .btn svg { width: 18px; height: 18px; }
+.bas-sn2-v { color: var(--ink) !important; }
+.bas-sn2-lks { display: flex; justify-content: center; gap: 22px; margin: 14px 0 4px; }
+/* Widget do Início */
+.card.bas-sn2-w { display: grid !important; grid-template-columns: 56px minmax(0, 1fr) auto; align-items: center; gap: 14px; }
+.bas-sn2-arte.w { width: 56px; border-radius: 18px; } .bas-sn2-arte.w img { width: 86%; height: 86%; animation-duration: 7s; }
+.bas-sn2-arte.w.novo svg { width: 22px; height: 22px; }
+.bas-sn2-wt { display: grid; gap: 1px; min-width: 0; }
+.bas-sn2-wt small { font-size: 12.5px; color: var(--ink-3); } .bas-sn2-wt b { font-size: 16px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bas-sn2-wt > span { font-size: 13px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.bas-sn2-wt .bas-sn2-pb { width: 100%; margin: 7px 0 0; }
+.bas-sn2-wp { font-size: 22px; font-weight: 750; letter-spacing: -.02em; }
+.card.bas-sn2-w > svg:last-child { width: 18px; height: 18px; color: var(--ink-3); }
+/* Criar um sonho: tela cheia, um passo por vez */
+.bas-pg-sn2n { min-height: calc(100dvh - 32px); display: flex; flex-direction: column; padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+.bas-sn2-nh { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 12px; padding-top: env(safe-area-inset-top, 0px); }
+.bas-sn2-prog { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.bas-sn2-prog i { height: 5px; border-radius: 99px; background: color-mix(in srgb, var(--ink) 10%, transparent); overflow: hidden; position: relative; }
+.bas-sn2-prog i.on::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--accent); animation: bas-ah3-cresce 420ms cubic-bezier(.2, .9, .25, 1) both; transform-origin: left; }
+.bas-sn2-passo { flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; padding-top: 4vh; animation: bas-sn2-entra 420ms cubic-bezier(.2, .9, .25, 1) both; }
+.bas-sn2-cx { width: 168px; margin-bottom: 18px; }
+.bas-sn2-cx.sobe { width: 120px; }
+.bas-sn2-arte.cx { border-radius: 42px; }
+.bas-sn2-q { font-size: 14px; font-weight: 600; color: var(--ink-3); }
+.bas-sn2-tt { margin: 4px 0 0; font-size: 28px; font-weight: 750; letter-spacing: -.025em; line-height: 1.15; text-wrap: balance; }
+.bas-sn2-dica { margin: 14px 0 0; font-size: 13px; color: var(--ink-3); }
+/* a roda curva (como a do vídeo): rola de lado, cada item sobe numa curva e o do meio cresce */
+.bas-sn2-roda { display: flex; gap: 12px; width: calc(100% + 32px); margin: 28px -16px 0; padding: 22px calc(50% - 37px) 30px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -webkit-mask: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); mask: linear-gradient(90deg, transparent, #000 18%, #000 82%, transparent); }
+.bas-sn2-roda::-webkit-scrollbar { display: none; }
+.bas-sn2-ri { flex: none; width: 74px; padding: 0; border: 0; background: none; scroll-snap-align: center; cursor: pointer; transition: transform 120ms linear, opacity 120ms linear; -webkit-tap-highlight-color: transparent; }
+.bas-sn2-arte.ri { border-radius: 24px; } .bas-sn2-arte.ri img { animation: none; }
+.bas-sn2-ri.on .bas-sn2-arte { box-shadow: inset 0 0 0 2px var(--accent), 0 14px 26px -14px var(--accent); }
+.bas-sn2-cta { margin-top: auto; }
+.bas-sn2-in { width: 100%; max-width: 340px; height: 56px; margin-top: 26px; padding: 0 18px; border: 0; border-radius: 18px; font: inherit; font-size: 18px; font-weight: 600; text-align: center; color: var(--ink); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line), var(--shadow); }
+.bas-sn2-in:focus { outline: none; box-shadow: inset 0 0 0 2px var(--accent), var(--shadow); }
+.bas-sn2-val { display: flex; align-items: baseline; justify-content: center; gap: 6px; margin-top: 22px; font-weight: 750; }
+.bas-sn2-val span { font-size: 26px; color: var(--ink-3); }
+.bas-sn2-val input { width: 7ch; max-width: 70vw; border: 0; background: none; font: inherit; font-size: 52px; letter-spacing: -.03em; color: var(--ink); text-align: left; font-variant-numeric: tabular-nums; field-sizing: content; min-width: 1ch; }
+.bas-sn2-val input:focus { outline: none; }
+.bas-sn2-q2 { margin-top: 30px; font-size: 14px; font-weight: 600; color: var(--ink-3); }
+.bas-sn2-anos { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 12px; max-width: 340px; }
+.bas-sn2-anos button { height: 38px; padding: 0 14px; border: 0; border-radius: 999px; font: inherit; font-size: 14px; font-weight: 650; color: var(--ink); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); transition: transform 180ms cubic-bezier(.3, 1.5, .5, 1); }
+.bas-sn2-anos button.on { color: #fff; background: var(--accent); box-shadow: 0 8px 18px -10px var(--accent); }
+.bas-sn2-anos button:active { transform: scale(.95); }
+/* criando: os pontinhos se juntam e formam o cartão */
+.bas-sn2-forma { flex: 1; display: grid; place-content: center; justify-items: center; text-align: center; gap: 18px; }
+.bas-sn2-pontos { position: relative; display: grid; grid-template-columns: repeat(8, 1fr); gap: 10px; width: 220px; height: 170px; padding: 18px; border-radius: 30px; animation: bas-sn2-junta 1.8s cubic-bezier(.4, 0, .2, 1) both; }
+.bas-sn2-pontos i { width: 8px; height: 8px; margin: auto; border-radius: 50%; background: var(--accent); opacity: 0;
+  animation: bas-sn2-ponto 1.5s cubic-bezier(.2, .9, .25, 1) both; animation-delay: calc(var(--k) * 18ms);
+  --dx: calc((var(--x) - 3.5) * 22px); --dy: calc((var(--y) - 2.5) * 26px); }
+@keyframes bas-sn2-ponto { 0% { opacity: 0; transform: translate(calc(var(--dx) * 4), calc(var(--dy) * 4)) scale(.4); } 55% { opacity: 1; } 100% { opacity: .9; transform: none; } }
+@keyframes bas-sn2-junta { 0%, 60% { background: transparent; box-shadow: none; } 100% { background: color-mix(in srgb, var(--accent) 12%, var(--surface)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent), 0 24px 50px -24px var(--accent); } }
+/* sonho criado: o cartão chega inclinado, com confete */
+.bas-sn2-fim { position: relative; flex: 1; display: grid; place-content: center; justify-items: center; text-align: center; gap: 16px; }
+.bas-sn2-cartao { position: relative; z-index: 1; display: grid; justify-items: start; gap: 4px; width: min(280px, 80vw); padding: 14px 14px 18px; border-radius: 30px; text-align: left; background: var(--surface); box-shadow: var(--shadow-lg, 0 30px 60px -24px rgba(0, 0, 0, .35)), inset 0 0 0 1px var(--line);
+  animation: bas-sn2-chega 820ms cubic-bezier(.2, 1.3, .35, 1) both; transform: rotate(-4deg); }
+@keyframes bas-sn2-chega { from { opacity: 0; transform: translateY(40px) rotate(6deg) scale(.86); } }
+.bas-sn2-arte.cart { border-radius: 22px; margin-bottom: 10px; }
+.bas-sn2-cartao > small { font-size: 13px; font-weight: 600; color: var(--ink-3); } .bas-sn2-cartao > b { font-size: 24px; font-weight: 750; letter-spacing: -.02em; line-height: 1.15; }
+.bas-sn2-cl { display: flex; align-items: center; gap: 8px; margin-top: 6px; font-size: 14px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.bas-sn2-cl svg { width: 16px; height: 16px; color: var(--accent); }
+.bas-sn2-conf { position: absolute; left: 50%; top: 46%; z-index: 2; width: 0; height: 0; pointer-events: none; }
+.bas-sn2-conf i { position: absolute; width: 8px; height: 12px; border-radius: 2px; background: var(--c); opacity: 0;
+  animation: bas-sn2-conf 1.4s cubic-bezier(.15, .8, .3, 1) both; animation-delay: calc(240ms + var(--k) * 12ms); }
+@keyframes bas-sn2-conf { 0% { opacity: 1; transform: rotate(var(--a)) translateY(0) rotate(0); } 80% { opacity: 1; } 100% { opacity: 0; transform: rotate(var(--a)) translateY(calc(var(--d) * -2)) rotate(540deg); } }
+.bas-sn2-fbts { display: grid; gap: 10px; }
+@media (prefers-reduced-motion: reduce) {
+  .bas-sn2-arte img, .bas-sn2-flut, .bas-sn2-t, .bas-sn2-passo, .bas-sn2-cartao, .bas-sn2-pontos, .bas-sn2-pontos i, .bas-sn2-hb i, .bas-sn2-prog i.on::after { animation: none !important; opacity: 1; }
+  .bas-sn2-conf { display: none; } }
+.bas-sn2-o3 .ob3d-gl { inset: 0 !important; margin: 0 !important; left: 0 !important; top: 0 !important; width: 100% !important; height: 100% !important; transform: none !important; }
+.bas-sn2-m1 b, .bas-sn2-m2 b { white-space: nowrap; font-size: 15px; }
+.bas-sn2-o3 .ob3d-gl { translate: none !important; }
+.bas-sn2-roda { padding-top: 26px; padding-bottom: 56px; margin-top: 18px; }
+body[data-ui="basico"] .bas-sn2-val input { font-size: 52px !important; font-weight: 750 !important; height: auto !important; padding: 0 !important; box-shadow: none !important; background: none !important; }

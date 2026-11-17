@@ -334,7 +334,7 @@ function o3Miniaturas(tipos) {
   if (!o3Suporta()) return Promise.resolve(O3_MINI);
   return o3Biblioteca().then(() => {
     const falta = tipos.filter((t) => !O3_MINI.has(t)); if (!falta.length) return O3_MINI; const T = THREE;
-    const r = new T.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true }); r.setSize(120, 120, false); r.outputEncoding = T.sRGBEncoding; r.toneMapping = T.ACESFilmicToneMapping; r.setClearColor(0x000000, 0);
+    const r = new T.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true }); r.setSize(256, 256, false); r.outputEncoding = T.sRGBEncoding; r.toneMapping = T.ACESFilmicToneMapping; r.setClearColor(0x000000, 0);
     const sc = new T.Scene(); sc.environment = o3Estudio(r); const cam = new T.PerspectiveCamera(30, 1, 0.1, 50); cam.position.set(0, 0, 5);
     const luz = new T.DirectionalLight(0xFFFFFF, 1.6); luz.position.set(3, 4, 5); sc.add(luz, new T.HemisphereLight(0xD6E8FF, 0x0B1630, 0.5)); const M = o3Mat();
     falta.forEach((t) => { const o = o3Montar(t, M); sc.add(o); r.render(sc, cam); O3_MINI.set(t, r.domElement.toDataURL('image/png')); sc.remove(o); });
