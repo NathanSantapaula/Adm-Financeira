@@ -1223,13 +1223,13 @@ function basCtwHtml(cls, total, comAlvo, its) {
     return `<g class="bas-ctw-s" data-i="${i}" style="--dx:${(Math.sin(meio) * 9).toFixed(1)}px;--dy:${(-Math.cos(meio) * 9).toFixed(1)}px;--d:${i * 70}ms" role="button" tabindex="0" aria-label="${esc(dados[i].n)}: ${esc(dados[i].p)}">
       <path class="c" d="${dd}"/><path class="l" d="${dd}"/><path class="g" d="${dd}"/><path class="b" d="M${h0x.toFixed(1)} ${h0y.toFixed(1)} A${R - 5} ${R - 5} 0 ${big} 1 ${h1x.toFixed(1)} ${h1y.toFixed(1)}"/></g>`; }).join('');
   const nAt = its.filter((i) => i.valor > 0.005).length;
-  return `<section class="bas-ctw" data-ctw="${esc(JSON.stringify(dados))}" data-total="${esc(basCent(total))}" data-resumo="${esc(`${nAt} ${nAt === 1 ? 'ativo' : 'ativos'} em ${vivas.length} ${vivas.length === 1 ? 'classe' : 'classes'}`)}">
-    <div class="bas-ctw-r"><svg viewBox="0 0 300 262" aria-label="Alocação por classe. Toque numa parte do anel."><defs>
+  return `<section class="bas-ctw" data-ctw="${esc(JSON.stringify(dados))}" data-total="${esc(basCent(total))}" data-resumo="${esc(`${nAt} ${nAt === 1 ? 'ativo' : 'ativos'} em ${vivas.length} ${vivas.length === 1 ? 'produto' : 'produtos'}`)}">
+    <div class="bas-ctw-r"><svg viewBox="0 0 300 262" aria-label="Alocação por produto. Toque numa parte do anel."><defs>
         <linearGradient id="ctw-onw" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".55" stop-color="#E4F6FF"/><stop offset="1" stop-color="#9FDCFF"/></linearGradient>
         <pattern id="ctw-lis" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(-45)"><line x1="1" y1="0" x2="1" y2="7" style="stroke:#fff;stroke-width:1.8;stroke-opacity:.92"/></pattern>
         <radialGradient id="ctw-gl" gradientUnits="userSpaceOnUse" cx="110" cy="40" r="170"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".5" stop-color="#fff" stop-opacity=".08"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>${segs}</svg>
       <div class="bas-ctw-c"><small data-ctw-k>Total investido</small><b data-ctw-v>${basCent(total)}</b></div></div>
-    <div class="bas-ctw-tx" aria-live="polite"><b data-ctw-n>Sua carteira</b><span data-ctw-s>${esc(`${nAt} ${nAt === 1 ? 'ativo' : 'ativos'} em ${vivas.length} ${vivas.length === 1 ? 'classe' : 'classes'}`)}</span><em data-ctw-t hidden></em></div>
+    <div class="bas-ctw-tx" aria-live="polite"><b data-ctw-n>Sua carteira</b><span data-ctw-s>${esc(`${nAt} ${nAt === 1 ? 'ativo' : 'ativos'} em ${vivas.length} ${vivas.length === 1 ? 'produto' : 'produtos'}`)}</span><em data-ctw-t hidden></em></div>
     <div class="bas-ctw-pt" role="group" aria-label="Classes">${dados.map((d, i) => `<button data-ctw-i="${i}" aria-label="${esc(d.n)}"></button>`).join('')}</div>
   </section>`;
 }
@@ -1329,25 +1329,42 @@ function basSalvarAtivoEd(f, d, t, ok) {
   const k1 = E.ativoKey(a0); if (k1 !== k0) { (S.profile.carteira || []).forEach((e) => { if (e.k === k0) e.k = k1; }); touch('profile'); }
   ok('Ativo atualizado.');
 }
+const BAS_CT_VIS = [['classes', 'Classes'], ['produtos', 'Produtos'], ['ativos', 'Ativos']];
+// o grande grupo do ativo, lido do nome da classe cadastrada (e do tipo, para a renda fixa)
+function basMacro(a) {
+  const c = String(a.classe || '');
+  if (/mutual|exterior|internac|global|bdr|stock|reit/i.test(c)) return 'Internacional';
+  if (/previd/i.test(c)) return 'Previdência';
+  if (/imobili|fii/i.test(c)) return 'Fundos imobiliários';
+  if (/fundo|multimerc/i.test(c)) return 'Fundos';
+  if (a.tipo === 'RENDA FIXA' || /cdb|lc[ia]|cr[ia]|tesouro|deb[eê]n|poupan|renda fixa/i.test(c)) return 'Renda fixa';
+  return 'Ações e outros';
+}
 function basTelaCarteira() {
   const { M, K } = cartAnalise(); const total = M.total; const its = M.items.filter((i) => i.valor > 0.005 || i.alvo > 0); const comAlvo = M.sumAlvo > 0;
   const cls = K.classes.filter((c) => c.valor > 0.005 || c.alvo > 0).sort((a, b) => b.valor - a.valor); const corC = (c) => BAS_CT_COR[cls.indexOf(c) % BAS_CT_COR.length];
   const corDe = (classe) => { const c = cls.find((x) => (x.classe || '') === (classe || '')); return c ? corC(c) : BAS_CT_COR[0]; };
   // série de cada ativo (para as mini linhas)
   const series = new Map(); its.forEach((i) => series.set(i, basAtSerie(i.a)));
-  // alocação: barra segmentada e as classes; a aberta mostra os ativos dela
-  const aberta = S.basCartAbre;
-  const linhaAt = (i) => { const s = series.get(i) || []; return `<li><button class="bas-ct-at" ${basIr('ativo', { id: i.a.id })}><span class="bas-ct-lg" style="--bc:${corDe(i.a.classe)}">${esc(basSigla(i.a.nome))}</span><span class="bas-ct-an"><b>${esc(i.a.nome)}</b><small>${pct(total > 0 ? i.valor / total : 0, 1)}</small></span>${basSpark(s.slice(-12).map((p) => p.c))}<b class="bas-ct-av">${basCent(i.valor)}</b></button></li>`; };
-  const alocacao = total > 0 ? `<div class="card bas-ct-al">
-    <ul class="bas-ct-cl">${cls.filter((c) => c.valor > 0).map((c) => { const ab = aberta === (c.classe || ''); const lista = its.filter((i) => (i.a.classe || '') === (c.classe || '') && i.valor > 0.005).sort((a, b) => b.valor - a.valor);
-      return `<li class="${ab ? 'on' : ''}"><button class="bas-ct-ch" data-act="bas-cart-cl" data-v="${esc(c.classe || '')}" aria-expanded="${ab}"><i style="--bc:${corC(c)}"></i><span><b>${esc(c.classe || 'Outros')}</b><small>${pct(c.valor / total, 1)}</small></span><b class="bas-ct-cv">${basCent(c.valor)}</b><svg class="bas-ct-sc" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>
-        ${ab ? `<ul class="bas-ct-ats">${lista.map(linhaAt).join('')}</ul>` : ''}</li>`; }).join('')}</ul></div>` : basCard(basVazio('Sua carteira aparece aqui quando você registrar o primeiro investimento.'));
+  const vivos = its.filter((i) => i.valor > 0.005).sort((a, b) => b.valor - a.valor); const pc = (v) => pct(total > 0 ? v / total : 0, 1);
+  const linhaAt = (i, prod) => { const s = series.get(i) || []; return `<li><button class="bas-ct-at" ${basIr('ativo', { id: i.a.id })}><span class="bas-ct-lg" style="--bc:${corDe(i.a.classe)}">${esc(basSigla(i.a.nome))}</span><span class="bas-ct-an"><b>${esc(i.a.nome)}</b><small>${prod ? `${esc(i.a.classe || 'Outros')} · ` : ''}${pc(i.valor)}</small></span>${basSpark(s.slice(-12).map((p) => p.c))}<b class="bas-ct-av">${basCent(i.valor)}</b></button></li>`; };
+  // três jeitos de ver: Classes (o grande grupo, por basMacro), Produtos (a classe cadastrada) e Ativos (os maiores; o resto no "Ver todos")
+  const vis = BAS_CT_VIS.some(([k]) => k === S.basCartVis) ? S.basCartVis : 'classes'; const aberta = S.basCartAbre;
+  const grupos = (chave) => { const g = new Map(); vivos.forEach((i) => { const k = chave(i.a); if (!g.has(k)) g.set(k, []); g.get(k).push(i); });
+    return [...g].map(([n, l]) => ({ n, l, v: l.reduce((t, i) => t + i.valor, 0) })).sort((x, y) => y.v - x.v); };
+  const corMacro = new Map(); const linhaG = (g, k, cor) => { const id = `${vis}:${g.n}`; const ab = aberta === id;
+    return `<li class="${ab ? 'on' : ''}"><button class="bas-ct-ch" data-act="bas-cart-cl" data-v="${esc(id)}" aria-expanded="${ab}"><i style="--bc:${cor}"></i><span><b>${esc(g.n)}</b><small>${pc(g.v)} · ${g.l.length} ${g.l.length === 1 ? 'ativo' : 'ativos'}</small></span><b class="bas-ct-cv">${basCent(g.v)}</b><svg class="bas-ct-sc" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg><span class="bas-ct-pb" aria-hidden="true"><i style="--bc:${cor};--p:${total > 0 ? ((g.v / total) * 100).toFixed(1) : 0}%"></i></span></button>
+      ${ab ? `<ul class="bas-ct-ats">${g.l.map((i) => linhaAt(i, vis === 'classes')).join('')}</ul>` : ''}</li>`; };
+  const TOP = 5; const corpo = vis === 'ativos' ? `<ul class="bas-ct-cl bas-ct-top">${vivos.slice(0, TOP).map((i) => linhaAt(i, true)).join('')}</ul>${vivos.length > TOP ? `<button class="bas-ct-mais" data-act="bas-cart-todos">Ver todos os ${vivos.length} ativos</button><template id="bas-ct-tpl"><ul class="bas-ct-cl bas-ct-top">${vivos.map((i) => linhaAt(i, true)).join('')}</ul></template>` : ''}`
+    : `<ul class="bas-ct-cl">${(vis === 'classes' ? grupos(basMacro) : grupos((a) => a.classe || 'Outros')).map((g, k) => linhaG(g, k, vis === 'classes' ? BAS_CT_COR[k % BAS_CT_COR.length] : corDe(g.n === 'Outros' ? '' : g.n))).join('')}</ul>`;
+  const alocacao = total > 0 ? `<div class="seg bas-ct-vis" role="tablist" aria-label="Ver a carteira por">${BAS_CT_VIS.map(([k, l]) => `<button role="tab" class="${vis === k ? 'on' : ''}" data-act="bas-cart-vis" data-v="${k}" aria-selected="${vis === k}">${l}</button>`).join('')}</div>
+    <div class="card bas-ct-al">${corpo}</div>` : basCard(basVazio('Sua carteira aparece aqui quando você registrar o primeiro investimento.'));
   return `<div class="bas-pg bas-pg-ctw"><div class="bas-gt-bg bas-pt-bg bas-ctw-bg">
     <header class="bas-pv2-h"><button class="bell bas-cal-b" data-act="bas-voltar" aria-label="Voltar">${I_VOLTA}</button><b>Minha carteira</b><span class="bas-noite-r">${olhoHtml()}</span></header>
     ${basCtwHtml(cls, total, comAlvo, its)}
   </div><div class="bas-gt-folha">
     ${its.length ? `<div class="bas-pg-per bas-gt-acoes"><button class="bas-circ bas-en-bt" ${basIr('alvos')}><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".8"/></svg><span>Alvos</span></button><button class="bas-inv-pl" ${basIr('aportar')}>${I.plus}<span>Onde investir</span></button></div>` : ''}
-    ${basSecao('Seus ativos', '', alocacao)}${basRecHtml()}
+    ${basSecao('Minha carteira', '', alocacao)}${basRecHtml()}
     </div></div>`;
 }
 /* ---- App completo: limites, avisos, simulador do sonho e alvos da carteira ---- */
@@ -1570,15 +1587,30 @@ function basTelaCartoes() {
 // fila em leque: o cartão do meio fica de frente e os vizinhos giram e encolhem conforme a distância (--d, --a)
 // arrastar o cartão para o lado troca para o cartão vizinho (a mesma ordem de "Seus cartões", em loop), sem empilhar outra tela
 // "Ver tudo" dos Últimos gastos: todos os gastos do período numa janela que sobe de baixo; fecha no X, no fundo ou com Esc
-function basUltPop() {
-  const tpl = document.getElementById('bas-ult-tpl'); if (!tpl) return; const n = tpl.content.querySelectorAll('li').length;
-  const el = document.createElement('div'); el.className = 'bas-pop'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Todos os gastos');
-  el.innerHTML = `<div class="bas-pop-f"><span class="bas-pop-al" aria-hidden="true"></span><div class="bas-pop-h"><span><b>Todos os gastos</b><small>${n} ${n === 1 ? 'gasto' : 'gastos'} ${esc(basJanFrase())}</small></span><button class="bell" data-pop="x" aria-label="Fechar">${I.x}</button></div><div class="bas-pop-c"></div></div>`;
+function basUltPop(id = 'bas-ult-tpl', tit = 'Todos os gastos') {
+  const tpl = document.getElementById(id); if (!tpl) return; const n = tpl.content.querySelectorAll('li').length; const at = id === 'bas-ct-tpl';
+  const el = document.createElement('div'); el.className = 'bas-pop'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', tit);
+  el.innerHTML = `<div class="bas-pop-f"><span class="bas-pop-al" aria-hidden="true"></span><div class="bas-pop-h"><span><b>${tit}</b><small>${at ? `${n} ${n === 1 ? 'ativo' : 'ativos'}, do maior para o menor` : `${n} ${n === 1 ? 'gasto' : 'gastos'} ${esc(basJanFrase())}`}</small></span><button class="bell" data-pop="x" aria-label="Fechar">${I.x}</button></div><div class="bas-pop-c"></div></div>`;
   el.querySelector('.bas-pop-c').appendChild(tpl.content.cloneNode(true));
   const fechar = () => { document.removeEventListener('keydown', tecla); el.classList.add('sai'); setTimeout(() => el.remove(), 240); };
   const tecla = (e) => { if (e.key === 'Escape') fechar(); };
   el.addEventListener('click', (e) => { if (e.target === el || e.target.closest('[data-pop="x"]')) fechar(); else if (e.target.closest('[data-act]')) { document.removeEventListener('keydown', tecla); setTimeout(() => el.remove(), 0); } });
-  document.addEventListener('keydown', tecla); document.body.appendChild(el); basSom('toque');
+  document.addEventListener('keydown', tecla); document.body.appendChild(el); basSom('toque'); return el;
+}
+// todas as movimentações do ativo: período (3M, 6M, 1A, Tudo, contado a partir de hoje) e busca por tipo ou mês, sem redesenhar
+function basMovPop() {
+  const el = basUltPop('bas-mv-tpl', 'Movimentações'); if (!el) return; const sub = el.querySelector('.bas-pop-h small'); const lis = [...el.querySelectorAll('.bas-pop-c li')];
+  const PER = [['3', '3M'], ['6', '6M'], ['12', '1A'], ['0', 'Tudo']]; let per = '0', q = '';
+  el.querySelector('.bas-pop-c').insertAdjacentHTML('beforebegin', `<div class="bas-mvp-f"><label class="bas-mvp-b"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg><input type="search" placeholder="Buscar: aplicação, provento, março…" aria-label="Buscar movimentação"></label>
+    <div class="seg bas-mvp-p" role="group" aria-label="Período">${PER.map(([v, l]) => `<button class="${v === per ? 'on' : ''}" data-mvp="${v}" aria-pressed="${v === per}">${l}</button>`).join('')}</div></div><p class="bas-mvp-vz" hidden>Nada nesse período.</p>`);
+  const hoje = new Date(); const agora = hoje.getFullYear() * 12 + hoje.getMonth(); const sem = (t) => t.normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const filtra = () => { let n = 0; const qq = sem(q.trim().toLowerCase());
+    lis.forEach((li) => { const ok = (per === '0' || +li.dataset.ym > agora - +per) && (!qq || sem(li.dataset.q).includes(qq)); li.hidden = !ok; if (ok) n++; });
+    sub.textContent = `${n} ${n === 1 ? 'movimentação' : 'movimentações'}${per === '0' ? '' : ` em ${PER.find((p) => p[0] === per)[1].replace('M', ' meses').replace('1A', '12 meses')}`}`; el.querySelector('.bas-mvp-vz').hidden = n > 0; };
+  el.querySelector('input').addEventListener('input', (e) => { q = e.target.value; filtra(); });
+  el.querySelector('.bas-mvp-p').addEventListener('click', (e) => { const b = e.target.closest('[data-mvp]'); if (!b) return; per = b.dataset.mvp;
+    el.querySelectorAll('[data-mvp]').forEach((x) => { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', String(x === b)); }); filtra(); basSom('toque'); });
+  filtra();
 }
 function basCtLigar() {
   const c = document.querySelector('.bas-ct2-card'); S.basCtDir = 0; if (!c || c.dataset.lig) return; c.dataset.lig = '1';
@@ -2187,7 +2219,9 @@ function basTelaAtivo(o) {
   const NOME = { ap: 'Aplicação', rs: 'Resgate', pr: 'Provento' }; const IC = { ap: '↑', rs: '↓', pr: '◆' };
   const linha = (x) => { const ed = x.t !== 'pr' && x.p.y === S.year && temRecurso('aporte_simples');
     return `<li><button class="bas-at-mv ${x.t}" ${ed ? basIr('aporte', { id: a.id, mes: x.p.m }) : 'disabled'}><span class="bas-at-mi" aria-hidden="true">${IC[x.t]}</span><span class="bas-pv2-n"><b>${NOME[x.t]}</b><small>${esc(basAtMes(x.p, true))}</small></span><b class="bas-at-mvv">${x.t === 'rs' ? '−' : '+'}${basCent(Math.abs(x.v))}</b></button></li>`; };
-  const movs = mov.length ? basSecao('Movimentações', `<small class="bas-pv2-q">${mov.length}</small>`, `<ul class="card bas-pv2-ls">${mov.slice(0, 40).map(linha).join('')}</ul>`) : basCard(basVazio('Nenhuma movimentação ainda.'));
+  // as 5 mais novas na tela; "Ver tudo" abre a janela com período e busca (basMovPop), sobre a lista inteira guardada num template
+  const linhaT = (x) => linha(x).replace('<li>', `<li data-ym="${x.p.y * 12 + x.p.m}" data-q="${esc(`${NOME[x.t]} ${basAtMes(x.p, true)}`.toLowerCase())}">`);
+  const movs = mov.length ? basSecao('Movimentações', mov.length > 5 ? `<button class="bas-ult-ver" data-act="bas-at-movs">Ver tudo</button>` : '', `<ul class="card bas-pv2-ls">${mov.slice(0, 5).map(linha).join('')}</ul>${mov.length > 5 ? `<template id="bas-mv-tpl"><ul class="bas-pv2-ls">${mov.map(linhaT).join('')}</ul></template>` : ''}`) : basCard(basVazio('Nenhuma movimentação ainda.'));
   const pode = temRecurso('aporte_simples');
   const bar = pode ? `<div class="bas-at-bar"><button class="bas-at-b rs" ${basIr('aporte', { modo: 'nova', op: '-1', ativo: a.id })}>Resgatar</button><button class="bas-at-b ap" ${basIr('aporte', { modo: 'nova', op: '1', ativo: a.id })}>Aplicar</button></div>` : '';
   return `<div class="bas-pg bas-pg-at"><div class="bas-gt-bg bas-pt-bg bas-at-bg">
@@ -2523,6 +2557,9 @@ function basAcao(act, ds, el) {
       if (S.basAba !== ds.v || basPilha().length) basSom('toque'); basTransicao('aba', () => { basLimpar(); S.basAba = ds.v; render(); window.scrollTo(0, 0); }); return true;
     case 'bas-mes': S.mes = Math.max(0, Math.min(11, S.mes + +ds.d)); render(); return true;
     case 'bas-oi-reg': basOiRegistrar(); return true;
+    case 'bas-cart-vis': S.basCartVis = ds.v; S.basCartAbre = null; render(); return true;
+    case 'bas-at-movs': basMovPop(); return true;
+    case 'bas-cart-todos': basUltPop('bas-ct-tpl', 'Todos os ativos'); return true;
     case 'bas-cart-cl': S.basCartAbre = S.basCartAbre === ds.v ? null : ds.v; basSom('toque'); render(); return true;
     case 'bas-at-r': S.basAtR = ds.v; render(); return true;
     case 'bas-at-modo': S.basAtModo = ds.v; render(); return true;
