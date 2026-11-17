@@ -1496,33 +1496,32 @@ function basTelaHistorico() {
 function basTelaAnoHist(o) {
   const H = histDados(); const anos = (H.anos || []).filter((l) => l.preenchido); const ano = +o.id || S.year; const k = anos.findIndex((l) => l.ano === ano); if (k < 0) return basSumiu();
   const L = anos[k]; const A = k > 0 ? anos[k - 1] : null; const ser = (H.serie || []).filter((p0) => p0.ano === ano);
-  // gráfico: patrimônio mês a mês (linha e área) e, embaixo, entradas e gastos de cada mês
-  const W = 320; const Hh = 120; const vs = ser.map((p0) => p0.patrimonio); const mn = Math.min(...vs, L.patrimonioInicio); const mx = Math.max(...vs); const fg = (mx - mn) * 0.1 || 1;
-  const x = (m) => ((m + 0.5) / 12) * W; const y = (v) => Hh - 8 - ((v - (mn - fg)) / ((mx + fg) - (mn - fg))) * (Hh - 20);
-  const lin = ser.map((p0, i) => `${i ? 'L' : 'M'}${x(p0.mes).toFixed(1)} ${y(p0.patrimonio).toFixed(1)}`).join(' '); const fim = ser[ser.length - 1];
-  const mxB = Math.max(1, ...ser.map((p0) => Math.max(p0.entradas, p0.gastos)));
-  // comparação com o ano anterior: seta e percentual, verde quando é bom (gastos: bom é cair)
-  const cmp = (atual, ant, bomSobe, pontos) => { if (!A || ant == null || atual == null) return ''; if (pontos) { const d = (atual - ant) * 100; return Math.abs(d) < 0.5 ? '' : `<em class="${(d > 0) === bomSobe ? 'pos' : 'neg'}">${d > 0 ? '▲' : '▼'} ${Math.abs(d).toFixed(0)} p.p.</em>`; }
-    if (!(ant > 0)) return ''; const d = atual / ant - 1; return Math.abs(d) < 0.005 ? '' : `<em class="${(d > 0) === bomSobe ? 'pos' : 'neg'}">${d > 0 ? '▲' : '▼'} ${pct(Math.abs(d))}</em>`; };
-  const kpi = (n, v, ex) => `<span class="bas-ah-k"><small>${n}</small><b>${v}</b>${ex || ''}</span>`;
-  const apl = L.aplicado != null ? L.aplicado : L.aportes; const aplA = A ? (A.aplicado != null ? A.aplicado : A.aportes) : null;
-  // frases de leitura: só as que fazem sentido com os números do ano
-  const varP = L.patrimonioFim - (A ? A.patrimonioFim : L.patrimonioInicio); const baseP = A ? A.patrimonioFim : L.patrimonioInicio;
-  // no padrão azul: anos em fichas, o patrimônio e a curva do ano no topo; embaixo entradas e gastos, os números contra o ano anterior e a leitura
-  const PA = ser.map((p0) => [x(p0.mes), y(p0.patrimonio)]); const dA = PA.length > 1 ? basCurva(PA) : '';
+  const apl = L.aplicado != null ? L.aplicado : L.aportes;
+  const baseP = A ? A.patrimonioFim : L.patrimonioInicio; const varP = L.patrimonioFim - baseP;
+  // colunas da sobra de cada mês (como as de Proventos); tocar num mês mostra entrou, saiu e sobrou dele no lugar do ano
+  const sel = S.basAhMes != null && ser.some((q) => q.mes === S.basAhMes) ? S.basAhMes : null; const um = sel != null;
+  const sobM = (q) => (+q.entradas || 0) - (+q.gastos || 0); const mxS = Math.max(1, ...ser.map((q) => Math.abs(sobM(q))));
+  const barras = MES.map((n, m) => { const q = ser.find((x0) => x0.mes === m); const v = q ? sobM(q) : 0;
+    return `<button class="${!q ? 'fut' : um && m !== sel ? 'fora' : 'in'}${m === sel ? ' on' : ''}${v < 0 ? ' neg' : ''}" ${q ? `data-act="bas-ah-mes" data-m="${m}"` : 'disabled'} style="--h:${q ? Math.max(4, (Math.abs(v) / mxS) * 78).toFixed(1) : 3}%" aria-label="${MES_LONGO[m]}${q ? `: sobrou ${esc(brl(v))}` : ''}" aria-pressed="${m === sel}">${m === sel ? `<small>${brl0(v)}</small>` : ''}<i></i><b>${n[0]}</b></button>`; }).join('');
+  const qS = um ? ser.find((x0) => x0.mes === sel) : null;
+  const ent = um ? +qS.entradas || 0 : L.entradas; const gas = um ? +qS.gastos || 0 : L.gastos; const sob = ent - gas;
   const topo = `<div class="bas-ah-anos bas-ah2-anos" role="group" aria-label="Escolher o ano">${anos.map((l) => `<button class="${l.ano === ano ? 'on' : ''}" data-act="bas-ah-ano" data-y="${l.ano}" aria-pressed="${l.ano === ano}">${l.ano}</button>`).join('')}</div>
     <small class="bas-pv2-k">Patrimônio ${L.parcial ? `até ${MES_LONGO[L.meses - 1]}` : `no fim de ${ano}`}</small><b class="bas-pv2-t">${basCent(L.patrimonioFim)}</b>
-    <p class="bas-pv2-var">${baseP > 0 ? `<span class="bas-ev-pct${varP >= 0 ? '' : ' neg'}">${varP >= 0 ? '↑' : '↓'} ${pct(Math.abs(varP / baseP))}</span><span>${varP >= 0 ? '+' : '−'}${brl0(Math.abs(varP))} no ano</span>` : `<span>${ano}</span>`}</p>
-    <div class="bas-ah2-g" aria-hidden="true"><svg viewBox="0 0 ${W} ${Hh}" preserveAspectRatio="none"><defs><linearGradient id="bas-ah2g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".3"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
-      ${dA ? `<path class="bas-hs-a" d="${dA} L${PA[PA.length - 1][0].toFixed(1)} ${Hh} L${PA[0][0].toFixed(1)} ${Hh} Z" fill="url(#bas-ah2g)"/><path class="bas-hs-l" d="${dA}"/>` : ''}</svg>
-      ${fim ? `<i class="bas-hs-d fim" style="left:${((x(fim.mes) / W) * 100).toFixed(2)}%;top:${((y(fim.patrimonio) / Hh) * 100).toFixed(2)}%"></i>` : ''}</div>
-    <div class="bas-ah2-x" aria-hidden="true">${MES.map((n, m) => `<span class="${fim && m === fim.mes ? 'on' : ser.some((q) => q.mes === m) ? '' : 'fut'}">${n[0]}</span>`).join('')}</div>`;
+    ${baseP > 0 && Math.abs(varP) >= 1 ? `<p class="bas-ah3-var ${varP >= 0 ? 'pos' : 'neg'}">${varP >= 0 ? '↗' : '↘'} ${brl0(Math.abs(varP))} ${varP >= 0 ? 'a mais' : 'a menos'} no ano <span>${pct(Math.abs(varP / baseP))}</span></p>` : ''}
+    <div class="bas-pv2-g bas-sa-g bas-ah3-g" role="group" aria-label="Sobra de cada mês. Toque num mês.">${barras}</div>
+    <div class="bas-ah3-m" aria-live="polite"><small>${um ? cap(MES_LONGO[sel]) : `No ano${L.parcial ? ' até agora' : ''}`}</small>
+      <span><em>Entrou</em><b>${brl0(ent)}</b></span><span><em>Saiu</em><b>${brl0(gas)}</b></span><span><em>Sobrou</em><b class="${sob < 0 ? 'neg' : ''}">${brl0(sob)}</b></span></div>`;
+  // para onde foi o que entrou no ano: gastos, investido e o que ficou parado
+  const inv = Math.max(0, Math.min(apl || 0, Math.max(0, L.entradas - L.gastos))); const parado = Math.max(0, L.entradas - L.gastos - inv); const totE = Math.max(1, L.entradas);
+  const fat = [['Gastos', L.gastos, 'var(--neg)'], ['Investido', inv, 'var(--accent)'], ['Ficou parado', parado, '#8E8E93']].filter((f) => f[1] > 0.5);
+  const onde = L.entradas > 0 ? `<section class="card bas-ah3-on"><b class="bas-ah3-ont">De cada R$ 100 que entraram</b>
+      <div class="bas-ah3-bar" aria-hidden="true">${fat.map(([n, v, c]) => `<i style="--p:${((v / totE) * 100).toFixed(1)}%;--c:${c}"></i>`).join('')}</div>
+      <ul class="bas-ah3-leg">${fat.map(([n, v, c]) => `<li><i style="--c:${c}"></i><span>${n}</span><b>R$ ${Math.round((v / totE) * 100)}</b><small>${brl0(v)}</small></li>`).join('')}</ul></section>` : '';
   const icK = { Entradas: [I_ENTRADA, 'var(--pos)'], Gastos: [I_GASTO, 'var(--neg)'], Sobra: [I.plus, 'var(--accent)'], Guardou: [I_PROV, '#30B0C7'], Investido: [I.inv, 'var(--accent)'], Proventos: [I_PROV, '#F5B83D'] };
-  const linhaK = (n, v, ex) => `<li><span class="bas-pv2-l"><span class="bas-pv2-ini" style="--bc:${icK[n][1]}" aria-hidden="true">${icK[n][0]}</span><span class="bas-pv2-n"><b>${n}</b></span><span class="bas-ah2-v"><b>${v}</b>${ex || ''}</span></span></li>`;
-  const folha = `<section class="card bas-ah2-eg"><div class="bas-ah2-eh"><b>Entradas e gastos</b><p class="bas-ah-leg"><span><i class="e"></i>Entradas</span><span><i class="g"></i>Gastos</span></p></div>
-      <div class="bas-ah-b" aria-hidden="true">${MES.map((n, m) => { const p0 = ser.find((q) => q.mes === m); return `<span class="${p0 ? '' : 'fut'}"><i class="e" style="--h:${p0 ? ((p0.entradas / mxB) * 100).toFixed(1) : 0}%"></i><i class="g" style="--h:${p0 ? ((p0.gastos / mxB) * 100).toFixed(1) : 0}%"></i><b>${n[0]}</b></span>`; }).join('')}</div></section>
-    ${basSecao(A ? `Números de ${ano}` : `Números de ${ano}`, A ? `<small class="bas-pv2-q">contra ${A.ano}</small>` : '', `<ul class="card bas-pv2-ls bas-ah2-ls">${linhaK('Entradas', brl0(L.entradas), cmp(L.entradas, A && A.entradas, true))}${linhaK('Gastos', brl0(L.gastos), cmp(L.gastos, A && A.gastos, false))}${linhaK('Sobra', brl0(L.sobra), cmp(L.sobra, A && A.sobra, true))}${linhaK('Guardou', L.poupanca != null ? pct(L.poupanca) : '–', cmp(L.poupanca, A && A.poupanca, true, true))}${linhaK('Investido', brl0(apl), cmp(apl, aplA, true))}${linhaK('Proventos', brl0(L.proventos), cmp(L.proventos, A && A.proventos, true))}</ul>`)}
-    ${L.parcial ? `<p class="bas-disc keep">${ano} em andamento: valores até ${MES_LONGO[L.meses - 1]}. As comparações com ${A ? A.ano : 'o ano anterior'} usam o ano dele inteiro.</p>` : ''}<p class="bas-disc keep">Patrimônio a custo: o que você informou ajustado pelos aportes, sem a variação de mercado.</p>`;
+  const linhaK = (n, v) => `<li><span class="bas-pv2-l"><span class="bas-pv2-ini" style="--bc:${icK[n][1]}" aria-hidden="true">${icK[n][0]}</span><span class="bas-pv2-n"><b>${n}</b></span><b class="bas-ah3-v">${v}</b></span></li>`;
+  const folha = `${onde}
+    ${basSecao(`Números de ${ano}`, '', `<ul class="card bas-pv2-ls bas-ah2-ls">${linhaK('Entradas', brl0(L.entradas))}${linhaK('Gastos', brl0(L.gastos))}${linhaK('Sobra', brl0(L.sobra))}${linhaK('Guardou', L.poupanca != null ? pct(L.poupanca) : '–')}${linhaK('Investido', brl0(apl))}${linhaK('Proventos', brl0(L.proventos))}</ul>`)}
+    ${L.parcial ? `<p class="bas-disc keep">${ano} em andamento: valores até ${MES_LONGO[L.meses - 1]}.</p>` : ''}<p class="bas-disc keep">Patrimônio a custo: o que você informou ajustado pelos aportes, sem a variação de mercado.</p>`;
   return basPgAzul('bas-pg-ah', `Seu ${ano}`, topo, folha);
 }
 // Raio-X dos gastos do ano (E.analiseGastos, a mesma análise da aba Gastos do SaaS)
@@ -2639,7 +2638,8 @@ function basAcao(act, ds, el) {
     case 'bas-cc-band': if (instDe(ds.id) && CC_BAND[ds.v]) basCcGrava(ds.id, 'b', ds.v); return true;
     case 'bas-cc-cor': if (instDe(ds.id) && /^#[0-9a-f]{6}$/i.test(ds.v || '')) basCcGrava(ds.id, 'c', ds.v); return true;
     case 'bas-gasto-rec': { const f = el.closest('form'); const x = basMemGastos().get(ds.k); if (f && x) { f.querySelector('[name="desc"]').value = x.desc; basGastoLembra(f, x, true); basSom('toque'); } return true; }
-    case 'bas-ah-ano': { const t = basTopoPilha(); if (t && t.t === 'ano-hist') { t.id = String(ds.y); basSom('toque'); render(); } return true; }
+    case 'bas-ah-mes': S.basAhMes = S.basAhMes === +ds.m ? null : +ds.m; basSom('toque'); render(); return true;
+    case 'bas-ah-ano': { const t = basTopoPilha(); if (t && t.t === 'ano-hist') { t.id = String(ds.y); S.basAhMes = null; basSom('toque'); render(); } return true; }
     case 'bas-prov-mes': S.basProvMes = S.basProvMes === +ds.m ? null : +ds.m; basSom('toque'); render(); return true;
     case 'bas-prov-ano': if (+ds.y !== S.year && S.plans[+ds.y]) { S.basProvMes = null; switchYear(+ds.y); } return true;
     case 'bas-al-passo': case 'bas-al-igual': case 'bas-al-100': case 'bas-al-zero': basAlAcao(act, el); return true;
