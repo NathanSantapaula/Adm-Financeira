@@ -1489,7 +1489,7 @@ function basRecAplicar(el) {
 
 /* ---- sons e transições: efeitos curtos gerados no aparelho (Web Audio, sem arquivos), só nos momentos que importam ---- */
 let BAS_AC = null;
-const basSomLigado = () => !!(S.profile && S.profile.prefs && S.profile.prefs.sons !== false);
+const basSomLigado = () => false; // sons desligados a pedido do Nathan (o efeito continua em basSom, caso volte)
 // tipos: toque (trocar de aba, abrir tela), ok (salvar), pago (conta paga, investimento), apaga (excluir), volta (voltar)
 function basSom(tipo) {
   if (!basSomLigado()) return;
