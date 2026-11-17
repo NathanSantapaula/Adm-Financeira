@@ -1195,7 +1195,9 @@ function basTelaAno() {
 function basTelaProvento(o) {
   const p = S.plan; const m = S.mes; const a = o.id ? p.ativos.find((x) => x.id === o.id) : null; if (o.id && !a) return basSumiu();
   if (a) return basForm('provento', esc(a.nome), basValor('valor', +a.pr[m] || 0, `Quanto pagou em ${MES_LONGO[m]}?`), { excluir: `Apagar o provento de ${MES_LONGO[m]}` });
-  return basForm('provento', 'Registrar provento', `${basValor('valor', 0, 'Quanto recebeu?')}${basChips('ativo', p.ativos.map((x) => [x.id, x.nome]), (p.ativos[0] || {}).id, 'De qual investimento')}<p class="bas-p">Fica registrado em ${MES_LONGO[m]} de ${S.year}.</p>`, { ok: 'Registrar' });
+  if (!p.ativos.length) return basDet('Novo provento', basCard(basVazio('Registre um investimento primeiro.')));
+  return basForm('provento', 'Novo provento', `<div class="bas-inv-v">${basValor('valor', 0, 'Quanto recebeu?')}</div>
+    <p class="bas-inv-k">De qual ativo</p>${basAtPick(o.ativo, true)}<p class="bas-inv-k">Mês</p>${basMesFaixa(m)}`, { ok: 'Registrar' });
 }
 // Minha carteira, no jeito dos apps de investimento premium (Robinhood, Wealthsimple, Revolut): uma linha limpa da evolução
 // no topo (a mesma do ativo, que segue o dedo), a alocação numa barra segmentada fina com as classes em lista (tocar abre os
@@ -2161,23 +2163,29 @@ const I_LIMITE_IC = ic('<path d="M4.5 16a7.5 7.5 0 1 1 15 0"/><path d="M12 16l3.
    para onde foi e limites por área em Gastos, e a análise da saúde financeira com o rostinho ---- */
 const I_IMP = ic('<path d="M12 3.5v11m0 0-4-4m4 4 4-4"/><path d="M4.5 15.5v3a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-3"/>');
 // investimento (o mesmo do Novo aporte do SaaS): aportar ou resgatar, ativo que já tenho ou novo, tipo, classe, mês e valor; e importar
+// o ativo escolhido numa linha (Trocar abre a janela com busca, basInvLigar); a lista vai num template. ordem: por peso ou por proventos
+function basAtPick(selId, porProv) {
+  const p = S.plan; const { M } = cartAnalise(); const val = new Map(M.items.map((i) => [i.a.id, i.valor])); const pr = (a) => sum12(a.pr);
+  const ord = p.ativos.slice().sort((x, y) => (porProv ? pr(y) - pr(x) : 0) || (val.get(y.id) || 0) - (val.get(x.id) || 0));
+  const sel = (selId && p.ativos.find((x) => x.id === selId)) || ord[0]; if (!sel) return '';
+  const classes = [...new Set(p.ativos.map((x) => x.classe || ''))]; const cor = (a) => BAS_CT_COR[classes.indexOf(a.classe || '') % BAS_CT_COR.length];
+  const cara = (a) => `<span class="bas-ct-lg" style="--bc:${cor(a)}">${esc(basSigla(a.nome))}</span><span class="bas-ct-an"><b>${esc(a.nome)}</b><small>${esc(a.classe || 'Outros')}${porProv ? (pr(a) > 0 ? ` · ${brl0(pr(a))} no ano` : '') : val.get(a.id) > 0.005 ? ` · ${brl0(val.get(a.id))}` : ''}</small></span>`;
+  const grupos = {}; ord.forEach((a) => { (grupos[a.classe || 'Outros'] = grupos[a.classe || 'Outros'] || []).push(a); });
+  return `<input type="hidden" name="ativo" value="${esc(sel.id)}"><button type="button" class="card bas-inv-sel" data-inv-sel aria-label="Trocar o ativo">${cara(sel)}<em>Trocar</em></button>
+    <template id="bas-inv-tpl"><ul class="bas-inv-ls">${Object.keys(grupos).map((c) => `<li class="bas-inv-g" data-q="${esc(c.toLowerCase())}">${esc(c)}</li>${grupos[c].map((a) => `<li data-q="${esc(`${a.nome} ${c}`.toLowerCase())}"><button type="button" class="bas-ct-at" data-inv-id="${esc(a.id)}">${cara(a)}</button></li>`).join('')}`).join('')}</ul></template>`;
+}
+const basMesFaixa = (m0) => `<div class="bas-inv-mes" role="radiogroup" aria-label="Mês">${MES.map((m, i) => `<label><input type="radio" name="mes" value="${i}" ${i === m0 ? 'checked' : ''}><span>${m}</span></label>`).join('')}</div>`;
 function basTelaInvest(o) {
-  const p = S.plan; const tem = p.ativos.length > 0; const { M } = cartAnalise(); const val = new Map(M.items.map((i) => [i.a.id, i.valor]));
-  const sel = (o.ativo && p.ativos.find((x) => x.id === o.ativo)) || p.ativos.slice().sort((x, y) => (val.get(y.id) || 0) - (val.get(x.id) || 0))[0];
-  const ordem = [...new Set(p.ativos.map((x) => x.classe || ''))]; const cor = (a) => BAS_CT_COR[ordem.indexOf(a.classe || '') % BAS_CT_COR.length];
-  const cara = (a) => `<span class="bas-ct-lg" style="--bc:${cor(a)}">${esc(basSigla(a.nome))}</span><span class="bas-ct-an"><b>${esc(a.nome)}</b><small>${esc(a.classe || 'Outros')}${val.get(a.id) > 0.005 ? ` · ${brl0(val.get(a.id))}` : ''}</small></span>`;
-  const grupos = {}; p.ativos.slice().sort((x, y) => (val.get(y.id) || 0) - (val.get(x.id) || 0)).forEach((a) => { (grupos[a.classe || 'Outros'] = grupos[a.classe || 'Outros'] || []).push(a); });
+  const p = S.plan; const tem = p.ativos.length > 0;
   const classes = [...new Set(p.ativos.map((a) => a.classe).filter(Boolean))].concat(["CDB's", 'Tesouro Direto', 'Ações BR', 'Fundos Imobiliários', "ETF's", 'Criptoativos']).filter((c, i, l) => l.indexOf(c) === i);
   const op = o.op === '-1' ? '-1' : '1';
   return basForm('aporte', 'Investimento', `<div class="bas-inv-op" role="radiogroup" aria-label="O que você quer fazer">${[['1', 'Aplicar'], ['-1', 'Resgatar']].map(([v, l]) => `<label><input type="radio" name="op" value="${v}" ${v === op ? 'checked' : ''}><span>${l}</span></label>`).join('')}</div>
     <div class="bas-inv-v">${basValor('valor', 0, 'Quanto?')}</div>
-    <input type="hidden" name="modo" value="${tem ? 'ex' : 'novo'}"><input type="hidden" name="ativo" value="${sel ? esc(sel.id) : ''}">
-    ${tem ? `<p class="bas-inv-k">Em qual ativo</p><button type="button" class="card bas-inv-sel" data-inv-sel aria-label="Trocar o ativo">${cara(sel)}<em>Trocar</em></button>
-    <template id="bas-inv-tpl"><ul class="bas-inv-ls">${Object.keys(grupos).map((c) => `<li class="bas-inv-g" data-q="${esc(c.toLowerCase())}">${esc(c)}</li>${grupos[c].map((a) => `<li data-q="${esc(`${a.nome} ${c}`.toLowerCase())}"><button type="button" class="bas-ct-at" data-inv-id="${esc(a.id)}">${cara(a)}</button></li>`).join('')}`).join('')}</ul></template>` : ''}
+    <input type="hidden" name="modo" value="${tem ? 'ex' : 'novo'}">${tem ? `<p class="bas-inv-k">Em qual ativo</p>${basAtPick(o.ativo, false)}` : ''}
     <div class="bas-inv-novo" ${tem ? 'hidden' : ''}>${basCampo('nome', 'Nome do ativo', '', 'placeholder="Ex.: PETR4, CDB Banco X"')}
       ${basCampo('classe', 'Classe', '', 'list="bas-dl-classe" placeholder="Ex.: Ações, CDB, Fundos imobiliários"')}<datalist id="bas-dl-classe">${classes.map((c) => `<option value="${esc(c)}"></option>`).join('')}</datalist>
       ${basChips('tipo', [['RENDA FIXA', 'Renda fixa'], ['BOLSA DE VALORES', 'Bolsa']], 'BOLSA DE VALORES', 'Tipo')}</div>
-    <p class="bas-inv-k">Mês</p><div class="bas-inv-mes" role="radiogroup" aria-label="Mês">${MES.map((m, i) => `<label><input type="radio" name="mes" value="${i}" ${i === S.mes ? 'checked' : ''}><span>${m}</span></label>`).join('')}</div>
+    <p class="bas-inv-k">Mês</p>${basMesFaixa(S.mes)}
     <button type="button" class="bas-inv-imp" data-act="bas-importar">${I_IMP}<span>Importar da B3 ou de um extrato</span>${I.chev}</button>`, { ok: 'Registrar' });
 }
 // escolher o ativo numa janela com busca (ou "Ativo novo"), sem a lista longa na tela
@@ -2187,11 +2195,11 @@ function basInvLigar() {
   const novo = f.querySelector('.bas-inv-novo'); const modo = f.querySelector('[name="modo"]'); const at = f.querySelector('[name="ativo"]');
   bt.addEventListener('click', () => { const el = basUltPop('bas-inv-tpl', 'Escolha o ativo', 'Toque para escolher'); if (!el) return; const lis = [...el.querySelectorAll('.bas-pop-c li')];
     el.querySelector('.bas-pop-c').insertAdjacentHTML('beforebegin', `<div class="bas-mvp-f"><label class="bas-mvp-b"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg><input type="search" placeholder="Buscar ativo ou classe" aria-label="Buscar ativo"></label>
-      <button type="button" class="bas-inv-mais" data-inv-novo>${I.plus}<span>Ativo novo</span></button></div>`);
+      ${novo ? `<button type="button" class="bas-inv-mais" data-inv-novo>${I.plus}<span>Ativo novo</span></button>` : ''}</div>`);
     el.querySelector('input').addEventListener('input', (e) => { const q = e.target.value.trim().toLowerCase(); lis.forEach((li) => { li.hidden = !!q && !li.dataset.q.includes(q); }); });
     const fecha = () => el.querySelector('[data-pop="x"]').click();
     el.addEventListener('click', (e) => { const b = e.target.closest('[data-inv-id], [data-inv-novo]'); if (!b) return;
-      if (b.dataset.invId) { at.value = b.dataset.invId; modo.value = 'ex'; novo.hidden = true; bt.innerHTML = `${b.innerHTML}<em>Trocar</em>`; }
+      if (b.dataset.invId) { at.value = b.dataset.invId; if (modo) modo.value = 'ex'; if (novo) novo.hidden = true; bt.innerHTML = `${b.innerHTML}<em>Trocar</em>`; }
       else { modo.value = 'novo'; novo.hidden = false; bt.innerHTML = `<span class="bas-ct-lg" style="--bc:var(--accent)">${I.plus}</span><span class="bas-ct-an"><b>Ativo novo</b><small>Preencha embaixo</small></span><em>Trocar</em>`; setTimeout(() => { const n = novo.querySelector('[name="nome"]'); if (n) n.focus(); }, 260); }
       fecha(); }); });
 }
@@ -2519,7 +2527,8 @@ function basSalvar(f) {
       if (!temRecurso('proventos')) return false;
       const v = val('valor'); if (Number.isNaN(v) || v < 0 || (!t.id && !(v > 0))) return basErro(f, 'Informe o valor, como 35,20.');
       if (t.id) { const a = p.ativos.find((x) => x.id === t.id); if (a) a.pr[m] = E.r2(v); ok('Provento atualizado.'); return; }
-      const a = p.ativos.find((x) => x.id === d.ativo); if (!a) return basErro(f, 'Escolha de qual investimento.'); a.pr[m] = E.r2((+a.pr[m] || 0) + v); ok(`Provento de ${a.nome} registrado.`); return;
+      const a = p.ativos.find((x) => x.id === d.ativo); if (!a) return basErro(f, 'Escolha de qual investimento.'); const mm = d.mes != null && d.mes !== '' ? Math.max(0, Math.min(11, +d.mes)) : m;
+      a.pr[mm] = E.r2((+a.pr[mm] || 0) + v); ok(`Provento de ${a.nome} registrado em ${MES_LONGO[mm]}.`); return;
     }
     case 'excluir': { if (String(d.conf || '').trim().toUpperCase() !== 'EXCLUIR') return basErro(f, 'Escreva EXCLUIR para confirmar.');
       basLimpar(); excluirConta().catch((e) => toast(e && e.amigavel ? e.message : 'Não foi possível excluir a conta agora.')); return; }
