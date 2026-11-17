@@ -1525,7 +1525,7 @@ function basTelaAnoHist(o) {
   const analise = `${melhor ? `<div class="bas-sa-dupla">${tile('Melhor mês', melhor, I_GASTO, 'var(--pos)')}${tile('Mês mais apertado', pior, I_ENTRADA, sobQ(pior) < 0 ? 'var(--neg)' : '#FF9F0A')}</div>` : ''}
     ${basSecao('No ano', '', `<ul class="card bas-pv2-ls">${[['Entrou', L.entradas || 0, I_ENTRADA, 'var(--pos)'], ['Saiu', L.gastos || 0, I_GASTO, 'var(--neg)'], ['Investido', (L.aplicado != null ? L.aplicado : L.aportes) || 0, I.inv, 'var(--accent)'], ['Proventos', L.proventos || 0, I_PROV, '#F5B83D']].map(lin).join('')}</ul>`)}`;
   const folha = `${mesC}${analise}
-    ${L.parcial ? `<p class="bas-disc keep">${ano} em andamento: valores até ${MES_LONGO[L.meses - 1]}.</p>` : ''}<p class="bas-disc keep">Patrimônio a custo: o que você informou ajustado pelos aportes, sem a variação de mercado.</p>`;
+    ${L.parcial ? `<p class="bas-disc keep">${ano} em andamento: valores até ${MES_LONGO[L.meses - 1]}.</p>` : ''}`;
   return basPgAzul('bas-pg-ah', `Seu ${ano}`, topo, folha);
 }
 // Raio-X dos gastos do ano (E.analiseGastos, a mesma análise da aba Gastos do SaaS)

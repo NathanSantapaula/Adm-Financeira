@@ -3851,3 +3851,8 @@ body[data-ui="basico"] :is(.bas-gt-bg, .bas[data-aba="inicio"] .bas-noite) .bas-
 .bas-ah6-c.dois { grid-template-columns: 1fr 1fr; margin-top: -8px; }
 .bas-ah6-c b.inv { color: var(--accent); } .bas-ah6-c b.div { color: #C98A00; }
 :root[data-theme="oled"] .bas-ah6-c b.div, :root:not([data-theme="light"]) .bas-ah6-c b.div { color: #F5B83D; }
+/* dividendos maiores, subindo por trás da linha do patrimônio */
+.bas-ah4-g { z-index: 1; }
+.bas-ah7-dv { position: relative; z-index: 0; height: 104px; margin-top: -112px; pointer-events: none; }
+.bas-ah7-dv i { width: 52%; max-width: 16px; border-radius: 6px 6px 2px 2px; opacity: .85; }
+.bas-ah2-x { position: relative; z-index: 1; }
