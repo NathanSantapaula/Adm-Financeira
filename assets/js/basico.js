@@ -19,7 +19,7 @@ const BAS_NOMES = { basico: 'App', completo: 'SaaS' }; // nomes das duas versõe
 const basTrocaHtml = () => { const v = basInterface();
   return `<div class="seg bas-troca" role="group" aria-label="Versão do AVEN">${['basico', 'completo'].map((k) => `<button${v === k ? ' class="on"' : ''} data-act="bas-ui" data-v="${k}" aria-pressed="${v === k}">${BAS_NOMES[k]}</button>`).join('')}</div>`; };
 const BAS_ABAS = [['inicio', 'Início', I.geral], ['gastos', 'Gastos', I.despesas], ['investir', 'Patrimônio', I.inv]]; // o Perfil abre pelo botão do topo (`basEuBtn`)
-const BAS_FORMS = new Set(['gasto', 'conta', 'conta-f', 'entrada', 'aporte', 'ativo-ed', 'meta', 'objetivo', 'perfil', 'provento', 'limite', 'alvos', 'ponto', 'excluir', 'retro', 'importar']); // telas de formulário (e a retrospectiva, em tela cheia) escondem as abas
+const BAS_FORMS = new Set(['gasto', 'conta', 'conta-f', 'entrada', 'aporte', 'ativo-ed', 'meta', 'objetivo', 'perfil', 'provento', 'limite', 'alvos', 'ponto', 'excluir', 'retro', 'importar', 'sonho-novo']); // telas de formulário (e a retrospectiva, em tela cheia) escondem as abas
 const BAS_AREAS = ['Alimentação', 'Moradia', 'Transporte', 'Saúde', 'Lazer', 'Compras', 'Contas', 'Educação'];
 const I_VOLTA = ic('<path d="m15 6-6 6 6 6"/>');
 
@@ -345,8 +345,8 @@ function basInicio() {
     <div class="bas-noite-par"><button ${basIr('entradas')}><small>Entrou</small><b>${basCent(ent)}</b></button><button data-act="bas-aba" data-v="gastos"><small>Saiu</small><b>${basCent(sai)}</b></button></div>
     </section>`;
   const g = objFoco(objAnalise());
-  secs.sonho = `<button class="card bas-sonho" ${basIr('sonhos')}>${g ? `<span class="bas-sonho-l">${objIcone(g, 0)}${basNome(esc(objNomeDe(g)), `${brl0(g.saldo)} de ${brl0(g.valor)}`)}<b class="bas-pct">${pct(g.progresso)}</b></span>${basBarra(g.progresso)}`
-    : `<span class="bas-sonho-l"><span class="obj-ic" aria-hidden="true">${I.plus}</span>${basNome('Qual é o seu sonho?', 'Dê um nome e acompanhe quanto falta')}${I.chev}</span>`}</button>`;
+  secs.sonho = `<button class="card bas-sonho bas-sn2-w" ${basIr(g ? 'sonho-det' : 'sonho-novo', g ? { id: g.id } : undefined)}>${g ? `${basSnArte(g, 0, 'w')}<span class="bas-sn2-wt"><small>Seu sonho</small><b>${esc(objNomeDe(g))}</b><span>${brl0(g.saldo)} de ${brl0(g.valor)}</span><i class="bas-sn2-pb"><i style="width:${basSnPct(g)}%"></i></i></span><b class="bas-sn2-wp">${pct(g.progresso)}</b>`
+    : `<span class="bas-sn2-arte w novo" aria-hidden="true">${I.plus}</span><span class="bas-sn2-wt"><small>Seu sonho</small><b>Qual é o seu sonho?</b><span>Crie em menos de um minuto</span></span>${I.chev}`}</button>`;
   // Dá para investir: uma linha só, com ícone, valor e uma ficha curta do estado (ou o botão Investir); a meta vira só uma barra fina
   const dSit = D.disponivel > 0.005 ? '' : D.sobra > 0.005 ? ['ok', 'Tudo investido'] : !(ent > 0) && !(sai > 0) ? ['', 'Sem dados'] : ['', 'Sem sobra'];
   const dMeta = D.meta > 0 ? Math.min(1, (D.aportado || 0) / D.meta) : null;
@@ -459,7 +459,7 @@ function basInvestir() {
   secs.meta = basMetaDispHtml();
   // seus sonhos também em Investir: cada aporte aproxima um deles; tocar abre os detalhes
   const As = objAnalise(); const gF = objFoco(As);
-  secs.sonhos = basSecao('Seus sonhos', `<button class="lnk strong" ${basIr('sonhos')}>Ver todos</button>`, `<div class="bas-sn-c">${As.itens.map((x, i) => `<button class="bas-sn${gF && x.id === gF.id ? ' on' : ''}" ${basIr('sonho-det', { id: x.id })}>${basAnel(x.progresso, 54, objIcone(x, i))}<b>${esc(objNomeDe(x))}</b><small>${pct(x.progresso)}</small></button>`).join('')}<button class="bas-sn novo" ${basIr('objetivo')}><span class="bas-sn-mais" aria-hidden="true">${I.plus}</span><b>Novo sonho</b><small>Dê um nome</small></button></div>`);
+  secs.sonhos = basSecao('Seus sonhos', `<button class="lnk strong" ${basIr('sonhos')}>Ver todos</button>`, `<div class="bas-sn-c">${As.itens.map((x, i) => `<button class="bas-sn${gF && x.id === gF.id ? ' on' : ''}" ${basIr('sonho-det', { id: x.id })}>${basAnel(x.progresso, 54, objIcone(x, i))}<b>${esc(objNomeDe(x))}</b><small>${pct(x.progresso)}</small></button>`).join('')}<button class="bas-sn novo" ${basIr('sonho-novo')}><span class="bas-sn-mais" aria-hidden="true">${I.plus}</span><b>Novo sonho</b><small>Dê um nome</small></button></div>`);
   if (temRecurso('carteira')) { const { K } = cartAnalise(); const tt = K.classes.reduce((t, c) => t + c.valor, 0);
     if (tt > 0) { const cls = K.classes.slice().sort((a, b) => b.valor - a.valor);
       secs.comp = basSecao('Como está dividido', `<button class="lnk strong" ${basIr('carteira')}>Carteira</button>`, `<div class="card bas-comp"><div class="bas-comp-b" aria-hidden="true">${cls.map((c, i) => `<i style="flex:${c.valor.toFixed(2)};--bc:${PAL[i % 6]}"></i>`).join('')}</div>
@@ -824,7 +824,7 @@ function basIaxLigar() {
 function basDesenhar() {
   const st = document.getElementById('bas-o3');
   if (st) { const falhou = () => st.classList.add('sem-3d'); if (typeof o3Ligar === 'function') o3Ligar(st, st.dataset.tipo, falhou); else falhou(); }
-  basAhLigar(); basIaxLigar(); basCifVe(); basGfLigar(); basPeriodoRepinta(); { const f = document.querySelector('.bas-form'); if (f && f.querySelector('[name="areaIc"]') && !f.dataset.ic) { f.dataset.ic = '1'; f.addEventListener('change', (e) => { if (e.target.name !== 'area') return; const r = f.querySelector(`[name="areaIc"][value="${basCatIcId(e.target.value)}"]`); if (r) r.checked = true; }); } } { const on = document.querySelector('.bas-cce-m.on'); const col = on && on.parentElement; if (col && !col.dataset.vis) { col.dataset.vis = '1'; col.scrollTop = on.offsetTop - col.clientHeight / 2 + on.offsetHeight / 2; } } basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basAtLigar(); basEfLigar(); basCtwLigar(); basOiLigar(); basInvLigar(); basIgLigar(); basGfPickLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
+  basAhLigar(); basSn2Ligar(); basIaxLigar(); basCifVe(); basGfLigar(); basPeriodoRepinta(); { const f = document.querySelector('.bas-form'); if (f && f.querySelector('[name="areaIc"]') && !f.dataset.ic) { f.dataset.ic = '1'; f.addEventListener('change', (e) => { if (e.target.name !== 'area') return; const r = f.querySelector(`[name="areaIc"][value="${basCatIcId(e.target.value)}"]`); if (r) r.checked = true; }); } } { const on = document.querySelector('.bas-cce-m.on'); const col = on && on.parentElement; if (col && !col.dataset.vis) { col.dataset.vis = '1'; col.scrollTop = on.offsetTop - col.clientHeight / 2 + on.offsetHeight / 2; } } basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basAtLigar(); basEfLigar(); basCtwLigar(); basOiLigar(); basInvLigar(); basIgLigar(); basGfPickLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
   const wr = document.querySelector('.bas-wr'); if (wr && !wr.dataset.lig) { wr.dataset.lig = '1'; basWrIr(wr, 0); }
   const sq = document.querySelector('[data-sq-conta]'); if (sq && !sq.dataset.lig && !matchMedia('(prefers-reduced-motion: reduce)').matches) { sq.dataset.lig = '1'; const alvo = +sq.dataset.sqConta; const t0 = performance.now();
     const passo = (t) => { const k = Math.min(1, (t - t0) / 900); sq.textContent = Math.round(alvo * (1 - Math.pow(1 - k, 3))); if (k < 1 && sq.isConnected) requestAnimationFrame(passo); }; if (alvo > 0) requestAnimationFrame(passo); }
@@ -1134,7 +1134,7 @@ function basTelaMeta() {
 function basTelaObjetivos() {
   const A = objAnalise(); const foco = S.profile.objetivoFoco;
   return basDet('Meus objetivos', `${A.itens.length ? basCard(`<ul class="bas-l">${A.itens.map((g, i) => `<li><button ${basIr('objetivo', { id: g.id })}>${objIcone(g, i)}<span class="bas-cl">${basNome(esc(objNomeDe(g)) + (g.id === foco ? ' <em class="bas-tag">Principal</em>' : ''), `${brl0(g.saldo)} de ${brl0(g.valor)}${g.ano ? ' até ' + g.ano : ''}`)}<b>${pct(g.progresso)}</b>${basBarra(g.progresso).replace('bas-bar', 'bas-bar fina')}</span>${I.chev}</button></li>`).join('')}</ul>`) : basCard(basVazio('Nenhum objetivo ainda.'))}
-    <button class="btn primary lg bas-cta bas-add" ${basIr('objetivo')}>${I.plus}Novo objetivo</button><p class="bas-disc keep">Projeção ilustrativa, sem promessa de rentabilidade.</p>`);
+    <button class="btn primary lg bas-cta bas-add" ${basIr('sonho-novo')}>${I.plus}Novo sonho</button><p class="bas-disc keep">Projeção ilustrativa, sem promessa de rentabilidade.</p>`);
 }
 function basTelaObjetivo(o) {
   const g = o.id ? objLista().find((x) => x.id === o.id) : null; if (o.id && !g) return basSumiu();
@@ -1474,8 +1474,8 @@ function basBarras(vals, sel, cls) {
 // vitrine do Início: cartões de recursos; no gratuito, um convite bloqueado
 // Seu ano: sobra de cada mês, melhor e pior mês, totais e a taxa de poupança (compute)
 // página no padrão azul das outras (topo azul com o número grande e a folha por baixo)
-const basPgAzul = (cls, tit, topo, folha) => `<div class="bas-pg bas-pg-az ${cls}"><div class="bas-gt-bg bas-pt-bg">
-    <header class="bas-pv2-h"><button class="bell bas-cal-b" data-act="bas-voltar" aria-label="Voltar">${I_VOLTA}</button><b>${tit}</b><span class="bas-noite-r">${olhoHtml()}</span></header>${topo}
+const basPgAzul = (cls, tit, topo, folha, extra) => `<div class="bas-pg bas-pg-az ${cls}"><div class="bas-gt-bg bas-pt-bg">
+    <header class="bas-pv2-h"><button class="bell bas-cal-b" data-act="bas-voltar" aria-label="Voltar">${I_VOLTA}</button><b>${tit}</b><span class="bas-noite-r">${extra || ''}${olhoHtml()}</span></header>${topo}
   </div><div class="bas-gt-folha">${folha}</div></div>`;
 // Histórico: patrimônio no fim de cada ano e o crescimento (E.historico, o mesmo da linha do tempo do SaaS); com um ano só, a linha mostra os meses dele
 function basTelaHistorico() {
@@ -2127,25 +2127,93 @@ function basWidgetsInicio(secs) {
 }
 const r2Bas = (v) => Math.round((+v || 0) * 100) / 100;
 // Meus sonhos: escolher o principal tocando no carrossel; o palco mostra o principal; os detalhes ficam num toque
+// ===== Sonhos, refeitos (pedido do Nathan, referências de apps de bolsos e do fluxo de criação do Believe) =====
+// arte do sonho: a miniatura do objeto 3D (desenhada uma vez, objMiniLigar) sobre um degradê; sem WebGL fica o ícone
+const basSnPct = (g) => (Math.max(0, Math.min(1, +g.progresso || 0)) * 100).toFixed(1);
+const basSnArte = (g, i, cls) => `<span class="bas-sn2-arte${cls ? ' ' + cls : ''}" aria-hidden="true"><span class="bas-sn2-ic">${objIcone(g, i || 0)}</span><img alt="" data-o3="${esc(obj3dDe(g))}" hidden></span>`;
 function basTelaSonhos() {
-  const A = objAnalise(); const g = objFoco(A); const tipo = g ? obj3dDe(g) : 'diamante';
-  const carrossel = A.itens.length ? `<div class="bas-sn-c" role="radiogroup" aria-label="Escolher o sonho principal">${A.itens.map((x, i) => `<button class="bas-sn${g && x.id === g.id ? ' on' : ''}" data-act="bas-foco" data-id="${esc(x.id)}" role="radio" aria-checked="${!!(g && x.id === g.id)}">${basAnel(x.progresso, 54, objIcone(x, i))}<b>${esc(objNomeDe(x))}</b><small>${pct(x.progresso)}</small></button>`).join('')}<button class="bas-sn novo" ${basIr('objetivo')}><span class="bas-sn-mais" aria-hidden="true">${I.plus}</span><b>Novo</b><small>sonho</small></button></div>` : '';
-  const palco = `<div class="bas-palco bas-palco-sn">
-    <div class="bas-o3" id="bas-o3" data-tipo="${esc(tipo)}">${basAnel(g ? g.progresso : 0, 236, '', 'bas-anel-palco')}${obj3dHtml(tipo)}<span class="bas-o3-ic" aria-hidden="true">${g ? objIcone(g, 0) : ''}</span></div>
-    ${g ? `<span class="bas-palco-pct">${pct(g.progresso)}</span><b class="bas-palco-n">${esc(objNomeDe(g))}</b><span class="bas-palco-s">${brl0(g.saldo)} de ${brl0(g.valor)}${g.ano ? ' · até ' + g.ano : ''}</span>
-      <span class="bas-sn-st ${BAS_SN_COR[g.status] || ''}">${esc(cap(BAS_OBJ_ST[g.status] || ''))}</span>
-      <span class="bas-sn-bts"><button class="bas-sn-bt" ${basIr('sonho-det', { id: g.id })}>Detalhes</button>${basPago() ? `<button class="bas-sn-bt prim" ${basIr('simular', { id: g.id })}>E se eu investir mais?</button>` : ''}</span>`
-      : `<b class="bas-palco-n">Qual é o seu sonho?</b><span class="bas-palco-s">Dê um nome a ele e veja quanto falta, mês a mês.</span><span class="bas-sn-bts"><button class="bas-sn-bt prim" ${basIr('objetivo')}>Criar o meu sonho</button></span>`}</div>`;
-  return basDet('Meus sonhos', `${carrossel ? `<p class="bas-sn-dica">Toque num sonho para torná-lo o principal.</p>${carrossel}` : ''}${palco}<p class="bas-disc keep">Projeção ilustrativa, sem promessa de rentabilidade.</p>`);
+  const A = objAnalise(); const g = objFoco(A); const L = A.itens;
+  const topo = g ? `<div class="bas-sn2-hero"><span class="bas-sn2-flut">${basSnArte(g, 0, 'hero')}</span>
+      <small class="bas-pv2-k">Seu sonho principal</small><b class="bas-sn2-hn">${esc(objNomeDe(g))}</b>
+      <p class="bas-sn2-hv">${brl0(g.saldo)} <span>de ${brl0(g.valor)}</span></p>
+      <span class="bas-sn2-hb"><i style="width:${basSnPct(g)}%"></i></span><small class="bas-sn2-hp">${pct(g.progresso)}${g.ano ? ` · até ${g.ano}` : ''}</small></div>`
+    : `<div class="bas-sn2-hero vazio"><span class="bas-sn2-flut">${basSnArte({ tipo: 'outro' }, 0, 'hero')}</span><b class="bas-sn2-hn">Qual é o seu sonho?</b><p class="bas-sn2-hv"><span>Dê um nome a ele e veja quanto falta, mês a mês.</span></p></div>`;
+  const tile = (x, i) => `<button class="bas-sn2-t${g && x.id === g.id ? ' on' : ''}" ${basIr('sonho-det', { id: x.id })} style="--i:${i}">${basSnArte(x, i)}${g && x.id === g.id ? '<em class="bas-sn2-pri">Principal</em>' : ''}<b>${esc(objNomeDe(x))}</b><small>${brl0(x.saldo)} · ${pct(x.progresso)}</small><i class="bas-sn2-pb"><i style="width:${basSnPct(x)}%"></i></i></button>`;
+  const folha = `<div class="bas-sn2-g">${L.map(tile).join('')}<button class="bas-sn2-t novo" ${basIr('sonho-novo')} style="--i:${L.length}"><span class="bas-sn2-arte novo" aria-hidden="true">${I.plus}</span><b>Novo sonho</b><small>Leva menos de um minuto</small></button></div>
+    <p class="bas-disc keep">Projeção ilustrativa, sem promessa de rentabilidade.</p>`;
+  return basPgAzul('bas-pg-sn2', 'Meus sonhos', topo, folha);
 }
 const BAS_SN_COR = { concluido: 'ok', 'no-prazo': 'ok', atrasado: 'atencao', fora: 'baixo', 'sem-prazo': '', 'sem-divisao': 'atencao', 'sem-valor': '' };
 function basTelaSonhoDet(o) {
-  const A = objAnalise(); const g = A.itens.find((x) => x.id === o.id); if (!g) return basSumiu(); const principal = g.id === S.profile.objetivoFoco;
-  const st = (n, v) => `<span><small>${n}</small><b>${v}</b></span>`;
-  return basDet(esc(objNomeDe(g)), `${basCard(`<div class="bas-sd-top">${basAnel(g.progresso, 96, `<b>${pct(g.progresso)}</b>`, BAS_SN_COR[g.status] || '')}<span class="bas-n"><small class="bas-k">${esc(cap(BAS_OBJ_ST[g.status] || ''))}</small><b class="bas-big md">${basCent(g.saldo)}</b><small>de ${brl(g.valor)}</small></span></div>`, 'bas-hero')}
-    <div class="bas-sd-st card">${st('Falta', brl0(g.falta))}${st('Prazo', g.ano || '–')}${st('Previsto para', g.previsto ? `${MES[g.previsto.mes]}/${g.previsto.ano}` : '–')}${st('Vai por mês', brl0(g.aporte))}${g.necessario != null ? st('Precisa por mês', brl0(g.necessario)) : ''}${st('Do patrimônio', g.modo === 'marco' ? 'todo' : `${g.pct}%`)}</div>
-    ${basCard(`<p class="bas-p bas-p0">${esc(objFrase(g))}</p>`)}
-    <div class="bas-salvar bas-sd-acoes">${principal ? '' : `<button class="btn primary lg bas-cta" data-act="bas-foco" data-id="${esc(g.id)}" data-volta="1">Tornar o principal</button>`}${basPago() ? `<button class="btn lg bas-cta" ${basIr('simular', { id: g.id })}>E se eu investir mais?</button>` : ''}<button class="btn lg bas-cta" ${basIr('objetivo', { id: g.id })}>Editar sonho</button></div>`);
+  const A = objAnalise(); const g = A.itens.find((x) => x.id === o.id); if (!g) return basSumiu(); const principal = g.id === S.profile.objetivoFoco; const tipo = obj3dDe(g);
+  const topo = `<div class="bas-sn2-palco"><div class="bas-o3 bas-sn2-o3" id="bas-o3" data-tipo="${esc(tipo)}">${obj3dHtml(tipo)}<span class="bas-o3-ic" aria-hidden="true">${objIcone(g, 0)}</span></div></div>
+    <small class="bas-pv2-k">${principal ? 'Seu sonho principal' : 'Guardado para ele'}</small><b class="bas-pv2-t">${basCent(g.saldo)}</b>
+    <p class="bas-pv2-var"><span class="bas-ev-pct">${pct(g.progresso)}</span><span>de ${brl0(g.valor)}</span></p>`;
+  const prazo = g.ano ? String(g.ano) : '–'; const prev = g.previsto ? `${cap(MES_LONGO[g.previsto.mes]).slice(0, 3)}/${g.previsto.ano}` : '–';
+  const lin = (n, v, ic, cor) => `<li><span class="bas-pv2-l"><span class="bas-pv2-ini" style="--bc:${cor}" aria-hidden="true">${ic}</span><span class="bas-pv2-n"><b>${n}</b></span><b class="bas-pv2-v bas-sn2-v">${v}</b></span></li>`;
+  const folha = `<div class="card bas-sn2-meta"><span class="bas-sn2-m1">${basAnel(g.progresso, 58, `<b>${Math.round(Math.min(1, g.progresso || 0) * 100)}%</b>`, BAS_SN_COR[g.status] || '')}<span><small>Meta</small><b>${brl0(g.valor)}</b></span></span><i aria-hidden="true"></i><span class="bas-sn2-m2"><small>${g.ano ? 'Prazo' : 'Previsto para'}</small><b>${g.ano ? prazo : prev}</b>${g.ano && g.previsto ? `<em>chega em ${prev}</em>` : ''}</span></div>
+    <section class="card bas-sn2-st"><span class="bas-sn-st ${BAS_SN_COR[g.status] || ''}">${esc(cap(BAS_OBJ_ST[g.status] || ''))}</span><p>${esc(objFrase(g))}</p></section>
+    <div class="bas-sn2-acs"><button class="btn primary lg" ${basIrInv()}>${I.plus}Guardar dinheiro</button>${basPago() ? `<button class="btn lg" ${basIr('simular', { id: g.id })}>E se eu investir mais?</button>` : ''}</div>
+    ${basSecao('Os números', '', `<ul class="card bas-pv2-ls">${lin('Falta', brl0(g.falta), I_GASTO, 'var(--accent)')}${lin('Vai por mês', brl0(g.aporte), I.inv, 'var(--pos)')}${g.necessario != null ? lin('Precisa por mês', brl0(g.necessario), I_PROV, '#F5B83D') : ''}${lin('Do patrimônio', g.modo === 'marco' ? 'todo' : `${g.pct}%`, I.inv, '#30B0C7')}</ul>`)}
+    <div class="bas-sn2-lks">${principal ? '' : `<button class="lnk strong" data-act="bas-foco" data-id="${esc(g.id)}" data-volta="1">Tornar o principal</button>`}<button class="lnk strong" ${basIr('objetivo', { id: g.id })}>Editar sonho</button></div>
+    <p class="bas-disc keep">Projeção ilustrativa, sem promessa de rentabilidade.</p>`;
+  return basPgAzul('bas-pg-sn2d', esc(objNomeDe(g)), topo, folha);
+}
+// Criar um sonho, no jeito do fluxo do Believe: roda curva para o tipo, nome, valor e prazo; o cartão se forma em pontinhos e nasce com confete
+const BAS_SN2_PASSOS = 3;
+function basTelaSonhoNovo(o) {
+  if (!o.ini) { o.ini = 1; S.basSn2 = { p: 0, tipo: 'viagem', nome: '', valor: '', ano: NOW_Y + 3 }; }
+  const st = S.basSn2; const tipos = OBJETIVOS; const nomeT = (t) => (tipos.find((x) => x[0] === t) || [, 'Sonho'])[1];
+  const barra = st.p < BAS_SN2_PASSOS ? `<div class="bas-sn2-nh"><button class="bas-gp-x" ${st.p ? `data-act="bas-sn2-ir" data-p="${st.p - 1}"` : 'data-act="bas-voltar"'} aria-label="${st.p ? 'Voltar' : 'Fechar'}">${st.p ? I_VOLTA : I.x}</button><span class="bas-sn2-prog" aria-label="Passo ${st.p + 1} de ${BAS_SN2_PASSOS}">${[0, 1, 2].map((k) => `<i class="${k <= st.p ? 'on' : ''}"></i>`).join('')}</span><span class="bas-sn2-nh-v" aria-hidden="true"></span></div>` : '';
+  let corpo = '';
+  if (st.p === 0) corpo = `<div class="bas-sn2-passo"><span class="bas-sn2-cx" aria-hidden="true">${basSnArte({ tipo: st.tipo }, 0, 'cx')}</span><small class="bas-sn2-q">O que você quer conquistar?</small><h2 class="bas-sn2-tt" data-sn2-nome>${esc(nomeT(st.tipo))}</h2>
+      <div class="bas-sn2-roda" role="listbox" aria-label="Tipo de sonho">${tipos.map(([k, n]) => `<button class="bas-sn2-ri${k === st.tipo ? ' on' : ''}" data-sn2-tipo="${k}" role="option" aria-selected="${k === st.tipo}" aria-label="${esc(n)}">${basSnArte({ tipo: k }, 0, 'ri')}</button>`).join('')}</div>
+      <p class="bas-sn2-dica">Deslize para escolher</p></div>
+    <button class="btn primary lg bas-cta bas-sn2-cta" data-act="bas-sn2-ir" data-p="1">Continuar</button>`;
+  else if (st.p === 1) corpo = `<div class="bas-sn2-passo"><span class="bas-sn2-cx sobe" aria-hidden="true">${basSnArte({ tipo: st.tipo }, 0, 'cx')}</span><small class="bas-sn2-q">${esc(nomeT(st.tipo))}</small><h2 class="bas-sn2-tt">Como você chama esse sonho?</h2>
+      <input class="bas-sn2-in" data-sn2="nome" value="${esc(st.nome)}" placeholder="${esc(st.tipo === 'viagem' ? 'Ex.: Viagem ao Japão' : st.tipo === 'imovel' ? 'Ex.: Apartamento novo' : st.tipo === 'carro' ? 'Ex.: Carro elétrico' : `Ex.: ${nomeT(st.tipo)}`)}" maxlength="40" enterkeyhint="next" aria-label="Nome do sonho"><p class="bas-sn2-dica">Opcional. Sem nome, ele se chama ${esc(nomeT(st.tipo))}.</p></div>
+    <button class="btn primary lg bas-cta bas-sn2-cta" data-act="bas-sn2-ir" data-p="2">Continuar</button>`;
+  else if (st.p === 2) corpo = `<div class="bas-sn2-passo"><small class="bas-sn2-q">${esc(st.nome || nomeT(st.tipo))}</small><h2 class="bas-sn2-tt">Quanto ele custa?</h2>
+      <label class="bas-sn2-val"><span>R$</span><input data-sn2="valor" value="${esc(st.valor)}" inputmode="decimal" placeholder="0" aria-label="Quanto custa"></label>
+      <small class="bas-sn2-q2">Para quando?</small><div class="bas-sn2-anos" role="group" aria-label="Para quando">${[1, 2, 3, 5, 8, 10].map((n) => NOW_Y + n).concat([0]).map((a) => `<button class="${(st.ano || 0) === a ? 'on' : ''}" data-act="bas-sn2-ano" data-v="${a}" aria-pressed="${(st.ano || 0) === a}">${a || 'Sem prazo'}</button>`).join('')}</div></div>
+    <button class="btn primary lg bas-cta bas-sn2-cta" data-act="bas-sn2-criar">Criar meu sonho</button>`;
+  else if (st.p === 3) corpo = `<div class="bas-sn2-forma" aria-live="polite"><small class="bas-sn2-q">Criando seu sonho</small><div class="bas-sn2-pontos" aria-hidden="true">${Array.from({ length: 48 }, (_, k) => `<i style="--k:${k};--x:${(k % 8)};--y:${Math.floor(k / 8)}"></i>`).join('')}</div><p class="bas-sn2-dica">Organizando o plano mês a mês…</p></div>`;
+  else { const g = objAnalise().itens.find((x) => x.id === st.id) || { tipo: st.tipo, nome: st.nome, valor: parseReais(st.valor) || 0, ano: st.ano, progresso: 0 };
+    corpo = `<div class="bas-sn2-fim"><small class="bas-sn2-q">Sonho criado</small><div class="bas-sn2-conf" aria-hidden="true">${Array.from({ length: 26 }, (_, k) => `<i style="--k:${k};--a:${(k * 137) % 360}deg;--d:${70 + ((k * 53) % 90)}px;--c:${['#FFC94D', '#5AC8FA', '#30D158', '#FF6B81', '#B48CFF'][k % 5]}"></i>`).join('')}</div>
+      <article class="bas-sn2-cartao">${basSnArte(g, 0, 'cart')}<small>Eu sonho com</small><b>${esc(objNomeDe(g))}</b><span class="bas-sn2-cl">${I.chev}<span>${brl0(g.valor)}${g.ano ? ` · até ${g.ano}` : ''}</span></span><span class="bas-sn2-cl">${I.inv}<span>${pct(g.progresso || 0)} guardado</span></span></article>
+      <p class="bas-sn2-dica">A partir de agora, cada aporte aproxima você dele.</p></div>
+    <div class="bas-sn2-fbts"><button class="btn primary lg bas-cta" data-act="bas-sn2-ver" data-id="${esc(st.id || '')}">Ver meu sonho</button><button class="btn lg bas-cta" data-act="bas-voltar">Voltar</button></div>`; }
+  return `<div class="bas-pg bas-pg-sn2n" data-p="${st.p}">${barra}${corpo}</div>`;
+}
+function basSn2Criar() {
+  const st = S.basSn2; const L = objLista(); if (L.length >= 12) { toast('Você chegou ao limite de 12 sonhos.'); return; }
+  const v = parseReais(st.valor); if (!(v > 0)) { toast('Informe quanto o sonho custa.'); const i = document.querySelector('[data-sn2="valor"]'); if (i) i.focus(); return; }
+  const alvo = Object.assign({ id: uid() }, L.length ? { modo: 'marco', pct: 0 } : { modo: 'fatia', pct: 100 }, { tipo: st.tipo, nome: (st.nome || '').trim(), valor: E.r2(v), ano: st.ano || null });
+  L.push(alvo); if (L.length === 1 || !S.profile.objetivoFoco) S.profile.objetivoFoco = alvo.id; objSalvar(); st.id = alvo.id; st.p = 3; basSom('ok'); render();
+}
+// ligações: miniaturas 3D, a roda curva (cada item sobe numa curva e cresce no meio), campos sem redesenhar e o tempo da animação de criação
+function basSn2Ligar() {
+  if (document.querySelector('img[data-o3][hidden]') && typeof objMiniLigar === 'function') objMiniLigar();
+  document.querySelectorAll('[data-sn2]').forEach((e) => { if (e.dataset.lig) return; e.dataset.lig = '1'; e.addEventListener('input', () => { if (S.basSn2) S.basSn2[e.dataset.sn2] = e.value; }); });
+  const roda = document.querySelector('.bas-sn2-roda');
+  if (roda && !roda.dataset.lig) { roda.dataset.lig = '1'; const its = [...roda.children]; let t = 0;
+    const curva = () => { const r = roda.getBoundingClientRect(); const c = r.left + r.width / 2; let perto = null; let dm = 1e9;
+      its.forEach((b) => { const br = b.getBoundingClientRect(); const d = (br.left + br.width / 2 - c) / br.width; const a = Math.min(Math.abs(d), 3);
+        b.style.transform = `translateY(${(a * a * 9).toFixed(1)}px) rotate(${(d * 7).toFixed(1)}deg) scale(${(1.18 - a * 0.16).toFixed(3)})`; b.style.opacity = String(Math.max(0.25, 1 - a * 0.28));
+        if (Math.abs(d) < dm) { dm = Math.abs(d); perto = b; } });
+      return perto; };
+    const escolhe = () => { const b = curva(); if (!b || !S.basSn2) return; const k = b.dataset.sn2Tipo; if (S.basSn2.tipo === k) return; S.basSn2.tipo = k;
+      its.forEach((x) => { const on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-selected', String(on)); });
+      const n = document.querySelector('[data-sn2-nome]'); if (n) n.textContent = (OBJETIVOS.find((x) => x[0] === k) || [, ''])[1];
+      const cx = document.querySelector('.bas-sn2-cx img'); const M = typeof O3_MINI !== 'undefined' && O3_MINI.get(k === 'outro' ? 'outro' : k); if (cx && M) cx.src = M;
+      const ic = document.querySelector('.bas-sn2-cx .bas-sn2-ic'); if (ic) ic.innerHTML = objIcone({ tipo: k }, 0);
+      if (typeof basVibra === 'function') basVibra(8); };
+    roda.addEventListener('scroll', () => { curva(); clearTimeout(t); t = setTimeout(escolhe, 90); }, { passive: true });
+    its.forEach((b) => b.addEventListener('click', () => b.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })));
+    const sel = roda.querySelector('.on') || its[0]; roda.scrollLeft = sel.offsetLeft - (roda.clientWidth - sel.offsetWidth) / 2; curva(); }
+  const forma = document.querySelector('.bas-pg-sn2n[data-p="3"]');
+  if (forma && !forma.dataset.lig) { forma.dataset.lig = '1'; const rm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    setTimeout(() => { if (S.basSn2 && S.basSn2.p === 3) { S.basSn2.p = 4; render(); if (typeof basVibra === 'function') basVibra(30); } }, rm ? 300 : 1900); }
 }
 // cada cartão: os gastos daquele banco no período, por categoria, e a lista
 // Personalizar cartão: o cartão oficial (o de chip) inclinado no alto, os modelos em bolinhas numa coluna à esquerda
@@ -2523,7 +2591,7 @@ const basTelaClientes = () => basDet('Clientes', `<div class="bas-clientes">${vi
 document.addEventListener('change', (e) => { const t = e.target; if (!t.matches || !t.matches('input[data-bas-inst]')) return; instMinhaAlternar(t.dataset.basInst, t.checked); basSom('toque');
   const n = instMinhas().length; const c = document.querySelector('.bas-pj-n'); if (c) c.textContent = n ? `${n} ${n === 1 ? 'marcada' : 'marcadas'}` : 'Nenhuma'; });
 const BAS_TELAS = { importar: basTelaImportar, gasto: basTelaGasto, conta: basTelaConta, 'conta-f': basTelaContaF, entrada: basTelaEntrada, aporte: basTelaAporte, meta: basTelaMeta,
-  objetivos: basTelaObjetivos, objetivo: basTelaObjetivo, categoria: basTelaCategoria, perfil: basTelaPerfil, contato: basTelaContato, ano: basTelaAno, 'ano-hist': basTelaAnoHist, ia: basTelaIa, saude: basTelaSaude, periodo: basTelaPeriodo, organizar: basTelaOrganizar, entradas: basTelaEntradas, sonhos: basTelaSonhos, 'sonho-det': basTelaSonhoDet, cartoes: basTelaCartoes, 'avisos-tela': basTelaAvisosNova, 'gasto-ver': basTelaGastoVer, 'cartao-novo': basTelaCartaoNovo, 'perfil-inv': basTelaPerfilInv, duvidas: () => basDet('Dúvidas', basDuvidasHtml()).replace(olhoHtml(), ''), cartao: basTelaCartao, retro: basTelaRetro, conquista: basTelaConquista, sequencia: basTelaSequencia, constelacao: basTelaConstelacao, 'cartao-estilo': basTelaCartaoEstilo, historico: basTelaHistorico, raiox: basTelaRaioX, resumo: basTelaResumo, limite: basTelaLimite, avisos: basTelaAvisos, simular: basTelaSimular, alvos: basTelaAlvos, ativo: basTelaAtivo, 'ativo-ed': basTelaAtivoEd, aportar: basTelaOndeInvestir, proventos: basTelaProventos, provento: basTelaProvento, carteira: basTelaCarteira, planejamento: basTelaPlanejamento, privacidade: () => basDet('Privacidade e termos', `<div class="card bas-pol">${politicaHtml(CFG, Store.mode === 'cloud')}</div>`), excluir: basTelaExcluir, ponto: basTelaPonto, clientes: basTelaClientes };
+  objetivos: basTelaObjetivos, objetivo: basTelaObjetivo, 'sonho-novo': basTelaSonhoNovo, categoria: basTelaCategoria, perfil: basTelaPerfil, contato: basTelaContato, ano: basTelaAno, 'ano-hist': basTelaAnoHist, ia: basTelaIa, saude: basTelaSaude, periodo: basTelaPeriodo, organizar: basTelaOrganizar, entradas: basTelaEntradas, sonhos: basTelaSonhos, 'sonho-det': basTelaSonhoDet, cartoes: basTelaCartoes, 'avisos-tela': basTelaAvisosNova, 'gasto-ver': basTelaGastoVer, 'cartao-novo': basTelaCartaoNovo, 'perfil-inv': basTelaPerfilInv, duvidas: () => basDet('Dúvidas', basDuvidasHtml()).replace(olhoHtml(), ''), cartao: basTelaCartao, retro: basTelaRetro, conquista: basTelaConquista, sequencia: basTelaSequencia, constelacao: basTelaConstelacao, 'cartao-estilo': basTelaCartaoEstilo, historico: basTelaHistorico, raiox: basTelaRaioX, resumo: basTelaResumo, limite: basTelaLimite, avisos: basTelaAvisos, simular: basTelaSimular, alvos: basTelaAlvos, ativo: basTelaAtivo, 'ativo-ed': basTelaAtivoEd, aportar: basTelaOndeInvestir, proventos: basTelaProventos, provento: basTelaProvento, carteira: basTelaCarteira, planejamento: basTelaPlanejamento, privacidade: () => basDet('Privacidade e termos', `<div class="card bas-pol">${politicaHtml(CFG, Store.mode === 'cloud')}</div>`), excluir: basTelaExcluir, ponto: basTelaPonto, clientes: basTelaClientes };
 
 /* ================= gravação (no mesmo formato do Completo) ================= */
 function basErro(f, msg) { const e = f.querySelector('.bas-err'); e.textContent = msg; e.hidden = false; return false; }
@@ -2671,6 +2739,10 @@ function basAcao(act, ds, el) {
     case 'bas-cc-band': if (instDe(ds.id) && CC_BAND[ds.v]) basCcGrava(ds.id, 'b', ds.v); return true;
     case 'bas-cc-cor': if (instDe(ds.id) && /^#[0-9a-f]{6}$/i.test(ds.v || '')) basCcGrava(ds.id, 'c', ds.v); return true;
     case 'bas-gasto-rec': { const f = el.closest('form'); const x = basMemGastos().get(ds.k); if (f && x) { f.querySelector('[name="desc"]').value = x.desc; basGastoLembra(f, x, true); basSom('toque'); } return true; }
+    case 'bas-sn2-ir': { const st = S.basSn2; if (!st) return true; st.p = Math.max(0, Math.min(2, +ds.p)); basSom('toque'); render(); setTimeout(() => { const i = document.querySelector('[data-sn2]'); if (i && st.p === 1) i.focus(); }, 60); return true; }
+    case 'bas-sn2-ano': if (S.basSn2) { S.basSn2.ano = +ds.v || null; basSom('toque'); render(); } return true;
+    case 'bas-sn2-criar': basSn2Criar(); return true;
+    case 'bas-sn2-ver': { const id = ds.id; basFechar(); setTimeout(() => basAbrir('sonho-det', { id }), 380); return true; }
     case 'bas-ah-mes': S.basAhMes = S.basAhMes === +ds.m ? null : +ds.m; basSom('toque'); render(); return true;
     case 'bas-ah-ano': { const t = basTopoPilha(); if (t && t.t === 'ano-hist') { t.id = String(ds.y); S.basAhMes = null; basSom('toque'); render(); } return true; }
     case 'bas-prov-mes': S.basProvMes = S.basProvMes === +ds.m ? null : +ds.m; basSom('toque'); render(); return true;
