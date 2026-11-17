@@ -823,7 +823,7 @@ function basIaxLigar() {
 function basDesenhar() {
   const st = document.getElementById('bas-o3');
   if (st) { const falhou = () => st.classList.add('sem-3d'); if (typeof o3Ligar === 'function') o3Ligar(st, st.dataset.tipo, falhou); else falhou(); }
-  basIaxLigar(); basCifVe(); basGfLigar(); basPeriodoRepinta(); { const f = document.querySelector('.bas-form'); if (f && f.querySelector('[name="areaIc"]') && !f.dataset.ic) { f.dataset.ic = '1'; f.addEventListener('change', (e) => { if (e.target.name !== 'area') return; const r = f.querySelector(`[name="areaIc"][value="${basCatIcId(e.target.value)}"]`); if (r) r.checked = true; }); } } { const on = document.querySelector('.bas-cce-m.on'); const col = on && on.parentElement; if (col && !col.dataset.vis) { col.dataset.vis = '1'; col.scrollTop = on.offsetTop - col.clientHeight / 2 + on.offsetHeight / 2; } } basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basAtLigar(); basEfLigar(); basCtwLigar(); basOiLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
+  basIaxLigar(); basCifVe(); basGfLigar(); basPeriodoRepinta(); { const f = document.querySelector('.bas-form'); if (f && f.querySelector('[name="areaIc"]') && !f.dataset.ic) { f.dataset.ic = '1'; f.addEventListener('change', (e) => { if (e.target.name !== 'area') return; const r = f.querySelector(`[name="areaIc"][value="${basCatIcId(e.target.value)}"]`); if (r) r.checked = true; }); } } { const on = document.querySelector('.bas-cce-m.on'); const col = on && on.parentElement; if (col && !col.dataset.vis) { col.dataset.vis = '1'; col.scrollTop = on.offsetTop - col.clientHeight / 2 + on.offsetHeight / 2; } } basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basAtLigar(); basEfLigar(); basCtwLigar(); basOiLigar(); basInvLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
   const wr = document.querySelector('.bas-wr'); if (wr && !wr.dataset.lig) { wr.dataset.lig = '1'; basWrIr(wr, 0); }
   const sq = document.querySelector('[data-sq-conta]'); if (sq && !sq.dataset.lig && !matchMedia('(prefers-reduced-motion: reduce)').matches) { sq.dataset.lig = '1'; const alvo = +sq.dataset.sqConta; const t0 = performance.now();
     const passo = (t) => { const k = Math.min(1, (t - t0) / 900); sq.textContent = Math.round(alvo * (1 - Math.pow(1 - k, 3))); if (k < 1 && sq.isConnected) requestAnimationFrame(passo); }; if (alvo > 0) requestAnimationFrame(passo); }
@@ -1242,6 +1242,8 @@ function basCtwLigar() {
     q('[data-ctw-k]').textContent = d ? d.sub : 'Total investido'; q('[data-ctw-v]').innerHTML = d ? d.v : w.dataset.total;
     q('[data-ctw-n]').textContent = d ? d.n : 'Sua carteira'; q('[data-ctw-s]').textContent = d ? '' : w.dataset.resumo;
     const t = q('[data-ctw-t]'); t.hidden = !(d && d.t); t.textContent = d ? d.t : ''; t.className = d ? d.tk : '';
+    const pg = w.closest('.bas-pg'); if (pg) { pg.querySelectorAll('.bas-ct-vis, .bas-ct-al:not(.bas-ct-so)').forEach((x) => { x.hidden = !!d; });
+      pg.querySelectorAll('[data-ctw-lista]').forEach((x) => { x.hidden = +x.dataset.ctwLista !== i; }); const h = pg.querySelector('[data-ctw-h]'); if (h) h.textContent = d ? d.n : 'Minha carteira'; }
     if (typeof basSom === 'function') basSom('toque'); if (typeof basVibra === 'function') basVibra(8); };
   const toca = (i) => vai(i === sel ? -1 : i); // tocar de novo na mesma parte volta ao anel inteiro
   w.addEventListener('click', (e) => { const g = e.target.closest('.bas-ctw-s'); const b = e.target.closest('[data-ctw-i]'); if (g) toca(+g.dataset.i); else if (b) toca(+b.dataset.ctwI); });
@@ -1358,13 +1360,14 @@ function basTelaCarteira() {
   const TOP = 5; const corpo = vis === 'ativos' ? `<ul class="bas-ct-cl bas-ct-top">${vivos.slice(0, TOP).map((i) => linhaAt(i, true)).join('')}</ul>${vivos.length > TOP ? `<button class="bas-ct-mais" data-act="bas-cart-todos">Ver todos os ${vivos.length} ativos</button><template id="bas-ct-tpl"><ul class="bas-ct-cl bas-ct-top">${vivos.map((i) => linhaAt(i, true)).join('')}</ul></template>` : ''}`
     : `<ul class="bas-ct-cl">${(vis === 'classes' ? grupos(basMacro) : grupos((a) => a.classe || 'Outros')).map((g, k) => linhaG(g, k, vis === 'classes' ? BAS_CT_COR[k % BAS_CT_COR.length] : corDe(g.n === 'Outros' ? '' : g.n))).join('')}</ul>`;
   const alocacao = total > 0 ? `<div class="seg bas-ct-vis" role="tablist" aria-label="Ver a carteira por">${BAS_CT_VIS.map(([k, l]) => `<button role="tab" class="${vis === k ? 'on' : ''}" data-act="bas-cart-vis" data-v="${k}" aria-selected="${vis === k}">${l}</button>`).join('')}</div>
-    <div class="card bas-ct-al">${corpo}</div>` : basCard(basVazio('Sua carteira aparece aqui quando você registrar o primeiro investimento.'));
+    <div class="card bas-ct-al">${corpo}</div>${cls.filter((c) => c.valor > 0.005).map((c, k) => { const l = vivos.filter((i) => (i.a.classe || '') === (c.classe || ''));
+      return `<div class="card bas-ct-al bas-ct-so" data-ctw-lista="${k}" hidden><ul class="bas-ct-cl bas-ct-top">${l.map((i) => linhaAt(i, false)).join('')}</ul></div>`; }).join('')}` : basCard(basVazio('Sua carteira aparece aqui quando você registrar o primeiro investimento.'));
   return `<div class="bas-pg bas-pg-ctw"><div class="bas-gt-bg bas-pt-bg bas-ctw-bg">
     <header class="bas-pv2-h"><button class="bell bas-cal-b" data-act="bas-voltar" aria-label="Voltar">${I_VOLTA}</button><b>Minha carteira</b><span class="bas-noite-r">${olhoHtml()}</span></header>
     ${basCtwHtml(cls, total, comAlvo, its)}
   </div><div class="bas-gt-folha">
     ${its.length ? `<div class="bas-pg-per bas-gt-acoes"><button class="bas-circ bas-en-bt" ${basIr('alvos')}><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".8"/></svg><span>Alvos</span></button><button class="bas-inv-pl" ${basIr('aportar')}>${I.plus}<span>Onde investir</span></button></div>` : ''}
-    ${basSecao('Minha carteira', '', alocacao)}${basRecHtml()}
+    ${basSecao('<span data-ctw-h>Minha carteira</span>', '', alocacao)}${basRecHtml()}
     </div></div>`;
 }
 /* ---- App completo: limites, avisos, simulador do sonho e alvos da carteira ---- */
@@ -1587,10 +1590,10 @@ function basTelaCartoes() {
 // fila em leque: o cartão do meio fica de frente e os vizinhos giram e encolhem conforme a distância (--d, --a)
 // arrastar o cartão para o lado troca para o cartão vizinho (a mesma ordem de "Seus cartões", em loop), sem empilhar outra tela
 // "Ver tudo" dos Últimos gastos: todos os gastos do período numa janela que sobe de baixo; fecha no X, no fundo ou com Esc
-function basUltPop(id = 'bas-ult-tpl', tit = 'Todos os gastos') {
+function basUltPop(id = 'bas-ult-tpl', tit = 'Todos os gastos', sub0) {
   const tpl = document.getElementById(id); if (!tpl) return; const n = tpl.content.querySelectorAll('li').length; const at = id === 'bas-ct-tpl';
   const el = document.createElement('div'); el.className = 'bas-pop'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', tit);
-  el.innerHTML = `<div class="bas-pop-f"><span class="bas-pop-al" aria-hidden="true"></span><div class="bas-pop-h"><span><b>${tit}</b><small>${at ? `${n} ${n === 1 ? 'ativo' : 'ativos'}, do maior para o menor` : `${n} ${n === 1 ? 'gasto' : 'gastos'} ${esc(basJanFrase())}`}</small></span><button class="bell" data-pop="x" aria-label="Fechar">${I.x}</button></div><div class="bas-pop-c"></div></div>`;
+  el.innerHTML = `<div class="bas-pop-f"><span class="bas-pop-al" aria-hidden="true"></span><div class="bas-pop-h"><span><b>${tit}</b><small>${sub0 ? esc(sub0) : at ? `${n} ${n === 1 ? 'ativo' : 'ativos'}, do maior para o menor` : `${n} ${n === 1 ? 'gasto' : 'gastos'} ${esc(basJanFrase())}`}</small></span><button class="bell" data-pop="x" aria-label="Fechar">${I.x}</button></div><div class="bas-pop-c"></div></div>`;
   el.querySelector('.bas-pop-c').appendChild(tpl.content.cloneNode(true));
   const fechar = () => { document.removeEventListener('keydown', tecla); el.classList.add('sai'); setTimeout(() => el.remove(), 240); };
   const tecla = (e) => { if (e.key === 'Escape') fechar(); };
@@ -2159,17 +2162,38 @@ const I_LIMITE_IC = ic('<path d="M4.5 16a7.5 7.5 0 1 1 15 0"/><path d="M12 16l3.
 const I_IMP = ic('<path d="M12 3.5v11m0 0-4-4m4 4 4-4"/><path d="M4.5 15.5v3a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-3"/>');
 // investimento (o mesmo do Novo aporte do SaaS): aportar ou resgatar, ativo que já tenho ou novo, tipo, classe, mês e valor; e importar
 function basTelaInvest(o) {
-  const p = S.plan; const tem = p.ativos.length > 0; const grupos = {}; p.ativos.forEach((a) => { (grupos[a.classe || 'Outros'] = grupos[a.classe || 'Outros'] || []).push(a); });
-  const tipos = [['RENDA FIXA', 'Renda fixa'], ['BOLSA DE VALORES', 'Bolsa de valores']];
-  const classes = [...new Set(p.ativos.map((a) => a.classe).filter(Boolean))].slice(0, 10);
-  return basForm('aporte', 'Investimento', `<button type="button" class="bas-imp" data-act="bas-importar">${I_IMP}<span class="bas-n"><b>Importar da B3 ou do extrato</b><small>Traz aportes, resgates e proventos de um arquivo</small></span>${I.chev}</button>
-    ${basChips('op', [['1', 'Aportar'], ['-1', 'Resgatar']], o.op === '-1' ? '-1' : '1', 'O que você quer fazer')}
-    ${tem ? basChips('modo', [['ex', 'Ativo que já tenho'], ['novo', 'Ativo novo']], 'ex', 'Onde') : '<input type="hidden" name="modo" value="novo">'}
-    ${tem ? `<div class="bas-blk" data-blk="ex"><fieldset class="bas-fs"><legend>Ativo</legend><div class="bas-ativos">${Object.keys(grupos).map((c) => `<p class="bas-ativos-c">${esc(c)}</p>${grupos[c].map((a, i) => `<label class="bas-ativo"><input type="radio" name="ativo" value="${esc(a.id)}" ${(o.ativo && p.ativos.some((x) => x.id === o.ativo) ? a.id === o.ativo : a === p.ativos[0]) ? 'checked' : ''}><span class="bas-ini" aria-hidden="true">${esc(basIniciais(a.nome))}</span>${basNome(esc(a.nome), `${brl0(sum12(a.ap))} aplicados em ${S.year}`)}<i class="bas-ativo-ok" aria-hidden="true">${I.check}</i></label>`).join('')}`).join('')}</div></fieldset></div>` : ''}
-    <div class="bas-blk" data-blk="novo">${basCampo('nome', 'Nome do ativo (código, banco ou título)', '', 'placeholder="Ex.: PETR4, CDB Banco X"')}${basChips('tipo', tipos, 'BOLSA DE VALORES', 'Tipo')}
-      ${basCampo('classe', 'Classe', '', 'list="bas-dl-classe" placeholder="Ex.: Ações, CDB, Fundos imobiliários"')}<datalist id="bas-dl-classe">${classes.concat(["CDB's", 'Tesouro Direto', 'Ações BR', 'Fundos Imobiliários', "ETF's", 'Criptoativos']).map((c) => `<option value="${esc(c)}"></option>`).join('')}</datalist></div>
-    <fieldset class="bas-fs"><legend>Mês</legend><div class="bas-meses-f">${MES.map((m, i) => `<label class="bas-chip"><input type="radio" name="mes" value="${i}" ${i === S.mes ? 'checked' : ''}><span>${m}</span></label>`).join('')}</div></fieldset>
-    ${basValor('valor', 0, 'Valor')}<p class="bas-p">O valor é somado ao que o ativo já tem no mês, em ${S.year}.</p>`, { ok: 'Registrar' });
+  const p = S.plan; const tem = p.ativos.length > 0; const { M } = cartAnalise(); const val = new Map(M.items.map((i) => [i.a.id, i.valor]));
+  const sel = (o.ativo && p.ativos.find((x) => x.id === o.ativo)) || p.ativos.slice().sort((x, y) => (val.get(y.id) || 0) - (val.get(x.id) || 0))[0];
+  const ordem = [...new Set(p.ativos.map((x) => x.classe || ''))]; const cor = (a) => BAS_CT_COR[ordem.indexOf(a.classe || '') % BAS_CT_COR.length];
+  const cara = (a) => `<span class="bas-ct-lg" style="--bc:${cor(a)}">${esc(basSigla(a.nome))}</span><span class="bas-ct-an"><b>${esc(a.nome)}</b><small>${esc(a.classe || 'Outros')}${val.get(a.id) > 0.005 ? ` · ${brl0(val.get(a.id))}` : ''}</small></span>`;
+  const grupos = {}; p.ativos.slice().sort((x, y) => (val.get(y.id) || 0) - (val.get(x.id) || 0)).forEach((a) => { (grupos[a.classe || 'Outros'] = grupos[a.classe || 'Outros'] || []).push(a); });
+  const classes = [...new Set(p.ativos.map((a) => a.classe).filter(Boolean))].concat(["CDB's", 'Tesouro Direto', 'Ações BR', 'Fundos Imobiliários', "ETF's", 'Criptoativos']).filter((c, i, l) => l.indexOf(c) === i);
+  const op = o.op === '-1' ? '-1' : '1';
+  return basForm('aporte', 'Investimento', `<div class="bas-inv-op" role="radiogroup" aria-label="O que você quer fazer">${[['1', 'Aplicar'], ['-1', 'Resgatar']].map(([v, l]) => `<label><input type="radio" name="op" value="${v}" ${v === op ? 'checked' : ''}><span>${l}</span></label>`).join('')}</div>
+    <div class="bas-inv-v">${basValor('valor', 0, 'Quanto?')}</div>
+    <input type="hidden" name="modo" value="${tem ? 'ex' : 'novo'}"><input type="hidden" name="ativo" value="${sel ? esc(sel.id) : ''}">
+    ${tem ? `<p class="bas-inv-k">Em qual ativo</p><button type="button" class="card bas-inv-sel" data-inv-sel aria-label="Trocar o ativo">${cara(sel)}<em>Trocar</em></button>
+    <template id="bas-inv-tpl"><ul class="bas-inv-ls">${Object.keys(grupos).map((c) => `<li class="bas-inv-g" data-q="${esc(c.toLowerCase())}">${esc(c)}</li>${grupos[c].map((a) => `<li data-q="${esc(`${a.nome} ${c}`.toLowerCase())}"><button type="button" class="bas-ct-at" data-inv-id="${esc(a.id)}">${cara(a)}</button></li>`).join('')}`).join('')}</ul></template>` : ''}
+    <div class="bas-inv-novo" ${tem ? 'hidden' : ''}>${basCampo('nome', 'Nome do ativo', '', 'placeholder="Ex.: PETR4, CDB Banco X"')}
+      ${basCampo('classe', 'Classe', '', 'list="bas-dl-classe" placeholder="Ex.: Ações, CDB, Fundos imobiliários"')}<datalist id="bas-dl-classe">${classes.map((c) => `<option value="${esc(c)}"></option>`).join('')}</datalist>
+      ${basChips('tipo', [['RENDA FIXA', 'Renda fixa'], ['BOLSA DE VALORES', 'Bolsa']], 'BOLSA DE VALORES', 'Tipo')}</div>
+    <p class="bas-inv-k">Mês</p><div class="bas-inv-mes" role="radiogroup" aria-label="Mês">${MES.map((m, i) => `<label><input type="radio" name="mes" value="${i}" ${i === S.mes ? 'checked' : ''}><span>${m}</span></label>`).join('')}</div>
+    <button type="button" class="bas-inv-imp" data-act="bas-importar">${I_IMP}<span>Importar da B3 ou de um extrato</span>${I.chev}</button>`, { ok: 'Registrar' });
+}
+// escolher o ativo numa janela com busca (ou "Ativo novo"), sem a lista longa na tela
+function basInvLigar() {
+  const bt = document.querySelector('[data-inv-sel]'); if (!bt || bt.dataset.lig) return; bt.dataset.lig = '1'; const f = bt.closest('form');
+  const mes = f.querySelector('.bas-inv-mes input:checked'); if (mes) { const c = mes.parentElement.parentElement; c.scrollLeft = mes.parentElement.offsetLeft - c.clientWidth / 2 + mes.parentElement.offsetWidth / 2; }
+  const novo = f.querySelector('.bas-inv-novo'); const modo = f.querySelector('[name="modo"]'); const at = f.querySelector('[name="ativo"]');
+  bt.addEventListener('click', () => { const el = basUltPop('bas-inv-tpl', 'Escolha o ativo', 'Toque para escolher'); if (!el) return; const lis = [...el.querySelectorAll('.bas-pop-c li')];
+    el.querySelector('.bas-pop-c').insertAdjacentHTML('beforebegin', `<div class="bas-mvp-f"><label class="bas-mvp-b"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg><input type="search" placeholder="Buscar ativo ou classe" aria-label="Buscar ativo"></label>
+      <button type="button" class="bas-inv-mais" data-inv-novo>${I.plus}<span>Ativo novo</span></button></div>`);
+    el.querySelector('input').addEventListener('input', (e) => { const q = e.target.value.trim().toLowerCase(); lis.forEach((li) => { li.hidden = !!q && !li.dataset.q.includes(q); }); });
+    const fecha = () => el.querySelector('[data-pop="x"]').click();
+    el.addEventListener('click', (e) => { const b = e.target.closest('[data-inv-id], [data-inv-novo]'); if (!b) return;
+      if (b.dataset.invId) { at.value = b.dataset.invId; modo.value = 'ex'; novo.hidden = true; bt.innerHTML = `${b.innerHTML}<em>Trocar</em>`; }
+      else { modo.value = 'novo'; novo.hidden = false; bt.innerHTML = `<span class="bas-ct-lg" style="--bc:var(--accent)">${I.plus}</span><span class="bas-ct-an"><b>Ativo novo</b><small>Preencha embaixo</small></span><em>Trocar</em>`; setTimeout(() => { const n = novo.querySelector('[name="nome"]'); if (n) n.focus(); }, 260); }
+      fecha(); }); });
 }
 const sum12 = (a) => (a || []).reduce((s, v) => s + (+v || 0), 0);
 // tela do ativo, no jeito de corretora: a posição (a custo) mês a mês desde o primeiro registro, em velas ou linha,

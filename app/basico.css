@@ -3394,3 +3394,38 @@ body[data-ui="basico"] .ab-vivo { background: rgba(255, 255, 255, .72) !importan
 body[data-bas-ia="1"]:has(.bas-pg > .bas-gt-bg)::before { background: color-mix(in srgb, var(--bas-azul-1) 92%, transparent); }
 .bas-ct-top .bas-ct-sp { display: none; } .bas-ct-top .bas-ct-at { grid-template-columns: auto 1fr auto; padding-left: 0; }
 .bas-ct-an small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bas-ct-vis[hidden], .card.bas-ct-al[hidden] { display: none; }
+.bas-ct-so { animation: bas-ct-abre 260ms ease both; }
+
+/* ===== Investimento, refeito: Aplicar | Resgatar, valor grande, o ativo numa linha (troca numa janela com busca), mês numa faixa ===== */
+.bas-inv-op { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 999px; background: color-mix(in srgb, var(--ink) 6%, transparent); }
+.bas-inv-op label { position: relative; } .bas-inv-op input { position: absolute; opacity: 0; pointer-events: none; }
+.bas-inv-op span { display: grid; place-items: center; height: 42px; border-radius: 999px; font-weight: 650; font-size: 15.5px; color: var(--ink-2); transition: background 200ms, color 200ms, box-shadow 200ms; }
+.bas-inv-op input:checked + span { background: var(--surface); color: var(--ink); box-shadow: 0 4px 14px -6px rgba(20, 30, 80, .35); }
+.bas-inv-op input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+.bas-inv-v .bas-vl { justify-items: center; text-align: center; margin: 18px 0 8px; }
+.bas-inv-v .bas-vl > span:first-child { font-size: 14px; color: var(--ink-3); }
+.bas-inv-v .bas-vl-in { justify-content: center; background: none; box-shadow: none; padding: 0; }
+.bas-inv-v .bas-vl-in:focus-within { box-shadow: none; }
+.bas-inv-v .bas-vl-in i { font-size: 26px; color: var(--ink-3); }
+.bas-inv-v .bas-vl-in input { width: 7.5ch; min-width: 0; font-size: 46px !important; font-weight: 750; letter-spacing: -.03em; text-align: left; border: 0; background: none; color: var(--ink); padding: 0; outline: none; font-variant-numeric: tabular-nums; }
+.bas-inv-k { margin: 18px 4px 8px; font-size: 14px; font-weight: 600; color: var(--ink-3); }
+.bas-inv-sel { width: 100%; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; padding: 12px 16px; border: 0; border-radius: 22px; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.bas-inv-sel > em { font-style: normal; font-size: 14px; font-weight: 650; color: var(--accent); }
+.bas-inv-sel .bas-ct-lg svg { width: 18px; height: 18px; }
+.bas-inv-novo { display: grid; gap: 12px; animation: bas-ct-abre 260ms ease both; } .bas-inv-novo[hidden] { display: none; }
+.bas-inv-mes { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 2px 16px 6px; scroll-snap-type: x proximity; }
+.bas-inv-mes::-webkit-scrollbar { display: none; }
+.bas-inv-mes label { position: relative; flex: none; scroll-snap-align: center; } .bas-inv-mes input { position: absolute; opacity: 0; pointer-events: none; }
+.bas-inv-mes span { display: grid; place-items: center; min-width: 54px; height: 44px; padding: 0 12px; border-radius: 999px; background: var(--surface); box-shadow: inset 0 0 0 .5px var(--line); font-weight: 600; font-size: 15px; color: var(--ink-2); transition: background 200ms, color 200ms; }
+.bas-inv-mes input:checked + span { background: var(--accent); color: #fff; box-shadow: 0 6px 16px -8px var(--accent); }
+.bas-inv-mes input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+.bas-inv-imp { display: flex; align-items: center; gap: 10px; width: 100%; margin: 22px 0 6px; padding: 12px 4px; border: 0; background: none; color: var(--ink-2); font: inherit; font-size: 14.5px; font-weight: 600; text-align: left; }
+.bas-inv-imp > svg:first-child { width: 22px; height: 22px; color: var(--accent); flex: none; } .bas-inv-imp > span { flex: 1; } .bas-inv-imp > svg:last-child { width: 16px; height: 16px; color: var(--ink-3); }
+.bas-inv-ls { list-style: none; margin: 0; padding: 0; } .bas-inv-ls li[hidden] { display: none; }
+.bas-inv-g { margin: 14px 2px 4px; font-size: 12.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); }
+.bas-inv-ls .bas-ct-at { grid-template-columns: auto 1fr; padding: 10px 2px; border-radius: 14px; }
+.bas-inv-ls .bas-ct-at:active { background: color-mix(in srgb, var(--accent) 8%, transparent); }
+.bas-inv-mais { display: flex; align-items: center; justify-content: center; gap: 8px; height: 46px; border: 0; border-radius: 999px; background: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--accent); font: inherit; font-size: 15px; font-weight: 650; }
+.bas-inv-mais svg { width: 18px; height: 18px; }
+@supports (field-sizing: content) { .bas-inv-v .bas-vl-in input { field-sizing: content; width: auto; min-width: 4ch; max-width: 10ch; } }
