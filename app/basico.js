@@ -177,11 +177,12 @@ function basTabLigar() {
   const atual = bts.find((b) => b.hasAttribute('aria-current')) || bts[0]; const p = pos(atual);
   if (!p.w) { S.basTabX = null; return; } // barra escondida (formulário ou globo): mede no próximo desenho
   // a lente sai de onde estava antes do desenho e desliza até a aba nova
-  if (S.basTabX != null && S.basTabX !== p.x) { por(S.basTabX, S.basTabW || p.w, false); requestAnimationFrame(() => requestAnimationFrame(() => por(p.x, p.w, true))); } else por(p.x, p.w, false);
+  if (S.basTabX != null && S.basTabX !== p.x) { por(S.basTabX, S.basTabW || p.w, false); bar.classList.add('voa'); requestAnimationFrame(() => requestAnimationFrame(() => por(p.x, p.w, true))); setTimeout(() => bar.classList.remove('voa'), 380); } else por(p.x, p.w, false);
   S.basTabX = p.x; S.basTabW = p.w; bar.dataset.lig = '1';
   let x0 = null, ox = 0, arr = false;
   const perto = (cx) => bts.reduce((m, b) => (Math.abs(b.offsetLeft + b.offsetWidth / 2 - cx) < Math.abs(m.offsetLeft + m.offsetWidth / 2 - cx) ? b : m));
-  bar.addEventListener('pointerdown', (e) => { x0 = e.clientX; ox = bar.getBoundingClientRect().left; arr = false; });
+  bar.addEventListener('pointerdown', (e) => { x0 = e.clientX; ox = bar.getBoundingClientRect().left; arr = false; bar.classList.add('aperta'); });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach((t) => bar.addEventListener(t, () => bar.classList.remove('aperta')));
   bar.addEventListener('pointermove', (e) => { if (x0 == null) return; if (!arr && Math.abs(e.clientX - x0) > 6) { arr = true; bar.classList.add('arrasta'); bar.setPointerCapture(e.pointerId); }
     if (!arr) return; const cx = Math.max(p.w / 2, Math.min(bar.clientWidth - p.w / 2, e.clientX - ox)); por(cx - p.w / 2, p.w, false);
     const b = perto(cx); bts.forEach((x) => x.classList.toggle('sob', x === b)); });
@@ -349,7 +350,7 @@ function basInicio() {
   // Dá para investir: uma linha só, com ícone, valor e uma ficha curta do estado (ou o botão Investir); a meta vira só uma barra fina
   const dSit = D.disponivel > 0.005 ? '' : D.sobra > 0.005 ? ['ok', 'Tudo investido'] : !(ent > 0) && !(sai > 0) ? ['', 'Sem dados'] : ['', 'Sem sobra'];
   const dMeta = D.meta > 0 ? Math.min(1, (D.aportado || 0) / D.meta) : null;
-  secs.disp = `<section class="card bas-card bas-dp3"><div class="bas-dp3-l"><span class="bas-dp3-ic" aria-hidden="true">${I_APLICAR}</span><span class="bas-dp3-t"><small>Dá para investir</small><b>${basCent(D.disponivel)}</b></span>
+  secs.disp = `<section class="card bas-card bas-dp3"><div class="bas-dp3-l"><span class="bas-dp3-t"><small>Dá para investir</small><b>${basCent(D.disponivel)}</b></span>
       ${dSit ? `<span class="bas-dp3-st ${dSit[0]}">${dSit[1]}</span>` : `<button class="btn primary bas-dp3-bt" ${basIrInv()}>Investir</button>`}</div>
     ${dMeta != null ? `<div class="bas-dp3-m" aria-label="Meta do mês: ${Math.round(dMeta * 100)}%"><i style="width:${(dMeta * 100).toFixed(1)}%"></i></div><small class="bas-dp3-mt">Meta do mês · ${Math.round(dMeta * 100)}%</small>` : ''}</section>`;
   const ents = j.n === 1 ? p.rendas.filter((r) => +r.valores[j.de] > 0.005).map((r) => basRow(basIr('entrada', { id: r.id }), I_ENTRADA, esc(r.nome), `Entrada · ${MES_LONGO[j.de]}`, `<b class="pos">+${basCent(r.valores[j.de])}</b>`)) : [];
