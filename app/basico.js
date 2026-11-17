@@ -1454,6 +1454,7 @@ function basSimAtualiza(f) { const g = objAnalise().itens.find((x) => x.id === f
   const v = Math.max(0, parseReais(f.querySelector('[data-sim-v]').value) || 0); const r = f.querySelector('[data-sim-r]'); if (r && +r.value !== v) r.value = Math.min(+r.max, v);
   f.querySelector('.bas-sm2-out').innerHTML = basSimOut(g, v, +f.dataset.tx); }
 const basInt = (n) => Math.round(+n || 0).toLocaleString('pt-BR'); // só para o campo de edição
+const BAS_SIM_TX = [[6, 'Poupança'], [10, 'Renda fixa'], [12, 'Equilibrado'], [15, 'Mais ousado']];
 function basTelaSimular(o) {
   const gS = o.id ? objAnalise().itens.find((x) => x.id === o.id) : objFoco(objAnalise());
   if (gS && gS.valor > 0) { const tx = +S.profile.retornoAnual || 10; const v0 = Math.round(gS.aporte) || 0; const mx = Math.max(1000, Math.ceil(Math.max(v0 * 3, (gS.necessario || 0) * 1.5) / 100) * 100);
@@ -1461,14 +1462,21 @@ function basTelaSimular(o) {
       <div class="card bas-sm2-c"><small class="bas-k">Quanto você guarda por mês para ${esc(objNomeDe(gS))}?</small>
         <div class="bas-sm2-v"><button type="button" data-sim-d="-100" aria-label="Menos 100 reais">−</button><label><i>R$</i><input data-sim-v inputmode="decimal" value="${esc(basInt(v0))}" aria-label="Valor por mês"></label><button type="button" data-sim-d="100" aria-label="Mais 100 reais">+</button></div>
         <input type="range" class="bas-sm2-rg" data-sim-r min="0" max="${mx}" step="50" value="${Math.min(mx, v0)}" aria-label="Arraste para mudar o valor por mês"></div>
-      <div class="bas-sm2-out" aria-live="polite">${basSimOut(gS, v0, tx)}</div></form>
-      <p class="bas-disc keep">Conta feita com rendimento de ${String(tx).replace(".", ",")}% ao ano, só para comparar. Não é promessa: investimentos podem render menos.</p>`); }
+      <div class="bas-sm2-out" aria-live="polite">${basSimOut(gS, v0, tx)}</div>
+      <div class="card bas-sm2-tx"><button type="button" class="bas-sm2-txb" data-sim-tx-abre aria-expanded="false"><span class="bas-sm2-txi" aria-hidden="true">${I.inv}</span><span>Rendendo<b data-sim-tx-v>${String(tx).replace('.', ',')}% ao ano</b></span><em>Mudar</em></button>
+        <div class="bas-sm2-txs" hidden>${BAS_SIM_TX.map(([t, n]) => `<button type="button" class="${t === tx ? 'on' : ''}" data-sim-tx="${t}"><b>${t}%</b><small>${n}</small></button>`).join('')}</div></div></form>
+      <p class="bas-sm2-nota">Só uma simulação. O rendimento pode ser menor.</p>`); }
   return basTelaJc(o);
 }
 // régua, campo e − / + mudam só o resultado, sem render()
 document.addEventListener('input', (e) => { const f = e.target.closest && e.target.closest('form.bas-sm2'); if (!f) return;
   if (e.target.matches('[data-sim-r]')) f.querySelector('[data-sim-v]').value = basInt(+e.target.value); basSimAtualiza(f); });
-document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('[data-sim-d]'); if (!b) return; const f = b.closest('form.bas-sm2'); const inp = f.querySelector('[data-sim-v]');
+document.addEventListener('click', (e) => { const a = e.target.closest && e.target.closest('[data-sim-tx-abre]');
+  if (a) { const l = a.nextElementSibling; l.hidden = !l.hidden; a.setAttribute('aria-expanded', String(!l.hidden)); return; }
+  const t = e.target.closest && e.target.closest('[data-sim-tx]');
+  if (t) { const f = t.closest('form.bas-sm2'); f.dataset.tx = t.dataset.simTx; f.querySelector('[data-sim-tx-v]').textContent = `${t.dataset.simTx}% ao ano`;
+    t.parentNode.querySelectorAll('button').forEach((x) => x.classList.toggle('on', x === t)); basVibra(6); basSimAtualiza(f); return; }
+  const b = e.target.closest && e.target.closest('[data-sim-d]'); if (!b) return; const f = b.closest('form.bas-sm2'); const inp = f.querySelector('[data-sim-v]');
   inp.value = basInt(Math.max(0, (parseReais(inp.value) || 0) + +b.dataset.simD)); basVibra(6); basSimAtualiza(f); });
 function basTelaJc(o) {
   const g = o.id ? objAnalise().itens.find((x) => x.id === o.id) : objFoco(objAnalise()); const C = S.C; const ult = S.year === NOW_Y ? NOW_M : 11;
