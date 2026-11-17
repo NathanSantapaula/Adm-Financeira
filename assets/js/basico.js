@@ -1481,9 +1481,14 @@ function basTelaAnoResumo() {
   const melhor = sob.reduce((b, v, i) => (v > sob[b] ? i : b), 0); const pior = sob.reduce((b, v, i) => (v < sob[b] ? i : b), 0);
   const tile = (k, m, v, i0, cor) => `<div class="card bas-sa-t"><span class="bas-sa-ic" style="--bc:${cor}" aria-hidden="true">${i0}</span><small>${k}</small><b>${cap(MES_LONGO[m])}</b><em>${basCent(v || 0)}</em></div>`;
   const lin = ([nome, v, i0, cor]) => `<li><span class="bas-pv2-l"><span class="bas-pv2-ini" style="--bc:${cor}" aria-hidden="true">${i0}</span><span class="bas-pv2-n"><b>${nome}</b><small>${brl0(v / n)} por mês</small></span><b class="bas-pv2-v">${basCent(v)}</b></span></li>`;
-  return basPgAzul('bas-pg-sa', `Seu ${S.year}`, `<small class="bas-pv2-k">Sobrou em ${S.year}${S.year === NOW_Y ? ' até agora' : ''}</small><b class="bas-pv2-t">${basCent(T.investAlocado)}</b>
-    <p class="bas-pv2-var">${T.poupanca != null ? `<span class="bas-ev-pct${T.poupanca < 0 ? ' neg' : ''}">${pct(T.poupanca)}</span><span>do que entrou ficou com você</span>` : '<span>Anote as entradas para ver quanto guardou.</span>'}</p>
-    ${basCapsulas(C.investAlocado, ult, 'grande')}`,
+  // colunas como as de Proventos; tocar num mês mostra o valor e troca o número de cima por aquele mês (tocar de novo volta ao ano)
+  const sel = S.basSaMes != null && S.basSaMes <= 11 ? S.basSaMes : null; const um = sel != null; const vS = C.investAlocado;
+  const mxS = Math.max(1, ...vS.slice(0, ult + 1).map((v) => Math.abs(v)));
+  const barras = vS.map((v, i) => `<button class="${um && i !== sel ? 'fora' : 'in'}${i === sel ? ' on' : ''}${i > ult ? ' fut' : ''}${v < 0 ? ' neg' : ''}" data-act="bas-sa-mes" data-m="${i}" style="--h:${i > ult ? 3 : Math.max(4, (Math.abs(v) / mxS) * 78).toFixed(1)}%" aria-label="${MES_LONGO[i]}: ${esc(brl(v))}" aria-pressed="${i === sel}">${i === sel ? `<small>${brl0(v)}</small>` : ''}<i></i><b>${MES[i][0]}</b></button>`).join('');
+  const topV = um ? vS[sel] : T.investAlocado; const topP = um ? (C.receita[sel] > 0 ? vS[sel] / C.receita[sel] : null) : T.poupanca;
+  return basPgAzul('bas-pg-sa', `Seu ${S.year}`, `<small class="bas-pv2-k">Sobrou ${um ? `em ${MES_LONGO[sel]}` : `em ${S.year}${S.year === NOW_Y ? ' até agora' : ''}`}</small><b class="bas-pv2-t">${basCent(topV)}</b>
+    <p class="bas-pv2-var">${topP != null ? `<span class="bas-ev-pct${topP < 0 ? ' neg' : ''}">${pct(topP)}</span><span>do que entrou${um ? ` em ${MES_LONGO[sel]}` : ''} ficou com você</span>` : '<span>Anote as entradas para ver quanto guardou.</span>'}</p>
+    <div class="bas-pv2-g bas-sa-g" role="group" aria-label="Sobra mês a mês. Toque num mês.">${barras}</div>`,
   `<div class="bas-sa-dupla">${tile('Melhor mês', melhor, sob[melhor], I_GASTO, 'var(--pos)')}${tile('Mês mais apertado', pior, sob[pior], I_ENTRADA, sob[pior] < 0 ? 'var(--neg)' : 'var(--warn, #FF9F0A)')}</div>
     ${basSecao('No ano', '', `<ul class="card bas-pv2-ls">${[['Entrou', T.receita, I_ENTRADA, 'var(--pos)'], ['Saiu', T.despesas, I_GASTO, 'var(--neg)'], ['Investido', T.aplicado, I.inv, 'var(--accent)'], ['Proventos', T.faturamento, I_PROV, '#F5B83D']].map(lin).join('')}</ul>`)}`);
 }
@@ -2659,6 +2664,7 @@ function basAcao(act, ds, el) {
     case 'bas-cc-band': if (instDe(ds.id) && CC_BAND[ds.v]) basCcGrava(ds.id, 'b', ds.v); return true;
     case 'bas-cc-cor': if (instDe(ds.id) && /^#[0-9a-f]{6}$/i.test(ds.v || '')) basCcGrava(ds.id, 'c', ds.v); return true;
     case 'bas-gasto-rec': { const f = el.closest('form'); const x = basMemGastos().get(ds.k); if (f && x) { f.querySelector('[name="desc"]').value = x.desc; basGastoLembra(f, x, true); basSom('toque'); } return true; }
+    case 'bas-sa-mes': S.basSaMes = S.basSaMes === +ds.m ? null : +ds.m; basSom('toque'); render(); return true;
     case 'bas-prov-mes': S.basProvMes = S.basProvMes === +ds.m ? null : +ds.m; basSom('toque'); render(); return true;
     case 'bas-prov-ano': if (+ds.y !== S.year && S.plans[+ds.y]) { S.basProvMes = null; switchYear(+ds.y); } return true;
     case 'bas-al-passo': case 'bas-al-igual': case 'bas-al-100': case 'bas-al-zero': basAlAcao(act, el); return true;
