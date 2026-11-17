@@ -3885,3 +3885,11 @@ body[data-ui="basico"] :is(.bas-gt-bg, .bas[data-aba="inicio"] .bas-noite) .bas-
 .bas-ah8-p.neg i { background: #FF4D6A; box-shadow: 0 0 12px rgba(255, 77, 106, .55); }
 .bas-ah8-p em { font-style: normal; font-size: 13px; font-weight: 700; color: rgba(255, 255, 255, .7); }
 .bas-pt-bg .bas-ah8-p.pos, .bas-pt-bg .bas-ah8-p.neg { color: #fff !important; }
+/* pílula da variação menor; o gráfico do ano maior, como o destaque da tela */
+.bas-ah8-p { gap: 6px; padding: 4px 11px 4px 5px; font-size: 13px; font-weight: 600; }
+.bas-ah8-p i { width: 18px; height: 18px; font-size: 11px; }
+.bas-ah8-p em { font-size: 12px; }
+.bas-ah4-g { height: 200px; margin: 30px -6px 0; }
+.bas-ah7-dv { height: 160px; margin: -168px -6px 0; }
+.bas-ah7-dv i { max-width: 20px; }
+.bas-ah2-x { margin-left: -6px; margin-right: -6px; }
