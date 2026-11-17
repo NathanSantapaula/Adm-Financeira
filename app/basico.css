@@ -3776,3 +3776,5 @@ body[data-ui="basico"] :is(.bas-gt-bg, .bas-noite) .vv-on {
   background: radial-gradient(circle at var(--lx, 50%) var(--ly, 50%), rgba(255, 255, 255, .5), rgba(255, 255, 255, .12) 45%, transparent 75%), linear-gradient(155deg, rgba(255, 255, 255, .34), rgba(255, 255, 255, .1) 45%, rgba(255, 255, 255, .18)) !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .85), inset 0 -1px 0 rgba(255, 255, 255, .25), inset 0 0 18px rgba(255, 255, 255, .22), 0 14px 30px -12px rgba(0, 0, 30, .6), 0 0 22px -6px rgba(255, 255, 255, .45) !important; }
 @media (prefers-reduced-motion: reduce) { body[data-ui="basico"] .vv-on { transform: none !important; } }
+/* Histórico sem a bolinha do ano: a divisória começa na margem */
+.bas-pg-hs .bas-pv2-ls li + li .bas-pv2-l::before { left: 16px; }
