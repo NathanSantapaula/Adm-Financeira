@@ -3725,3 +3725,30 @@ li.on > .bas-ig-ck { background: var(--accent); box-shadow: 0 4px 10px -4px var(
 .bas-w-ano .bas-cap > span:nth-last-child(-n+2) small { left: auto; right: 0; translate: 0 0; }
 /* o preenchimento do gráfico não leva contorno (os ícones do App dão contorno a todo svg) */
 .bas .bas-ph-g svg, .bas-ph-a { stroke: none; }
+/* Histórico: o preenchimento sem contorno; Seu ano (widget): sem balão e mais perto do texto */
+.bas .bas-hs-c svg, .bas-hs-a { stroke: none; }
+.bas-w-ano .bas-cap small { display: none; }
+.bas-w-ano .bas-cap { height: 96px; margin-top: 14px; }
+.bas-w-ano .bas-cap i { height: calc(var(--h) * .7); }
+
+/* ===== Análise do ano (Seu 2026 com as fichas de ano), refeita no padrão azul ===== */
+.bas-ah2-anos { display: flex; gap: 8px; margin: 16px -16px 0; padding: 0 16px; overflow-x: auto; scrollbar-width: none; }
+.bas-ah2-anos::-webkit-scrollbar { display: none; }
+.bas-ah2-anos button { flex: none; height: 36px; padding: 0 16px; border: 0; border-radius: 999px; font: inherit; font-size: 14.5px; font-weight: 700; color: #fff; background: rgba(255, 255, 255, .14); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .18); }
+.bas-ah2-anos button.on { color: var(--bas-azul-2); background: #fff; box-shadow: 0 6px 16px -8px rgba(0, 0, 0, .5); }
+.bas-pg-ah .bas-pv2-k { margin-top: 18px; }
+.bas-ah2-g { position: relative; height: 120px; margin: 22px 0 0; }
+.bas .bas-ah2-g svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; stroke: none; }
+.bas-ah2-x { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); margin-top: 10px; text-align: center; font-size: 11.5px; font-weight: 600; color: rgba(255, 255, 255, .6); }
+.bas-ah2-x .fut { color: rgba(255, 255, 255, .3); } .bas-ah2-x .on { color: #fff; }
+.card.bas-ah2-eg { padding: 16px; border-radius: 22px; margin-bottom: 18px; }
+.bas-ah2-eh { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; } .bas-ah2-eh b { font-size: 16px; } .bas-ah2-eh .bas-ah-leg { margin: 0; }
+.bas-ah2-v { flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; } .bas-ah2-v b { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.bas-ah2-v em { font-style: normal; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 99px; } .bas-ah2-v em.pos { color: var(--pos); background: var(--pos-soft); } .bas-ah2-v em.neg { color: var(--neg); background: var(--neg-soft); }
+.bas-ah2-ls .bas-pv2-ini svg { width: 18px; height: 18px; }
+.bas-ah2-fr { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.bas-ah2-fr li { display: flex; align-items: flex-start; gap: 12px; padding: 14px 16px; border-radius: 20px; }
+.bas-ah2-fr p { margin: 0; font-size: 14.5px; line-height: 1.45; color: var(--ink-2); } .bas-ah2-fr b { color: var(--ink); }
+.bas-ah2-fi { flex: none; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.bas-ah2-fi svg { width: 16px; height: 16px; }
+.bas-ah2-fr li.pos .bas-ah2-fi { color: var(--pos); background: var(--pos-soft); } .bas-ah2-fr li.neg .bas-ah2-fi { color: var(--neg); background: var(--neg-soft); }
