@@ -3683,3 +3683,25 @@ li.on > .bas-ig-ck { background: var(--accent); box-shadow: 0 4px 10px -4px var(
 .bas-ph-x { position: relative; display: block; height: 16px; margin: 10px 2px 0; }
 .bas-ph-x span { position: absolute; transform: translateX(-50%); white-space: nowrap; font-size: 12px; font-weight: 600; color: var(--ink-3); } .bas-ph-x span.on { color: var(--ink); }
 @media (prefers-reduced-motion: reduce) { .bas-ph-a, .bas-ph-l { animation: none; opacity: 1; stroke-dashoffset: 0; } }
+
+/* Patrimônio ano a ano, acabamento: luz no canto, ícone, grade fina, fios guia, linha em degradê, valores em pílulas e halo no ponto de agora */
+.card.bas-w-ph { overflow: hidden; isolation: isolate; }
+.bas-ph-luz { position: absolute; z-index: -1; top: -60px; right: -40px; width: 220px; height: 180px; border-radius: 50%; background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 22%, transparent), transparent); pointer-events: none; }
+.bas-ph-h { align-items: center; }
+.bas-ph-ic { flex: none; width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; color: #fff; background: linear-gradient(145deg, color-mix(in srgb, var(--accent) 70%, #fff), var(--accent)); box-shadow: 0 8px 18px -8px var(--accent), inset 0 1px 0 rgba(255, 255, 255, .4); }
+.bas-ph-ic svg { width: 20px; height: 20px; }
+.bas-ph-t { flex: 1; }
+.bas-ph-gr { stroke: var(--line); stroke-width: 1; stroke-dasharray: 2 5; vector-effect: non-scaling-stroke; }
+.bas-ph-gd { stroke: color-mix(in srgb, var(--accent) 22%, transparent); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.bas-ph-g .l0 { stop-color: color-mix(in srgb, var(--accent) 45%, #5AC8FA); } .bas-ph-g .l1 { stop-color: var(--accent); }
+.bas-ph-g .g0 { stop-color: color-mix(in srgb, var(--accent) 38%, transparent); }
+.bas-ph-l { stroke: url(#bas-ph-lg); stroke-width: 3; }
+.bas-ph-d b { bottom: 13px; padding: 3px 8px; border-radius: 99px; background: var(--surface-2, color-mix(in srgb, var(--ink) 6%, transparent)); box-shadow: 0 2px 8px -4px rgba(0, 0, 0, .3); }
+.bas-ph-d.fim b { color: #fff; background: var(--accent); box-shadow: 0 6px 14px -6px var(--accent); }
+.bas-ph-d.fim::after { content: ""; position: absolute; inset: -6px; border-radius: 50%; border: 2px solid var(--accent); opacity: 0; animation: bas-ph-halo 2.2s ease-out infinite; }
+@keyframes bas-ph-halo { 0% { transform: scale(.6); opacity: .7; } 100% { transform: scale(1.8); opacity: 0; } }
+.bas-ph-x span.on { font-weight: 700; color: var(--accent); }
+@media (prefers-reduced-motion: reduce) { .bas-ph-d.fim::after { animation: none; } }
+/* os dois widgets: só a setinha para o lado, como nos outros cartões */
+.bas-ph-ir { width: auto; height: auto; background: none !important; color: var(--ink-3); }
+.bas-ph-ir svg { width: 18px; height: 18px; }
