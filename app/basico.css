@@ -3531,3 +3531,30 @@ li.on > .bas-ig-ck { background: var(--accent); box-shadow: 0 4px 10px -4px var(
 .bas-pg-cat .bas-gt-acoes { justify-content: center; } .bas-cat-add { margin: 0 !important; width: 100%; justify-content: center; }
 .bas-pop-c > .bas-catic-g { padding: 4px 2px 8px; }
 .bas-pg-cat .bas-gt-acoes > .bas-cat-add { flex: 1; }
+
+/* limite da categoria: cartão de vidro sobre o azul (substitui a frase solta e o "Mudar" embaixo) */
+.bas-cat-lim { width: 100%; max-width: 380px; margin-top: 18px; padding: 14px 16px; border-radius: 22px; text-align: left; color: #fff;
+  background: linear-gradient(160deg, rgba(255, 255, 255, .2), rgba(255, 255, 255, .07)); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .4), inset 0 0 0 1px rgba(255, 255, 255, .16); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+.bas-cat-lh, .bas-cat-lr { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.bas-cat-lh span, .bas-cat-lr span { display: grid; } .bas-cat-lr span:last-child { text-align: right; }
+.bas-cat-lim small { font-size: 12.5px; color: rgba(255, 255, 255, .72); } .bas-cat-lim b { font-size: 17px; font-variant-numeric: tabular-nums; }
+.bas-cat-ed { width: 38px; height: 38px; display: grid; place-items: center; border: 0; border-radius: 50%; color: #fff; background: rgba(255, 255, 255, .18); }
+.bas-cat-ed svg { width: 18px; height: 18px; }
+.bas-cat-bar { display: block; height: 8px; margin: 12px 0; border-radius: 8px; background: rgba(255, 255, 255, .18); overflow: hidden; }
+.bas-cat-bar i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #fff, #CFE3FF); box-shadow: 0 0 12px rgba(255, 255, 255, .55); animation: bas-ct-pb 800ms cubic-bezier(.2, .9, .25, 1) both; }
+.bas-cat-lim.passou .bas-cat-bar i { background: #FF4D6A; box-shadow: 0 0 12px rgba(255, 77, 106, .7); }
+.bas-cat-lim.vazio { display: flex; align-items: center; gap: 12px; border: 0; font: inherit; font-weight: 650; font-size: 15px; }
+.bas-cat-lim.vazio > svg:first-child { width: 22px; height: 22px; } .bas-cat-lim.vazio > span { flex: 1; } .bas-cat-lim.vazio > svg:last-child { width: 16px; height: 16px; opacity: .7; }
+.bas-pg-cat .bas-gt-acoes { display: flex; } .bas-pg-cat .bas-gt-acoes > .bas-cat-add { flex: 1; width: 100%; margin: 0 !important; justify-content: center; }
+/* Novo gasto: categoria e banco em linhas que abrem a janela; as faixas que corriam de lado ficam escondidas */
+.bas-form .bas-gf-cs, .bas-form .bas-gf-bs { display: none; }
+.bas-gf-sel { margin-bottom: 4px; } .bas-gf-lg { color: var(--accent); } .bas-gf-lg svg { width: 20px; height: 20px; }
+.bas-gf-lg.banco, .bas-gf-oi.banco { padding: 0; background: none; overflow: hidden; } .bas-gf-lg.banco > *, .bas-gf-oi.banco > * { width: 100%; height: 100%; }
+.bas-gf-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; padding: 4px 0 10px; }
+.bas-gf-op { display: grid; justify-items: center; gap: 8px; padding: 14px 6px 12px; border: 0; border-radius: 20px; background: var(--bg); color: var(--ink); font: inherit; box-shadow: inset 0 0 0 1px var(--line); transition: transform 160ms, box-shadow 160ms; }
+.bas-gf-op b { font-size: 13px; font-weight: 600; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bas-gf-oi { width: 46px; height: 46px; display: grid; place-items: center; border-radius: 15px; color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.bas-gf-oi svg { width: 22px; height: 22px; }
+.bas-gf-op.on { box-shadow: inset 0 0 0 2px var(--accent), 0 8px 18px -10px var(--accent); } .bas-gf-op.on b { color: var(--accent); }
+.bas-gf-op:active { transform: scale(.96); }
+.bas-gf-oi:not(.banco) svg, .bas-gf-lg:not(.banco) svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }

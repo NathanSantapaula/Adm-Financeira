@@ -823,7 +823,7 @@ function basIaxLigar() {
 function basDesenhar() {
   const st = document.getElementById('bas-o3');
   if (st) { const falhou = () => st.classList.add('sem-3d'); if (typeof o3Ligar === 'function') o3Ligar(st, st.dataset.tipo, falhou); else falhou(); }
-  basIaxLigar(); basCifVe(); basGfLigar(); basPeriodoRepinta(); { const f = document.querySelector('.bas-form'); if (f && f.querySelector('[name="areaIc"]') && !f.dataset.ic) { f.dataset.ic = '1'; f.addEventListener('change', (e) => { if (e.target.name !== 'area') return; const r = f.querySelector(`[name="areaIc"][value="${basCatIcId(e.target.value)}"]`); if (r) r.checked = true; }); } } { const on = document.querySelector('.bas-cce-m.on'); const col = on && on.parentElement; if (col && !col.dataset.vis) { col.dataset.vis = '1'; col.scrollTop = on.offsetTop - col.clientHeight / 2 + on.offsetHeight / 2; } } basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basAtLigar(); basEfLigar(); basCtwLigar(); basOiLigar(); basInvLigar(); basIgLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
+  basIaxLigar(); basCifVe(); basGfLigar(); basPeriodoRepinta(); { const f = document.querySelector('.bas-form'); if (f && f.querySelector('[name="areaIc"]') && !f.dataset.ic) { f.dataset.ic = '1'; f.addEventListener('change', (e) => { if (e.target.name !== 'area') return; const r = f.querySelector(`[name="areaIc"][value="${basCatIcId(e.target.value)}"]`); if (r) r.checked = true; }); } } { const on = document.querySelector('.bas-cce-m.on'); const col = on && on.parentElement; if (col && !col.dataset.vis) { col.dataset.vis = '1'; col.scrollTop = on.offsetTop - col.clientHeight / 2 + on.offsetHeight / 2; } } basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basAtLigar(); basEfLigar(); basCtwLigar(); basOiLigar(); basInvLigar(); basIgLigar(); basGfPickLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
   const wr = document.querySelector('.bas-wr'); if (wr && !wr.dataset.lig) { wr.dataset.lig = '1'; basWrIr(wr, 0); }
   const sq = document.querySelector('[data-sq-conta]'); if (sq && !sq.dataset.lig && !matchMedia('(prefers-reduced-motion: reduce)').matches) { sq.dataset.lig = '1'; const alvo = +sq.dataset.sqConta; const t0 = performance.now();
     const passo = (t) => { const k = Math.min(1, (t - t0) / 900); sq.textContent = Math.round(alvo * (1 - Math.pow(1 - k, 3))); if (k < 1 && sq.isConnected) requestAnimationFrame(passo); }; if (alvo > 0) requestAnimationFrame(passo); }
@@ -971,9 +971,9 @@ function basTelaGasto(o, it) {
     <div class="bas-blk bas-gf-quando" data-blk="data"><button type="button" class="bas-gf-dia${d0 === hoje ? ' on' : ''}" data-gf-dia="${hoje}">Hoje</button><input type="date" name="data" value="${esc(d0)}" min="${S.year}-01-01" max="${S.year}-12-31" aria-label="Data do gasto"></div>
     <p class="bas-blk bas-gf-info" data-blk="mesp">Todo mês, de ${MES_LONGO[S.mes]} até dezembro.</p>
     <div class="bas-blk bas-gf-parc" data-blk="parc"><button type="button" data-gf-n="-1" aria-label="Menos parcelas">−</button><input name="n" inputmode="numeric" maxlength="3" value="${pc ? pc.n : 10}" aria-label="Número de parcelas"><button type="button" data-gf-n="1" aria-label="Mais parcelas">+</button><span class="bas-gf-pt" data-gf-pt></span></div>
-    <p class="bas-gf-k">Categoria</p><div class="bas-gf-cs" role="radiogroup" aria-label="Categoria">${cat}</div>
+    <p class="bas-gf-k">Categoria</p><button type="button" class="card bas-inv-sel bas-gf-sel" data-gf-pick="area" aria-label="Trocar a categoria"></button><div class="bas-gf-cs" role="radiogroup" aria-label="Categoria">${cat}</div>
     <div class="bas-gf-novaq"><input name="areaNova" placeholder="Nome da categoria, ex.: Pets" autocomplete="off" aria-label="Nova categoria">${basCatIcEscolha('outros')}</div>
-    <p class="bas-gf-k">Pago com</p><div class="bas-gf-bs" role="radiogroup" aria-label="Pago com">${bancos}</div>
+    <p class="bas-gf-k">Pago com</p><button type="button" class="card bas-inv-sel bas-gf-sel" data-gf-pick="inst" aria-label="Trocar o banco"></button><div class="bas-gf-bs" role="radiogroup" aria-label="Pago com">${bancos}</div>
     ${l || it ? '' : `<button type="button" class="bas-gf-imp" data-act="bas-importar">${I_IMP}Importar do extrato</button>`}
   </div>`, { excluir: l || it ? 'Excluir gasto' : '' });
 }
@@ -989,7 +989,7 @@ function basSalvarGasto(f, d, t, ok) {
   if (d.tipo === 'uma') {
     const dt = E.parseDataISO(d.data); if (!dt || dt.ano !== S.year) return basErro(f, `Escolha uma data de ${S.year}.`);
     const nome = desc || area;
-    if (l) { if (l.itemId && basMesDe(l.data) !== dt.mes) { desfazerBaixa(l); delete l.itemId; } Object.assign(l, { data: d.data, desc: nome, area, inst: d.inst || '', valor: E.r2(l.valor < 0 ? -v : v) }); S.mes = dt.mes; ok('Gasto atualizado.'); return; }
+    if (l) { if (l.itemId && basMesDe(l.data) !== dt.mes) { desfazerBaixa(l); delete l.itemId; } Object.assign(l, { data: d.data, desc: nome, area, inst: d.inst || '', valor: E.r2(v) }); S.mes = dt.mes; ok('Gasto atualizado.'); return; }
     tiraConta();
     const nl = { id: uid(), origem: 'manual', data: d.data, desc: nome, valor: E.r2(v), cat: basCat(false), area, sub: '', inst: d.inst || '' }; p.lancamentos.push(nl); let msg = it ? 'Gasto atualizado.' : 'Gasto anotado.';
     if (!it) { const fx = E.acharFixo(p.despesas, nome, dt.ano, dt.mes); if (fx) { nl.itemId = fx.id; nl.cat = fx.cat; fx.baixas = Object.assign({}, fx.baixas, { [dt.ano + '-' + dt.mes]: nl.id }); msg = `Conta “${fx.nome}” já conta como gasto de ${MES_LONGO[dt.mes]}.`; } }
@@ -1148,7 +1148,7 @@ function basTelaCategoria(o) {
   const n = contas.filter((x) => !x.pago).length + lanc.length;
   return `<div class="bas-pg bas-pg-cat"><div class="bas-gt-bg bas-pt-bg bas-cat-bg">
     <header class="bas-pv2-h"><button class="bell bas-cal-b" data-act="bas-voltar" aria-label="Voltar">${I_VOLTA}</button><b>${esc(area)}</b><span class="bas-noite-r"><button class="bell bas-cal-b" data-act="bas-cat-ed" aria-label="Editar o ícone" title="Editar o ícone">${I.edit}</button>${olhoHtml()}</span></header>
-    <div class="bas-cat-top"><span class="bas-cat-ic" aria-hidden="true">${basCatIc(area)}</span><small class="bas-pv2-k">Gastos em ${esc(MES_LONGO[m])}</small><b class="bas-pv2-t">${basCent(tot)}</b><div class="bas-cat-lim">${basLimArea(area, tot)}</div></div>
+    <div class="bas-cat-top"><span class="bas-cat-ic" aria-hidden="true">${basCatIc(area)}</span><small class="bas-pv2-k">Gastos em ${esc(MES_LONGO[m])}</small><b class="bas-pv2-t">${basCent(tot)}</b>${basCatLim(area, tot)}</div>
   </div><div class="bas-gt-folha">
     <div class="bas-pg-per bas-gt-acoes"><button class="bas-inv-pl bas-cat-add" ${basIr('gasto', { area })}>${I.plus}<span>Novo gasto</span></button></div>
     ${n ? basSecao('Gastos', `<small class="bas-pv2-q">${n}</small>`, `<ul class="bas-ativ">${contas.filter((x) => !x.pago).map(basContaLinha).join('')}${lanc.map(basLancLinha).join('')}</ul>`) : basCard(basVazio(`Nenhum gasto em ${esc(area)} em ${esc(MES_LONGO[m])}.`))}
@@ -2749,4 +2749,31 @@ function basIgAcao(act, ds) {
   if (act === 'bas-ig-ok') { if (!g || !g.resumo || !g.resumo.incluidas) return; const R = g.resumo; const n = R.incluidas;
     aplicarIngestao(); S.basIngOk = `${n} ${n === 1 ? 'lançamento entrou' : 'lançamentos entraram'} no seu ${S.year}. Se algo não ficou certo, toque em Desfazer no aviso.`; basRetorno('pago'); basIgRepinta(); return; }
   if (act === 'bas-ig-avancado') { openModal({ title: 'Ajustar o arquivo', ok: 'Importar', wide: true, body: '<div id="ing-root" class="ing"></div>', onOk: () => { if (!S.ing || !S.ing.resumo || !S.ing.resumo.incluidas) return false; aplicarIngestao(); return true; } }); basIngOrig(); }
+}
+
+// Novo gasto: categoria e banco numa linha cada (como o ativo no Investimento); tocar abre a janela com a grade para escolher.
+// Os rádios de antes continuam no formulário (escondidos), então lembrar o último gasto, "Nova" categoria e a gravação seguem iguais.
+function basGfPickLigar() {
+  const f = document.querySelector('.bas-form [data-gf-pick]') && document.querySelector('[data-gf-pick]').closest('form'); if (!f || f.dataset.pick) return; f.dataset.pick = '1';
+  const conteudo = (r) => { const sp = r && r.parentElement.querySelector('span'); if (!sp) return ['', 'Escolha']; const i = sp.querySelector('i, .inst-ic, svg, img'); const ic = i ? (i.tagName === 'I' ? i.innerHTML : i.outerHTML) : ''; return [ic, sp.textContent.trim()]; };
+  const pinta = () => f.querySelectorAll('[data-gf-pick]').forEach((b) => { const k = b.dataset.gfPick; const r = f.querySelector(`[name="${k}"]:checked`); const [ic, nome] = conteudo(r);
+    b.innerHTML = `<span class="bas-ct-lg bas-gf-lg${k === 'inst' && r && r.value ? ' banco' : ''}" style="--bc:var(--accent)">${ic || (k === 'inst' ? I_CARTAO_GF : I.plus)}</span><span class="bas-ct-an"><b>${esc(nome || 'Escolha')}</b></span><em>Trocar</em>`; });
+  f.addEventListener('change', pinta); f.addEventListener('input', () => requestAnimationFrame(pinta)); pinta();
+  f.addEventListener('click', (e) => { const b = e.target.closest('[data-gf-pick]'); if (!b) return; const k = b.dataset.gfPick; const rs = [...f.querySelectorAll(`[name="${k}"]`)];
+    let tpl = document.getElementById('bas-gf-tpl'); if (!tpl) { tpl = document.createElement('template'); tpl.id = 'bas-gf-tpl'; document.body.appendChild(tpl); }
+    tpl.innerHTML = `<div class="bas-gf-grid${k === 'inst' ? ' bancos' : ''}">${rs.map((r, i) => { const [ic, nome] = conteudo(r); return `<button type="button" class="bas-gf-op${r.checked ? ' on' : ''}" data-gf-i="${i}"><span class="bas-gf-oi${k === 'inst' && r.value ? ' banco' : ''}">${ic || (k === 'inst' ? I_CARTAO_GF : I.plus)}</span><b>${esc(nome)}</b></button>`; }).join('')}</div>`;
+    const el = basUltPop('bas-gf-tpl', k === 'area' ? 'Categoria' : 'Pago com', k === 'area' ? 'Onde esse gasto entra' : 'Banco ou cartão do pagamento'); if (!el) return;
+    el.addEventListener('click', (ev) => { const o = ev.target.closest('[data-gf-i]'); if (!o) return; const r = rs[+o.dataset.gfI]; r.checked = true; r.dispatchEvent(new Event('change', { bubbles: true }));
+      pinta(); basSom('toque'); el.querySelector('[data-pop="x"]').click(); if (k === 'area' && !r.value) setTimeout(() => { const n = f.querySelector('[name="areaNova"], [name="nova"], [data-blk="nova"] input'); if (n) n.focus(); }, 260); }); });
+}
+const I_CARTAO_GF = ic('<rect x="3" y="6" width="18" height="12.5" rx="2.5"/><path d="M3 10.5h18"/>');
+
+// limite da categoria num cartão de vidro sobre o azul: o limite com o lápis ao lado, a barra e, embaixo, o usado e o que ainda cabe
+function basCatLim(area, tot) {
+  const lim = S.plan.settings.limites || {}; const L = E.analiseLimites(lim, { [area]: tot })[0];
+  if (!(L && E.norm(L.area) === E.norm(area))) return `<button class="bas-cat-lim vazio" ${basIr('limite', { area })}>${I_LIMITE_IC}<span>Definir um limite por mês</span>${I.chev}</button>`;
+  const passou = L.sit === 'passou'; const uso = Math.max(0, Math.min(1, L.uso || 0));
+  return `<div class="bas-cat-lim${passou ? ' passou' : ''}"><div class="bas-cat-lh"><span><small>Limite do mês</small><b>${brl0(L.limite)}</b></span><button class="bas-cat-ed" ${basIr('limite', { area })} aria-label="Mudar o limite">${I.edit}</button></div>
+    <span class="bas-cat-bar" aria-hidden="true"><i style="width:${(uso * 100).toFixed(1)}%"></i></span>
+    <div class="bas-cat-lr"><span><small>Usado</small><b>${pct(L.uso || 0)}</b></span><span><small>${passou ? 'Passou' : 'Ainda cabe'}</small><b>${brl(Math.abs(L.falta))}</b></span></div></div>`;
 }
