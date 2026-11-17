@@ -2071,17 +2071,18 @@ function basWidgetsInicio(secs) {
   const H = histDados(); const t = H.totais || {}; const ult = S.year === NOW_Y ? NOW_M : 11;
   // Patrimônio ano a ano: uma linha que sobe, um ponto por ano (até 5) com o valor curto, e o crescimento em percentual; com um ano só, os meses dele
   const anosH = (H.anos || []).filter((l) => l.preenchido).slice(-5); const porAno = anosH.length > 1;
-  const ptsH = porAno ? anosH.map((l) => ({ k: String(l.ano), v: l.patrimonioFim })) : C.patrimonio.slice(0, ult + 1).map((v, m) => ({ k: MES[m][0], v }));
+  // só anos: com um ano só, o começo dele (o fim do ano anterior) e agora
+  const ptsH = porAno ? anosH.map((l) => ({ k: String(l.ano), v: l.patrimonioFim })) : [{ k: String(S.year - 1), v: +C.patrimonioBase || 0 }, { k: String(S.year), v: C.patrimonio[ult] }];
+  const b0 = +C.patrimonioBase || 0; const pct1 = b0 > 0 ? (C.patrimonio[ult] - b0) / b0 : null;
   const WH = 320; const HH = 110; const vsH = ptsH.map((q) => q.v); const mnH = Math.min(...vsH); const mxH = Math.max(...vsH); const foH = (mxH - mnH) * 0.2 || mxH * 0.05 || 1;
   const PH = ptsH.map((q, k) => [ptsH.length > 1 ? 18 + (k / (ptsH.length - 1)) * (WH - 36) : WH / 2, HH - 6 - ((q.v - (mnH - foH)) / ((mxH + foH) - (mnH - foH))) * (HH - 30)]);
   const dH = PH.length > 1 ? basCurva(PH) : ''; const xH = (q) => ((q[0] / WH) * 100).toFixed(2); const upH = (t.crescimento || 0) >= 0;
-  const subH = porAno && t.crescimentoPct != null ? `<em class="bas-ph-c${upH ? '' : ' neg'}">${upH ? '↑' : '↓'} ${pct(Math.abs(t.crescimentoPct))}</em>desde ${anosH[0].ano}` : `mês a mês em ${S.year}`;
+  const subH = porAno && t.crescimentoPct != null ? `<em class="bas-ph-c${upH ? '' : ' neg'}">${upH ? '↑' : '↓'} ${pct(Math.abs(t.crescimentoPct))}</em>desde ${anosH[0].ano}` : pct1 != null && Math.abs(pct1) >= 0.0005 ? `<em class="bas-ph-c${pct1 >= 0 ? '' : ' neg'}">${pct1 >= 0 ? '↑' : '↓'} ${pct(Math.abs(pct1))}</em>em ${S.year}` : `em ${S.year}`;
   secs.historico = `<button class="card bas-w-ph" ${basIr('historico')} aria-label="Patrimônio ano a ano. Ver o histórico completo">
     <span class="bas-ph-h"><span class="bas-ph-t"><b>Patrimônio ano a ano</b><small>${subH}</small></span><span class="bas-ph-ir" aria-hidden="true">${I.chev}</span></span>
     <span class="bas-ph-g" aria-hidden="true"><svg viewBox="0 0 ${WH} ${HH}" preserveAspectRatio="none"><defs><linearGradient id="bas-ph-gr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="g0"/><stop offset="1" class="g1"/></linearGradient><linearGradient id="bas-ph-lg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" class="l0"/><stop offset="1" class="l1"/></linearGradient></defs>
-      ${[0.25, 0.5, 0.75].map((f) => `<line class="bas-ph-gr" x1="0" x2="${WH}" y1="${(HH * f).toFixed(1)}" y2="${(HH * f).toFixed(1)}"/>`).join('')}${porAno ? PH.map((q) => `<line class="bas-ph-gd" x1="${q[0].toFixed(1)}" x2="${q[0].toFixed(1)}" y1="${q[1].toFixed(1)}" y2="${HH}"/>`).join('') : ''}
       ${dH ? `<path class="bas-ph-a" d="${dH} L${PH[PH.length - 1][0].toFixed(1)} ${HH} L${PH[0][0].toFixed(1)} ${HH} Z" fill="url(#bas-ph-gr)"/><path class="bas-ph-l" d="${dH}" stroke="url(#bas-ph-lg)"/>` : ''}</svg>
-      ${PH.map((q, k) => `<i class="bas-ph-d${k === PH.length - 1 ? ' fim' : ''}${k === 0 && PH.length > 1 ? ' ini' : ''}" style="left:${xH(q)}%;top:${((q[1] / HH) * 100).toFixed(2)}%">${porAno || k === PH.length - 1 ? `<b>${tickFmt(ptsH[k].v)}</b>` : ''}</i>`).join('')}</span>
+      ${PH.map((q, k) => `<i class="bas-ph-d${k === PH.length - 1 ? ' fim' : ''}${k === 0 && PH.length > 1 ? ' ini' : ''}" style="left:${xH(q)}%;top:${((q[1] / HH) * 100).toFixed(2)}%"><b>${tickFmt(ptsH[k].v)}</b></i>`).join('')}</span>
     <span class="bas-ph-x" aria-hidden="true">${PH.map((q, k) => `<span class="${k === PH.length - 1 ? 'on' : ''}" style="left:${xH(q)}%">${ptsH[k].k}</span>`).join('')}</span></button>`;
   // Seu ano: a sobra de cada mês numa fileira de 12 cápsulas de luz (verde quando sobra, vermelho quando falta; os meses que vêm, apagados)
   secs.seuano = `<button class="card bas-w-ano bas-w-az" ${basIr('ano-resumo')}><span class="bas-w-az-h"><small>Seu ${S.year}</small><span class="bas-ph-ir" aria-hidden="true">${I.chev}</span></span>
