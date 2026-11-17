@@ -2827,3 +2827,25 @@ function basCatLim(area, tot) {
     <span class="bas-cat-bar" aria-hidden="true"><i style="width:${(uso * 100).toFixed(1)}%"></i></span>
     <div class="bas-cat-lr"><span><small>Usado</small><b>${pct(L.uso || 0)}</b></span><span><small>${passou ? 'Passou' : 'Ainda cabe'}</small><b>${brl(Math.abs(L.falta))}</b></span></div></div>`;
 }
+
+// vidro vivo, como o Liquid Glass do iPhone: ao segurar, o botão de vidro cresce com mola e acende onde está o dedo;
+// ao arrastar, estica para o lado do dedo (o brilho acompanha); ao soltar, volta quicando. Só nos botões de vidro dos fundos azuis
+const BAS_VV_SEL = '.bas-gt-bg :is(.olho, .bell, .bas-circ, .bas-per, .bas-gt-chip, .bas-ct2-b, .bas-var-p, .bas-cat-ed, .bas-ev-pct, .bas-ah2-anos button), .bas-noite :is(.olho, .bell, .bas-var-p, .bas-noite-par > *)';
+(function basVidroVivo() {
+  if (typeof document === 'undefined') return;
+  let el = null; let x0 = 0; let y0 = 0; let r0 = null; let raf = 0; let ult = null;
+  const solta = () => { if (!el) return; const b = el; el = null; cancelAnimationFrame(raf); b.classList.remove('vv-on'); ['--vx', '--vy', '--sx', '--sy', '--lx', '--ly'].forEach((k) => b.style.removeProperty(k)); };
+  const pinta = () => { raf = 0; if (!el || !ult) return; const dx = ult.x - x0; const dy = ult.y - y0; const d = Math.hypot(dx, dy) || 1; const k = Math.min(1, d / 70);
+    const sx = 1.12 + 0.14 * k * (Math.abs(dx) / d) - 0.06 * k * (Math.abs(dy) / d); const sy = 1.12 + 0.14 * k * (Math.abs(dy) / d) - 0.06 * k * (Math.abs(dx) / d);
+    const mola = (v) => 10 * Math.tanh(v / 30);
+    el.style.setProperty('--vx', `${mola(dx).toFixed(1)}px`); el.style.setProperty('--vy', `${mola(dy).toFixed(1)}px`);
+    el.style.setProperty('--sx', sx.toFixed(3)); el.style.setProperty('--sy', sy.toFixed(3));
+    el.style.setProperty('--lx', `${Math.max(0, Math.min(100, ((ult.x - r0.left) / r0.width) * 100)).toFixed(0)}%`); el.style.setProperty('--ly', `${Math.max(0, Math.min(100, ((ult.y - r0.top) / r0.height) * 100)).toFixed(0)}%`); };
+  document.addEventListener('pointerdown', (e) => {
+    if (document.body.dataset.ui !== 'basico' || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+    const b = e.target.closest && e.target.closest(BAS_VV_SEL); if (!b) return;
+    solta(); el = b; x0 = e.clientX; y0 = e.clientY; r0 = b.getBoundingClientRect(); ult = { x: x0, y: y0 }; pinta(); b.classList.add('vv-on');
+  }, { passive: true });
+  document.addEventListener('pointermove', (e) => { if (!el) return; if (!el.isConnected) { solta(); return; } ult = { x: e.clientX, y: e.clientY }; if (!raf) raf = requestAnimationFrame(pinta); }, { passive: true });
+  ['pointerup', 'pointercancel', 'blur'].forEach((t) => window.addEventListener(t, solta, { passive: true }));
+})();
