@@ -1513,7 +1513,7 @@ function basTelaAnoHist(o) {
   const ent = um ? +qS.entradas || 0 : L.entradas; const gas = um ? +qS.gastos || 0 : L.gastos; const sob = ent - gas;
   const topo = `<div class="bas-ah-anos bas-ah2-anos" role="group" aria-label="Escolher o ano">${anos.map((l) => `<button class="${l.ano === ano ? 'on' : ''}" data-act="bas-ah-ano" data-y="${l.ano}" aria-pressed="${l.ano === ano}">${l.ano}</button>`).join('')}</div>
     <small class="bas-pv2-k">Patrimônio ${L.parcial ? `até ${MES_LONGO[L.meses - 1]}` : `no fim de ${ano}`}</small><b class="bas-pv2-t">${basCent(L.patrimonioFim)}</b>
-    ${baseP > 0 && Math.abs(varP) >= 1 ? `<p class="bas-ah3-var ${varP >= 0 ? 'pos' : 'neg'}">${varP >= 0 ? '↗' : '↘'} ${brl0(Math.abs(varP))} ${varP >= 0 ? 'a mais' : 'a menos'} no ano <span>${pct(Math.abs(varP / baseP))}</span></p>` : ''}
+    ${baseP > 0 && Math.abs(varP) >= 1 ? `<p class="bas-ah3-var"><span class="bas-ah8-p ${varP >= 0 ? 'pos' : 'neg'}"><i aria-hidden="true">${varP >= 0 ? '↑' : '↓'}</i>${brl0(Math.abs(varP))} ${varP >= 0 ? 'a mais' : 'a menos'} no ano <em>${pct(Math.abs(varP / baseP))}</em></span></p>` : ''}
     ${linha}`;
   const mesC = `<div class="bas-ah6-h" aria-live="polite"><b>${um ? cap(MES_LONGO[sel]) : `No ano${L.parcial ? ' até agora' : ''}`}</b>${um ? `<button class="lnk" data-act="bas-ah-mes" data-m="${sel}">Ver o ano</button>` : ''}</div>
     <div class="bas-ah6-c"><div class="card"><em>Entrou</em><b class="pos">${brl0(ent)}</b></div><div class="card"><em>Saiu</em><b>${brl0(gas)}</b></div><div class="card"><em>Sobrou</em><b class="${sob < 0 ? 'neg' : ''}">${brl0(sob)}</b></div></div>`;

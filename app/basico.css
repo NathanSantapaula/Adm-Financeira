@@ -3876,3 +3876,12 @@ body[data-ui="basico"] :is(.bas-gt-bg, .bas[data-aba="inicio"] .bas-noite) .bas-
 .bas-ah4-p:not(.on) i { opacity: 0; }
 .bas-ah4-p.on i { box-shadow: 0 0 0 3px rgba(16, 28, 170, .8), 0 0 0 6px rgba(255, 255, 255, .22), 0 0 18px #fff; }
 .bas-ah4-g .bas-hs-a { opacity: .9; }
+/* variação do ano numa pílula de vidro, com a setinha verde (vermelha quando cai) */
+.bas-ah8-p { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px 6px 8px; border-radius: 999px; font-size: 14.5px; font-weight: 650; color: #fff;
+  background: linear-gradient(155deg, rgba(255, 255, 255, .30) 0%, rgba(255, 255, 255, .08) 42%, rgba(255, 255, 255, .03) 62%, rgba(255, 255, 255, .14) 100%);
+  -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .7), inset 0 -1px 0 rgba(255, 255, 255, .16), inset 0 0 14px rgba(255, 255, 255, .1), 0 8px 20px -10px rgba(0, 0, 30, .55); }
+.bas-ah8-p i { width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; font-style: normal; font-size: 13px; font-weight: 800; color: #fff; background: #30D158; box-shadow: 0 0 12px rgba(48, 209, 88, .55); }
+.bas-ah8-p.neg i { background: #FF4D6A; box-shadow: 0 0 12px rgba(255, 77, 106, .55); }
+.bas-ah8-p em { font-style: normal; font-size: 13px; font-weight: 700; color: rgba(255, 255, 255, .7); }
+.bas-pt-bg .bas-ah8-p.pos, .bas-pt-bg .bas-ah8-p.neg { color: #fff !important; }
