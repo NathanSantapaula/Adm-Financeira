@@ -2194,11 +2194,10 @@ const I_PAUSA = ic('<path d="M9 6.5v11M15 6.5v11"/>');
 function basTelaVoz() {
   const nome = String(S.profile.apelido || S.profile.nome || '').trim().split(' ')[0];
   return `<div class="bas-voz" data-est="parado">
-    <div class="bas-voz-painel" aria-hidden="true"><span class="bas-voz-pontos"></span><span class="bas-voz-luz"></span></div>
+    <div class="bas-voz-painel" aria-hidden="true"><span class="bas-voz-trama"></span><span class="bas-voz-luz"></span><span class="bas-voz-part">${Array.from({ length: 18 }, (_, k) => `<i style="--x:${(k * 37) % 100}%;--s:${1 + (k % 3)}px;--d:${7 + (k * 13) % 9}s;--k:${-((k * 7) % 11)}s"></i>`).join('')}</span></div>
     <header class="bas-voz-h"><button class="bas-voz-b" data-act="bas-voltar" aria-label="Voltar">${I_VOLTA}</button><b>Cifrão</b><button class="bas-voz-b" data-voz-troca aria-label="Trocar a voz do Cifrão">${I_IA_ASTER}</button></header>
     <div class="bas-voz-c" aria-live="polite"><div class="bas-voz-num" data-voz-num hidden></div>
-      <p class="bas-voz-t" data-voz-t><span class="oi">Olá${nome ? `, ${esc(nome)}` : ''}</span><span class="cm">Como posso ajudar?</span></p><div class="bas-voz-cta" data-voz-cta></div></div>
-    <p class="bas-voz-dica" data-voz-dica>Toque no Cifrão e fale</p>
+      <p class="bas-voz-t" data-voz-t><span class="oi">Olá${nome ? `, ${esc(nome)}` : ''}</span><span class="cm">Como posso ajudar?</span></p><div class="bas-voz-cta" data-voz-cta></div><p class="bas-voz-dica" data-voz-dica>Toque no Cifrão e fale</p></div>
     <div class="bas-voz-pe">
       <button class="bas-voz-lado" data-act="bas-voltar" aria-label="Escrever em vez de falar">${I_TECLADO}</button>
       <button class="bas-voz-orb" data-voz-orb aria-label="Falar com o Cifrão"><span class="bas-voz-ondas" aria-hidden="true"><i></i><i></i><i></i></span><span class="cifrao" data-sem-giro></span></button>
@@ -2224,8 +2223,9 @@ function basVozLigar() {
       if (k % 2) pos += p.length; });
     t.innerHTML = html;
     const m = txt.match(/R\$\s?[\d.]+(?:,\d{1,2})?/); num.hidden = !m;
-    if (m) { const alvo = parseReais(m[0].replace(/R\$\s?/, '')) || 0; num.innerHTML = `<b>${brl0(0)}</b>`; const b = num.firstChild; const t0 = performance.now();
-      const passo = (n) => { const k = Math.min(1, (n - t0) / 900); b.textContent = brl0(alvo * (1 - Math.pow(1 - k, 3))); if (k < 1 && b.isConnected) requestAnimationFrame(passo); }; requestAnimationFrame(passo); } };
+    if (m) { const alvo = parseReais(m[0].replace(/R\$\s?/, '')) || 0; num.innerHTML = '<b></b>'; const b = num.firstChild; const t0 = performance.now();
+      const pinta = (v) => { const tx = brl(v); const m0 = tx.match(/^(R\$\s?)(.*?)(,\d+)?$/); b.innerHTML = m0 ? `<span class="rs">R$</span>${esc(m0[2])}<span class="ct">${esc(m0[3] || '')}</span>` : esc(tx); };
+      const passo = (n) => { const k = Math.min(1, (n - t0) / 900); pinta(alvo * (1 - Math.pow(1 - k, 3))); if (k < 1 && b.isConnected) requestAnimationFrame(passo); }; requestAnimationFrame(passo); } };
   const falar = (txt) => {
     const ws = [...t.querySelectorAll('.w')]; const acende = (c) => ws.forEach((x) => x.classList.toggle('lido', +x.dataset.c <= c));
     if (!fala) { acende(1e9); est('parado', 'Toque no Cifrão para continuar'); return; }
