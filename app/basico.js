@@ -345,8 +345,8 @@ function basInicio() {
     <div class="bas-noite-par"><button ${basIr('entradas')}><small>Entrou</small><b>${basCent(ent)}</b></button><button data-act="bas-aba" data-v="gastos"><small>Saiu</small><b>${basCent(sai)}</b></button></div>
     </section>`;
   const g = objFoco(objAnalise());
-  secs.sonho = `<button class="card bas-sonho bas-sn2-w" ${basIr(g ? 'sonho-det' : 'sonho-novo', g ? { id: g.id } : undefined)}>${g ? `${basSnArte(g, 0, 'w')}<span class="bas-sn2-wt"><small>Seu sonho</small><b>${esc(objNomeDe(g))}</b><span>${brl0(g.saldo)} de ${brl0(g.valor)}</span><i class="bas-sn2-pb"><i style="width:${basSnPct(g)}%"></i></i></span><b class="bas-sn2-wp">${pct(g.progresso)}</b>`
-    : `<span class="bas-sn2-arte w novo" aria-hidden="true">${I.plus}</span><span class="bas-sn2-wt"><small>Seu sonho</small><b>Qual é o seu sonho?</b><span>Crie em menos de um minuto</span></span>${I.chev}`}</button>`;
+  secs.sonho = `<button class="card bas-sonho" ${basIr(g ? 'sonhos' : 'sonho-novo')}>${g ? `<span class="bas-sonho-l">${objIcone(g, 0)}${basNome(esc(objNomeDe(g)), `${brl0(g.saldo)} de ${brl0(g.valor)}`)}<b class="bas-pct">${pct(g.progresso)}</b></span>${basBarra(g.progresso)}`
+    : `<span class="bas-sonho-l"><span class="obj-ic" aria-hidden="true">${I.plus}</span>${basNome('Qual é o seu sonho?', 'Dê um nome e acompanhe quanto falta')}${I.chev}</span>`}</button>`;
   // Dá para investir: uma linha só, com ícone, valor e uma ficha curta do estado (ou o botão Investir); a meta vira só uma barra fina
   const dSit = D.disponivel > 0.005 ? '' : D.sobra > 0.005 ? ['ok', 'Tudo investido'] : !(ent > 0) && !(sai > 0) ? ['', 'Sem dados'] : ['', 'Sem sobra'];
   const dMeta = D.meta > 0 ? Math.min(1, (D.aportado || 0) / D.meta) : null;
@@ -2139,8 +2139,7 @@ function basTelaSonhos() {
       <span class="bas-sn2-hb"><i style="width:${basSnPct(g)}%"></i></span><small class="bas-sn2-hp">${pct(g.progresso)}${g.ano ? ` · até ${g.ano}` : ''}</small></div>`
     : `<div class="bas-sn2-hero vazio"><span class="bas-sn2-flut">${basSnArte({ tipo: 'outro' }, 0, 'hero')}</span><b class="bas-sn2-hn">Qual é o seu sonho?</b><p class="bas-sn2-hv"><span>Dê um nome a ele e veja quanto falta, mês a mês.</span></p></div>`;
   const tile = (x, i) => `<button class="bas-sn2-t${g && x.id === g.id ? ' on' : ''}" ${basIr('sonho-det', { id: x.id })} style="--i:${i}">${basSnArte(x, i)}${g && x.id === g.id ? '<em class="bas-sn2-pri">Principal</em>' : ''}<b>${esc(objNomeDe(x))}</b><small>${brl0(x.saldo)} · ${pct(x.progresso)}</small><i class="bas-sn2-pb"><i style="width:${basSnPct(x)}%"></i></i></button>`;
-  const folha = `<div class="bas-sn2-g">${L.map(tile).join('')}<button class="bas-sn2-t novo" ${basIr('sonho-novo')} style="--i:${L.length}"><span class="bas-sn2-arte novo" aria-hidden="true">${I.plus}</span><b>Novo sonho</b><small>Leva menos de um minuto</small></button></div>
-    <p class="bas-disc keep">Projeção ilustrativa, sem promessa de rentabilidade.</p>`;
+  const folha = `<div class="bas-sn2-g">${L.map(tile).join('')}<button class="bas-sn2-t novo" ${basIr('sonho-novo')} style="--i:${L.length}"><span class="bas-sn2-arte novo" aria-hidden="true">${I.plus}</span><b>Novo sonho</b><small>Leva menos de um minuto</small></button></div>`;
   return basPgAzul('bas-pg-sn2', 'Meus sonhos', topo, folha);
 }
 const BAS_SN_COR = { concluido: 'ok', 'no-prazo': 'ok', atrasado: 'atencao', fora: 'baixo', 'sem-prazo': '', 'sem-divisao': 'atencao', 'sem-valor': '' };
@@ -2155,8 +2154,7 @@ function basTelaSonhoDet(o) {
     <section class="card bas-sn2-st"><span class="bas-sn-st ${BAS_SN_COR[g.status] || ''}">${esc(cap(BAS_OBJ_ST[g.status] || ''))}</span><p>${esc(objFrase(g))}</p></section>
     <div class="bas-sn2-acs"><button class="btn primary lg" ${basIrInv()}>${I.plus}Guardar dinheiro</button>${basPago() ? `<button class="btn lg" ${basIr('simular', { id: g.id })}>E se eu investir mais?</button>` : ''}</div>
     ${basSecao('Os números', '', `<ul class="card bas-pv2-ls">${lin('Falta', brl0(g.falta), I_GASTO, 'var(--accent)')}${lin('Vai por mês', brl0(g.aporte), I.inv, 'var(--pos)')}${g.necessario != null ? lin('Precisa por mês', brl0(g.necessario), I_PROV, '#F5B83D') : ''}${lin('Do patrimônio', g.modo === 'marco' ? 'todo' : `${g.pct}%`, I.inv, '#30B0C7')}</ul>`)}
-    <div class="bas-sn2-lks">${principal ? '' : `<button class="lnk strong" data-act="bas-foco" data-id="${esc(g.id)}" data-volta="1">Tornar o principal</button>`}<button class="lnk strong" ${basIr('objetivo', { id: g.id })}>Editar sonho</button></div>
-    <p class="bas-disc keep">Projeção ilustrativa, sem promessa de rentabilidade.</p>`;
+    <div class="bas-sn2-lks">${principal ? '' : `<button class="lnk strong" data-act="bas-foco" data-id="${esc(g.id)}" data-volta="1">Tornar o principal</button>`}<button class="lnk strong" ${basIr('objetivo', { id: g.id })}>Editar sonho</button></div>`;
   return basPgAzul('bas-pg-sn2d', esc(objNomeDe(g)), topo, folha);
 }
 // Criar um sonho, no jeito do fluxo do Believe: roda curva para o tipo, nome, valor e prazo; o cartão se forma em pontinhos e nasce com confete
@@ -2167,15 +2165,17 @@ function basTelaSonhoNovo(o) {
   const barra = st.p < BAS_SN2_PASSOS ? `<div class="bas-sn2-nh"><button class="bas-gp-x" ${st.p ? `data-act="bas-sn2-ir" data-p="${st.p - 1}"` : 'data-act="bas-voltar"'} aria-label="${st.p ? 'Voltar' : 'Fechar'}">${st.p ? I_VOLTA : I.x}</button><span class="bas-sn2-prog" aria-label="Passo ${st.p + 1} de ${BAS_SN2_PASSOS}">${[0, 1, 2].map((k) => `<i class="${k <= st.p ? 'on' : ''}"></i>`).join('')}</span><span class="bas-sn2-nh-v" aria-hidden="true"></span></div>` : '';
   let corpo = '';
   if (st.p === 0) corpo = `<div class="bas-sn2-passo"><span class="bas-sn2-cx" aria-hidden="true">${basSnArte({ tipo: st.tipo }, 0, 'cx')}</span><small class="bas-sn2-q">O que você quer conquistar?</small><h2 class="bas-sn2-tt" data-sn2-nome>${esc(nomeT(st.tipo))}</h2>
-      <div class="bas-sn2-roda" role="listbox" aria-label="Tipo de sonho">${tipos.map(([k, n]) => `<button class="bas-sn2-ri${k === st.tipo ? ' on' : ''}" data-sn2-tipo="${k}" role="option" aria-selected="${k === st.tipo}" aria-label="${esc(n)}">${basSnArte({ tipo: k }, 0, 'ri')}</button>`).join('')}</div>
+      <div class="bas-sn2-roda" role="listbox" tabindex="0" aria-label="Tipo de sonho. Deslize ou use as setas.">${tipos.map(([k, n], i) => `<button class="bas-sn2-ri${k === st.tipo ? ' on' : ''}" data-sn2-tipo="${k}" data-i="${i}" role="option" aria-selected="${k === st.tipo}" aria-label="${esc(n)}" tabindex="-1">${basSnArte({ tipo: k }, 0, 'ri')}</button>`).join('')}</div>
       <p class="bas-sn2-dica">Deslize para escolher</p></div>
     <button class="btn primary lg bas-cta bas-sn2-cta" data-act="bas-sn2-ir" data-p="1">Continuar</button>`;
   else if (st.p === 1) corpo = `<div class="bas-sn2-passo"><span class="bas-sn2-cx sobe" aria-hidden="true">${basSnArte({ tipo: st.tipo }, 0, 'cx')}</span><small class="bas-sn2-q">${esc(nomeT(st.tipo))}</small><h2 class="bas-sn2-tt">Como você chama esse sonho?</h2>
       <input class="bas-sn2-in" data-sn2="nome" value="${esc(st.nome)}" placeholder="${esc(st.tipo === 'viagem' ? 'Ex.: Viagem ao Japão' : st.tipo === 'imovel' ? 'Ex.: Apartamento novo' : st.tipo === 'carro' ? 'Ex.: Carro elétrico' : `Ex.: ${nomeT(st.tipo)}`)}" maxlength="40" enterkeyhint="next" aria-label="Nome do sonho"><p class="bas-sn2-dica">Opcional. Sem nome, ele se chama ${esc(nomeT(st.tipo))}.</p></div>
     <button class="btn primary lg bas-cta bas-sn2-cta" data-act="bas-sn2-ir" data-p="2">Continuar</button>`;
   else if (st.p === 2) corpo = `<div class="bas-sn2-passo"><small class="bas-sn2-q">${esc(st.nome || nomeT(st.tipo))}</small><h2 class="bas-sn2-tt">Quanto ele custa?</h2>
-      <label class="bas-sn2-val"><span>R$</span><input data-sn2="valor" value="${esc(st.valor)}" inputmode="decimal" placeholder="0" aria-label="Quanto custa"></label>
-      <small class="bas-sn2-q2">Para quando?</small><div class="bas-sn2-anos" role="group" aria-label="Para quando">${[1, 2, 3, 5, 8, 10].map((n) => NOW_Y + n).concat([0]).map((a) => `<button class="${(st.ano || 0) === a ? 'on' : ''}" data-act="bas-sn2-ano" data-v="${a}" aria-pressed="${(st.ano || 0) === a}">${a || 'Sem prazo'}</button>`).join('')}</div></div>
+      <label class="bas-sn2-val"><small>R$</small><input data-sn2="valor" value="${esc(st.valor)}" inputmode="decimal" placeholder="0" aria-label="Quanto custa, em reais"></label>
+      <small class="bas-sn2-q2">Para quando?</small>
+      <div class="bas-sn2-prazo" data-sn2-prazo><button type="button" data-act="bas-sn2-ano" data-d="-1" aria-label="Um ano antes">−</button><span><b data-sn2-ano>${st.ano || 'Sem prazo'}</b><small data-sn2-anos>${st.ano ? `daqui a ${st.ano - NOW_Y} ${st.ano - NOW_Y === 1 ? 'ano' : 'anos'}` : 'você pode definir depois'}</small></span><button type="button" data-act="bas-sn2-ano" data-d="1" aria-label="Um ano depois">+</button></div>
+      <button type="button" class="bas-sn2-semp${st.ano ? '' : ' on'}" data-act="bas-sn2-ano" data-v="0">Sem prazo</button></div>
     <button class="btn primary lg bas-cta bas-sn2-cta" data-act="bas-sn2-criar">Criar meu sonho</button>`;
   else if (st.p === 3) corpo = `<div class="bas-sn2-forma" aria-live="polite"><small class="bas-sn2-q">Criando seu sonho</small><div class="bas-sn2-pontos" aria-hidden="true">${Array.from({ length: 48 }, (_, k) => `<i style="--k:${k};--x:${(k % 8)};--y:${Math.floor(k / 8)}"></i>`).join('')}</div><p class="bas-sn2-dica">Organizando o plano mês a mês…</p></div>`;
   else { const g = objAnalise().itens.find((x) => x.id === st.id) || { tipo: st.tipo, nome: st.nome, valor: parseReais(st.valor) || 0, ano: st.ano, progresso: 0 };
@@ -2272,21 +2272,28 @@ function basSn2Ligar() {
   if (document.querySelector('img[data-o3][hidden]') && typeof objMiniLigar === 'function') objMiniLigar();
   document.querySelectorAll('[data-sn2]').forEach((e) => { if (e.dataset.lig) return; e.dataset.lig = '1'; e.addEventListener('input', () => { if (S.basSn2) S.basSn2[e.dataset.sn2] = e.value; }); });
   const roda = document.querySelector('.bas-sn2-roda');
-  if (roda && !roda.dataset.lig) { roda.dataset.lig = '1'; const its = [...roda.children]; let t = 0;
-    const curva = () => { const r = roda.getBoundingClientRect(); const c = r.left + r.width / 2; let perto = null; let dm = 1e9;
-      its.forEach((b) => { const br = b.getBoundingClientRect(); const d = (br.left + br.width / 2 - c) / br.width; const a = Math.min(Math.abs(d), 3);
-        b.style.transform = `translateY(${(a * a * 9).toFixed(1)}px) rotate(${(d * 7).toFixed(1)}deg) scale(${(1.18 - a * 0.16).toFixed(3)})`; b.style.opacity = String(Math.max(0.25, 1 - a * 0.28));
-        if (Math.abs(d) < dm) { dm = Math.abs(d); perto = b; } });
-      return perto; };
-    const escolhe = () => { const b = curva(); if (!b || !S.basSn2) return; const k = b.dataset.sn2Tipo; if (S.basSn2.tipo === k) return; S.basSn2.tipo = k;
-      its.forEach((x) => { const on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-selected', String(on)); });
-      const n = document.querySelector('[data-sn2-nome]'); if (n) n.textContent = (OBJETIVOS.find((x) => x[0] === k) || [, ''])[1];
-      const cx = document.querySelector('.bas-sn2-cx img'); const M = typeof O3_MINI !== 'undefined' && O3_MINI.get(k === 'outro' ? 'outro' : k); if (cx && M) cx.src = M;
-      const ic = document.querySelector('.bas-sn2-cx .bas-sn2-ic'); if (ic) ic.innerHTML = objIcone({ tipo: k }, 0);
-      if (typeof basVibra === 'function') basVibra(8); };
-    roda.addEventListener('scroll', () => { curva(); clearTimeout(t); t = setTimeout(escolhe, 90); }, { passive: true });
-    its.forEach((b) => b.addEventListener('click', () => b.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })));
-    const sel = roda.querySelector('.on') || its[0]; roda.scrollLeft = sel.offsetLeft - (roda.clientWidth - sel.offsetWidth) / 2; curva(); }
+  if (roda && !roda.dataset.lig) { roda.dataset.lig = '1'; const its = [...roda.children]; const PASSO = 84; const n = its.length;
+    let pos = Math.max(0, its.findIndex((b) => b.classList.contains('on'))); let alvo = pos; let vel = 0; let raf = 0; let arr = null; let ult = 0;
+    const desenha = () => { its.forEach((b, i) => { const d = i - pos; const a = Math.min(Math.abs(d), 3.2);
+      b.style.transform = `translate(-50%, -50%) translateX(${(d * PASSO).toFixed(1)}px) translateY(${(a * a * 7).toFixed(1)}px) rotate(${(d * 6).toFixed(1)}deg) scale(${(1.16 - a * 0.15).toFixed(3)})`;
+      b.style.opacity = String(Math.max(0, 1 - a * 0.3)); b.style.zIndex = String(100 - Math.round(a * 10)); }); };
+    const escolhe = (i) => { const k = its[i].dataset.sn2Tipo; if (!S.basSn2 || S.basSn2.tipo === k) return; S.basSn2.tipo = k;
+      its.forEach((x, j) => { x.classList.toggle('on', j === i); x.setAttribute('aria-selected', String(j === i)); });
+      const nm = document.querySelector('[data-sn2-nome]'); if (nm) nm.textContent = (OBJETIVOS.find((x) => x[0] === k) || [, ''])[1];
+      const cx = document.querySelector('.bas-sn2-cx img'); const M = typeof O3_MINI !== 'undefined' && O3_MINI.get(k); if (cx && M) cx.src = M;
+      const ic0 = document.querySelector('.bas-sn2-cx .bas-sn2-ic'); if (ic0) ic0.innerHTML = objIcone({ tipo: k }, 0); basVibra(6); };
+    const mola = () => { const f = (alvo - pos) * 0.16; vel = vel * 0.72 + f; pos += vel; if (Math.abs(alvo - pos) < 0.002 && Math.abs(vel) < 0.002) { pos = alvo; desenha(); raf = 0; return; } desenha(); raf = requestAnimationFrame(mola); };
+    const vai = (i) => { alvo = Math.max(0, Math.min(n - 1, i)); escolhe(alvo); if (!raf) raf = requestAnimationFrame(mola); };
+    roda.addEventListener('pointerdown', (e) => { arr = { x: e.clientX, p: pos, t: performance.now(), mov: false }; ult = e.clientX; vel = 0; cancelAnimationFrame(raf); raf = 0; try { roda.setPointerCapture(e.pointerId); } catch (x) { /* sem captura */ } });
+    roda.addEventListener('pointermove', (e) => { if (!arr) return; const dx = e.clientX - arr.x; if (Math.abs(dx) > 4) arr.mov = true;
+      pos = Math.max(-0.4, Math.min(n - 0.6, arr.p - dx / PASSO)); vel = -(e.clientX - ult) / PASSO; ult = e.clientX; desenha(); const i = Math.round(Math.max(0, Math.min(n - 1, pos))); escolhe(i); });
+    const solta = (e) => { if (!arr) return; const a = arr; arr = null;
+      if (!a.mov) { const b = e.target.closest && e.target.closest('.bas-sn2-ri'); vai(b ? +b.dataset.i : Math.round(pos)); return; }
+      vai(Math.round(pos + vel * 6)); };
+    roda.addEventListener('pointerup', solta); roda.addEventListener('pointercancel', solta);
+    roda.addEventListener('click', (e) => e.preventDefault());
+    roda.addEventListener('keydown', (e) => { if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') { e.preventDefault(); vai(Math.round(alvo) + (e.key === 'ArrowRight' ? 1 : -1)); } });
+    desenha(); }
   const forma = document.querySelector('.bas-pg-sn2n[data-p="3"]');
   if (forma && !forma.dataset.lig) { forma.dataset.lig = '1'; const rm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
     setTimeout(() => { if (S.basSn2 && S.basSn2.p === 3) { S.basSn2.p = 4; render(); if (typeof basVibra === 'function') basVibra(30); } }, rm ? 300 : 1900); }
@@ -2648,7 +2655,7 @@ function basTelaPlanejamento() {
     ${livres.length ? `<div class="bas-lim-add"><small>Pôr limite em</small>${livres.map((a) => `<button ${basIr('limite', { area: a })}>${I.plus}${esc(a)}</button>`).join('')}</div>` : ''}</div>`;
   const e = S.profile.instEstilo || 'auto';
   const inst = `<div class="card bas-pj-inst"><div class="bas-pj-ig">${INSTITUICOES.map(([id, nome]) => `<label class="bas-pj-i"><input type="checkbox" data-bas-inst="${id}" ${instMinhas().includes(id) ? 'checked' : ''}>${instIcone(id)}<span>${esc(nome)}</span><i class="bas-pj-ok" aria-hidden="true">${I.check}</i></label>`).join('')}</div>
-    <small class="bas-pj-n">Estilo dos ícones</small><div class="seg bas-temas bas-pj-est" role="group" aria-label="Estilo dos ícones">${INST_ESTILOS.map(([v, l]) => `<button class="${e === v ? 'on' : ''}" data-act="inst-estilo" data-v="${v}" aria-pressed="${e === v}">${l}</button>`).join('')}</div></div>`;
+</div>`;
   const n = instMinhas().length;
   return basDet('Planejamento', `<p class="bas-p">Metas, limites e o que o app usa para fazer as contas de ${S.year}.</p>${basSecao('Metas', '', metas)}${basSecao('Limites por categoria', '', limites)}
     ${basSecao('Minhas instituições', `<small class="bas-pj-n">${n ? `${n} ${n === 1 ? 'marcada' : 'marcadas'}` : 'Nenhuma'}</small>`, `<p class="bas-p">Marque os bancos e cartões que você usa. Só eles aparecem ao lançar um gasto.</p>${inst}`)}
@@ -2816,7 +2823,11 @@ function basAcao(act, ds, el) {
     case 'bas-cc-cor': if (instDe(ds.id) && /^#[0-9a-f]{6}$/i.test(ds.v || '')) basCcGrava(ds.id, 'c', ds.v); return true;
     case 'bas-gasto-rec': { const f = el.closest('form'); const x = basMemGastos().get(ds.k); if (f && x) { f.querySelector('[name="desc"]').value = x.desc; basGastoLembra(f, x, true); basSom('toque'); } return true; }
     case 'bas-sn2-ir': { const st = S.basSn2; if (!st) return true; st.p = Math.max(0, Math.min(2, +ds.p)); basSom('toque'); render(); setTimeout(() => { const i = document.querySelector('[data-sn2]'); if (i && st.p === 1) i.focus(); }, 60); return true; }
-    case 'bas-sn2-ano': if (S.basSn2) { S.basSn2.ano = +ds.v || null; basSom('toque'); render(); } return true;
+    case 'bas-sn2-ano': { const st = S.basSn2; if (!st) return true;
+      st.ano = ds.v != null ? null : Math.max(NOW_Y + 1, Math.min(NOW_Y + 40, (st.ano || NOW_Y) + (+ds.d || 0)));
+      const b = document.querySelector('[data-sn2-ano]'); const sm = document.querySelector('[data-sn2-anos]'); const n = st.ano ? st.ano - NOW_Y : 0;
+      if (b) b.textContent = st.ano || 'Sem prazo'; if (sm) sm.textContent = st.ano ? `daqui a ${n} ${n === 1 ? 'ano' : 'anos'}` : 'você pode definir depois';
+      document.querySelector('.bas-sn2-semp')?.classList.toggle('on', !st.ano); basSom('toque'); basVibra(6); return true; }
     case 'bas-sn2-criar': basSn2Criar(); return true;
     case 'bas-sn2-ver': { const id = ds.id; basFechar(); setTimeout(() => basAbrir('sonho-det', { id }), 380); return true; }
     case 'bas-ah-mes': S.basAhMes = S.basAhMes === +ds.m ? null : +ds.m; basSom('toque'); render(); return true;
