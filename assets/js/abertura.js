@@ -33,7 +33,7 @@ function abTemaApp() {
     A.T = { escuro: false, app: true, noite, vidro: true, bg: [244, 246, 249], ink: tinta, ink2: [71, 85, 105], acc: [37, 99, 235], acc2: [14, 165, 233], pos: [16, 163, 110], neg: k('--neg'), ouro: [234, 160, 0],
       cls: vivas.concat(cls.slice(6)), poeiraK: 1.4,
       // joia de cristal azul: ciano no alto à esquerda (a luz batendo), azul royal na base; continentes em branco puro
-      luz: branco, terra: branco, terraA: 1, grade: branco, soma: 'source-over', aroK: 0.55,
+      luz: branco, terra: branco, terraA: 1, soma: 'source-over', aroK: 0.55,
       esfera: { brilho: [56, 189, 248], meio: [37, 99, 235], borda: [29, 78, 216], a: [0.85, 0.82, 0.8] }, veu: [29, 78, 216],
       pts: vivas, poeira: [[37, 99, 235], [14, 165, 233], [99, 102, 241], [56, 189, 248]],
       texto: branco, texto2: [224, 236, 255], sobe: [150, 245, 210] }; return; }
