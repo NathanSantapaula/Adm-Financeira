@@ -1470,7 +1470,7 @@ function basBarras(vals, sel, cls) {
 // cápsulas da sobra de cada mês (widget Seu ano e a tela): brancas quando sobra, vermelhas quando falta, os meses que vêm apagados
 function basCapsulas(sob, ult, cls) {
   const mx = Math.max(1, ...sob.slice(0, ult + 1).map((v) => Math.abs(v)));
-  return `<span class="bas-cap${cls ? ' ' + cls : ''}" aria-hidden="true">${sob.map((v, i) => `<span class="${i > ult ? 'fut' : v < 0 ? 'neg' : 'pos'}${i === ult ? ' on' : ''}" style="--h:${i > ult ? 8 : Math.max(10, (Math.abs(v) / mx) * 100).toFixed(1)}%;--i:${i}"><i></i><b>${MES[i][0]}</b></span>`).join('')}</span>`;
+  return `<span class="bas-cap${cls ? ' ' + cls : ''}" aria-hidden="true">${sob.map((v, i) => `<span class="${i > ult ? 'fut' : v < 0 ? 'neg' : 'pos'}${i === ult ? ' on' : ''}" style="--h:${i > ult ? 4 : Math.max(8, (Math.abs(v) / mx) * 100).toFixed(1)}%;--i:${i}">${i === ult ? `<small>${tickFmt(v)}</small>` : ''}<i></i><b>${MES[i][0]}</b></span>`).join('')}</span>`;
 }
 // página no padrão azul das outras (topo azul com o número grande e a folha por baixo)
 const basPgAzul = (cls, tit, topo, folha) => `<div class="bas-pg bas-pg-az ${cls}"><div class="bas-gt-bg bas-pt-bg">
