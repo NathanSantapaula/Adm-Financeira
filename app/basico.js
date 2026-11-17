@@ -823,7 +823,7 @@ function basIaxLigar() {
 function basDesenhar() {
   const st = document.getElementById('bas-o3');
   if (st) { const falhou = () => st.classList.add('sem-3d'); if (typeof o3Ligar === 'function') o3Ligar(st, st.dataset.tipo, falhou); else falhou(); }
-  basIaxLigar(); basCifVe(); basGfLigar(); basPeriodoRepinta(); { const f = document.querySelector('.bas-form'); if (f && f.querySelector('[name="areaIc"]') && !f.dataset.ic) { f.dataset.ic = '1'; f.addEventListener('change', (e) => { if (e.target.name !== 'area') return; const r = f.querySelector(`[name="areaIc"][value="${basCatIcId(e.target.value)}"]`); if (r) r.checked = true; }); } } { const on = document.querySelector('.bas-cce-m.on'); const col = on && on.parentElement; if (col && !col.dataset.vis) { col.dataset.vis = '1'; col.scrollTop = on.offsetTop - col.clientHeight / 2 + on.offsetHeight / 2; } } basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basAtLigar(); basEfLigar(); basCtwLigar(); basOiLigar(); basInvLigar(); basIgLigar(); basGfPickLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
+  basAhLigar(); basIaxLigar(); basCifVe(); basGfLigar(); basPeriodoRepinta(); { const f = document.querySelector('.bas-form'); if (f && f.querySelector('[name="areaIc"]') && !f.dataset.ic) { f.dataset.ic = '1'; f.addEventListener('change', (e) => { if (e.target.name !== 'area') return; const r = f.querySelector(`[name="areaIc"][value="${basCatIcId(e.target.value)}"]`); if (r) r.checked = true; }); } } { const on = document.querySelector('.bas-cce-m.on'); const col = on && on.parentElement; if (col && !col.dataset.vis) { col.dataset.vis = '1'; col.scrollTop = on.offsetTop - col.clientHeight / 2 + on.offsetHeight / 2; } } basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basAtLigar(); basEfLigar(); basCtwLigar(); basOiLigar(); basInvLigar(); basIgLigar(); basGfPickLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
   const wr = document.querySelector('.bas-wr'); if (wr && !wr.dataset.lig) { wr.dataset.lig = '1'; basWrIr(wr, 0); }
   const sq = document.querySelector('[data-sq-conta]'); if (sq && !sq.dataset.lig && !matchMedia('(prefers-reduced-motion: reduce)').matches) { sq.dataset.lig = '1'; const alvo = +sq.dataset.sqConta; const t0 = performance.now();
     const passo = (t) => { const k = Math.min(1, (t - t0) / 900); sq.textContent = Math.round(alvo * (1 - Math.pow(1 - k, 3))); if (k < 1 && sq.isConnected) requestAnimationFrame(passo); }; if (alvo > 0) requestAnimationFrame(passo); }
@@ -1508,20 +1508,26 @@ function basTelaAnoHist(o) {
   const W = 320; const Hh = 130; const vs = ser.map((q) => q.patrimonio); const mn = Math.min(...vs, L.patrimonioInicio); const mx = Math.max(...vs, 1); const fg = (mx - mn) * 0.15 || mx * 0.05 || 1;
   const xM = (m) => ((m + 0.5) / 12) * W; const yV = (v) => Hh - 8 - ((v - (mn - fg)) / ((mx + fg) - (mn - fg))) * (Hh - 34);
   const mxD = Math.max(1, ...ser.map((q) => +q.proventos || 0)); const PA = ser.map((q) => [xM(q.mes), yV(q.patrimonio)]); const dA = PA.length > 1 ? basCurva(PA) : ''; const ultQ = ser[ser.length - 1]; const foco = um ? sel : ultQ ? ultQ.mes : null;
-  const linha = `<div class="bas-ah4-g"><svg viewBox="0 0 ${W} ${Hh}" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="bas-ah4g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".3"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
+  const nums = (e0, g0, a0, d0) => ({ ent: brl0(e0), gas: brl0(g0), sob: brl0(e0 - g0), neg: e0 - g0 < 0 ? 1 : 0, apo: brl0(a0), div: brl0(d0) });
+  const anoApo = (L.aplicado != null ? L.aplicado : L.aportes) || 0;
+  const DD = { ult: ultQ ? ultQ.mes : null, ano: Object.assign(nums(L.entradas || 0, L.gastos || 0, anoApo, L.proventos || 0), { t: `No ano${L.parcial ? ' até agora' : ''}` }), m: {} };
+  ser.forEach((q) => { DD.m[q.mes] = Object.assign(nums(+q.entradas || 0, +q.gastos || 0, +q.aplicado || 0, +q.proventos || 0), { t: cap(MES_LONGO[q.mes]), pl: tickFmt(q.patrimonio) }); });
+  const linha = `<div class="bas-ah4-g" role="slider" tabindex="0" aria-label="Escolha um mês: toque ou arraste" data-d="${esc(JSON.stringify(DD))}"><svg viewBox="0 0 ${W} ${Hh}" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="bas-ah4g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".3"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs>
       ${dA ? `<path class="bas-hs-a" d="${dA} L${PA[PA.length - 1][0].toFixed(1)} ${Hh} L${PA[0][0].toFixed(1)} ${Hh} Z" fill="url(#bas-ah4g)"/><path class="bas-ah4-h" d="${dA}"/><path class="bas-hs-l bas-ah4-l" d="${dA}"/>` : ''}</svg>
-      ${ser.map((q) => { const on = q.mes === foco; return `<button class="bas-ah4-p${on ? ' on' : ''}" data-act="bas-ah-mes" data-m="${q.mes}" style="left:${((xM(q.mes) / W) * 100).toFixed(2)}%;top:${((yV(q.patrimonio) / Hh) * 100).toFixed(2)}%" aria-label="${cap(MES_LONGO[q.mes])}: ${esc(brl0(q.patrimonio))}" aria-pressed="${q.mes === sel}"><i></i>${on ? `<b>${tickFmt(q.patrimonio)}</b>` : ''}</button>`; }).join('')}</div>
+      ${ser.map((q) => { const on = q.mes === foco; return `<span class="bas-ah4-p${on ? ' on' : ''}" data-m="${q.mes}" style="left:${((xM(q.mes) / W) * 100).toFixed(2)}%;top:${((yV(q.patrimonio) / Hh) * 100).toFixed(2)}%" aria-label="${cap(MES_LONGO[q.mes])}: ${esc(brl0(q.patrimonio))}" aria-pressed="${q.mes === sel}"><i></i>${on ? `<b>${tickFmt(q.patrimonio)}</b>` : ''}</span>`; }).join('')}</div>
     <div class="bas-ah7-dv" aria-hidden="true">${MES.map((n, m) => { const q = ser.find((x0) => x0.mes === m); const d = q ? +q.proventos || 0 : 0; return `<span class="${m === foco ? 'on' : ''}"><i style="--h:${d > 0 ? Math.max(8, (d / mxD) * 100).toFixed(1) : 0}%"></i></span>`; }).join('')}</div>
     <div class="bas-ah2-x" aria-hidden="true">${MES.map((n, m) => `<span class="${m === foco ? 'on' : ser.some((q) => q.mes === m) ? '' : 'fut'}">${n[0]}</span>`).join('')}</div>
     <p class="bas-ah7-leg"><span><i class="l"></i>Patrimônio</span><span><i class="d"></i>Dividendos do mês</span></p>`;
   const qS = um ? ser.find((x0) => x0.mes === sel) : null;
+  const apo = um ? +qS.aplicado || 0 : (L.aplicado != null ? L.aplicado : L.aportes) || 0; const div = um ? +qS.proventos || 0 : L.proventos || 0;
   const ent = um ? +qS.entradas || 0 : L.entradas; const gas = um ? +qS.gastos || 0 : L.gastos; const sob = ent - gas;
   const topo = `<div class="bas-ah-anos bas-ah2-anos" role="group" aria-label="Escolher o ano">${anos.map((l) => `<button class="${l.ano === ano ? 'on' : ''}" data-act="bas-ah-ano" data-y="${l.ano}" aria-pressed="${l.ano === ano}">${l.ano}</button>`).join('')}</div>
     <small class="bas-pv2-k">Patrimônio ${L.parcial ? `até ${MES_LONGO[L.meses - 1]}` : `no fim de ${ano}`}</small><b class="bas-pv2-t">${basCent(L.patrimonioFim)}</b>
     ${baseP > 0 && Math.abs(varP) >= 1 ? `<p class="bas-ah3-var"><span class="bas-ah8-p ${varP >= 0 ? 'pos' : 'neg'}"><i aria-hidden="true">${varP >= 0 ? '↑' : '↓'}</i>${brl0(Math.abs(varP))} ${varP >= 0 ? 'a mais' : 'a menos'} no ano <em>${pct(Math.abs(varP / baseP))}</em></span></p>` : ''}
     ${linha}`;
-  const mesC = `<div class="bas-ah6-h" aria-live="polite"><b>${um ? cap(MES_LONGO[sel]) : `No ano${L.parcial ? ' até agora' : ''}`}</b>${um ? `<button class="lnk" data-act="bas-ah-mes" data-m="${sel}">Ver o ano</button>` : ''}</div>
-    <div class="bas-ah6-c"><div class="card"><em>Entrou</em><b class="pos">${brl0(ent)}</b></div><div class="card"><em>Saiu</em><b>${brl0(gas)}</b></div><div class="card"><em>Sobrou</em><b class="${sob < 0 ? 'neg' : ''}">${brl0(sob)}</b></div></div>`;
+  const mesC = `<div class="bas-ah6-h" aria-live="polite"><b data-ahk="t">${um ? cap(MES_LONGO[sel]) : `No ano${L.parcial ? ' até agora' : ''}`}</b><button class="lnk" data-act="bas-ah-ano-todo" ${um ? '' : 'hidden'}>Ver o ano</button></div>
+    <div class="bas-ah6-c"><div class="card"><em>Entrou</em><b class="pos" data-ahk="ent">${brl0(ent)}</b></div><div class="card"><em>Gastos</em><b data-ahk="gas">${brl0(gas)}</b></div><div class="card"><em>Sobrou</em><b class="${sob < 0 ? 'neg' : ''}" data-ahk="sob">${brl0(sob)}</b></div></div>
+    <div class="bas-ah6-c dois"><div class="card"><em>Aportes</em><b class="inv" data-ahk="apo">${brl0(apo)}</b></div><div class="card"><em>Dividendos</em><b class="div" data-ahk="div">${brl0(div)}</b></div></div>`;
   // a análise do ano, como na tela antiga: melhor mês, mês mais apertado e o ano com a média por mês
   const sobQ = (q) => (+q.entradas || 0) - (+q.gastos || 0); const nM = Math.max(1, ser.length);
   const melhor = ser.length ? ser.reduce((b, q) => (sobQ(q) > sobQ(b) ? q : b)) : null; const pior = ser.length ? ser.reduce((b, q) => (sobQ(q) < sobQ(b) ? q : b)) : null;
@@ -1779,6 +1785,24 @@ function basAnalise(m, de, ate) {
 const basCurva = (pts) => pts.map((p0, i) => { if (!i) return `M${p0[0].toFixed(1)} ${p0[1].toFixed(1)}`; const a = pts[i - 2] || pts[i - 1]; const b = pts[i - 1]; const d = pts[i + 1] || p0;
   return `C${(b[0] + (p0[0] - a[0]) / 6).toFixed(1)} ${(b[1] + (p0[1] - a[1]) / 6).toFixed(1)} ${(p0[0] - (d[0] - b[0]) / 6).toFixed(1)} ${(p0[1] - (d[1] - b[1]) / 6).toFixed(1)} ${p0[0].toFixed(1)} ${p0[1].toFixed(1)}`; }).join(' ');
 const basVibra = (ms) => { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) { /* sem vibração */ } };
+function basAhLigar() {
+  const g = document.querySelector('.bas-ah4-g[data-d]'); if (!g || g.dataset.lig) return; g.dataset.lig = '1';
+  const D = JSON.parse(g.dataset.d); const pg = g.closest('.bas-pg-ah'); const ms = Object.keys(D.m).map(Number); if (!ms.length) return;
+  let atual = S.basAhMes != null && D.m[S.basAhMes] ? S.basAhMes : null; let arr = false;
+  const mostra = (m) => { atual = m; S.basAhMes = m; const foco = m == null ? D.ult : m; const v = m == null ? D.ano : D.m[m];
+    pg.querySelectorAll('.bas-ah4-p').forEach((b) => { const on = +b.dataset.m === foco; b.classList.toggle('on', on); const lb = b.querySelector('b'); if (lb) lb.remove(); if (on) b.insertAdjacentHTML('beforeend', `<b>${D.m[b.dataset.m].pl}</b>`); });
+    pg.querySelectorAll('.bas-ah7-dv span').forEach((sp, i) => sp.classList.toggle('on', i === foco));
+    pg.querySelectorAll('.bas-ah2-x span').forEach((sp, i) => sp.classList.toggle('on', i === foco));
+    pg.querySelectorAll('[data-ahk]').forEach((e) => { e.innerHTML = v[e.dataset.ahk]; if (e.dataset.ahk === 'sob') e.classList.toggle('neg', !!v.neg); });
+    const vt = pg.querySelector('[data-act="bas-ah-ano-todo"]'); if (vt) vt.hidden = m == null; };
+  const pega = (e) => { const r = g.getBoundingClientRect(); const i = Math.max(0, Math.min(11, Math.floor(((e.clientX - r.left) / r.width) * 12)));
+    const m = ms.reduce((b, x) => (Math.abs(x - i) < Math.abs(b - i) ? x : b), ms[0]); if (m !== atual) { mostra(m); if (typeof basVibra === 'function') basVibra(); } };
+  g.addEventListener('pointerdown', (e) => { arr = true; try { g.setPointerCapture(e.pointerId); } catch (x) { /* sem captura */ } pega(e); });
+  g.addEventListener('pointermove', (e) => { if (arr) pega(e); });
+  ['pointerup', 'pointercancel'].forEach((t) => g.addEventListener(t, () => { arr = false; }));
+  g.addEventListener('keydown', (e) => { if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return; e.preventDefault(); const k = ms.indexOf(atual == null ? D.ult : atual); const n = ms[Math.max(0, Math.min(ms.length - 1, k + (e.key === 'ArrowRight' ? 1 : -1)))]; mostra(n); });
+  pg.querySelector('[data-act="bas-ah-ano-todo"]')?.addEventListener('click', (e) => { e.stopPropagation(); mostra(null); });
+}
 function basHlLigar() {
   document.querySelectorAll('.bas-hl-g').forEach((g) => { if (g.dataset.lig) return; g.dataset.lig = '1';
     const pts = JSON.parse(g.dataset.pts || '[]'); const W = +g.dataset.w; const H = +g.dataset.h; const tips = [...g.querySelector('.bas-hl-tips').content.children].map((d) => d.innerHTML);

@@ -3895,3 +3895,9 @@ body[data-ui="basico"] :is(.bas-gt-bg, .bas[data-aba="inicio"] .bas-noite) .bas-
 .bas-ah2-x { margin-left: -6px; margin-right: -6px; }
 .bas-ah4-g { margin-top: 6px; }
 .bas-ah7-dv { height: 192px; margin-top: -200px; }
+
+/* gráfico do ano: tocar ou arrastar escolhe o mês (arraste de lado; a rolagem da página continua para cima e para baixo) */
+.bas-ah4-g { cursor: pointer; touch-action: pan-y; -webkit-user-select: none; user-select: none; }
+.bas-ah4-g:focus-visible { outline: 2px solid rgba(255, 255, 255, .7); outline-offset: 4px; border-radius: 12px; }
+.bas-ah4-p { pointer-events: none; }
+.bas-ah6-h [hidden] { display: none; }
