@@ -3801,3 +3801,27 @@ body[data-ui="basico"] :is(.bas-gt-bg, .bas-noite) .vv-on {
 @media (prefers-reduced-motion: reduce) { .bas-ah3-bar i { animation: none; } }
 .bas-pt-bg .bas-ah3-var.pos, .bas-pt-bg .bas-ah3-var.neg { color: rgba(255, 255, 255, .92) !important; }
 .bas-ah3-bar i { display: block; }
+
+/* ===== Análise do ano, v4: linha que sobe com pontos tocáveis; entrou, saiu e sobrou num cartão da parte branca ===== */
+.bas-ah4-g { position: relative; height: 130px; margin: 26px 0 0; }
+.bas .bas-ah4-g svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; stroke: none; }
+.bas-ah4-p { position: absolute; width: 30px; height: 30px; margin: -15px 0 0 -15px; padding: 0; border: 0; background: none; cursor: pointer; display: grid; place-items: center; -webkit-tap-highlight-color: transparent; }
+.bas-ah4-p i { width: 6px; height: 6px; border-radius: 50%; background: rgba(255, 255, 255, .55); transition: transform 200ms var(--ease-out), background 200ms; }
+.bas-ah4-p.on i { width: 12px; height: 12px; background: #fff; box-shadow: 0 0 0 4px rgba(255, 255, 255, .25), 0 0 18px #fff; }
+.bas-ah4-p b { position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%); padding: 3px 9px; border-radius: 99px; font-size: 12.5px; font-weight: 700; white-space: nowrap; color: var(--bas-azul-2); background: #fff; box-shadow: 0 6px 14px -8px rgba(0, 0, 0, .5); }
+.bas-ah4-p:first-of-type b { left: 0; transform: none; }
+.card.bas-ah4-m { padding: 16px; border-radius: 22px; margin-bottom: 18px; }
+.bas-ah4-mh { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; } .bas-ah4-mh b { font-size: 16px; } .bas-ah4-mh small { font-size: 12.5px; color: var(--ink-3); }
+.bas-ah4-c { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.bas-ah4-c span { display: grid; gap: 2px; min-width: 0; padding: 0 10px; } .bas-ah4-c span:first-child { padding-left: 0; } .bas-ah4-c span + span { border-left: .5px solid var(--line); }
+.bas-ah4-c em { font-style: normal; font-size: 12.5px; color: var(--ink-3); } .bas-ah4-c b { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bas-ah4-c b.pos { color: var(--pos); } .bas-ah4-c b.neg { color: var(--neg); }
+
+/* análise do ano: quanto guardou e os destaques */
+.bas-ah4-g2 { display: grid; grid-template-columns: 1fr; gap: 8px; margin: 14px 0 0; font-size: 13.5px; color: var(--ink-2); } .bas-ah4-g2 b { color: var(--ink); }
+.bas-ah4-gb { display: block; height: 8px; border-radius: 99px; background: color-mix(in srgb, var(--pos) 14%, transparent); overflow: hidden; }
+.bas-ah4-gb i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, color-mix(in srgb, var(--pos) 60%, #fff), var(--pos)); }
+.bas-ah5-ds { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.card.bas-ah5-d { display: grid; gap: 2px; padding: 14px; border-radius: 20px; min-width: 0; }
+.bas-ah5-d small { font-size: 12.5px; color: var(--ink-3); } .bas-ah5-d b { font-size: 17px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bas-ah5-d em { font-style: normal; font-size: 13px; color: var(--ink-2); font-variant-numeric: tabular-nums; }
