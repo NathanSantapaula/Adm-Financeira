@@ -3839,3 +3839,15 @@ body[data-ui="basico"] :is(.bas-gt-bg, .bas[data-aba="inicio"] .bas-noite) .bas-
   background: linear-gradient(155deg, rgba(255, 150, 160, .78) 0%, rgba(255, 70, 95, .62) 45%, rgba(240, 50, 80, .55) 62%, rgba(255, 110, 130, .7) 100%) !important;
   -webkit-backdrop-filter: blur(16px) !important; backdrop-filter: blur(16px) !important;
   box-shadow: inset 0 1px 0 rgba(255, 220, 226, .8), inset 0 -1px 0 rgba(255, 180, 190, .25), inset 0 0 0 .5px rgba(255, 190, 200, .3), inset 0 0 14px rgba(255, 120, 140, .25), 0 8px 20px -10px rgba(120, 0, 30, .55) !important; }
+
+/* análise do ano: dividendos de cada mês em dourado embaixo da linha; aportes e dividendos em bloquinhos */
+.bas-ah7-dv { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); align-items: end; height: 34px; margin-top: 8px; }
+.bas-ah7-dv span { height: 100%; display: flex; align-items: flex-end; justify-content: center; }
+.bas-ah7-dv i { width: 46%; max-width: 12px; height: var(--h); border-radius: 4px 4px 2px 2px; background: linear-gradient(180deg, #FFF1C4, #FFC94D); opacity: .92; box-shadow: 0 0 10px rgba(255, 201, 77, .35); }
+.bas-ah7-dv span.on i { opacity: 1; box-shadow: 0 0 12px rgba(255, 210, 110, .8); }
+.bas-ah7-leg { display: flex; gap: 16px; margin: 12px 0 0; font-size: 12.5px; color: rgba(255, 255, 255, .75); }
+.bas-ah7-leg span { display: inline-flex; align-items: center; gap: 6px; }
+.bas-ah7-leg i { display: inline-block; } .bas-ah7-leg i.l { width: 14px; height: 3px; border-radius: 2px; background: #fff; } .bas-ah7-leg i.d { width: 8px; height: 10px; border-radius: 2px; background: #F5B83D; }
+.bas-ah6-c.dois { grid-template-columns: 1fr 1fr; margin-top: -8px; }
+.bas-ah6-c b.inv { color: var(--accent); } .bas-ah6-c b.div { color: #C98A00; }
+:root[data-theme="oled"] .bas-ah6-c b.div, :root:not([data-theme="light"]) .bas-ah6-c b.div { color: #F5B83D; }
