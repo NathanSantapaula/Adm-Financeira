@@ -1443,7 +1443,7 @@ function basJcOut(v) {
 function basSimOut(g, v, tx) {
   const R = E.simularObjetivo({ patrimonio: g.saldo, aporte: g.aporte, extra: v - g.aporte, retornoBase: tx, retorno: tx, alvo: g.valor });
   const h = new Date(); const pz = g.ano ? (g.ano - h.getFullYear()) * 12 + 11 - h.getMonth() : null; const m = R.sim.meses;
-  let tag = ''; if (m != null && pz != null) { const d = pz - m; tag = d === 0 ? '<span class="bas-sn-st ok">Bem no prazo</span>' : d > 0 ? `<span class="bas-sn-st ok">${basPrazoTxt(d)} antes do prazo</span>` : `<span class="bas-sn-st atencao">${basPrazoTxt(-d)} depois do prazo</span>`; }
+  let tag = m == null ? '<span class="bas-sn-st baixo">Fora do alcance</span>' : ''; if (m != null && pz != null) { const d = pz - m; tag = d === 0 ? '<span class="bas-sn-st ok">Bem no prazo</span>' : d > 0 ? `<span class="bas-sn-st ok">${basPrazoTxt(d)} antes do prazo</span>` : `<span class="bas-sn-st atencao">${basPrazoTxt(-d)} depois do prazo</span>`; }
   const ganho = R.diferenca != null && R.diferenca !== 0 ? (R.diferenca > 0 ? `<em class="pos">${basPrazoTxt(R.diferenca)} mais cedo</em>` : `<em class="neg">${basPrazoTxt(-R.diferenca)} mais tarde</em>`) : '';
   return `<div class="card bas-sm2-r"><small class="bas-k">Você chega lá em</small><b class="bas-sm2-d">${m == null ? 'Fora do alcance' : m === 0 ? 'Já chegou' : basMesAno(m)}</b>${tag}
       ${m > 0 ? `<p class="bas-sm2-j">Até lá você guarda <b>${brl0(R.sim.aportado - g.saldo)}</b> e os juros somam <b>${brl0(R.sim.juros)}</b>.</p>` : ''}</div>
