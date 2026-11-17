@@ -2672,3 +2672,23 @@ function basAcao(act, ds, el) {
     default: return false;
   }
 }
+
+// importar extrato no App: antes da prévia, uma análise animada (o arquivo é varrido e os passos acendem um a um);
+// só no App (o SaaS usa o mesmo ingest-ui.js) e só uma vez por arquivo; com "reduzir movimento", vai direto
+const basIngOrig = typeof renderIng === 'function' ? renderIng : null;
+if (basIngOrig) renderIng = function () {
+  const root = document.getElementById('ing-root'); const g = S.ing || {};
+  if (!root || document.body.dataset.ui !== 'basico') return basIngOrig();
+  const passos = ['Lendo o arquivo', 'Reconhecendo as categorias', 'Procurando o que já foi importado', 'Separando gastos, entradas e investimentos'];
+  const tela = (n, fim) => `<div class="bas-ia-an" role="status" aria-live="polite"><div class="bas-ia-doc" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><b class="bas-ia-scan"></b></div>
+    <b class="bas-ia-t">${fim ? esc(fim) : 'Analisando seu extrato'}</b><small>${esc(g.nome || '')}</small>
+    <ol>${passos.map((p, i) => `<li class="${i < n ? 'ok' : i === n ? 'vai' : ''}"><span aria-hidden="true">${i < n ? '✓' : ''}</span>${p}</li>`).join('')}</ol></div>`;
+  const ok = document.querySelector('#mform button[type=submit]');
+  if (g.estado === 'lendo') { root.innerHTML = tela(0); if (ok) ok.disabled = true; return; }
+  if (g.estado !== 'pronto' || g.basVisto || matchMedia('(prefers-reduced-motion: reduce)').matches) return basIngOrig();
+  g.basVisto = true; let n = 0; if (ok) ok.disabled = true;
+  const anda = () => { if (S.ing !== g || !root.isConnected) return; n++;
+    if (n <= passos.length) { root.innerHTML = tela(n, n === passos.length ? `${g.resumo ? g.resumo.total : ''} ${g.resumo && g.resumo.total === 1 ? 'lançamento encontrado' : 'lançamentos encontrados'}` : ''); if (n === passos.length) basRetorno('ok'); setTimeout(anda, n === passos.length ? 700 : 520); }
+    else { root.classList.add('bas-ing-chega'); basIngOrig(); } };
+  root.innerHTML = tela(0); setTimeout(anda, 520);
+};
