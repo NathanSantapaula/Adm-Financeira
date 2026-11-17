@@ -75,7 +75,7 @@ function render(opts) {
   const key = scr + ':' + (scr === 'app' ? S.view : scr === 'onboarding' ? 'conversa' : scr === 'auth' ? S.authMode : '');
   const same = S.lastKey === key;
   if (soft && scr !== 'app' && same) return;
-  S.needsRender = false; document.body.dataset.screen = scr; document.documentElement.dataset.icones = modoBasico() ? 'cor' : (S.profile && S.profile.instEstilo) || 'auto'; // no App as logos ficam sempre na cor delas document.body.dataset.ui = modoBasico() ? 'basico' : 'completo'; aplicarFundo(); S.renderSeq = (S.renderSeq || 0) + 1;
+  S.needsRender = false; document.body.dataset.screen = scr; document.documentElement.dataset.icones = modoBasico() ? 'cor' : (S.profile && S.profile.instEstilo) || 'auto'; document.body.dataset.ui = modoBasico() ? 'basico' : 'completo'; aplicarFundo(); S.renderSeq = (S.renderSeq || 0) + 1;
   const y = window.scrollY; const tw = $('.tablewrap'); const tws = tw ? [tw.scrollLeft, tw.scrollTop] : null;
   S.C = S.plan && S.profile ? E.compute(S.plan, planCtx()) : null;
   hideTip();
