@@ -28,12 +28,14 @@ function abTemaApp() {
   // no tema escuro do aparelho: fundo quase preto, o mesmo planeta azul, textos e estrelas brancos
   const bgT = k('--bg'); const noite = (0.2126 * bgT[0] + 0.7152 * bgT[1] + 0.0722 * bgT[2]) / 255 < 0.45;
   if (!noite) { const tinta = [15, 23, 42];
-    A.T = { escuro: false, app: true, noite, vidro: true, bg: [244, 246, 249], ink: tinta, ink2: [71, 85, 105], acc: [96, 140, 230], acc2: [150, 180, 235], pos: [40, 160, 120], neg: k('--neg'), ouro: [214, 170, 90],
-      cls: [[96, 140, 230], [104, 186, 206], [150, 132, 212], [214, 170, 90], [118, 172, 140], [204, 124, 160]].concat(cls.slice(6)),
+    // no branco, os detalhes do espaço e os itens do globo usam cores firmes (azul, ciano, violeta, âmbar, verde e rosa), que aparecem sem gritar
+    const vivas = [[37, 99, 235], [14, 165, 233], [124, 58, 237], [245, 158, 11], [16, 185, 129], [236, 72, 153]];
+    A.T = { escuro: false, app: true, noite, vidro: true, bg: [244, 246, 249], ink: tinta, ink2: [71, 85, 105], acc: [37, 99, 235], acc2: [14, 165, 233], pos: [16, 163, 110], neg: k('--neg'), ouro: [234, 160, 0],
+      cls: vivas.concat(cls.slice(6)), poeiraK: 1.4,
       // joia de cristal azul: ciano no alto à esquerda (a luz batendo), azul royal na base; continentes em branco puro
-      luz: branco, terra: branco, terraA: 1, soma: 'source-over', aroK: 0.55,
+      luz: branco, terra: branco, terraA: 1, grade: branco, soma: 'source-over', aroK: 0.55,
       esfera: { brilho: [56, 189, 248], meio: [37, 99, 235], borda: [29, 78, 216], a: [0.85, 0.82, 0.8] }, veu: [29, 78, 216],
-      pts: [[96, 140, 230], [104, 186, 206], [150, 132, 212], [214, 170, 90], [118, 172, 140], [204, 124, 160]], poeira: [[170, 196, 240], [214, 200, 170], [196, 210, 236], [226, 214, 190]],
+      pts: vivas, poeira: [[37, 99, 235], [14, 165, 233], [99, 102, 241], [56, 189, 248]],
       texto: branco, texto2: [224, 236, 255], sobe: [150, 245, 210] }; return; }
   A.T = { escuro: false, app: true, noite, bg: noite ? [2, 4, 14] : branco, ink: noite ? branco : navy, ink2: noite ? [200, 210, 235] : [70, 84, 130], acc: ceu, acc2: [56, 214, 255], pos: [22, 160, 110], neg: k('--neg'), ouro: [230, 160, 30], cls,
     luz: branco, terra: branco, soma: 'source-over',
@@ -292,7 +294,7 @@ function abQuadro(agora) {
   const camada = (nome, fn) => { if (zoom) fn(ctx); else ctx.drawImage(abCamada(nome, fn), 0, 0, W, H); }; // com zoom, desenha direto (camada pronta perderia nitidez)
   ctx.globalCompositeOperation = 'source-over';
   // no escuro, estrelas; no claro, confete nas cores da carteira
-  A.estrelas.forEach(([x, y, r, al], i) => { ctx.fillStyle = abRgba(T.escuro ? T.luz : T.poeira[i % 4], al * (T.escuro ? 1 : 0.4) * (0.75 + 0.25 * Math.sin(t * 1.3 + i))); const rr = T.escuro ? r : r * 1.6; ctx.fillRect(x * W, y * H, rr, rr); });
+  A.estrelas.forEach(([x, y, r, al], i) => { ctx.fillStyle = abRgba(T.escuro ? T.luz : T.poeira[i % 4], Math.min(1, al * (T.escuro ? 1 : T.poeiraK || 0.4)) * (0.75 + 0.25 * Math.sin(t * 1.3 + i))); const rr = T.escuro ? r : r * 1.6; ctx.fillRect(x * W, y * H, rr, rr); });
   if (A.km && !A.calmo) A.cometas.forEach((c) => { const q = (A.tc + c.fase) % c.ciclo; if (q > c.dur) return; const k = q / c.dur; const L = c.len * Math.max(W, H); const dx = Math.cos(c.ang), dy = Math.sin(c.ang);
     const hx = c.x * W + dx * L * k, hy = c.y * H + dy * L * k; const cauda = 90 + 90 * c.len; const al = Math.sin(k * Math.PI); const cab = T.escuro ? T.luz : T.acc;
     const gc = ctx.createLinearGradient(hx, hy, hx - dx * cauda, hy - dy * cauda); gc.addColorStop(0, abRgba(cab, 0.9 * al)); gc.addColorStop(0.25, abRgba(T.acc, 0.45 * al)); gc.addColorStop(1, abRgba(T.acc, 0));
