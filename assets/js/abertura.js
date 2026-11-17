@@ -30,10 +30,11 @@ function abTemaApp() {
   if (!noite) { const tinta = [15, 23, 42];
     A.T = { escuro: false, app: true, noite, vidro: true, bg: [244, 246, 249], ink: tinta, ink2: [71, 85, 105], acc: [96, 140, 230], acc2: [150, 180, 235], pos: [40, 160, 120], neg: k('--neg'), ouro: [214, 170, 90],
       cls: [[96, 140, 230], [104, 186, 206], [150, 132, 212], [214, 170, 90], [118, 172, 140], [204, 124, 160]].concat(cls.slice(6)),
-      luz: branco, terra: [30, 45, 90], terraA: 0.32, grade: [40, 56, 96], soma: 'source-over', aroK: 0.45,
-      esfera: { brilho: [255, 255, 255], meio: [234, 240, 250], borda: [196, 208, 232], a: [0.82, 0.62, 0.5] }, veu: branco,
+      // joia de cristal azul: ciano no alto à esquerda (a luz batendo), azul royal na base; continentes em branco puro
+      luz: branco, terra: branco, terraA: 1, soma: 'source-over', aroK: 0.55,
+      esfera: { brilho: [56, 189, 248], meio: [37, 99, 235], borda: [29, 78, 216], a: [0.85, 0.82, 0.8] }, veu: [29, 78, 216],
       pts: [[96, 140, 230], [104, 186, 206], [150, 132, 212], [214, 170, 90], [118, 172, 140], [204, 124, 160]], poeira: [[170, 196, 240], [214, 200, 170], [196, 210, 236], [226, 214, 190]],
-      texto: tinta, texto2: [71, 85, 105], sobe: [40, 160, 120] }; return; }
+      texto: branco, texto2: [224, 236, 255], sobe: [150, 245, 210] }; return; }
   A.T = { escuro: false, app: true, noite, bg: noite ? [2, 4, 14] : branco, ink: noite ? branco : navy, ink2: noite ? [200, 210, 235] : [70, 84, 130], acc: ceu, acc2: [56, 214, 255], pos: [22, 160, 110], neg: k('--neg'), ouro: [230, 160, 30], cls,
     luz: branco, terra: branco, soma: 'source-over',
     // no escuro, o miolo do planeta é preto e a luz fica no aro azul; no claro, a esfera azul da marca
@@ -304,7 +305,7 @@ function abQuadro(agora) {
   else { const ea = T.esfera.a || [1, 1, 1]; g.addColorStop(0, abRgba(T.esfera.brilho, ea[0])); g.addColorStop(0.5, abRgba(T.esfera.meio, ea[1])); g.addColorStop(1, abRgba(T.esfera.borda, ea[2])); }
   // a esfera do tema claro tem uma sombra larga (a operação mais cara do canvas): depois da entrada, ela é desenhada
   // uma vez numa camada do tamanho da tela e só copiada nos quadros seguintes
-  const esfera = (c) => { if (!T.escuro) { c.shadowColor = T.vidro ? 'rgba(15, 23, 42, .16)' : T.app ? (T.noite ? 'rgba(47, 107, 255, .7)' : 'rgba(20, 40, 245, .45)') : abRgba(T.acc, 0.55); c.shadowBlur = T.app ? 80 : 60; c.shadowOffsetY = T.vidro ? 34 : T.app ? 24 : 18; }
+  const esfera = (c) => { if (!T.escuro) { c.shadowColor = T.vidro ? 'rgba(37, 99, 235, .25)' : T.app ? (T.noite ? 'rgba(47, 107, 255, .7)' : 'rgba(20, 40, 245, .45)') : abRgba(T.acc, 0.55); c.shadowBlur = T.app ? 80 : 60; c.shadowOffsetY = T.vidro ? 34 : T.app ? 24 : 18; }
     c.globalAlpha = T.escuro ? 1 : e; c.fillStyle = g; c.beginPath(); c.arc(cx, cy, R * e, 0, 7); c.fill(); c.globalAlpha = 1; c.shadowBlur = 0; c.shadowOffsetY = 0; };
   if (T.escuro || e < 1) esfera(ctx); else camada('esfera', esfera);
   if (T.escuro && A.km) { ctx.fillStyle = abRgba(T.bg, 0.88); ctx.beginPath(); ctx.arc(cx, cy, R * e, 0, 7); ctx.fill(); } // mapa: miolo escuro, a luz fica no aro
@@ -369,7 +370,7 @@ function abQuadro(agora) {
   ctx.globalCompositeOperation = 'source-over';
   abTrilha(true, t); div.forEach((d) => { if (d.p[2] >= 0) { ctx.globalAlpha = lente(d.p[0], d.p[1]); abDiv(d, true); } }); apo.forEach((a) => { if (a.p[2] >= 0) { ctx.globalAlpha = lente(a.p[0], a.p[1]); abLosango(a, true); } }); ctx.globalAlpha = 1;
   // borda luminosa do globo (sombra larga, igual em todo quadro depois da entrada: camada pronta)
-  const borda = (c) => { c.strokeStyle = T.escuro ? abRgba(T.acc, 0.5) : 'rgba(255,255,255,.75)'; c.lineWidth = 2; c.shadowColor = abRgba(T.acc, 1); c.shadowBlur = 20; c.beginPath(); c.arc(cx, cy, R * 1.005 * e, 0, 7); c.stroke(); c.shadowBlur = 0; };
+  const borda = (c) => { c.strokeStyle = T.escuro ? abRgba(T.acc, 0.5) : T.vidro ? 'rgba(255,255,255,.9)' : 'rgba(255,255,255,.75)'; c.lineWidth = T.vidro ? 1.5 : 2; c.shadowColor = abRgba(T.acc, 1); c.shadowBlur = 20; c.beginPath(); c.arc(cx, cy, R * 1.005 * e, 0, 7); c.stroke(); c.shadowBlur = 0; };
   if (e < 1) borda(ctx); else camada('borda', borda);
   // mapa: aro de luz forte na borda (branco no fio, cor de destaque por dentro e por fora)
   if (A.km) { const k = e; const ar = ctx.createRadialGradient(cx, cy, R * 0.78, cx, cy, R * 1.16);
