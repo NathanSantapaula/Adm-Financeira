@@ -3901,3 +3901,25 @@ body[data-ui="basico"] :is(.bas-gt-bg, .bas[data-aba="inicio"] .bas-noite) .bas-
 .bas-ah4-g:focus-visible { outline: 2px solid rgba(255, 255, 255, .7); outline-offset: 4px; border-radius: 12px; }
 .bas-ah4-p { pointer-events: none; }
 .bas-ah6-h [hidden] { display: none; }
+
+/* ===== Início: o cartão do sonho no mesmo vidro dos outros cartões; Dá para investir sem o ícone ===== */
+body[data-ui="basico"] .card.bas-sonho { background: var(--reflexo) padding-box, var(--sheen) padding-box, linear-gradient(var(--glass-strong), var(--glass-strong)) padding-box, var(--rim) border-box !important; box-shadow: var(--spec, none), var(--shadow) !important; }
+/* ===== Barra de abas: a lente vira uma bolha de vidro (como no iPhone) ao deslizar, ao segurar e ao arrastar —
+   maior que a barra, quase transparente, com borda de luz e reflexo colorido nas bordas; ao parar volta a ser a pílula ===== */
+#tabbar .bas-tabs { overflow: visible; }
+.bas-tab-lente { transition: transform 380ms cubic-bezier(.3, 1.35, .45, 1), width 300ms ease, scale 260ms cubic-bezier(.3, 1.5, .5, 1), background 220ms ease, box-shadow 220ms ease; z-index: 0; }
+.bas-tabs button { position: relative; z-index: 1; }
+.bas-tabs:is(.voa, .aperta, .arrasta) .bas-tab-lente {
+  scale: 1.22 1.42;
+  background: radial-gradient(120% 90% at 30% 20%, rgba(255, 255, 255, .34), rgba(255, 255, 255, .06) 55%, rgba(255, 255, 255, .14)) !important;
+  -webkit-backdrop-filter: blur(1.5px) brightness(1.12) contrast(1.08); backdrop-filter: blur(1.5px) brightness(1.12) contrast(1.08);
+  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, .95), inset 0 -1.5px 0 rgba(255, 255, 255, .35),
+    inset 2.5px 0 3px -1px rgba(255, 70, 200, .45), inset -2.5px 0 3px -1px rgba(60, 200, 255, .5),
+    inset 0 0 0 1px rgba(255, 255, 255, .45), inset 0 0 18px rgba(255, 255, 255, .18), 0 10px 26px -10px rgba(0, 0, 0, .45) !important; }
+.bas-tabs.aperta:not(.arrasta):not(.voa) .bas-tab-lente { scale: 1.12 1.24; }
+@media (prefers-reduced-motion: reduce) { .bas-tabs:is(.voa, .aperta, .arrasta) .bas-tab-lente { scale: none; } }
+/* sob a lente o ícone e o nome aparecem maiores e na cor de destaque, como numa lupa; o vidro menos leitoso */
+.bas-tabs:is(.voa, .aperta, .arrasta) .bas-tab-lente { background: radial-gradient(120% 90% at 30% 20%, rgba(255, 255, 255, .22), rgba(255, 255, 255, .03) 55%, rgba(255, 255, 255, .08)) !important; }
+.bas-tabs button { transition: transform 260ms cubic-bezier(.3, 1.5, .5, 1), color 160ms ease; }
+.bas-tabs.arrasta button.sob, .bas-tabs.voa button[aria-current="page"], .bas-tabs.aperta button[aria-current="page"] { transform: scale(1.14); color: var(--accent) !important; }
+@media (prefers-reduced-motion: reduce) { .bas-tabs button { transition: none; } .bas-tabs :is(button.sob, button[aria-current="page"]) { transform: none !important; } }
