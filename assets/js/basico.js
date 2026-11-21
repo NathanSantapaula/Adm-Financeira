@@ -1670,16 +1670,16 @@ function basFesta(tipo, titulo, msg, valor) {
     if (!inv) {
       const t = (y) => `translate(${W / 2 - 75}px, ${y}px)`, cy = H * .42 - 75;
       setTimeout(() => window.Cifrao.forma(h, 'moeda'), 820); // troca de costas, no meio do giro
-      w.animate([{ transform: t(H + 20), easing: 'cubic-bezier(.15, .75, .3, 1)' }, { transform: t(cy - 10), offset: .32, easing: 'cubic-bezier(.45, 0, .55, 1)' },
+      const voo = w.animate([{ transform: t(H + 20), easing: 'cubic-bezier(.15, .75, .3, 1)' }, { transform: t(cy - 10), offset: .32, easing: 'cubic-bezier(.45, 0, .55, 1)' },
         { transform: t(cy), offset: .74, easing: 'cubic-bezier(.55, 0, .85, .35)' }, { transform: t(H + 40) }], { duration: 2300, fill: 'forwards' });
-      setTimeout(fim, 2200);
+      voo.finished.then(fim, fim);
     } else {
       // investimento: jogado para cima, vira seta no caminho, para um instante no alto, pisca e dispara para cima
       const t = (y) => `translate(${W / 2 - 75}px, ${y}px)`, cy = H * .4 - 75;
       setTimeout(() => window.Cifrao.forma(h, 'seta'), 430);
-      w.animate([{ transform: t(H + 20), easing: 'cubic-bezier(.15, .75, .3, 1)' }, { transform: t(cy - 8), offset: .3, easing: 'cubic-bezier(.45, 0, .55, 1)' },
+      const voo = w.animate([{ transform: t(H + 20), easing: 'cubic-bezier(.15, .75, .3, 1)' }, { transform: t(cy - 8), offset: .3, easing: 'cubic-bezier(.45, 0, .55, 1)' },
         { transform: t(cy), offset: .55, easing: 'cubic-bezier(.45, 0, .55, 1)' }, { transform: t(cy + 10), offset: .66, easing: 'cubic-bezier(.6, 0, .85, .3)' }, { transform: t(-260) }], { duration: 2300, fill: 'forwards' });
-      setTimeout(fim, 2450);
+      voo.finished.then(fim, fim);
     } }));
 }
 // som e vibração juntos, no mesmo quadro (o retorno precisa chegar junto com a mudança na tela)
