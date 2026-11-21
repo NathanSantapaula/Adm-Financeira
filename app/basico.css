@@ -4354,10 +4354,12 @@ body:is([data-ui="basico"], [data-ui="completo"]) .ab .ab-card .ab-zbtn { border
 .bas-rl-arco i { position: absolute; left: calc(50% - 3px); top: 70px; width: 6px; height: var(--l); border-radius: 6px; transform-origin: 50% 0; background: #fff; opacity: 0;
   box-shadow: 0 0 8px rgba(190, 220, 255, .55); will-change: transform, opacity; }
 .bas-rl-arco i.g { height: 14px; box-shadow: none; }
-.bas-rl-knob { position: absolute; left: 50%; top: 178px; width: 46px; height: 74px; translate: -50% 0; border-radius: 24px; pointer-events: none;
-  background: linear-gradient(180deg, rgba(120, 170, 255, .55), rgba(30, 70, 230, .55)); -webkit-backdrop-filter: blur(6px) saturate(160%); backdrop-filter: blur(6px) saturate(160%);
-  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, .7), inset 0 0 0 1px rgba(255, 255, 255, .35), inset 0 -8px 14px rgba(0, 20, 120, .35), 0 10px 24px -8px rgba(0, 10, 80, .7); }
-.bas-rl-knob::after { content: ""; position: absolute; left: 50%; top: 16px; width: 6px; height: 40px; translate: -50% 0; border-radius: 6px; background: linear-gradient(180deg, #fff, rgba(255, 255, 255, .35)); filter: blur(.5px); }
+/* lente de vidro líquido, vazia: o traço que passa por baixo dela acende em azul */
+.bas-rl-knob { position: absolute; left: 50%; top: 172px; width: 50px; height: 82px; translate: -50% 0; border-radius: 26px; pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, .1), rgba(255, 255, 255, 0) 40%, rgba(255, 255, 255, .06)); -webkit-backdrop-filter: blur(.6px) saturate(130%); backdrop-filter: blur(.6px) saturate(130%);
+  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, .75), inset 0 -1px 0 rgba(255, 255, 255, .3), inset 0 0 0 1px rgba(255, 255, 255, .45), inset 0 0 14px rgba(255, 255, 255, .12), 0 10px 24px -10px rgba(0, 10, 80, .55); }
+.bas-rl-knob::before { content: ""; position: absolute; left: 7px; right: 7px; top: 5px; height: 22px; border-radius: 20px 20px 12px 12px; background: linear-gradient(180deg, rgba(255, 255, 255, .5), transparent); opacity: .55; }
+.bas-rl-arco i.on { background: #5AC8FA; box-shadow: 0 0 10px rgba(90, 200, 250, .95), 0 0 22px rgba(90, 200, 250, .6); }
 .bas-rl-pill { display: flex; align-items: center; gap: 12px; width: min(100%, 320px); min-height: 64px; margin: 4px auto 6px; padding: 8px 18px 8px 8px; border-radius: 999px;
   background: rgba(255, 255, 255, .12); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), inset 0 0 0 1px rgba(255, 255, 255, .14); color: #fff; }
 .bas-rl-pill .bas-pv2-ini { flex: none; width: 46px; height: 46px; }

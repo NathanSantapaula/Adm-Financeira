@@ -2596,7 +2596,7 @@ function basRlLigar() {
   const pinta = () => {
     T.forEach((t, i) => { const a = (pos - i) * st; const o = Math.abs(a) > 112 ? 0 : 1 - (Math.abs(a) / 112) ** 3; t.style.transform = `rotate(${a.toFixed(2)}deg) translateY(${R - L[i]}px)`; t.style.opacity = o.toFixed(3); });
     GH.forEach(([g, i]) => { const a = (pos - i) * st; const o = Math.abs(a) > 112 ? 0 : 1 - (Math.abs(a) / 112) ** 3; g.style.transform = `rotate(${a.toFixed(2)}deg) translateY(${R - 14}px)`; g.style.opacity = (o * 0.28).toFixed(3); });
-    const k = n ? lim(Math.round(pos), 0, n - 1) : -1; if (k === sel) return; const pri = sel < 0; sel = k;
+    const k = n ? lim(Math.round(pos), 0, n - 1) : -1; if (k === sel) return; const pri = sel < 0; if (T[sel]) T[sel].classList.remove('on'); sel = k; if (T[k]) T[k].classList.add('on');
     if (k < 0) { pill.innerHTML = '<span class="bas-rl-p0">Nenhum provento neste período</span>'; return; }
     const e = E[k]; pill.innerHTML = `<span class="bas-pv2-ini" style="--bc:${PAL[k % 6]}">${esc(e[3])}</span><span class="bas-rl-pt"><b>${esc(e[0])}</b><small>${esc(e[1])}</small></span><b class="bas-rl-pv">${e[2]}</b>`;
     el.setAttribute('aria-valuenow', k + 1); el.setAttribute('aria-valuetext', `${e[0]}, ${e[1]}`);
