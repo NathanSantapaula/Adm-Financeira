@@ -1704,7 +1704,7 @@ body[data-ui="basico"][data-screen="app"] .tabbar { left: 50%; right: auto; widt
 @media (prefers-reduced-motion: reduce) { .bas-ccv, .bas-ccv.sai, .bas-ccv-i { animation: none; } .bas-gt-c { transition: none; } }
 
 /* fundo azul de ponta a ponta no alto de Gastos; a folha de baixo sobe por cima dele e cobre a base dos cartões */
-body[data-ui="basico"] { --bas-azul: #0A84FF; --bas-azul-1: #3b6cff; --bas-azul-2: #1428f5; --bas-azul-3: #03061f; }
+body:is([data-ui="basico"], [data-ui="completo"]) { --bas-azul: #0A84FF; --bas-azul-1: #3b6cff; --bas-azul-2: #1428f5; --bas-azul-3: #03061f; }
 .bas-gt-bg { position: relative; overflow: hidden; margin: -16px -16px 0; padding: 16px 16px 0; color: #fff;
   background: linear-gradient(180deg, var(--bas-azul-1) 0%, var(--bas-azul-2) 42%, var(--bas-azul-3) 100%); }
 .bas-gt-bg > .bas-topo .bas-eu-t small { color: rgba(255, 255, 255, .75); }
@@ -1740,11 +1740,11 @@ body[data-ui="basico"] { --bas-azul: #0A84FF; --bas-azul-1: #3b6cff; --bas-azul-
    - cor com moderação: só a ação principal é "prominent" (vidro tingido na cor de destaque), o resto é vidro neutro;
    - formas em cápsula e círculo, concêntricas; ao toque o vidro cresce um pouco e acende;
    - reduzir transparência deixa fosco e sólido; mais contraste dá borda definida; reduzir movimento tira a escala. ===== */
-body[data-ui="basico"] {
+body:is([data-ui="basico"], [data-ui="completo"]) {
   --lg-bg: rgba(255, 255, 255, .42); --lg-bg-on: rgba(255, 255, 255, .62); --lg-aro: rgba(255, 255, 255, .75); --lg-aro-b: rgba(255, 255, 255, .28);
   --lg-sombra: 0 1px 1.5px rgba(0, 0, 0, .06), 0 8px 22px -10px rgba(0, 0, 0, .22); --lg-txt: var(--ink); --lg-desfoque: blur(14px) saturate(190%);
 }
-:root[data-theme="oled"] body[data-ui="basico"] { --lg-bg: rgba(255, 255, 255, .08); --lg-bg-on: rgba(255, 255, 255, .16); --lg-aro: rgba(255, 255, 255, .32); --lg-aro-b: rgba(255, 255, 255, .08); --lg-sombra: 0 1px 1.5px rgba(0, 0, 0, .3), 0 8px 22px -10px rgba(0, 0, 0, .6); }
+:root[data-theme="oled"] body:is([data-ui="basico"], [data-ui="completo"]) { --lg-bg: rgba(255, 255, 255, .08); --lg-bg-on: rgba(255, 255, 255, .16); --lg-aro: rgba(255, 255, 255, .32); --lg-aro-b: rgba(255, 255, 255, .08); --lg-sombra: 0 1px 1.5px rgba(0, 0, 0, .3), 0 8px 22px -10px rgba(0, 0, 0, .6); }
 /* vidro claro sobre fundo colorido (o azul de Gastos): mais transparente, rótulo branco */
 .bas-gt-bg { --lg-bg: rgba(255, 255, 255, .14); --lg-bg-on: rgba(255, 255, 255, .26); --lg-aro: rgba(255, 255, 255, .55); --lg-aro-b: rgba(255, 255, 255, .15); --lg-txt: #fff; }
 body[data-ui="basico"] :is(.olho, .bell, .bas-circ, .bas-per, .bas-gt-chip, .bas-ct2-b) {
@@ -2089,7 +2089,7 @@ body[data-ui="basico"] .bas-gt-folha .bas-pt-acoes > :is(.bas-circ, .bas-inv-pl)
 #bas-ev-ln stop:nth-child(3) { stop-color: #fff; stop-opacity: 1; }
 .bas-pt-bg > .bas-ev .bas-ev-l { stroke: url(#bas-ev-ln); }
 /* linha opaca, com um degradê bem visível: ciano à esquerda, ciano-claro no meio, branco no mês atual */
-body[data-ui="basico"] { --bas-ciano: #4fd1ff; }
+body:is([data-ui="basico"], [data-ui="completo"]) { --bas-ciano: #4fd1ff; }
 #bas-ev-ln stop:nth-child(1) { stop-color: var(--bas-ciano); stop-opacity: 1; }
 #bas-ev-ln stop:nth-child(2) { stop-color: color-mix(in srgb, var(--bas-ciano) 45%, #fff); stop-opacity: 1; }
 #bas-ev-ln stop:nth-child(3) { stop-color: #fff; stop-opacity: 1; }

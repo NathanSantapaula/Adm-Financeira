@@ -200,8 +200,8 @@
 
 /* rodada 2: Cifrão no canto, topo só com calendário e olho, cartões dentro da folha, mesma altura em todas as abas, pílulas em vidro */
 @media (min-width: 901px) {
-  body[data-ui="completo"] .bas-ia-fab.sa-fab { position: fixed; left: auto; top: auto; right: 28px; bottom: 28px; translate: none; z-index: 55; width: 66px; height: 66px; --cif-size: 46px; overflow: visible; }
-  body[data-ui="completo"] .sa-fab em { position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px; background: #ff453a; color: #fff; font-style: normal; font-size: 11px; font-weight: 700; display: grid; place-items: center; box-shadow: 0 0 0 2px var(--bg); }
+
+
   html body[data-ui="completo"][data-screen="app"] .topo-r > .htools { display: none !important; }
   html body[data-ui="completo"][data-screen="app"] .topo-r .topo-ic { display: flex; gap: 8px; }
   html body[data-ui="completo"][data-screen="app"] .topo :is(.sa-cal, .olho) { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; cursor: pointer;
@@ -266,7 +266,7 @@
   .sa2 .sa-c.sa-sonho .sa-sonho-t { flex: 1; }
   .sa2 .sa-c.sa-sonho .sa-sonho-t b { color: var(--sa-ink); }
   .sa2 .sa-c.sa-sonho .sa-sonho-ic { width: 34px; height: 34px; margin-bottom: 4px; }
-  body[data-ui="completo"] .bas-ia-fab.sa-fab.alerta { animation: none; }
+
 }
 @media (min-width: 901px) {
   /* listas dentro de cartões: linhas planas com divisória, sem cartão dentro de cartão */
@@ -274,8 +274,8 @@
   .sa2 .sa-ativ > li, .sa2 .sa-ativ > li > button { background: none !important; box-shadow: none !important; border-radius: 12px !important; border: 0 !important; margin: 0 !important; }
   .sa2 .sa-ativ > li + li { border-top: 1px solid var(--sa-borda) !important; border-radius: 0 !important; }
   .sa2 .sa-ativ > li > button:hover { background: color-mix(in srgb, var(--sa-ink) 4%, transparent) !important; }
-  /* botão do Cifrão: a bola azul do App em qualquer tema */
-  html body[data-ui="completo"] .bas-ia-fab.sa-fab { background: radial-gradient(70% 45% at 50% 18%, rgba(140, 200, 255, .55), transparent 70%), linear-gradient(180deg, #3b6cff 0%, #1428f5 48%, #03061f 100%) !important;
-    box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .55), inset 0 2px 0 rgba(255, 255, 255, .45), 0 14px 30px -10px rgba(0, 10, 80, .65) !important; border: 0 !important; }
 }
 @media (min-width: 901px) { .sa2 .sa-sonho-ic .obj-ic { width: 100%; height: 100%; background: none !important; box-shadow: none !important; color: inherit !important; display: grid; place-items: center; } .sa2 .sa-sonho-ic .obj-ic svg { width: 20px; height: 20px; stroke: currentColor; } }
+
+/* botão do Cifrão: exatamente o do App (bolha de 52 px com o Cifrão espiando dentro do recorte), só que fixo no canto de baixo e um pouco maior */
+@media (min-width: 901px) { body[data-ui="completo"] .bas-ia-fab.sa-fab { position: fixed; left: auto; top: auto; right: 34px; bottom: 34px; translate: none; z-index: 55; scale: 1.3; transform-origin: 100% 100%; } }
