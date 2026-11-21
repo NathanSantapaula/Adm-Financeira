@@ -440,7 +440,7 @@ function criar(host) {
   svg.setAttribute('viewBox', '0 0 1000 1000'); svg.setAttribute('aria-hidden', 'true'); svg.setAttribute('focusable', 'false');
   // volume de massinha inflada: o contorno vira relevo (alfa borrado), luz difusa do alto à esquerda faz a sombra lilás por dentro,
   // um brilho especular forte no alto e uma luz azul na borda direita, tudo recortado pelo próprio desenho
-  const vol = host.closest('[data-ui="basico"]') || host.hasAttribute('data-volume');
+  const vol = host.closest('[data-ui="basico"], [data-ui="completo"]') || host.hasAttribute('data-volume');
   const FILTRO = vol ? `<filter id="${id}-v" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
       <feGaussianBlur in="SourceAlpha" stdDeviation="34" result="rel"/>
       <feDiffuseLighting in="rel" surfaceScale="9" diffuseConstant="1.05" lighting-color="#D6D1FF" result="dif"><feDistantLight azimuth="235" elevation="52"/></feDiffuseLighting>
