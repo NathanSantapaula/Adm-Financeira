@@ -237,3 +237,17 @@
   .sa-folha > :first-child { margin-top: 0; }
 }
 @media (min-width: 901px) { html body[data-ui="completo"][data-screen="app"] .topo .sa-cal svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; } }
+/* o Cifrão no lugar do orbe antigo do assistente, em qualquer botão ou título */
+.ia-cif { display: inline-block; width: 1.7em; height: 1.7em; flex: none; vertical-align: middle; } .ia-cif > svg, .sa-cif > svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.sa2 .sa-cif { display: inline-block; width: 26px; height: 26px; }
+/* passar o mouse na linha: guia vertical, ponto e o valor do mês num balão de vidro */
+@media (min-width: 901px) {
+  .sa2 .sa-ln-hit { position: absolute; left: 0; right: 0; top: 0; height: 190px; display: grid; grid-template-columns: repeat(12, 1fr); }
+  .sa2 .sa-ln-hit span { position: relative; }
+  .sa2 .sa-ln-hit span::before { content: ""; position: absolute; left: calc(var(--x) * 12 - 100% * var(--i, 0)); }
+  .sa2 .sa-ln-hit b { position: absolute; left: 50%; top: calc(var(--y) - 54px); translate: -50% 0; display: none; flex-direction: column; align-items: center; padding: 6px 10px; border-radius: 12px; white-space: nowrap; font-size: 11.5px; font-weight: 600; color: var(--sa-ink2);
+    background: color-mix(in srgb, var(--sa-card) 82%, transparent); border: 1px solid var(--sa-borda); box-shadow: 0 10px 24px -12px rgba(0, 0, 0, .4); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); z-index: 3; pointer-events: none; }
+  .sa2 .sa-ln-hit em { font-style: normal; font-size: 14px; font-weight: 700; color: var(--sa-ink); }
+  .sa2 .sa-ln-hit span:hover b { display: flex; }
+  .sa2 .sa-ln-hit span:hover { background: linear-gradient(90deg, transparent calc(50% - .5px), color-mix(in srgb, var(--sa-azul) 45%, transparent) calc(50% - .5px), color-mix(in srgb, var(--sa-azul) 45%, transparent) calc(50% + .5px), transparent calc(50% + .5px)); }
+}

@@ -334,7 +334,7 @@ const IA_MOEDA = ['receita', 'gasto', 'sobra', 'valor', 'restante', 'porDia', 'a
 const IA_PCT = ['pct', 'pctArea'];
 // símbolo do assistente: uma constelação que sobe até uma estrela (o dinheiro crescendo no "universo financeiro"); a linha se desenha e a estrela acende
 // selo do assistente: a onda da tela inicial em miniatura (6 camadas, mais larga no meio, como a grande)
-const IA_ICONE = `<span class="ia-mini" aria-hidden="true">${[12, 17, 20, 21, 18, 12].map((w, k) => `<span style="--k:${k};--w:${w}px"></span>`).join('')}</span>`;
+const IA_ICONE = '<span class="cifrao ia-cif" aria-hidden="true"></span>'; // o orbe antigo saiu: o assistente é o próprio Cifrão (desenhado por landing/cifrao.js)
 const iaOrb = (cls) => `<span class="ia-orb ia-selo${cls ? ' ' + cls : ''}" aria-hidden="true">${IA_ICONE}</span>`; // o mesmo selo do botão do topo
 const IA_ENVIAR = ic('<path d="M12 19V5M6 11l6-6 6 6"/>');
 

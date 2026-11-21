@@ -22,6 +22,7 @@ function saLinha(vals, ate, id) {
       ${[0.25, 0.5, 0.75].map((f) => `<line x1="0" x2="${W}" y1="${H * f}" y2="${H * f}" class="sa-grade"/>`).join('')}
       <path d="${d} L${ult[0]},${H} L${P},${H} Z" fill="url(#${id})"/><path d="${d}" class="sa-ln-l" vector-effect="non-scaling-stroke"/></svg>
     <i class="sa-ln-p" style="left:${(ult[0] / W) * 100}%;top:${(ult[1] / H) * 100}%"></i>
+    <div class="sa-ln-hit">${vs.map((v, i) => `<span style="--x:${(pts[i][0] / W) * 100}%;--y:${(pts[i][1] / H) * 100}%"><b>${esc(cap(MES_LONGO[i]))}<em>${esc(brl0(v))}</em></b></span>`).join('')}</div>
     <div class="sa-eixo">${MES.map((n, i) => `<span${i === ate ? ' class="on"' : ''}>${n}</span>`).join('')}</div></div>`;
 }
 const curvaSaas = (p) => p.map((q, i) => { if (!i) return `M${q[0]},${q[1]}`; const a = p[i - 1]; const cx = (a[0] + q[0]) / 2; return `C${cx},${a[1]} ${cx},${q[1]} ${q[0]},${q[1]}`; }).join(' ');
