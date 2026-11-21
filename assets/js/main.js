@@ -57,9 +57,7 @@ const saAcoes = () => `<div class="sa-acoes"><button class="sa-pl" ${basIr('gast
 // os widgets antigos do SaaS entram embaixo dos do App, na mesma folha (o cabeçalho antigo some no CSS)
 const saAntigos = (f) => { try { return `<div class="sa-antigos">${f()}</div>`; } catch (e) { console.error(e); return ''; } };
 const saFolhaFim = (html, extra) => html.replace(/<\/div><\/div>\s*$/, `${extra}</div></div>`); // basPgAzul fecha a folha e a página
-const SA_VISTA = { geral: () => { const h = basInicio(S.mes).replace('<div class="bas-noite-par">', `${saAcoes()}<div class="bas-noite-par">`); const k = h.lastIndexOf('<button class="bas-org"'); const x = saAntigos(viewGeral); return k < 0 ? h + x : `${h.slice(0, k).replace(/<\/div>\s*$/, '')}${x}</div>${h.slice(k)}`; },
-  despesas: () => saFolhaFim(basGastos(S.mes), saAntigos(viewDespesas)), inv: () => saFolhaFim(basInvestir(S.mes), saAntigos(() => viewAssets('inv'))),
-  pro: () => saFolhaFim(basInvestir(S.mes), saAntigos(() => viewAssets('pro'))), cart: () => saFolhaFim(basInvestir(S.mes), saAntigos(viewCart)), perfil: () => basPerfil() };
+const SA_VISTA = { geral: () => saInicio(), despesas: () => saGastos(), inv: () => saPatrimonio(), pro: () => saPatrimonio(), cart: () => saPatrimonio(), perfil: () => basPerfil() };
 const SA_NOME = { geral: 'Início', despesas: 'Gastos', inv: 'Patrimônio', pro: 'Patrimônio', cart: 'Patrimônio' };
 // Patrimônio: Aportes, Proventos, Carteira e Relatório são abas internas de uma área só (cada uma continua sendo a tela de antes)
 const PAT_ABAS = ['inv', 'pro', 'cart', 'relatorio'];
