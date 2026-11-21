@@ -7,9 +7,9 @@ const navItems = () => {
 };
 // menu em grupos com título (como MAIN / FEATURES / TOOLS); aba que não estiver num grupo vai para o fim
 // as 5 áreas do produto (iguais no App): Hoje, Dinheiro, Futuro, Patrimônio e Você; Futuro abre Meus objetivos e Você o painel
-const GRUPOS_NAV = [['Hoje', ['geral']], ['Dinheiro', ['despesas', 'rendas']], ['Patrimônio', ['inv', 'pro', 'cart', 'relatorio']], ['', ['clientes']]];
-const AREAS_EXTRA = ['futuro', 'patrimonio']; // áreas que não são abas do perfil (sempre visíveis)
-const NAV_EXTRA = { Futuro: ['futuro', 'Futuro', '<path d="M5 21V4M5 4h12l-2.2 4L17 12H5"/>'] };
+const GRUPOS_NAV = [['Hoje', ['geral']], ['Dinheiro', ['despesas', 'rendas']], ['Futuro', []], ['Patrimônio', ['inv', 'pro', 'cart', 'relatorio']], ['', ['clientes']]];
+const AREAS_EXTRA = ['futuro', 'patrimonio', 'perfil']; // áreas que não são abas do perfil (sempre visíveis)
+const NAV_EXTRA = { Futuro: ['futuro', 'Sonhos', '<path d="M5 21V4M5 4h12l-2.2 4L17 12H5"/>'] };
 const navExtra = (t) => { const x = NAV_EXTRA[t]; return x ? `<button data-act="nav" data-view="${x[0]}" ${S.view === x[0] ? 'aria-current="page"' : ''}>${S.view === x[0] ? '<i class="nav-ind" aria-hidden="true"></i>' : ''}${ic(x[2])}<span>${x[1]}</span></button>` : ''; };
 const navAgrupado = (items, btn) => GRUPOS_NAV.map(([t, ks]) => { let its = items.filter((i) => ks.includes(i[0])); if (t === 'Patrimônio' && its.length) { const k = PAT_ABAS.includes(S.view) ? S.view : (its.find((i) => i[0] === S.patUlt) || its[0])[0]; its = [[k, 'Patrimônio']]; } const ex = navExtra(t); return its.length || ex ? (t ? `<div class="nav-g" aria-hidden="true">${t}</div>` : '') + its.map(btn).join('') + ex : ''; }).join('') + items.filter((i) => !GRUPOS_NAV.some((g) => g[1].includes(i[0]))).map(btn).join('');
 // no plano gratuito o rodapé do menu convida a conhecer o Investidor (como o Upgrade Pro); nos pagos fica o cartão do assessor
@@ -23,7 +23,7 @@ function renderSide() {
   const mini = document.documentElement.classList.contains('side-mini');
   // topo da página (barra de vidro de ponta a ponta): à esquerda, foto e nome; depois período, assistente (com a busca), olho e globo; a marca fica no menu lateral
   const htAntes = $('#topo .htools'); // olho, globo e período movidos pelo render() (renderSide sozinho, no redimensionar, não os perde)
-  $('#topo').innerHTML = `<button class="topo-eu" data-act="admin-open" aria-label="Abrir o seu perfil e o painel" title="${esc(nome)} · ${esc(planLabel())}">${avatarHtml(S.profile)}<span class="topo-eu-t"><b>${esc(nome)}</b><small>${esc(planLabel())}</small></span><svg class="topo-eu-v" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><div class="topo-r"><div class="topo-ic">${buscaBtnHtml()}${typeof sinoHtml === 'function' ? sinoHtml() : ''}</div></div>`;
+  $('#topo').innerHTML = `<span class="topo-marca">${logoMarca()}</span><nav class="topo-nav" aria-label="Seções">${navAgrupado(items, btn)}</nav><button class="topo-eu" data-act="nav" data-view="perfil" aria-label="Abrir o seu perfil e o painel" title="${esc(nome)} · ${esc(planLabel())}">${avatarHtml(S.profile)}<span class="topo-eu-t"><b>${esc(nome)}</b><small>${esc(planLabel())}</small></span><svg class="topo-eu-v" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><div class="topo-r"><div class="topo-ic">${buscaBtnHtml()}${typeof sinoHtml === 'function' ? sinoHtml() : ''}</div></div>`;
   if (htAntes) $('#topo .topo-r').prepend(htAntes);
   $('#side').innerHTML = `<div class="brand"><span class="brand-full">${logoMarca()}</span><span class="brand-mini" aria-hidden="true">${LOGO}</span>
       <button class="side-tog" data-act="side-toggle" aria-expanded="${!mini}" aria-label="${mini ? 'Expandir o menu' : 'Recolher o menu'}" title="${mini ? 'Expandir o menu' : 'Recolher o menu'}">${I.chev}</button></div>
@@ -42,9 +42,20 @@ function viewHtml() {
   if (!modoBasico() && typeof basTelaPequena === 'function' && basTelaPequena() && S.screen === 'app') return '<div class="bas-falha"><b>Carregando…</b></div>';
   if (modoBasico()) { try { return basicoHtml(); } catch (e) { console.error(e); S.basPilha = []; S.basAba = 'inicio'; return '<div class="bas-falha"><b>Algo não carregou direito</b><p>Seus dados estão salvos. Toque para voltar ao Início.</p><button class="btn primary lg" data-act="bas-aba" data-v="inicio">Voltar ao Início</button></div>'; } }
   if (!S.plan) return emptyState();
+  if (SA_VISTA[S.view]) { // SaaS no jeito do App: a aba é a tela do App num layout largo; telas internas abrem na folha ao lado
+    let corpo; try { corpo = SA_VISTA[S.view](); } catch (e) { console.error(e); corpo = '<div class="bas-falha"><b>Algo não carregou direito</b></div>'; }
+    const t = basTopoPilha(); const f = t && BAS_TELAS[t.t];
+    return `<div class="bas sa" data-aba="${SA_ABA[S.view]}" data-sa="${S.view}">${corpo}</div>${f ? `<div class="sa-veu" data-act="bas-voltar" aria-hidden="true"></div><div class="bas bas-tela sa-folha" data-t="${t.t}" role="dialog" aria-modal="true">${f(t)}</div>` : ''}`;
+  }
   if (PAT_ABAS.includes(S.view)) { S.patUlt = S.view; return patAbasHtml() + viewHtmlAba(); }
   return viewHtmlAba();
 }
+// abas do SaaS desenhadas pelas telas do App (mesmos cálculos e ações); Relatório e Clientes seguem as telas do assessor
+const SA_ABA = { geral: 'inicio', despesas: 'gastos', rendas: 'gastos', inv: 'investir', pro: 'investir', cart: 'investir', futuro: 'investir', perfil: 'perfil' };
+// atalhos do Hoje em pílulas brancas sobre o azul (como Add money / Send da referência)
+const saAcoes = () => `<div class="sa-acoes"><button class="sa-pl" ${basIr('gasto')}>${I.plus}Novo gasto</button><button class="sa-pl" ${basIr('entrada')}>${I_ENTRADA}Nova entrada</button><button class="sa-pl" ${basIrInv()}>${I_APLICAR}Investir</button><button class="sa-pl" ${basIr('sonho-novo')}>${I_META}Novo sonho</button></div>`;
+const SA_VISTA = { geral: () => basInicio(S.mes).replace('<div class="bas-noite-par">', `${saAcoes()}<div class="bas-noite-par">`), despesas: () => basGastos(S.mes), rendas: () => basTelaEntradas(), inv: () => basInvestir(S.mes),
+  pro: () => BAS_TELAS.proventos({}), cart: () => BAS_TELAS.carteira({}), futuro: () => BAS_TELAS.sonhos({}), perfil: () => basPerfil() };
 // Patrimônio: Aportes, Proventos, Carteira e Relatório são abas internas de uma área só (cada uma continua sendo a tela de antes)
 const PAT_ABAS = ['inv', 'pro', 'cart', 'relatorio'];
 function patAbasHtml() {

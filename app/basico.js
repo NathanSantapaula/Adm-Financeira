@@ -2842,7 +2842,8 @@ function basObHtml() { return basEscolhe() ? `<div class="bas-ob"><p class="qn">
 // ações data-act do modo Básico (chamadas pelo default do onClick em main.js)
 function basAcao(act, ds, el) {
   switch (act) {
-    case 'bas-aba': { if (ds.v === 'perfil' && S.basAba !== 'perfil') S.basAbaAntes = S.basAba; const l = document.querySelector('.bas-tab-lente'); if (l && l.style.transform) S.basTabX = parseFloat(l.style.transform.slice(11)) || S.basTabX; }
+    case 'bas-aba': if (!modoBasico()) { basLimpar(); S.basAba = ds.v; S.view = { inicio: 'geral', gastos: 'despesas', investir: 'inv', perfil: 'perfil' }[ds.v] || 'geral'; render(); window.scrollTo(0, 0); return true; } // SaaS: a aba do App vira a aba do topo
+    { if (ds.v === 'perfil' && S.basAba !== 'perfil') S.basAbaAntes = S.basAba; const l = document.querySelector('.bas-tab-lente'); if (l && l.style.transform) S.basTabX = parseFloat(l.style.transform.slice(11)) || S.basTabX; }
       if (S.basAba !== ds.v || basPilha().length) basSom('toque'); basTransicao('aba', () => { basLimpar(); S.basAba = ds.v; render(); window.scrollTo(0, 0); }); return true;
     case 'bas-mes': S.mes = Math.max(0, Math.min(11, S.mes + +ds.d)); render(); return true;
     case 'bas-oi-reg': basOiRegistrar(); return true;

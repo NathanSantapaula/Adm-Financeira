@@ -3554,3 +3554,87 @@ body[data-ui][data-screen]:not([data-screen="landing"]) :is(.btn.primary, .ck-b 
 html:has(body[data-ui="basico"]:is([data-screen="landing"], [data-screen="auth"], [data-screen="onboarding"], [data-screen="checkout"])),
 body[data-ui="basico"]:is([data-screen="landing"], [data-screen="auth"], [data-screen="onboarding"], [data-screen="checkout"]) {
   background: var(--azul-3) linear-gradient(180deg, var(--azul-1) 0, var(--azul-2) 240px, var(--azul-3) 720px) no-repeat !important; }
+
+/* ---------- v8: SaaS no computador no jeito do App ----------
+   sem menu lateral: marca, abas em pílulas e conta numa barra fina no topo; o alto de toda tela é o azul do App,
+   e os cartões sobem por cima dele */
+.topo-marca, .topo-nav { display: none; }
+@media (min-width: 901px) {
+  html body[data-ui="completo"][data-screen="app"] { --sa-az1: #3b6cff; --sa-az2: #1428f5; --sa-az3: #03061f;
+    background: linear-gradient(180deg, var(--sa-az1) 0, var(--sa-az2) 190px, var(--sa-az3) 400px, var(--bg) 560px) no-repeat, var(--bg) !important; }
+  html body[data-ui="completo"][data-screen="app"] .fundo-vivo { display: none; }
+  html body[data-ui="completo"][data-screen="app"] .app { display: block; max-width: 1360px; margin: 0 auto; padding: 14px 28px 32px; }
+  html body[data-ui="completo"][data-screen="app"] .app::before, html body[data-ui="completo"][data-screen="app"] .side { display: none; }
+  html body[data-ui="completo"][data-screen="app"] .main { padding: 18px 0 32px; }
+
+  /* barra do topo: marca à esquerda, abas no meio, ferramentas e a foto à direita */
+  html body[data-ui="completo"][data-screen="app"] .topo { position: relative; top: 0; display: flex; align-items: center; gap: 14px; padding: 4px 0; border-radius: 0; color: #fff; }
+  html body[data-ui="completo"][data-screen="app"] .topo::before { display: none; }
+  body[data-ui="completo"][data-screen="app"] .topo-marca { display: flex; align-items: center; flex: none; color: #fff; }
+  body[data-ui="completo"][data-screen="app"] .topo-marca .marca-w { height: 26px; width: auto; }
+  body[data-ui="completo"][data-screen="app"] .topo-marca .marca-sub { display: none; }
+  body[data-ui="completo"][data-screen="app"] .topo-nav { display: flex; align-items: center; gap: 6px; margin: 0 auto; padding: 4px; border-radius: 999px;
+    background: rgba(255, 255, 255, .1); border: 1px solid rgba(255, 255, 255, .16); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
+  body[data-ui="completo"][data-screen="app"] .topo-nav .nav-g, body[data-ui="completo"][data-screen="app"] .topo-nav svg, body[data-ui="completo"][data-screen="app"] .topo-nav .nav-ind { display: none; }
+  body[data-ui="completo"][data-screen="app"] .topo-nav button { position: relative; display: flex; align-items: center; gap: 6px; height: 36px; padding: 0 16px; border: 0; border-radius: 999px;
+    background: transparent; color: rgba(255, 255, 255, .82); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 160ms ease, color 160ms ease; }
+  body[data-ui="completo"][data-screen="app"] .topo-nav button:hover { background: rgba(255, 255, 255, .12); color: #fff; }
+  body[data-ui="completo"][data-screen="app"] .topo-nav button[aria-current="page"] { background: #fff; color: #0b0d14; }
+  body[data-ui="completo"][data-screen="app"] .topo-nav .lk svg { display: block; width: 12px; height: 12px; }
+  html body[data-ui="completo"][data-screen="app"] .topo-r { flex: none; order: 3; display: flex; align-items: center; gap: 8px; }
+  html body[data-ui="completo"][data-screen="app"] .topo-r > .topo-ic { flex: none; max-width: none; margin: 0; padding: 0; background: none; border: 0; }
+  html body[data-ui="completo"][data-screen="app"] .topo-r .ia-cmd, html body[data-ui="completo"][data-screen="app"] .topo-r .year { display: none; }
+  html body[data-ui="completo"][data-screen="app"] .topo-eu { order: 4; padding: 0; }
+  html body[data-ui="completo"][data-screen="app"] .topo-eu-t, html body[data-ui="completo"][data-screen="app"] .topo-eu-v { display: none; }
+  html body[data-ui="completo"][data-screen="app"] .topo :is(.olho, .bell, .ab-ir, .busca-btn) { color: #fff; background: rgba(255, 255, 255, .14); border-color: transparent; box-shadow: none; }
+
+  /* o primeiro bloco da página fica sobre o azul: textos brancos */
+  html body[data-ui="completo"][data-screen="app"] #view > :first-child:not(.sa) :is(h1, h2, .wh, .page-h h1, .sub, p, small) { color: #fff; }
+}
+
+/* v8: telas do App dentro do SaaS (.sa) e a folha lateral das telas internas (.sa-folha) */
+.sa, .sa-folha { --bas-azul: #0A84FF; --bas-azul-1: #3b6cff; --bas-azul-2: #1428f5; --bas-azul-3: #03061f; }
+.sa-veu { position: fixed; inset: 0; z-index: 60; background: rgba(3, 6, 31, .45); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); animation: sa-in 200ms ease; }
+.sa-folha { position: fixed; top: 12px; right: 12px; bottom: 12px; z-index: 61; width: min(460px, calc(100vw - 24px)); overflow: auto; overscroll-behavior: contain; padding: 16px;
+  border-radius: 28px; background: var(--bg); box-shadow: 0 30px 80px -20px rgba(0, 0, 0, .55); animation: sa-entra 260ms cubic-bezier(.2, .8, .2, 1); }
+@keyframes sa-in { from { opacity: 0; } } @keyframes sa-entra { from { transform: translateX(40px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .sa-veu, .sa-folha { animation: none; } }
+
+/* v8: o alto de cada aba (o painel azul do App) fica solto sobre o azul da página, alinhado à esquerda; os blocos viram uma grade */
+@media (min-width: 901px) {
+  .sa .bas-noite, .sa .bas-gt-bg { margin: 0 0 22px; padding: 18px 0 8px; background: none; border-radius: 0; box-shadow: none; overflow: visible; color: #fff; text-align: left; align-items: flex-start; }
+  .sa .bas-noite::before, .sa .bas-noite::after, .sa .bas-gt-bg::before, .sa .bas-gt-bg::after { display: none; }
+  .sa .bas-noite { display: grid; grid-template-columns: 1fr auto; column-gap: 24px; }
+  .sa .bas-noite > * { grid-column: 1; justify-self: start; }
+  .sa .bas-noite .bas-topo { grid-column: 2; grid-row: 1 / span 3; align-self: start; margin: 0; }
+  .sa .bas-topo .bas-eu-m, .sa .bas-pv2-h > [data-act="bas-voltar"], .sa .bas-org-bt, .sa .bas-organizar { display: none; }
+  .sa .bas-noite-k { font-size: 13px; opacity: .8; }
+  .sa .bas-noite-v { font-size: clamp(44px, 4.4vw, 64px); letter-spacing: -.03em; line-height: 1.05; margin: 4px 0 8px; }
+  .sa-acoes { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0 14px; }
+  .sa-pl { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 18px; border: 0; border-radius: 999px; background: #fff; color: #0b0d14; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 6px 18px -10px rgba(0, 0, 0, .5); transition: transform 140ms ease; }
+  .sa-pl:hover { transform: translateY(-1px); } .sa-pl svg { width: 16px; height: 16px; }
+  .sa .bas-noite-par { justify-content: flex-start; }
+  .sa .bas-secs, .sa .bas-gt-folha { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; align-items: start; margin: 0; padding: 0; background: none; border-radius: 0; box-shadow: none; min-height: 0; }
+  .sa .bas-secs > *, .sa .bas-gt-folha > * { min-width: 0; margin: 0 !important; }
+  .sa :is(.bas-secs, .bas-gt-folha) > :is(.bas-pg-per, .bas-ch, h2) { grid-column: 1 / -1; }
+}
+@media (min-width: 901px) and (max-width: 1180px) { .sa .bas-secs, .sa .bas-gt-folha { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 901px) { html body .bas.sa .bas-noite, html body .bas.sa .bas-gt-bg { background: none !important; box-shadow: none !important; border: 0 !important; } }
+@media (min-width: 901px) { html body .bas.sa :is(.bas-secs, .bas-gt-folha) { background: none !important; box-shadow: none !important; border-radius: 0 !important; margin: 0 !important; padding: 0 !important; min-height: 0 !important; } }
+/* v8: páginas com o topo azul do App (Gastos, Entradas, Sonhos...): número à esquerda, o enfeite (pilha de cartões, gráfico) à direita */
+@media (min-width: 901px) {
+  html body .bas.sa .bas-gt-bg { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 24px; margin: 0 0 18px; padding: 8px 0 0; overflow: visible; }
+  html body .bas.sa .bas-gt-bg > .bas-topo { grid-column: 2; grid-row: 1; justify-self: end; }
+  html body .bas.sa .bas-gt-bg > :not(.bas-topo) { grid-column: 1 / -1; }
+  html body .bas.sa .bas-gt { display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, 420px); column-gap: 40px; align-items: start; text-align: left; padding-top: 0; }
+  html body .bas.sa .bas-gt > * { grid-column: 1; justify-self: start; }
+  html body .bas.sa .bas-gt > .bas-gt-v { font-size: clamp(44px, 4.4vw, 64px); letter-spacing: -.03em; }
+  html body .bas.sa .bas-gt > .bas-gt-pilha { grid-column: 2; grid-row: 1 / span 4; justify-self: stretch; margin-top: 0; }
+  html body .bas.sa .bas-gt-acoes { display: flex; justify-content: flex-start; gap: 10px; }
+  html body .bas.sa .bas-gt-acoes > * { flex: none; width: auto; min-width: 150px; }
+  html body .bas.sa .bas-pv2-h > b { font-size: 15px; }
+}
+@media (min-width: 901px) { html body .bas.sa .bas-gt-acoes > * { flex: 0 0 auto !important; width: auto !important; min-width: 150px; padding-inline: 22px; } }
+@media (min-width: 901px) { html body[data-ui="completo"][data-screen="app"]::before, html body[data-ui="completo"][data-screen="app"]::after { display: none !important; } }
+
+:root[data-theme="light"] body[data-ui="completo"][data-screen="app"] { --sa-az3: #5b73ff; }
