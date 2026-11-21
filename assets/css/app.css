@@ -3638,3 +3638,53 @@ body[data-ui="basico"]:is([data-screen="landing"], [data-screen="auth"], [data-s
 @media (min-width: 901px) { html body[data-ui="completo"][data-screen="app"]::before, html body[data-ui="completo"][data-screen="app"]::after { display: none !important; } }
 
 :root[data-theme="light"] body[data-ui="completo"][data-screen="app"] { --sa-az3: #5b73ff; }
+
+/* ---------- v9: SaaS = widgets do App redesenhados para o computador ----------
+   cartões sólidos e calmos (como na referência), Liquid Glass só nos controles sobre o azul, uma grade própria por aba */
+@media (min-width: 901px) {
+  body[data-ui="completo"][data-screen="app"] { --sa-card: #ffffff; --sa-borda: rgba(15, 23, 42, .07); --sa-sombra: 0 1px 2px rgba(15, 23, 42, .04), 0 12px 32px -16px rgba(15, 23, 42, .18); }
+  :root[data-theme="oled"] body[data-ui="completo"][data-screen="app"] { --sa-card: #111217; --sa-borda: rgba(255, 255, 255, .07); --sa-sombra: 0 1px 0 rgba(255, 255, 255, .04) inset, 0 18px 40px -20px rgba(0, 0, 0, .7); }
+  /* vidro líquido: o mesmo do App (desfoque, reflexo na quina e brilho interno) */
+  body[data-ui="completo"][data-screen="app"] :is(.sa-ia, .topo-nav, .topo .olho, .topo .ab-ir, .sa .bas-noite-par > *, .sa .bas-var-p, .sa .bas-gt-chip, .sa .bas-topo :is(.bell, .olho)) {
+    background: radial-gradient(120% 80% at 20% 0%, rgba(255, 255, 255, .34), rgba(255, 255, 255, 0) 55%), linear-gradient(180deg, rgba(255, 255, 255, .2), rgba(255, 255, 255, .07)) !important;
+    border: 1px solid rgba(255, 255, 255, .28) !important; color: #fff !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55), inset 0 -1px 0 rgba(255, 255, 255, .08), 0 8px 24px -12px rgba(3, 6, 31, .6) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(1.6); backdrop-filter: blur(18px) saturate(1.6); }
+  body[data-ui="completo"][data-screen="app"] .topo-nav button[aria-current="page"] { background: #fff !important; color: #0b0d14 !important; box-shadow: 0 4px 14px -6px rgba(0, 0, 0, .45); }
+  .sa-ia { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px 0 6px; border-radius: 999px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; position: relative; }
+  .sa-ia > .ia-mini, .sa-ia > svg, .sa-ia > span:first-child { width: 28px; height: 28px; flex: none; }
+  .sa-ia em { min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: #fff; color: var(--bas-azul, #0A84FF); font-style: normal; font-size: 11px; font-weight: 700; display: grid; place-items: center; }
+
+  /* cartões */
+  html body .bas.sa :is(.card, .bas-card) { background: var(--sa-card) !important; border: 1px solid var(--sa-borda) !important; box-shadow: var(--sa-sombra) !important; border-radius: 22px !important;
+    -webkit-backdrop-filter: none; backdrop-filter: none; }
+  html body .bas.sa .bas-sec { display: flex; flex-direction: column; gap: 10px; }
+  html body .bas.sa .bas-sec > :is(.card, .bas-card, ul, section) { flex: 1; }
+  html body .bas.sa .bas-ch { margin: 0 2px; } html body .bas.sa .bas-h2 { font-size: 15px; letter-spacing: -.01em; }
+
+  /* grade de 12 colunas: cada aba escolhe a largura de cada widget */
+  html body .bas.sa :is(.bas-secs, .bas-gt-folha) { grid-template-columns: repeat(12, minmax(0, 1fr)) !important; gap: 20px !important; align-items: stretch !important; }
+  html body .bas.sa :is(.bas-secs, .bas-gt-folha) > * { grid-column: span 4; }
+  html body .bas.sa :is(.bas-secs, .bas-gt-folha) > :is(.bas-pg-per, .bas-ch, h2, .bas-org) { grid-column: 1 / -1; }
+
+  /* Início: a linha de cima sobe sobre o azul (sonho, dá para investir, aviso); patrimônio ano a ano largo ao lado do resumo */
+  html body .bas.sa[data-sa="geral"] .bas-sec:is([data-sec="historico"], [data-sec="atividade"], [data-sec="ritmo"]) { grid-column: span 8; }
+  html body .bas.sa[data-sa="geral"] .bas-sec:is([data-sec="calendario"], [data-sec="seuano"]) { grid-column: span 6; }
+  html body .bas.sa[data-sa="geral"] .bas-noite { padding-bottom: 28px; }
+
+  /* Gastos: para onde foi o dinheiro largo, últimos gastos ao lado */
+  html body .bas.sa[data-sa="despesas"] .bas-sec[data-sec="onde"] { grid-column: span 7; }
+  html body .bas.sa[data-sa="despesas"] .bas-sec[data-sec="ultimos"] { grid-column: span 5; }
+
+  /* Patrimônio: o gráfico fica no azul de ponta a ponta; embaixo meta, divisão e investido em três colunas */
+  html body .bas.sa:is([data-sa="inv"], [data-sa="pro"], [data-sa="cart"]) .bas-sec[data-sec="patr"] { grid-column: 1 / -1; }
+  html body .bas.sa .bas-pt-bg .bas-ev { max-width: none; }
+}
+@media (min-width: 901px) and (prefers-color-scheme: dark) { :root:not([data-theme="light"]) body[data-ui="completo"][data-screen="app"] { --sa-card: #111217; --sa-borda: rgba(255, 255, 255, .07); --sa-sombra: 0 18px 40px -20px rgba(0, 0, 0, .7); } }
+@media (min-width: 901px) { html body .bas.sa[data-sa="geral"] .bas-sec:is([data-sec="sonho"], [data-sec="disp"]) { grid-column: span 6; } }
+@media (min-width: 901px) {
+  html body .bas.sa .bas-gt-folha > :is(.bas-disc, p) { grid-column: 1 / -1; }
+  html body .bas.sa .bas-sec[data-sec="meta"] { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+  html body .bas.sa .bas-pt-acoes { display: flex; justify-content: flex-start; gap: 10px; }
+  html body .bas.sa .bas-pt-acoes > * { flex: 0 0 auto !important; width: auto !important; min-width: 150px; padding-inline: 22px; }
+}
