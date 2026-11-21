@@ -283,3 +283,7 @@
 .sa2 .sa-c:not(.sa-escuro) .cifrao { --cif-body: #0B0B0C; --cif-eyes: #F7F4ED; }
 :root[data-theme="oled"] .sa2 .sa-c .cifrao { --cif-body: #F7F4ED; --cif-eyes: #06122A; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .sa2 .sa-c .cifrao { --cif-body: #F7F4ED; --cif-eyes: #06122A; } }
+/* Cifrão preto: olhos brancos com um leve volume (o brilho vira um ponto escuro de pupila) */
+.sa2 .sa-c:not(.sa-escuro) .cifrao :is([data-le], [data-re]) { fill: #fff; }
+.sa2 .sa-c:not(.sa-escuro) .cifrao :is([data-lb], [data-rb]) { fill: #0B0B0C; }
+:root[data-theme="oled"] .sa2 .sa-c .cifrao :is([data-le], [data-re]) { fill: revert-layer; }
