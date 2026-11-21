@@ -7,10 +7,10 @@ const REPOUSO = {
   x: 0, y: 0, rotation: 0, yaw: 0, pitch: 0, scaleX: 1, scaleY: 1,
   gazeX: 0, gazeY: 0, leftWink: 0, rightWink: 0, leftEyeSmile: 0, rightEyeSmile: 0,
   eyeScaleX: 1, leftEyeScaleY: 1, rightEyeScaleY: 1, eyeSpacing: 1, eyeTilt: 0,
-  marcas: 0, duvida: 0, dot: 0, skew: 0, brilho: 0,
+  marcas: 0, duvida: 0, dot: 0, skew: 0, brilho: 0, alca: 0,
 };
 const FOCO = { ...REPOUSO, x: -.022, y: -.022, rotation: -.08, yaw: -.18, pitch: -.05, gazeX: -.04, gazeY: .05, scaleY: 1.03, eyeScaleX: 1.2, leftEyeScaleY: .78, rightEyeScaleY: .9, eyeTilt: -.06 };
-const DURACAO = { notice: 1160, focus: 960, acknowledge: 700, hop: 960, wink: 900, proud: 1120, milestone: 1760, 'glance-left': 1580, 'glance-right': 1580, spin: 1800, flip: 1880, sonolento: 2400, confuso: 1700, irritado: 1300, erro: 1500, gelatina: 1100, cocegas: 1200, timido: 1500, espreguica: 1900, danca: 1800, espirro: 1500, soluco: 1400, derrete: 1700, segue: 2000, brilha: 1600, tonto: 2200 };
+const DURACAO = { notice: 1160, focus: 960, acknowledge: 700, hop: 960, wink: 900, proud: 1120, milestone: 1760, 'glance-left': 1580, 'glance-right': 1580, spin: 1800, flip: 1880, sonolento: 2400, confuso: 1700, irritado: 1300, erro: 1500, gelatina: 1100, cocegas: 1200, timido: 1500, espreguica: 1900, danca: 1800, espirro: 1500, soluco: 1400, derrete: 1700, segue: 2000, brilha: 1600, tonto: 2200, destranca: 1750, sobe: 1500, lanca: 1700, soma: 1300 };
 const K = {
   'glance-left': [
     { at: 0, pose: {} },
@@ -280,6 +280,71 @@ Object.assign(K, {
     { at: 900, pose: { y: .01, leftEyeScaleY: .8, rightEyeScaleY: .8 } }, { at: 1250, pose: {} },
   ],
 });
+// Gestos das formas: o cadeado destranca (a alça sobe, gira e fecha com um clique) e a seta dispara para cima e assenta.
+Object.assign(K, {
+  destranca: [
+    { at: 0, pose: {} },
+    { at: 240, pose: { y: .018, scaleX: 1.06, scaleY: .92, leftEyeScaleY: .7, rightEyeScaleY: .7 } },
+    { at: 470, pose: { y: -.035, scaleX: .97, scaleY: 1.05, alca: 1, eyeScaleX: 1.35, leftEyeScaleY: 1.08, rightEyeScaleY: 1.08 } },
+    { at: 950, pose: { y: -.025, rotation: .05, alca: 1, gazeX: .03, gazeY: -.02, leftEyeSmile: .6, rightEyeSmile: .6, leftEyeScaleY: .8, rightEyeScaleY: .8 } },
+    { at: 1130, pose: { y: .022, scaleX: 1.09, scaleY: .88, alca: 0, marcas: 1, leftEyeScaleY: .55, rightEyeScaleY: .55 } },
+    { at: 1320, pose: { y: -.012, scaleY: 1.03, rightWink: 1, leftEyeSmile: .7, eyeScaleX: 1.15 } },
+    { at: 1750, pose: {} },
+  ],
+  lanca: [
+    { at: 0, pose: {} },
+    { at: 180, pose: { y: .03, scaleX: 1.1, scaleY: .86, leftEyeScaleY: .6, rightEyeScaleY: .6 } },
+    { at: 420, pose: { y: -.2, pitch: Math.PI, scaleY: 1.05, eyeScaleX: 1.3, marcas: 1 } },
+    { at: 700, pose: { y: -.24, pitch: Math.PI * 2 } },
+    { at: 960, pose: { y: -.06, pitch: Math.PI * 3 } },
+    { at: 1120, pose: { y: .025, pitch: Math.PI * 4, scaleX: 1.1, scaleY: .86, leftEyeScaleY: .6, rightEyeScaleY: .6 } },
+    { at: 1350, pose: { y: -.015, pitch: Math.PI * 4, rightWink: 1, leftEyeSmile: .7, eyeScaleX: 1.15 } },
+    { at: 1700, pose: { pitch: Math.PI * 4 } },
+  ],
+  soma: [
+    { at: 0, pose: {} },
+    { at: 160, pose: { y: .015, scaleX: 1.08, scaleY: .9, leftEyeScaleY: .7, rightEyeScaleY: .7 } },
+    { at: 330, pose: { scaleX: 1.13, scaleY: 1.13, rotation: .26, brilho: 1, leftEyeSmile: .8, rightEyeSmile: .8, leftEyeScaleY: .75, rightEyeScaleY: .75 } },
+    { at: 520, pose: { scaleX: .97, scaleY: .97, rotation: -.08, brilho: 1, leftEyeSmile: .8, rightEyeSmile: .8 } },
+    { at: 700, pose: { scaleX: 1.12, scaleY: 1.12, rotation: .1, brilho: 1, leftEyeSmile: .8, rightEyeSmile: .8 } },
+    { at: 920, pose: { brilho: .5, leftEyeSmile: .6, rightEyeSmile: .6 } },
+    { at: 1300, pose: {} },
+  ],
+  // Telas de sucesso do app (o deslocamento na tela vem de fora, em basFesta): gasto = jogado para cima, gira e vira moeda,
+  // pisca no alto e cai; investimento = gira, vira seta e segue a linha do gráfico.
+  celebraGasto: [
+    { at: 0, pose: { scaleX: .9, scaleY: 1.1, gazeY: -.03, eyeScaleX: 1.08 } },
+    { at: 560, pose: { scaleX: .97, scaleY: 1.03, gazeY: -.015 } },
+    { at: 700, pose: { yaw: Math.PI * .5 } },
+    { at: 880, pose: { yaw: Math.PI } },
+    { at: 1100, pose: { yaw: Math.PI * 2 } },
+    { at: 1300, pose: { yaw: Math.PI * 2, rightWink: 1, leftEyeSmile: .7, eyeScaleX: 1.1, rotation: .05 } },
+    { at: 1520, pose: { yaw: Math.PI * 2, leftEyeSmile: .5, rightEyeSmile: .5, leftEyeScaleY: .8, rightEyeScaleY: .8 } },
+    { at: 1800, pose: { yaw: Math.PI * 2, scaleX: .94, scaleY: 1.06, gazeY: .03 } },
+    { at: 2300, pose: { yaw: Math.PI * 2, scaleX: .94, scaleY: 1.06, gazeY: .03 } },
+  ],
+  celebraInv: [
+    { at: 0, pose: { scaleX: .9, scaleY: 1.1, gazeY: -.03, eyeScaleX: 1.08 } },
+    { at: 250, pose: { yaw: Math.PI * .5, scaleX: .95, scaleY: 1.05 } },
+    { at: 430, pose: { yaw: Math.PI } },
+    { at: 650, pose: { yaw: Math.PI * 2 } },
+    { at: 800, pose: { yaw: Math.PI * 2, eyeScaleX: 1.08 } },
+    { at: 950, pose: { yaw: Math.PI * 2, rightWink: 1, leftEyeSmile: .7, eyeScaleX: 1.1, rotation: .05 } },
+    { at: 1180, pose: { yaw: Math.PI * 2, leftEyeSmile: .5, rightEyeSmile: .5, leftEyeScaleY: .8, rightEyeScaleY: .8 } },
+    { at: 1380, pose: { yaw: Math.PI * 2, scaleX: 1.1, scaleY: .88, leftEyeScaleY: .6, rightEyeScaleY: .6 } },
+    { at: 1560, pose: { yaw: Math.PI * 2, scaleX: .88, scaleY: 1.15, gazeY: -.03, eyeScaleX: 1.2 } },
+    { at: 2300, pose: { yaw: Math.PI * 2, scaleX: .88, scaleY: 1.15, gazeY: -.03 } },
+  ],
+  sobe: [
+    { at: 0, pose: {} },
+    { at: 200, pose: { y: .03, scaleX: 1.12, scaleY: .84, leftEyeScaleY: .6, rightEyeScaleY: .6, gazeY: .02 } },
+    { at: 380, pose: { y: -.13, scaleX: .88, scaleY: 1.13, marcas: 1, eyeScaleX: 1.35, gazeY: -.03 } },
+    { at: 700, pose: { y: -.15, scaleX: .97, scaleY: 1.05, marcas: 1, leftEyeSmile: .8, rightEyeSmile: .8, leftEyeScaleY: .8, rightEyeScaleY: .8 } },
+    { at: 1000, pose: { y: .025, scaleX: 1.1, scaleY: .88, leftEyeScaleY: .6, rightEyeScaleY: .6 } },
+    { at: 1200, pose: { y: -.015, scaleY: 1.03, leftEyeSmile: .6, rightEyeSmile: .6 } },
+    { at: 1500, pose: {} },
+  ],
+});
 for (const k of Object.keys(K)) if (DURACAO[k] == null) DURACAO[k] = K[k][K[k].length - 1].at;
 // Nomes da cartilha → sequências.
 const EXPRESSOES = { neutro: null, plim: 'moeda', calculando: 'conta', susto: 'susto', festa: 'pulinhos', sim: 'sim', nao: 'nao', carinho: 'carinho', espiada: 'olhada', orgulho: 'estica', frio: 'tremor', curioso: 'glance-right', animado: 'hop', sonolento: 'sonolento', confuso: 'confuso', irritado: 'irritado', surpreso: 'notice', confiante: 'proud', comemorando: 'milestone', pensando: 'focus', espiando: 'glance-left', desorientado: 'erro', piscadela: 'wink', giro: 'spin', cambalhota: 'flip', gelatina: 'gelatina', cocegas: 'cocegas', timido: 'timido', espreguica: 'espreguica', danca: 'danca', espirro: 'espirro', soluco: 'soluco', derrete: 'derrete', segue: 'segue', brilha: 'brilha', tonto: 'tonto' };
@@ -434,6 +499,52 @@ function olhoD(cx, cy, w, h, smile) {
   const side = hh * a * .32, top = -hh * (1 - a * .42), bottom = hh * (1 - a * 1.12), up = -hh * (.552 - a * .26), lo = hh * (.552 - a * .06);
   return `M${cx - hw} ${cy + side} C${cx - hw} ${cy + up} ${cx - hw * .552} ${cy + top} ${cx} ${cy + top} C${cx + hw * .552} ${cy + top} ${cx + hw} ${cy + up} ${cx + hw} ${cy + side} C${cx + hw} ${cy + lo} ${cx + hw * .552} ${cy + bottom} ${cx} ${cy + bottom} C${cx - hw * .552} ${cy + bottom} ${cx - hw} ${cy + lo} ${cx - hw} ${cy + side} Z`;
 }
+/* Formas do Cifrão (manual de animação): moeda = valor guardado, cadeado = seus dados seguros,
+   mais = novo objetivo, seta = patrimônio subindo. Corpo na cor padrão; luz e sombra vêm de um filtro que segue o contorno.
+   A troca reamostra as duas silhuetas em N pontos e interpola, com squash & stretch no meio. */
+const redondo = (p) => p.map(([x, y, r], i) => {
+  const [px, py] = p[(i + p.length - 1) % p.length], [nx, ny] = p[(i + 1) % p.length], a = Math.hypot(px - x, py - y), b = Math.hypot(nx - x, ny - y);
+  return `${i ? 'L' : 'M'}${x + (px - x) * r / a} ${y + (py - y) * r / a} Q${x} ${y} ${x + (nx - x) * r / b} ${y + (ny - y) * r / b}`;
+}).join(' ') + 'Z';
+// Luz e sombra: o mesmo volume de massinha inflada do Cifrão do app (aven-app-celular, data-volume), aplicado ao corpo e à alça.
+// olho: [x esq, y esq, x dir, y dir, inclinação°, escala]; cad/moe: alça e aro.
+const FORMAS = {
+  cifrao: { d: CORPO.slice(9, -3), olho: [402.4, 433.4, 554.3, 392.6, -18.6, 1] },
+  moeda: { d: 'M170 520A295 330 0 1 1 760 520A295 330 0 1 1 170 520Z', olho: [360, 505, 570, 505, 0, 1.3], moe: 1, gesto: 'lanca' },
+  cadeado: { d: redondo([[230, 440, 130], [770, 440, 130], [770, 880, 130], [230, 880, 130]]), olho: [395, 660, 605, 660, 0, 1.3], cad: 1, gesto: 'destranca' },
+  mais: { d: redondo([[375, 160, 95], [625, 160, 95], [625, 395, 40], [860, 395, 95], [860, 645, 95], [625, 645, 40], [625, 880, 95], [375, 880, 95], [375, 645, 40], [140, 645, 95], [140, 395, 95], [375, 395, 40]]), olho: [395, 520, 605, 520, 0, 1.15], gesto: 'soma' },
+  seta: { d: redondo([[500, 120, 85], [890, 560, 70], [635, 560, 40], [635, 895, 80], [365, 895, 80], [365, 560, 40], [110, 560, 70]]), olho: [418, 470, 582, 470, 0, 1.1], gesto: 'sobe' },
+};
+const NP = 160;
+function amostra(medidor, d) {
+  medidor.setAttribute('d', d);
+  const L = medidor.getTotalLength(), p = Array.from({ length: NP }, (_, i) => { const q = medidor.getPointAtLength(L * i / NP); return [q.x, q.y]; });
+  let area = 0; p.forEach(([x, y], i) => { const [u, v] = p[(i + 1) % NP]; area += x * v - u * y; });
+  if (area < 0) p.reverse();
+  // Todas começam no ponto acima do centro e seguem no mesmo sentido: a correspondência fica estável.
+  let k = 0, best = 9; p.forEach(([x, y], i) => { const g = Math.abs(Math.atan2(y - 520, x - 500) + Math.PI / 2); if (g < best) { best = g; k = i; } });
+  return p.slice(k).concat(p.slice(0, k));
+}
+function preparaFormas() {
+  const s = document.createElementNS(NS, 'svg'), m = document.createElementNS(NS, 'path');
+  s.setAttribute('style', 'position:absolute;width:0;height:0;visibility:hidden'); s.append(m); document.body.append(s);
+  for (const f of Object.values(FORMAS)) { f.pts = amostra(m, f.d); f.cad ??= 0; f.moe ??= 0; }
+  s.remove();
+}
+const snap = (n) => { const F = FORMAS[n]; return { pts: F.pts, olho: F.olho, cad: F.cad, moe: F.moe }; };
+function estadoForma(a) {
+  const F = FORMAS[a.forma], t = Math.min(1, a.mt), D = a.de;
+  if (t >= 1) return snap(a.forma);
+  const w = 1 + 2.4 * (t - 1) ** 3 + 1.4 * (t - 1) ** 2, l = ease(t), M = (x, y, k) => x + (y - x) * k; // w: ease-out-back, passa do ponto e assenta.
+  return { pts: D.pts.map((p, i) => [M(p[0], F.pts[i][0], w), M(p[1], F.pts[i][1], w)]), olho: D.olho.map((v, i) => M(v, F.olho[i], l)),
+    cad: M(D.cad, F.cad, l), moe: M(D.moe, F.moe, l) };
+}
+const pedir = (a, nome) => { if (nome === a.pedido) return; a.pedido = nome; virar(a, nome); };
+function virar(a, nome) {
+  if (!FORMAS[nome] || nome === a.forma) return;
+  a.tForma = 0; a.de = a.vis || snap(a.forma); a.forma = nome; a.mt = menos.matches ? 1 : 0; a.dFeito = '';
+  desenhar(a, a.atual);
+}
 function criar(host) {
   const id = `cifrao-${++serial}`;
   const svg = document.createElementNS(NS, 'svg');
@@ -448,30 +559,42 @@ function criar(host) {
       <feSpecularLighting in="rel" surfaceScale="9" specularConstant="1.25" specularExponent="34" lighting-color="#FFFFFF" result="esp"><fePointLight x="330" y="120" z="520"/></feSpecularLighting>
       <feSpecularLighting in="rel" surfaceScale="9" specularConstant=".9" specularExponent="10" lighting-color="#46B6FF" result="aro"><feDistantLight azimuth="-10" elevation="18"/></feSpecularLighting>
       <feComposite in="tom" in2="esp" operator="arithmetic" k2="1" k3=".75" result="t2"/>
-      <feComposite in="t2" in2="aro" operator="arithmetic" k2="1" k3=".4" result="t3"/>
-      <feComposite in="SourceAlpha" in2="rel" operator="arithmetic" k2="1" k3="-1.1" result="borda"/><feFlood flood-color="#7A6BFF" flood-opacity=".2"/><feComposite in2="borda" operator="in" result="lilas"/>
+      <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  .3 .33 .3 0 .04" result="claro"/>
+      <feComposite in="aro" in2="claro" operator="in" result="aroc"/>
+      <feComposite in="t2" in2="aroc" operator="arithmetic" k2="1" k3=".4" result="t3"/>
+      <feComposite in="SourceAlpha" in2="rel" operator="arithmetic" k2="1" k3="-1.1" result="borda"/><feFlood flood-color="#7A6BFF" flood-opacity=".2"/><feComposite in2="borda" operator="in"/><feComposite in2="claro" operator="in" result="lilas"/>
       <feOffset in="SourceAlpha" dx="-46" dy="14" result="off"/><feComposite in="SourceAlpha" in2="off" operator="out" result="lado"/><feGaussianBlur in="lado" stdDeviation="12" result="ladob"/>
-      <feFlood flood-color="#5CC4FF" flood-opacity=".45"/><feComposite in2="ladob" operator="in" result="azul"/>
-      <feMerge result="t4"><feMergeNode in="t3"/><feMergeNode in="lilas"/><feMergeNode in="azul"/></feMerge>
+      <feFlood flood-color="#5CC4FF" flood-opacity=".45"/><feComposite in2="ladob" operator="in"/><feComposite in2="claro" operator="in" result="azul"/>
+      <feColorMatrix in="SourceGraphic" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  -.33 -.33 -.34 0 1" result="escuro"/>
+      <feSpecularLighting in="rel" surfaceScale="9" specularConstant=".9" specularExponent="28" lighting-color="#EEF0F6" result="lus"><fePointLight x="300" y="90" z="900"/></feSpecularLighting>
+      <feComposite in="lus" in2="escuro" operator="in"/><feComponentTransfer result="fosco"><feFuncA type="linear" slope=".3"/></feComponentTransfer>
+      <feMerge result="t4"><feMergeNode in="t3"/><feMergeNode in="fosco"/><feMergeNode in="lilas"/><feMergeNode in="azul"/></feMerge>
       <feComposite in="t4" in2="SourceAlpha" operator="in"/></filter>
     <linearGradient id="${id}-o" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34385A"/><stop offset=".55" stop-color="#0B0C16"/><stop offset="1" stop-color="#020208"/></linearGradient>` : '';
+  const F = vol ? ` filter="url(#${id}-v)"` : '';
   svg.innerHTML = `<defs><clipPath id="${id}-c">${CORPO}</clipPath>${FILTRO}</defs>
   <g data-ator>
     <g data-marcas fill="none" stroke="var(--cif-body)" stroke-width="34" stroke-linecap="round" opacity="0"><path d="M760 215 815 150M815 275 890 245M700 165 712 95"/></g>
     <text data-duvida x="850" y="230" font-size="300" font-weight="800" font-family="-apple-system, Inter, sans-serif" fill="var(--cif-body)" text-anchor="middle" opacity="0">?</text>
     <g data-brilhos fill="var(--cif-body)" opacity="0">${'<path d="M0 -60 L13 -13 L60 0 L13 13 L0 60 L-13 13 L-60 0 L-13 -13Z"/>'.repeat(3)}</g>
     <g data-volume>
-      <g data-cifrao fill="var(--cif-body)"${vol ? ` filter="url(#${id}-v)"` : ''}>${CORPO}</g>
+      <g data-borda opacity="0"><g${F}><path d="M230 520A295 330 0 1 1 820 520A295 330 0 1 1 230 520Z" fill="var(--cif-body)"/></g>        <path d="M230 520A295 330 0 1 1 820 520A295 330 0 1 1 230 520Z" fill="#2B3FD0" opacity=".35" style="mix-blend-mode:multiply"/><path d="M632 234H664M681 275H713M723 326H755M753 386H785M773 451H805M779 520H811M773 589H805M753 654H785M723 714H755M681 765H713M632 806H664" stroke="#14206E" stroke-opacity=".35" stroke-width="13" stroke-linecap="round"/><path d="M632 234H664M681 275H713M723 326H755M753 386H785M773 451H805M779 520H811M773 589H805M753 654H785M723 714H755M681 765H713M632 806H664" transform="translate(0 -9)" stroke="#fff" stroke-opacity=".38" stroke-width="9" stroke-linecap="round"/></g>
+      <g${F}><path data-alca d="M350 470V340A150 150 0 0 1 650 340V620" fill="none" stroke="var(--cif-body)" stroke-width="95" stroke-linecap="round" pathLength="1" stroke-dasharray="1 1" opacity="0"/>
+      <g data-cifrao fill="var(--cif-body)">${CORPO}</g></g>
       <circle data-dot cx="500" cy="520" r="330" fill="var(--cif-body)" opacity="0"/>
       <circle data-aro cx="500" cy="520" r="250" fill="none" stroke="var(--cif-eyes)" stroke-width="26" opacity="0"/>
-      <g clip-path="url(#${id}-c)"><g data-face fill="var(--cif-eyes)"><g data-left><path data-le${vol ? ` fill="url(#${id}-o)"` : ''}/>${vol ? '<ellipse data-lb cx="382" cy="390" rx="21" ry="27" fill="#fff"/>' : ''}</g><g data-right><path data-re${vol ? ` fill="url(#${id}-o)"` : ''}/>${vol ? '<ellipse data-rb cx="534" cy="349" rx="21" ry="27" fill="#fff"/>' : ''}</g></g></g>
+      <g clip-path="url(#${id}-c)"><g data-anel opacity="0" fill="none"><ellipse cx="472" cy="524" rx="238" ry="268" stroke="#000" stroke-opacity=".18" stroke-width="18"/><ellipse cx="465" cy="517" rx="238" ry="268" stroke="#fff" stroke-opacity=".7" stroke-width="12"/></g>
+        <g data-face fill="var(--cif-eyes)"><g data-left><path data-le${vol ? ` fill="url(#${id}-o)"` : ''}/>${vol ? '<ellipse data-lb rx="21" ry="27" fill="#fff"/>' : ''}</g><g data-right><path data-re${vol ? ` fill="url(#${id}-o)"` : ''}/>${vol ? '<ellipse data-rb rx="21" ry="27" fill="#fff"/>' : ''}</g></g></g>
     </g>
   </g>`;
   host.appendChild(svg);
   const q = (s) => svg.querySelector(s);
   const ator = { host, svg, atencao: novaAtencao(20261111 + serial * 327), visivel: true, elapsed: 0, seq: 'notice', seqT: 0, gestoEm: 6500 + serial * 1700, gestoI: 0,
     atual: { ...REPOUSO }, origem: { ...REPOUSO }, grupo: q('[data-ator]'), volume: q('[data-volume]'), cifrao: q('[data-cifrao]'), dot: q('[data-dot]'), face: q('[data-face]'),
-    marcas: q('[data-marcas]'), aro: q('[data-aro]'), brilhos: q('[data-brilhos]'), duvida: q('[data-duvida]'), left: q('[data-left]'), right: q('[data-right]'), le: q('[data-le]'), re: q('[data-re]'), lb: q('[data-lb]'), rb: q('[data-rb]') };
+    marcas: q('[data-marcas]'), aro: q('[data-aro]'), brilhos: q('[data-brilhos]'), duvida: q('[data-duvida]'), left: q('[data-left]'), right: q('[data-right]'), le: q('[data-le]'), re: q('[data-re]'), lb: q('[data-lb]'), rb: q('[data-rb]'),
+    corpo: q('[data-cifrao] path'), clip: q('clipPath path'), alca: q('[data-alca]'), borda: q('[data-borda]'), anel: q('[data-anel]'), forma: 'cifrao', mt: 1, dFeito: '' };
+  if (FORMAS[host.dataset.forma]) ator.forma = host.dataset.forma;
+  ator.de = snap(ator.forma); ator.pedido = ator.forma; ator.tForma = 0;
   const TOQUE = ['moeda', 'pulinhos', 'carinho', 'olhada', 'estica', 'sim', 'nao', 'tremor', 'susto', 'conta', 'gelatina', 'wink', 'hop', 'brilha', 'spin', 'timido', 'milestone', 'flip', 'proud', 'confuso', 'danca', 'espirro', 'soluco', 'derrete', 'segue', 'notice', 'glance-right'];
   let ultimo = 0, serie = 0, saco = [], antes = '';
   // Cada toque tira uma reação de um saco embaralhado: todas aparecem antes de repetir. Séries rápidas e o toque depois de muito tempo parado têm reação própria.
@@ -483,12 +606,13 @@ function criar(host) {
     if (serie >= 6) { s = 'tonto'; serie = 0; } else if (serie === 4) s = 'cocegas';
     else if (serie > 1 && ator.seq) return;
     else if (parado || ator.seq === 'sonolento') s = 'espreguica';
-    else s = sorteia();
+    else s = FORMAS[ator.forma].gesto && Math.random() < .6 ? FORMAS[ator.forma].gesto : sorteia();
     ator.tocar(s);
   });
   host.addEventListener('pointerenter', () => { ator.atencao = dirigeAtencao(ator.atencao, { x: 0, y: -.25, bodyFollow: .5 }); });
   ator.tocar = (nome) => { const s = EXPRESSOES[nome] ?? nome; if (!K[s] || (host.hasAttribute('data-sem-giro') && GIROS.has(s))) return; ator.origem = { ...ator.atual }; ator.seq = s; ator.seqT = 0; };
   host.addEventListener('cifrao:expressao', (e) => ator.tocar(e.detail));
+  host.addEventListener('cifrao:forma', (e) => pedir(ator, e.detail));
   // olhar um ponto da tela: detail = { x, y } em pixels da janela (o olhar e o corpo viram para lá)
   host.addEventListener('cifrao:olhar', (e) => { const r = host.getBoundingClientRect(); const d = e.detail || {}; ator.atencao = dirigeAtencao(ator.atencao, { x: lim(((d.x - r.left - r.width / 2) / (innerWidth / 2)) * 1.6), y: lim(((d.y - r.top - r.height / 2) / (innerHeight / 2)) * 1.6), bodyFollow: d.corpo ?? .75 }); });
   host.addEventListener('cifrao:read-pose', (e) => { e.detail.pose = { ...ator.atual }; });
@@ -497,11 +621,26 @@ function criar(host) {
   atores.add(ator); vis.observe(host);
   desenhar(ator, REPOUSO);
 }
+// Olho claro (Cifrão preto): o reflexo branco viraria uma segunda bolinha, então some. A cor pode mudar com o tema, por isso relê de tempos em tempos.
+const claro = (c) => { const h = c.trim().match(/^#([0-9a-f]{6})$/i), v = h ? [0, 8, 16].map((k) => (parseInt(h[1], 16) >> (16 - k)) & 255) : (c.match(/\d+(\.\d+)?/g) || []).map(Number); return v.length >= 3 && v[0] * .3 + v[1] * .59 + v[2] * .11 > 140; };
 function desenhar(a, act) {
+  if ((a.nq = (a.nq || 0) + 1) % 20 === 1) a.semReflexo = claro(getComputedStyle(a.host).getPropertyValue('--cif-eyes'));
   // de pé (data-sem-giro): sem inclinar nem virar de lado; só os olhos, pulos e expressões
   if (a.host.hasAttribute('data-sem-giro')) act = { ...act, rotation: lim(act.rotation, .05), yaw: lim(act.yaw, .18), pitch: lim(act.pitch, .12), skew: 0 };
   const cy = Math.cos(act.yaw), cp = Math.cos(act.pitch), sy = Math.sin(act.yaw), sp = Math.sin(act.pitch), dot = act.dot || 0;
-  a.grupo.setAttribute('transform', `translate(${act.x * 1000} ${act.y * 1000}) translate(500 520) rotate(${act.rotation * 180 / Math.PI}) skewX(${(act.skew || 0) * 57.3}) scale(${Math.min(1.13, act.scaleX)} ${Math.min(1.13, act.scaleY)}) translate(-500 -520)`);
+  const f = estadoForma(a), pop = Math.sin(Math.PI * Math.min(1, a.mt));
+  a.vis = f;
+  if (a.dFeito !== a.forma) {
+    const d = a.mt < 1 ? `M${f.pts.map((p) => `${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join('L')}Z` : FORMAS[a.forma].d;
+    a.corpo.setAttribute('d', d); a.clip.setAttribute('d', d); if (a.mt >= 1) a.dFeito = a.forma;
+  }
+  a.alca.setAttribute('opacity', f.cad > .01 ? '1' : '0'); a.alca.setAttribute('stroke-dashoffset', String(1 - f.cad));
+  // aberta: a alça sobe e gira sobre a perna direita
+  const sobe = Math.min(1, act.alca * 2), gira = Math.max(0, act.alca * 2 - 1); // primeiro sobe, depois gira em volta da perna presa
+  a.alca.setAttribute('transform', `translate(0 ${-95 * sobe}) translate(650 0) scale(${1 - 1.45 * gira} 1) translate(-650 0)`);
+  a.borda.setAttribute('opacity', String(f.moe));
+  a.anel.setAttribute('opacity', String(f.moe));
+  a.grupo.setAttribute('transform', `translate(${act.x * 1000} ${act.y * 1000}) translate(500 520) rotate(${act.rotation * 180 / Math.PI}) skewX(${(act.skew || 0) * 57.3}) scale(${Math.min(1.13, act.scaleX) * (1 + .1 * pop)} ${Math.min(1.13, act.scaleY) * (1 - .13 * pop)}) translate(-500 -520)`);
   // Giro em torno do eixo vertical: a silhueta estreita até o perfil; de costas, os olhos somem.
   a.volume.setAttribute('transform', `translate(0 ${-90 * (1 - cp)}) translate(500 520) scale(${.3 + .7 * Math.abs(cy)} ${.94 + .06 * Math.abs(cp)}) translate(-500 -520)`);
   a.cifrao.setAttribute('opacity', String(1 - dot));
@@ -518,12 +657,14 @@ function desenhar(a, act) {
   a.marcas.setAttribute('opacity', String(act.marcas * (1 - dot)));
   a.duvida.setAttribute('opacity', String(act.duvida * (1 - dot)));
   // Olhos ovais e inclinados, como no desenho.
-  for (const [side, cx, oy, wink, smile, ey] of [['left', 402.4, 433.4, act.leftWink, act.leftEyeSmile, act.leftEyeScaleY], ['right', 554.3, 392.6, act.rightWink, act.rightEyeSmile, act.rightEyeScaleY]]) {
-    const w = Math.max(.5, 90 * act.eyeScaleX), h = Math.max(.5, 154 * ey * Math.max(.06, 1 - wink * .94));
+  const [lx, ly, rx, ry, tilt, k] = f.olho;
+  for (const [side, cx, oy, wink, smile, ey] of [['left', lx, ly, act.leftWink, act.leftEyeSmile, act.leftEyeScaleY], ['right', rx, ry, act.rightWink, act.rightEyeSmile, act.rightEyeScaleY]]) {
+    const w = Math.max(.5, 90 * k * act.eyeScaleX), h = Math.max(.5, 154 * k * ey * Math.max(.06, 1 - wink * .94));
     const sp2 = (side === 'left' ? -70 : 70) * (act.eyeSpacing - 1);
-    a[side].setAttribute('transform', `translate(${sp2 + act.gazeX * 1000} ${act.gazeY * 1000}) rotate(${-18.6 + act.eyeTilt * 180 / Math.PI} ${cx} ${oy})`);
+    a[side].setAttribute('transform', `translate(${sp2 + act.gazeX * 1000} ${act.gazeY * 1000}) rotate(${tilt + act.eyeTilt * 180 / Math.PI} ${cx} ${oy})`);
     a[side === 'left' ? 'le' : 're'].setAttribute('d', olhoD(cx, oy, w, h, smile));
-    const bri = a[side === 'left' ? 'lb' : 'rb']; if (bri) bri.setAttribute('opacity', String(Math.max(0, (1 - wink * 1.6) * (1 - smile * 1.4) * Math.min(1, ey))));
+    const bri = a[side === 'left' ? 'lb' : 'rb']; if (bri) { bri.setAttribute('transform', `translate(${cx - 20 * k} ${oy - 43 * k}) scale(${k})`);
+      bri.setAttribute('opacity', a.semReflexo ? '0' : String(Math.max(0, (1 - wink * 1.6) * (1 - smile * 1.4) * Math.min(1, ey)))); }
   }
 }
 const vis = new IntersectionObserver((es) => { for (const e of es) for (const a of atores) if (a.host === e.target) a.visivel = e.isIntersecting; }, { rootMargin: '80px' });
@@ -531,6 +672,7 @@ function montar() {
   for (const a of atores) if (!a.host.isConnected) { vis.unobserve(a.host); atores.delete(a); }
   document.querySelectorAll('.cifrao:not([data-mounted])').forEach((h) => { h.dataset.mounted = '1'; criar(h); });
 }
+preparaFormas();
 montar();
 new MutationObserver((rs) => { if (rs.some((r) => [...r.addedNodes, ...r.removedNodes].some((n) => n.nodeType === 1 && (n.matches('.cifrao') || n.querySelector('.cifrao'))))) montar(); }).observe(document.body, { childList: true, subtree: true });
 const GIROS = new Set(['spin', 'flip', 'derrete', 'tonto', 'erro']);
@@ -552,12 +694,16 @@ function quadro(t) {
   const dt = Math.max(0, Math.min(prev ? t - prev : 16.67, 40));
   prev = t;
   if (!document.hidden) for (const a of atores) {
-    if (!a.visivel || a.host.hasAttribute('data-scroll-suspended')) continue;
+    if (!a.visivel) continue;
+    // A troca de forma corre no relógio, mesmo quando a rolagem dirige a pose.
+    if (a.mt < 1) { a.mt = Math.min(1, a.mt + dt / 520); if (a.host.hasAttribute('data-scroll-suspended')) desenhar(a, a.atual); }
+    else if (a.forma !== 'cifrao' && !a.seq && (a.tForma += dt) > 1800) virar(a, 'cifrao');
+    if (a.host.hasAttribute('data-scroll-suspended')) continue;
     if (menos.matches) { if (!a.reduzido) desenhar(a, REPOUSO); a.reduzido = true; continue; }
     a.reduzido = false; a.elapsed += dt;
     a.atencao = passoAtencao(a.atencao, dt);
     let act = a.atencao.pose;
-    if (!a.seq && a.elapsed >= a.gestoEm) { a.origem = { ...a.atual }; let g = GESTOS[a.gestoI++ % GESTOS.length];
+    if (!a.seq && a.elapsed >= a.gestoEm) { a.origem = { ...a.atual }; let g = FORMAS[a.forma].gesto && a.gestoI % 2 ? FORMAS[a.forma].gesto : GESTOS[a.gestoI % GESTOS.length]; a.gestoI++;
       // data-sem-giro: o Cifrão fica de pé (sem giros, cambalhota ou derreter), como no selo do assistente
       if (a.host.hasAttribute('data-sem-giro')) while (GIROS.has(g)) g = GESTOS[a.gestoI++ % GESTOS.length];
       a.seq = g; a.seqT = 0; }
@@ -584,5 +730,5 @@ function quadro(t) {
   requestAnimationFrame(quadro);
 }
 requestAnimationFrame(quadro);
-window.Cifrao = Object.freeze({ REPOUSO, EXPRESSOES, expressao: (host, nome) => host?.cifrao?.tocar(nome) });
+window.Cifrao = Object.freeze({ REPOUSO, EXPRESSOES, expressao: (host, nome) => host?.cifrao?.tocar(nome), forma: (host, nome) => host?.cifrao && pedir(host.cifrao, nome) });
 })();

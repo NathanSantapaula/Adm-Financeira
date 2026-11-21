@@ -1345,7 +1345,7 @@ function basOiRegistrar() {
   L.forEach((l) => { let a = l.id ? S.plan.ativos.find((x) => x.id === l.id) : null;
     if (!a && !l.id) { const tipo = l.tipo === 'RENDA FIXA' ? 'RENDA FIXA' : 'BOLSA DE VALORES'; a = ativoInserir({ tipo, classe: matchCase(l.c, suggest('classe', { tipo })), grupo: null, subgrupo: null, nome: l.n }); }
     if (a) a.ap[m] = E.r2((+a.ap[m] || 0) + (+l.s || 0)); });
-  touch('plan'); basRetorno('pago'); basFechar(); toast(`${L.length === 1 ? 'Aporte registrado' : `${L.length} aportes registrados`} em ${MES_LONGO[m]}.`);
+  touch('plan'); basRetorno('pago'); basFechar(); basFesta('inv', 'Investimento registrado', `${L.length === 1 ? 'Aporte registrado' : `${L.length} aportes registrados`} em ${MES_LONGO[m]}.`);
 }
 // editar o ativo: nome, tipo e classe (em todos os anos) e excluir; o alvo da carteira acompanha a troca de nome ou classe
 function basTelaAtivoEd(o) {
@@ -1646,6 +1646,40 @@ function basSom(tipo) {
     else if (tipo === 'pago') { nota(784, 0, 0.12, 0.06); nota(1047, 0.07, 0.12, 0.055); nota(1568, 0.14, 0.26, 0.045); }
     else if (tipo === 'apaga') { nota(420, 0, 0.1, 0.05, 'triangle'); nota(300, 0.06, 0.16, 0.045, 'triangle'); }
   } catch (e) { /* sem áudio no aparelho: segue sem som */ }
+}
+// tela de sucesso, tela cheia azul. Gasto: o Cifrão vem jogado de baixo, gira e vira moeda no alto, pisca e cai de volta.
+// Investimento: jogado para cima, vira seta no meio do caminho e sai por cima. A tela espera o OK. Depois o OK. Movimento reduzido: só o OK.
+let BAS_FESTA_T = 0;
+function basFesta(tipo, titulo, msg) {
+  document.querySelector('.bas-ok')?.remove(); clearTimeout(BAS_FESTA_T);
+  const menos = matchMedia('(prefers-reduced-motion: reduce)').matches, inv = tipo === 'inv', W = innerWidth, H = innerHeight;
+  // linha que sobe (investimento), em pixels da tela; o último ponto fica fora, para a seta sair por cima
+  const P = [[.14, .78], [.3, .67], [.42, .71], [.58, .5], [.7, .55], [.86, .3], [1.2, .02]].map(([x, y]) => [x * W, y * H]);
+  const d = 'M' + P.map((p) => p.map((v) => v.toFixed(1)).join(' ')).join('L');
+  const el = document.createElement('div'); el.className = 'bas-ok' + (inv ? ' inv' : '') + (menos ? ' fim' : ''); el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
+  el.innerHTML = `<div class="bas-ok-bg" aria-hidden="true"><span class="bas-ok-pts">${Array.from({ length: 22 }, (_, k) => `<i style="--x:${(k * 37) % 100}%;--s:${1 + (k % 3)}px;--d:${7 + (k * 13) % 9}s;--k:${-((k * 7) % 11)}s"></i>`).join('')}</span></div>
+    <span class="bas-ok-cif" aria-hidden="true"><span class="cifrao" data-volume></span></span>
+    <span class="bas-ok-v" aria-hidden="true"><i class="bas-ok-onda"></i><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="24"/><path d="M16 27l6.5 6.5L36.5 19.5"/></svg></span>
+    <p class="bas-ok-t">${esc(titulo)}</p>${msg ? `<p class="bas-ok-m">${esc(msg)}</p>` : ''}<button type="button" class="bas-ok-bt">OK</button>`;
+  const fecha = () => { el.classList.add('sai'); setTimeout(() => el.remove(), 300); };
+  el.querySelector('.bas-ok-bt').addEventListener('click', fecha); document.body.appendChild(el); // só fecha no OK
+  const fim = () => el.classList.add('fim');
+  if (!menos) requestAnimationFrame(() => { const h = el.querySelector('.cifrao'), w = el.querySelector('.bas-ok-cif'); if (!window.Cifrao || !h.cifrao || !w.animate) { fim(); return; }
+    window.Cifrao.expressao(h, inv ? 'celebraInv' : 'celebraGasto');
+    if (!inv) {
+      const t = (y) => `translate(${W / 2 - 75}px, ${y}px)`, cy = H * .42 - 75;
+      setTimeout(() => window.Cifrao.forma(h, 'moeda'), 820); // troca de costas, no meio do giro
+      w.animate([{ transform: t(H + 20), easing: 'cubic-bezier(.12, .7, .25, 1)' }, { transform: t(cy), offset: .3, easing: 'cubic-bezier(.45, 0, .55, 1)' },
+        { transform: t(cy - 12), offset: .74, easing: 'cubic-bezier(.55, 0, .85, .35)' }, { transform: t(H + 40) }], { duration: 2300, fill: 'forwards' });
+      setTimeout(fim, 2200);
+    } else {
+      // investimento: jogado para cima, vira seta no caminho, para um instante no alto, pisca e dispara para cima
+      const t = (y) => `translate(${W / 2 - 75}px, ${y}px)`, cy = H * .4 - 75;
+      setTimeout(() => window.Cifrao.forma(h, 'seta'), 430);
+      w.animate([{ transform: t(H + 20), easing: 'cubic-bezier(.12, .7, .3, 1)' }, { transform: t(cy), offset: .3, easing: 'cubic-bezier(.45, 0, .55, 1)' },
+        { transform: t(cy - 8), offset: .55, easing: 'cubic-bezier(.45, 0, .55, 1)' }, { transform: t(cy + 10), offset: .66, easing: 'cubic-bezier(.6, 0, .85, .3)' }, { transform: t(-220) }], { duration: 2300, fill: 'forwards' });
+      setTimeout(fim, 2150);
+    } });
 }
 // som e vibração juntos, no mesmo quadro (o retorno precisa chegar junto com a mudança na tela)
 const basRetorno = (tipo) => { basSom(tipo); if (tipo !== 'toque' && tipo !== 'volta') basHaptico(); };
@@ -2735,7 +2769,10 @@ function basSalvar(f) {
   const t = basTopoPilha(); if (!t || t.t !== f.dataset.t) return;
   const d = Object.fromEntries(new FormData(f)); const p = S.plan; const m = S.mes; const val = (k) => parseReais(d[k] || '');
   { const ar = (d.areaNova || '').trim(); if (d.areaIc && ar) basCatIcGrava(ar, d.areaIc); } // ícone só para categoria nova
-  const ok = (msg) => { basRetorno(t.t === 'aporte' || t.t === 'provento' ? 'pago' : 'ok'); touch(['perfil', 'objetivo', 'alvos'].includes(t.t) ? 'profile' : 'plan'); basFechar(); if (msg) toast(msg); };
+  const ok = (msg) => { basRetorno(t.t === 'aporte' || t.t === 'provento' ? 'pago' : 'ok'); touch(['perfil', 'objetivo', 'alvos'].includes(t.t) ? 'profile' : 'plan'); basFechar();
+    // gasto ou investimento novo ganha a tela de sucesso; edições e o resto seguem no aviso
+    const festa = ['gasto', 'conta', 'conta-f'].includes(t.t) && msg && !/atualizado/.test(msg) ? 'gasto' : t.t === 'aporte' && /^Aporte registrado em/.test(msg || '') ? 'inv' : '';
+    if (festa) basFesta(festa, festa === 'inv' ? 'Investimento registrado' : 'Gasto anotado', festa === 'inv' || msg !== 'Gasto anotado.' ? msg : ''); else if (msg) toast(msg); };
   switch (t.t) {
     case 'gasto': case 'conta': return basSalvarGasto(f, d, t, ok);
     case 'ativo-ed': return basSalvarAtivoEd(f, d, t, ok);
