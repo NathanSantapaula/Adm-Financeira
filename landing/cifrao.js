@@ -318,10 +318,14 @@ Object.assign(K, {
     { at: 700, pose: { yaw: Math.PI * .5 } },
     { at: 880, pose: { yaw: Math.PI } },
     { at: 1100, pose: { yaw: Math.PI * 2 } },
-    { at: 1300, pose: { yaw: Math.PI * 2, rightWink: 1, leftEyeSmile: .7, eyeScaleX: 1.1, rotation: .05 } },
-    { at: 1520, pose: { yaw: Math.PI * 2, leftEyeSmile: .5, rightEyeSmile: .5, leftEyeScaleY: .8, rightEyeScaleY: .8 } },
-    { at: 1800, pose: { yaw: Math.PI * 2, scaleX: .94, scaleY: 1.06, gazeY: .03 } },
-    { at: 2300, pose: { yaw: Math.PI * 2, scaleX: .94, scaleY: 1.06, gazeY: .03 } },
+    { at: 1180, pose: { yaw: Math.PI * 2, eyeScaleX: 1.05 } },
+    // piscadinha: só o olho direito fecha; o esquerdo fica aberto
+    { at: 1300, pose: { yaw: Math.PI * 2, rightWink: 1, leftEyeScaleY: .92, eyeScaleX: 1.1, rotation: .05, gazeX: .01 } },
+    { at: 1480, pose: { yaw: Math.PI * 2, eyeScaleX: 1.08 } },
+    { at: 1700, pose: { yaw: Math.PI * 2, gazeY: .02, eyeScaleX: 1.06 } },
+    // cai de olhos abertos, olhando para baixo
+    { at: 1850, pose: { yaw: Math.PI * 2, scaleX: .94, scaleY: 1.06, gazeY: .035, eyeScaleX: 1.12, leftEyeScaleY: 1.08, rightEyeScaleY: 1.08 } },
+    { at: 2300, pose: { yaw: Math.PI * 2, scaleX: .94, scaleY: 1.06, gazeY: .035, eyeScaleX: 1.12, leftEyeScaleY: 1.08, rightEyeScaleY: 1.08 } },
   ],
   celebraInv: [
     { at: 0, pose: { scaleX: .9, scaleY: 1.1, gazeY: -.03, eyeScaleX: 1.08 } },
@@ -329,11 +333,13 @@ Object.assign(K, {
     { at: 430, pose: { yaw: Math.PI } },
     { at: 650, pose: { yaw: Math.PI * 2 } },
     { at: 800, pose: { yaw: Math.PI * 2, eyeScaleX: 1.08 } },
-    { at: 950, pose: { yaw: Math.PI * 2, rightWink: 1, leftEyeSmile: .7, eyeScaleX: 1.1, rotation: .05 } },
-    { at: 1180, pose: { yaw: Math.PI * 2, leftEyeSmile: .5, rightEyeSmile: .5, leftEyeScaleY: .8, rightEyeScaleY: .8 } },
-    { at: 1380, pose: { yaw: Math.PI * 2, scaleX: 1.1, scaleY: .88, leftEyeScaleY: .6, rightEyeScaleY: .6 } },
-    { at: 1560, pose: { yaw: Math.PI * 2, scaleX: .88, scaleY: 1.15, gazeY: -.03, eyeScaleX: 1.2 } },
-    { at: 2300, pose: { yaw: Math.PI * 2, scaleX: .88, scaleY: 1.15, gazeY: -.03 } },
+    { at: 950, pose: { yaw: Math.PI * 2, rightWink: 1, leftEyeScaleY: .92, eyeScaleX: 1.1, rotation: .05 } },
+    { at: 1150, pose: { yaw: Math.PI * 2, eyeScaleX: 1.08 } },
+    { at: 1450, pose: { yaw: Math.PI * 2, gazeY: -.02 } },
+    // agacha e dispara
+    { at: 1580, pose: { yaw: Math.PI * 2, scaleX: 1.12, scaleY: .86, leftEyeScaleY: .65, rightEyeScaleY: .65, gazeY: -.02 } },
+    { at: 1680, pose: { yaw: Math.PI * 2, scaleX: .86, scaleY: 1.16, gazeY: -.035, eyeScaleX: 1.2 } },
+    { at: 1950, pose: { yaw: Math.PI * 2, scaleX: .86, scaleY: 1.16, gazeY: -.035, eyeScaleX: 1.2 } },
   ],
   sobe: [
     { at: 0, pose: {} },
@@ -711,7 +717,8 @@ function quadro(t) {
       a.seqT += dt;
       const dur = DURACAO[a.seq], l = a.seqT, cena = seq(a.seq, l);
       act = l < 150 ? mistura(a.origem, cena, l / 150) : l > dur - 190 ? mistura(cena, act, (l - dur + 190) / 190) : cena;
-      const e = a.atencao.pose;
+      // nas telas de sucesso a animação manda sozinha: sem piscadas e olhares automáticos por cima
+      const e = a.seq.startsWith('celebra') ? { gazeX: act.gazeX, gazeY: act.gazeY, leftWink: 0, rightWink: 0, leftEyeSmile: 0, rightEyeSmile: 0, eyeScaleX: 1 } : a.atencao.pose;
       act.gazeX = act.gazeX * .55 + e.gazeX * .45; act.gazeY = act.gazeY * .55 + e.gazeY * .45;
       act.leftWink = Math.max(act.leftWink, e.leftWink); act.rightWink = Math.max(act.rightWink, e.rightWink);
       act.leftEyeSmile = Math.max(act.leftEyeSmile, e.leftEyeSmile); act.rightEyeSmile = Math.max(act.rightEyeSmile, e.rightEyeSmile);
