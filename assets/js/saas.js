@@ -145,7 +145,13 @@ function saGastos() {
       ${lim > 0 ? `<div class="sa-lim${uso > 1 ? ' passou' : uso > 0.8 ? ' perto' : ''}"><div class="sa-lim-b"><i style="width:${Math.min(100, uso * 100)}%"></i></div><span>${saPct(uso)} do limite de ${brl0(lim)}${uso > 1 ? ` · passou ${brl0(sai - lim)}` : ` · sobram ${brl0(lim - sai)}`}</span></div>` : `<button class="sa-lim-def" ${basIr('limite')}>Definir um limite para o mês</button>`}
       <div class="sa-acoes"><button class="sa-pl" ${basIr('gasto')}>${I.plus}Novo gasto</button><button class="sa-pl" data-act="bas-importar">${I_ENTRADA}Importar extrato</button><button class="sa-pl" ${basIr('limite')}>${I_META}Limites</button><button class="sa-pl" ${basIr('entradas')}>${I_ENTRADA}Entradas</button></div>`,
     `<div class="sa-vid sa-bancos"><small>Por banco em ${esc(saMesNome())}</small>${bL.slice(0, 4).map(([k, v]) => `<div class="sa-bk">${typeof instIcone === 'function' ? instIcone(k) : ''}<span>${esc((INSTITUICOES.find((x) => x.id === k) || { nome: k }).nome)}</span><b>${brl0(v)}</b><i style="--w:${(v / bMx) * 100}%"></i></div>`).join('') || '<p class="sa-p">Sem gastos com banco marcado.</p>'}</div>`);
-  const cards = [
+  const hoje = S.year === NOW_Y && m === NOW_M ? new Date().getDate() : new Date(S.year, m + 1, 0).getDate();
+  const abertas = kit.filter((k) => !k.pago); const topA = areas[0];
+  const kpis = `<div class="sa-kpis w12">${saKpi(`Gastou em ${esc(saMesNome())}`, brl0(sai), saVarMes(C.despesas, m), saUlt6(C.despesas, m), false)}
+    ${saKpi('Por dia, em média', brl0(sai / hoje), null, [], true, `${hoje} dias`)}${saKpi('Maior categoria', topA ? esc(topA[0]) : '—', null, [], true, topA ? `${brl0(topA[1])} · ${saPct(topA[1] / (tot || 1))}` : '')}
+    ${saKpi('Contas em aberto', String(abertas.length), null, [], true, abertas.length ? brl0(saSoma(abertas.map((k) => k.valor))) : 'tudo pago')}
+    ${saKpi('Do limite do mês', lim > 0 ? saPct(uso) : '—', null, [], true, lim > 0 ? (uso > 1 ? `passou ${brl0(sai - lim)}` : `sobram ${brl0(lim - sai)}`) : 'sem limite')}</div>`;
+  const cards = [kpis,
     saCard('w7', 'Para onde foi o dinheiro', `<span class="sa-tag">${esc(cap(saMesNome()))}</span>`, areas.length ? `<div class="sa-onde">${saRosca(saPartes(areas, 6), brl0(tot), 'no mês')}
         <ul class="sa-cats">${areas.map(([n, v], i) => { const l = +lims[n] || 0; return `<li><button ${basIr('categoria', { area: n })}><i style="background:${SA_CORES[Math.min(i, 5)]}"></i><span class="sa-cats-n">${esc(n)}<small>${l > 0 ? `${saPct(v / l)} do limite de ${brl0(l)}` : `${saPct(v / (tot || 1))} do total`}</small></span><b>${brl0(v)}</b>
           ${l > 0 ? `<span class="sa-cats-b${v > l ? ' passou' : ''}"><i style="width:${Math.min(100, (v / l) * 100)}%"></i></span>` : ''}</button></li>`; }).join('')}</ul></div>` : `<p class="sa-p">Nenhum gasto em ${esc(saMesNome())}.</p>`),
@@ -170,10 +176,15 @@ function saPatrimonio() {
       <div class="sa-lin">${saVar(p - base, `${(cres * 100).toFixed(1).replace('.', ',')}% em ${S.year}`)}<span class="sa-lin-t">${brl0(p - base)} desde o início do ano · valores a custo</span></div>
       <div class="sa-acoes"><button class="sa-pl" ${basIrInv()}>${I_APLICAR}Investir</button><button class="sa-pl" ${basIr('proventos')}>${I_PROV}Proventos</button><button class="sa-pl" ${basIr('carteira')}>${I_CART}Carteira</button><button class="sa-pl" data-act="bas-importar">${I_ENTRADA}Importar</button></div>`,
     `<div class="sa-vid sa-aportei"><small>Aportei em ${S.year}</small><div class="sa-aportei-c">${saAnel(metaAno > 0 ? apl / metaAno : 0, metaAno > 0 ? saPct(apl / metaAno) : '—')}<div><b>${brl0(apl)}</b><span>${metaAno > 0 ? `de ${brl0(metaAno)} na meta do ano` : 'Defina a meta do ano'}</span></div></div></div>`);
-  const cards = [
+  const kpis = `<div class="sa-kpis w12">${saKpi('Patrimônio', brl0(p), saVarMes(C.patrimonio, m), saUlt6(C.patrimonio, m))}
+    ${saKpi(`Aportado em ${S.year}`, brl0(apl), null, saUlt6(C.aplicado, m), true, metaAno > 0 ? `${saPct(apl / metaAno)} da meta` : '')}
+    ${saKpi(`Proventos em ${S.year}`, brl0(provAno), saVarMes(prov, m), saUlt6(prov, m), true, `${brl0(provAno / (m + 1))} por mês`)}
+    ${saKpi('Dá para aportar', brl0(D.disponivel), null, [], true, `sobrou ${brl0(D.sobra || 0)}`)}
+    ${saKpi('Ativos', String(pos.length), null, [], true, `${cL.length} classes`)}</div>`;
+  const cards = [kpis,
     saCard('w8', 'Evolução do patrimônio', saLk(basIr('historico'), 'Ano a ano'), `${saLinha(C.patrimonio, m, 'sa-g-patr2')}`),
-    saCard('w4', 'Disponível para aportar', '', `<b class="sa-big">${basCent(D.disponivel)}</b><div class="sa-kv"><span>Sobrou no mês<b>${brl0(D.sobra || 0)}</b></span><span>Já investido<b>${brl0(D.aportado || 0)}</b></span></div>
-      <div class="sa-c-acs"><button class="btn primary" ${basIrInv()}>${I_APLICAR}Investir</button></div>`),
+    saCard('w4', 'Ritmo da meta do ano', '', `<div class="sa-disp-c">${saAnel(metaAno > 0 ? apl / metaAno : 0, metaAno > 0 ? saPct(apl / metaAno) : '—')}<div><b class="sa-big">${brl0(Math.max(0, metaAno - apl))}</b><small>${metaAno > 0 ? (apl >= metaAno ? 'Meta do ano batida' : `${m < 11 ? `${brl0(Math.max(0, metaAno - apl) / (11 - m))} por mês até dezembro` : 'último mês do ano'}`) : 'Defina a meta do ano'}</small></div></div>
+      <div class="sa-c-acs"><button class="btn primary" ${basIrInv()}>${I_APLICAR}Investir</button>${saLk(basIr('meta'), 'Meta')}</div>`),
     saCard('w7 sa-escuro', 'Aportes mês a mês', `<span class="sa-tag">${C.metaAporteMes[m] > 0 ? `Meta ${brl0(C.metaAporteMes[m])}` : S.year}</span>`, `${saColunas(C.aplicado, m, C.metaAporteMes[m] || 0, true)}<footer class="sa-leg"><span>${C.aplicado.slice(0, m + 1).filter((v, i) => v > 0 && v >= (C.metaAporteMes[i] || 0)).length} meses na meta</span><span>${brl0(apl)} no ano</span></footer>`),
     saCard('w5', 'Como está dividido', saLk(basIr('carteira'), 'Carteira'), cL.length ? `<div class="sa-ro-w">${saRosca(cL, brl0(cT), 'investido')}<ul class="sa-lista">${cL.map(([n, v], i) => `<li><i style="background:${SA_CORES[i % 6]}"></i><span>${esc(n)}</span><b>${saPct(v / (cT || 1))}</b></li>`).join('')}</ul></div>` : '<p class="sa-p">Registre seu primeiro investimento.</p>'),
     saCard('w5', 'Proventos', saLk(basIr('proventos'), 'Ver todos'), `<div class="sa-c-n"><b>${brl0(provAno)}</b><span class="sa-lin-t">em ${S.year} · média ${brl0(provAno / (m + 1))} por mês</span></div>${saColunas(prov, m, 0)}`),
