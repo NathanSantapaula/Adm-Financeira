@@ -45,7 +45,7 @@ function viewHtml() {
   if (SA_VISTA[S.view]) { // SaaS no jeito do App: a aba é a tela do App num layout largo; telas internas abrem na folha ao lado
     let corpo; try { corpo = SA_VISTA[S.view](); } catch (e) { console.error(e); corpo = '<div class="bas-falha"><b>Algo não carregou direito</b></div>'; }
     const t = basTopoPilha(); const f = t && BAS_TELAS[t.t];
-    const av = basAvisosNovos(); const fab = `<button class="bas-ia-fab sa-fab" data-act="bas-ia-fab" aria-label="Cifrão Intelligence${av ? `: ${av} avisos novos` : ''}"><span class="cifrao" aria-hidden="true"></span><span class="bas-ia-fab-bg" aria-hidden="true"></span>${av ? `<b class="bas-ia-fab-n">${av}</b>` : ''}</button>`;
+    const av = basAvisosNovos(); const fab = `<button class="bas-ia-fab sa-fab" data-act="bas-ia-fab" aria-label="Cifrão Intelligence${av ? `: ${av} avisos novos` : ''}"><span class="cifrao" data-volume aria-hidden="true"></span><span class="bas-ia-fab-bg" aria-hidden="true"></span>${av ? `<b class="bas-ia-fab-n">${av}</b>` : ''}</button>`;
     return `${fab}<div class="bas sa" data-aba="${SA_ABA[S.view]}" data-sa="${S.view}">${corpo}</div>${f ? `<div class="sa-veu" data-act="bas-voltar" aria-hidden="true"></div><div class="bas bas-tela sa-folha" data-t="${t.t}" role="dialog" aria-modal="true">${f(t)}</div>` : ''}`;
   }
   if (PAT_ABAS.includes(S.view)) { S.patUlt = S.view; return patAbasHtml() + viewHtmlAba(); }
