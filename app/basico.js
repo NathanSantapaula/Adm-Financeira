@@ -1650,36 +1650,37 @@ function basSom(tipo) {
 // tela de sucesso, tela cheia azul. Gasto: o Cifrão vem jogado de baixo, gira e vira moeda no alto, pisca e cai de volta.
 // Investimento: jogado para cima, vira seta no meio do caminho e sai por cima. A tela espera o OK. Depois o OK. Movimento reduzido: só o OK.
 let BAS_FESTA_T = 0;
-function basFesta(tipo, titulo, msg) {
+const basFestaValor = (v) => { const [r, c] = brl(v).split(','); return c ? `${r}<span class="c">,${c}</span>` : r; };
+function basFesta(tipo, titulo, msg, valor) {
   document.querySelector('.bas-ok')?.remove(); clearTimeout(BAS_FESTA_T);
   const menos = matchMedia('(prefers-reduced-motion: reduce)').matches, inv = tipo === 'inv', W = innerWidth, H = innerHeight;
   // linha que sobe (investimento), em pixels da tela; o último ponto fica fora, para a seta sair por cima
   const P = [[.14, .78], [.3, .67], [.42, .71], [.58, .5], [.7, .55], [.86, .3], [1.2, .02]].map(([x, y]) => [x * W, y * H]);
   const d = 'M' + P.map((p) => p.map((v) => v.toFixed(1)).join(' ')).join('L');
-  const el = document.createElement('div'); el.className = 'bas-ok' + (inv ? ' inv' : '') + (menos ? ' fim' : ''); el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
+  const el = document.createElement('div'); el.className = 'bas-ok' + (inv ? ' inv' : '') + (valor > 0 ? ' tem-val' : '') + (menos ? ' fim' : ''); el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
   el.innerHTML = `<div class="bas-ok-bg" aria-hidden="true"><span class="bas-ok-pts">${Array.from({ length: 22 }, (_, k) => `<i style="--x:${(k * 37) % 100}%;--s:${1 + (k % 3)}px;--d:${7 + (k * 13) % 9}s;--k:${-((k * 7) % 11)}s"></i>`).join('')}</span></div>
     <span class="bas-ok-cif" aria-hidden="true"><span class="cifrao" data-volume></span></span>
     <span class="bas-ok-v" aria-hidden="true"><i class="bas-ok-onda"></i><svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="24"/><path d="M16 27l6.5 6.5L36.5 19.5"/></svg></span>
-    <p class="bas-ok-t">${esc(titulo)}</p>${msg ? `<p class="bas-ok-m">${esc(msg)}</p>` : ''}<button type="button" class="bas-ok-bt">OK</button>`;
+    ${valor > 0 ? `<p class="bas-ok-val">${basFestaValor(valor)}</p>` : ''}<p class="bas-ok-t">${esc(titulo)}</p>${msg ? `<p class="bas-ok-m">${esc(msg)}</p>` : ''}<button type="button" class="bas-ok-bt">OK</button>`;
   const fecha = () => { el.classList.add('sai'); setTimeout(() => el.remove(), 300); };
   el.querySelector('.bas-ok-bt').addEventListener('click', fecha); document.body.appendChild(el); // só fecha no OK
   const fim = () => el.classList.add('fim');
-  if (!menos) requestAnimationFrame(() => { const h = el.querySelector('.cifrao'), w = el.querySelector('.bas-ok-cif'); if (!window.Cifrao || !h.cifrao || !w.animate) { fim(); return; }
+  if (!menos) requestAnimationFrame(() => requestAnimationFrame(() => { const h = el.querySelector('.cifrao'), w = el.querySelector('.bas-ok-cif'); if (!window.Cifrao || !h.cifrao || !w.animate) { fim(); return; }
     window.Cifrao.expressao(h, inv ? 'celebraInv' : 'celebraGasto');
     if (!inv) {
       const t = (y) => `translate(${W / 2 - 75}px, ${y}px)`, cy = H * .42 - 75;
       setTimeout(() => window.Cifrao.forma(h, 'moeda'), 820); // troca de costas, no meio do giro
-      w.animate([{ transform: t(H + 20), easing: 'cubic-bezier(.12, .7, .25, 1)' }, { transform: t(cy), offset: .3, easing: 'cubic-bezier(.45, 0, .55, 1)' },
-        { transform: t(cy - 12), offset: .74, easing: 'cubic-bezier(.55, 0, .85, .35)' }, { transform: t(H + 40) }], { duration: 2300, fill: 'forwards' });
+      w.animate([{ transform: t(H + 20), easing: 'cubic-bezier(.15, .75, .3, 1)' }, { transform: t(cy - 10), offset: .32, easing: 'cubic-bezier(.45, 0, .55, 1)' },
+        { transform: t(cy), offset: .74, easing: 'cubic-bezier(.55, 0, .85, .35)' }, { transform: t(H + 40) }], { duration: 2300, fill: 'forwards' });
       setTimeout(fim, 2200);
     } else {
       // investimento: jogado para cima, vira seta no caminho, para um instante no alto, pisca e dispara para cima
       const t = (y) => `translate(${W / 2 - 75}px, ${y}px)`, cy = H * .4 - 75;
       setTimeout(() => window.Cifrao.forma(h, 'seta'), 430);
-      w.animate([{ transform: t(H + 20), easing: 'cubic-bezier(.12, .7, .3, 1)' }, { transform: t(cy), offset: .3, easing: 'cubic-bezier(.45, 0, .55, 1)' },
-        { transform: t(cy - 8), offset: .55, easing: 'cubic-bezier(.45, 0, .55, 1)' }, { transform: t(cy + 10), offset: .66, easing: 'cubic-bezier(.6, 0, .85, .3)' }, { transform: t(-220) }], { duration: 2300, fill: 'forwards' });
-      setTimeout(fim, 2150);
-    } });
+      w.animate([{ transform: t(H + 20), easing: 'cubic-bezier(.15, .75, .3, 1)' }, { transform: t(cy - 8), offset: .3, easing: 'cubic-bezier(.45, 0, .55, 1)' },
+        { transform: t(cy), offset: .55, easing: 'cubic-bezier(.45, 0, .55, 1)' }, { transform: t(cy + 10), offset: .66, easing: 'cubic-bezier(.6, 0, .85, .3)' }, { transform: t(-260) }], { duration: 2300, fill: 'forwards' });
+      setTimeout(fim, 2450);
+    } }));
 }
 // som e vibração juntos, no mesmo quadro (o retorno precisa chegar junto com a mudança na tela)
 const basRetorno = (tipo) => { basSom(tipo); if (tipo !== 'toque' && tipo !== 'volta') basHaptico(); };
@@ -2772,7 +2773,8 @@ function basSalvar(f) {
   const ok = (msg) => { basRetorno(t.t === 'aporte' || t.t === 'provento' ? 'pago' : 'ok'); touch(['perfil', 'objetivo', 'alvos'].includes(t.t) ? 'profile' : 'plan'); basFechar();
     // gasto ou investimento novo ganha a tela de sucesso; edições e o resto seguem no aviso
     const festa = ['gasto', 'conta', 'conta-f'].includes(t.t) && msg && !/atualizado/.test(msg) ? 'gasto' : t.t === 'aporte' && /^Aporte registrado em/.test(msg || '') ? 'inv' : '';
-    if (festa) basFesta(festa, festa === 'inv' ? 'Investimento registrado' : 'Gasto anotado', festa === 'inv' || msg !== 'Gasto anotado.' ? msg : ''); else if (msg) toast(msg); };
+    if (festa) { const v = val(t.t === 'conta-f' && d.modo === 'parc' ? 'total' : 'valor'); const onde = (d.desc || d.nome || d.area || '').trim();
+      basFesta(festa, festa === 'inv' ? 'Investimento registrado' : onde ? `Gasto anotado em ${onde}` : 'Gasto anotado', festa === 'inv' || msg !== 'Gasto anotado.' ? msg : '', v > 0 ? v : 0); } else if (msg) toast(msg); };
   switch (t.t) {
     case 'gasto': case 'conta': return basSalvarGasto(f, d, t, ok);
     case 'ativo-ed': return basSalvarAtivoEd(f, d, t, ok);
