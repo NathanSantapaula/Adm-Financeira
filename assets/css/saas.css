@@ -441,3 +441,32 @@
 :root:not([data-theme="light"]) .sa2 .var-chip.neg, :root:not([data-theme="light"]) .sa2 .sa-aa-anos em.neg { color: #ff6961; }
 @media (min-width: 901px) and (max-width: 1180px) { .sa2 .w3 { grid-column: span 6; } .sa2 .w6 { grid-column: 1 / -1; } }
 @media (min-width: 901px) { .sa2 .sa-orc-c .sa-leg { justify-content: flex-start; gap: 18px; flex-wrap: wrap; } }
+
+/* ---------- Gastos e Patrimônio na organização das abas antigas ---------- */
+@media (min-width: 901px) {
+  .sa2 .sa-ln svg line.sa-rt-orc { stroke: var(--sa-ink); stroke-width: 1.5; opacity: .45; }
+  .sa2 .sa-ln svg polyline.sa-rt-pj { fill: none; stroke: var(--sa-azul); stroke-width: 2; stroke-dasharray: 6 5; opacity: .7; }
+  .sa2 .sa-leg-e { justify-content: flex-start; gap: 18px; }
+  .sa2 .sa-lista-bt li { display: block; padding: 0; }
+  .sa2 .sa-lista-bt button { display: grid; grid-template-columns: 10px 1fr auto 44px; align-items: center; gap: 10px; width: 100%; min-height: 36px; padding: 0 8px; border: 0; border-radius: var(--sa-r-sm); background: none; color: var(--sa-ink); font: inherit; text-align: left; cursor: pointer; }
+  .sa2 .sa-lista-bt button:hover { background: color-mix(in srgb, var(--sa-azul) 6%, transparent); }
+  .sa2 .sa-lista-bt i { width: 10px; height: 10px; border-radius: 3px; }
+  .sa2 .sa-lista-bt em { font-style: normal; font-size: 13px; color: var(--sa-ink2); font-variant-numeric: tabular-nums; }
+  .sa2 .sa-lista-bt b { text-align: right; }
+  .sa2 :is(.sa-parc, .sa-bancos2) { display: flex; flex-direction: column; gap: 4px; margin: 0; padding: 0; list-style: none; }
+  .sa2 .sa-parc li { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 10px 0; border-bottom: 1px solid var(--sa-borda); }
+  .sa2 .sa-parc li:last-child { border-bottom: 0; }
+  .sa2 .sa-parc li > span:first-child { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+  .sa2 .sa-parc small, .sa2 .sa-bancos2 small { font-size: 12px; color: var(--sa-ink3); }
+  .sa2 .sa-parc .sa-ind-b { height: 4px; max-width: 240px; }
+  .sa2 .sa-parc-v { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .sa2 .sa-bancos2 li { display: grid; grid-template-columns: 28px 1fr auto 40px; align-items: center; gap: 12px; padding: 8px 0; }
+  .sa2 .sa-bancos2 li > :first-child { width: 28px; height: 28px; border-radius: 8px; }
+  .sa2 .sa-bancos2 li > span { display: flex; flex-direction: column; gap: 6px; font-weight: 600; font-size: 14px; min-width: 0; }
+  .sa2 .sa-bancos2 .sa-ind-b { height: 4px; }
+  .sa2 .sa-bancos2 b { font-variant-numeric: tabular-nums; } .sa2 .sa-bancos2 li > small { text-align: right; }
+  .sa2 .sa-cats-b.perto i { background: #ff9f0a; }
+  .sa2 .sa-lib .sa-c-n b { font-size: 28px; }
+  .sa2 .sa-lib .sa-ind-b { height: 8px; }
+  .sa2 .sa-c > .btn { align-self: flex-start; border-radius: 999px; }
+}
