@@ -279,3 +279,7 @@
 
 /* botão do Cifrão: exatamente o do App (bolha de 52 px com o Cifrão espiando dentro do recorte), só que fixo no canto de baixo e um pouco maior */
 @media (min-width: 901px) { body[data-ui="completo"] .bas-ia-fab.sa-fab { position: fixed; left: auto; top: auto; right: 34px; bottom: 34px; translate: none; z-index: 55; scale: 1.3; transform-origin: 100% 100%; } }
+/* Cifrão nos cartões brancos: versão preta, com o mesmo volume e sombras; nos cartões escuros continua branco */
+.sa2 .sa-c:not(.sa-escuro) .cifrao { --cif-body: #0B0B0C; --cif-eyes: #F7F4ED; }
+:root[data-theme="oled"] .sa2 .sa-c .cifrao { --cif-body: #F7F4ED; --cif-eyes: #06122A; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .sa2 .sa-c .cifrao { --cif-body: #F7F4ED; --cif-eyes: #06122A; } }
