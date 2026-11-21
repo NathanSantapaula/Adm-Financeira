@@ -54,7 +54,12 @@ function viewHtml() {
 const SA_ABA = { geral: 'inicio', despesas: 'gastos', rendas: 'gastos', inv: 'investir', pro: 'investir', cart: 'investir', futuro: 'investir', perfil: 'perfil' };
 // atalhos do Hoje em pílulas brancas sobre o azul (como Add money / Send da referência)
 const saAcoes = () => `<div class="sa-acoes"><button class="sa-pl" ${basIr('gasto')}>${I.plus}Novo gasto</button><button class="sa-pl" ${basIr('entrada')}>${I_ENTRADA}Nova entrada</button><button class="sa-pl" ${basIrInv()}>${I_APLICAR}Investir</button><button class="sa-pl" ${basIr('sonho-novo')}>${I_META}Novo sonho</button></div>`;
-const SA_VISTA = { geral: () => basInicio(S.mes).replace('<div class="bas-noite-par">', `${saAcoes()}<div class="bas-noite-par">`), despesas: () => basGastos(S.mes), inv: () => basInvestir(S.mes), pro: () => basInvestir(S.mes), cart: () => basInvestir(S.mes), perfil: () => basPerfil() };
+// os widgets antigos do SaaS entram embaixo dos do App, na mesma folha (o cabeçalho antigo some no CSS)
+const saAntigos = (f) => { try { return `<div class="sa-antigos">${f()}</div>`; } catch (e) { console.error(e); return ''; } };
+const saFolhaFim = (html, extra) => html.replace(/<\/div><\/div>\s*$/, `${extra}</div></div>`); // basPgAzul fecha a folha e a página
+const SA_VISTA = { geral: () => { const h = basInicio(S.mes).replace('<div class="bas-noite-par">', `${saAcoes()}<div class="bas-noite-par">`); const k = h.lastIndexOf('<button class="bas-org"'); const x = saAntigos(viewGeral); return k < 0 ? h + x : `${h.slice(0, k).replace(/<\/div>\s*$/, '')}${x}</div>${h.slice(k)}`; },
+  despesas: () => saFolhaFim(basGastos(S.mes), saAntigos(viewDespesas)), inv: () => saFolhaFim(basInvestir(S.mes), saAntigos(() => viewAssets('inv'))),
+  pro: () => saFolhaFim(basInvestir(S.mes), saAntigos(() => viewAssets('pro'))), cart: () => saFolhaFim(basInvestir(S.mes), saAntigos(viewCart)), perfil: () => basPerfil() };
 const SA_NOME = { geral: 'Início', despesas: 'Gastos', inv: 'Patrimônio', pro: 'Patrimônio', cart: 'Patrimônio' };
 // Patrimônio: Aportes, Proventos, Carteira e Relatório são abas internas de uma área só (cada uma continua sendo a tela de antes)
 const PAT_ABAS = ['inv', 'pro', 'cart', 'relatorio'];
