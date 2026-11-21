@@ -4338,3 +4338,31 @@ body:is([data-ui="basico"], [data-ui="completo"]) .ab .ab-card .ab-zbtn { border
 @keyframes bas-ok-onda { 0% { opacity: .9; transform: scale(.9); } 100% { opacity: 0; transform: scale(2.4); } }
 @media (prefers-reduced-motion: reduce) { .bas-ok, .bas-ok-bg::before, .bas-ok-bg::after, .bas-ok-pts i { animation: none; } .bas-ok.fim .bas-ok-onda { animation: none; }
   .bas-ok.fim .bas-ok-v, .bas-ok.fim .bas-ok-v circle, .bas-ok.fim .bas-ok-v path, .bas-ok.fim .bas-ok-t, .bas-ok.fim .bas-ok-m, .bas-ok.fim .bas-ok-bt { transition: none; } }
+
+/* roleta dos proventos (basRlLigar): arco de traços brancos que gira com o dedo, total no centro com luz azul e o botão de vidro embaixo */
+.bas-rl-seg { display: flex; align-self: center; gap: 2px; width: max-content; margin: 6px auto 0; padding: 3px; border-radius: 999px; background: rgba(255, 255, 255, .12); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .14); }
+.bas-rl-seg button { height: 30px; padding: 0 16px; border: 0; border-radius: 999px; background: none; color: rgba(255, 255, 255, .75); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.bas-rl-seg button[aria-pressed="true"] { color: #0B1A8F; background: #fff; box-shadow: 0 2px 8px rgba(0, 8, 60, .3); }
+.bas-rl { position: relative; height: 262px; margin: 8px -16px 0; overflow: hidden; touch-action: pan-y; cursor: grab; user-select: none; -webkit-user-select: none; outline: none; }
+.bas-rl:active { cursor: grabbing; }
+.bas-rl:focus-visible { box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .6); border-radius: 20px; }
+.bas-rl-luz { position: absolute; left: 50%; top: 70px; width: 260px; height: 200px; translate: -50% -50%; border-radius: 50%; background: radial-gradient(closest-side, rgba(70, 140, 255, .55), rgba(40, 90, 255, .15) 60%, transparent); pointer-events: none; }
+.bas-rl-c { position: absolute; left: 0; right: 0; top: 22px; display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center; pointer-events: none; }
+.bas-rl-c small { font-size: 13px; font-weight: 600; color: rgba(255, 255, 255, .72); }
+.bas-rl-c b { font-size: 38px; font-weight: 700; letter-spacing: -.035em; color: #fff; font-variant-numeric: tabular-nums; }
+.bas-rl-c em { font-style: normal; font-size: 12.5px; color: rgba(190, 215, 255, .85); }
+.bas-rl-arco i { position: absolute; left: calc(50% - 3px); top: 70px; width: 6px; height: var(--l); border-radius: 6px; transform-origin: 50% 0; background: #fff; opacity: 0;
+  box-shadow: 0 0 8px rgba(190, 220, 255, .55); will-change: transform, opacity; }
+.bas-rl-arco i.g { height: 14px; box-shadow: none; }
+.bas-rl-knob { position: absolute; left: 50%; top: 178px; width: 46px; height: 74px; translate: -50% 0; border-radius: 24px; pointer-events: none;
+  background: linear-gradient(180deg, rgba(120, 170, 255, .55), rgba(30, 70, 230, .55)); -webkit-backdrop-filter: blur(6px) saturate(160%); backdrop-filter: blur(6px) saturate(160%);
+  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, .7), inset 0 0 0 1px rgba(255, 255, 255, .35), inset 0 -8px 14px rgba(0, 20, 120, .35), 0 10px 24px -8px rgba(0, 10, 80, .7); }
+.bas-rl-knob::after { content: ""; position: absolute; left: 50%; top: 16px; width: 6px; height: 40px; translate: -50% 0; border-radius: 6px; background: linear-gradient(180deg, #fff, rgba(255, 255, 255, .35)); filter: blur(.5px); }
+.bas-rl-pill { display: flex; align-items: center; gap: 12px; width: min(100%, 320px); min-height: 64px; margin: 4px auto 6px; padding: 8px 18px 8px 8px; border-radius: 999px;
+  background: rgba(255, 255, 255, .12); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), inset 0 0 0 1px rgba(255, 255, 255, .14); color: #fff; }
+.bas-rl-pill .bas-pv2-ini { flex: none; width: 46px; height: 46px; }
+.bas-rl-pt { display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0; }
+.bas-rl-pt b { font-size: 16px; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bas-rl-pt small { font-size: 13px; color: rgba(255, 255, 255, .7); }
+.bas-rl-pv { font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.bas-rl-p0 { flex: 1; text-align: center; font-size: 14px; color: rgba(255, 255, 255, .75); }

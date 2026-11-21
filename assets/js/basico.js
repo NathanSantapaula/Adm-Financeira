@@ -826,7 +826,7 @@ function basIaxLigar() {
 function basDesenhar() {
   const st = document.getElementById('bas-o3');
   if (st) { const falhou = () => st.classList.add('sem-3d'); if (typeof o3Ligar === 'function') o3Ligar(st, st.dataset.tipo, falhou); else falhou(); }
-  basAhLigar(); basSn2Ligar(); basVozLigar(); basIaxLigar(); basCifVe(); basGfLigar(); basPeriodoRepinta(); { const f = document.querySelector('.bas-form'); if (f && f.querySelector('[name="areaIc"]') && !f.dataset.ic) { f.dataset.ic = '1'; f.addEventListener('change', (e) => { if (e.target.name !== 'area') return; const r = f.querySelector(`[name="areaIc"][value="${basCatIcId(e.target.value)}"]`); if (r) r.checked = true; }); } } { const on = document.querySelector('.bas-cce-m.on'); const col = on && on.parentElement; if (col && !col.dataset.vis) { col.dataset.vis = '1'; col.scrollTop = on.offsetTop - col.clientHeight / 2 + on.offsetHeight / 2; } } basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basAtLigar(); basEfLigar(); basCtwLigar(); basOiLigar(); basInvLigar(); basIgLigar(); basGfPickLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
+  basRlLigar(); basAhLigar(); basSn2Ligar(); basVozLigar(); basIaxLigar(); basCifVe(); basGfLigar(); basPeriodoRepinta(); { const f = document.querySelector('.bas-form'); if (f && f.querySelector('[name="areaIc"]') && !f.dataset.ic) { f.dataset.ic = '1'; f.addEventListener('change', (e) => { if (e.target.name !== 'area') return; const r = f.querySelector(`[name="areaIc"][value="${basCatIcId(e.target.value)}"]`); if (r) r.checked = true; }); } } { const on = document.querySelector('.bas-cce-m.on'); const col = on && on.parentElement; if (col && !col.dataset.vis) { col.dataset.vis = '1'; col.scrollTop = on.offsetTop - col.clientHeight / 2 + on.offsetHeight / 2; } } basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basAtLigar(); basEfLigar(); basCtwLigar(); basOiLigar(); basInvLigar(); basIgLigar(); basGfPickLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
   const wr = document.querySelector('.bas-wr'); if (wr && !wr.dataset.lig) { wr.dataset.lig = '1'; basWrIr(wr, 0); }
   const sq = document.querySelector('[data-sq-conta]'); if (sq && !sq.dataset.lig && !matchMedia('(prefers-reduced-motion: reduce)').matches) { sq.dataset.lig = '1'; const alvo = +sq.dataset.sqConta; const t0 = performance.now();
     const passo = (t) => { const k = Math.min(1, (t - t0) / 900); sq.textContent = Math.round(alvo * (1 - Math.pow(1 - k, 3))); if (k < 1 && sq.isConnected) requestAnimationFrame(passo); }; if (alvo > 0) requestAnimationFrame(passo); }
@@ -2584,6 +2584,34 @@ function basMetaDispHtml() {
     <p class="bas-dp2-s">Sobrou <b>${brl(D.sobra)}</b> · investido <b>${brl(D.aportado)}</b>${exc ? ` · <b class="neg">${brl(D.excedente)}</b> além` : ''}</p></section>`;
   return meta + disp;
 }
+// roleta dos proventos: arrastar gira o arco (um traço por provento), solta com embalo e para no mais próximo; setas do teclado passam de um em um
+function basRlLigar() {
+  const el = document.querySelector('.bas-rl[data-e]'); if (!el || el.dataset.on) return; el.dataset.on = '1';
+  const E = JSON.parse(el.dataset.e); const T = [...el.querySelectorAll('.bas-rl-arco i')]; const R = +el.dataset.r; const st = +el.dataset.s; const pill = document.querySelector('[data-rl-pill]');
+  const L = T.map((t) => parseFloat(t.style.getPropertyValue('--l')) || 20); const px = (R * st * Math.PI) / 180; const n = E.length;
+  const menos = matchMedia('(prefers-reduced-motion: reduce)').matches; let pos = Math.max(0, n - 1); let sel = -1; let raf = 0;
+  // traços apagados antes do primeiro e depois do último: o arco fica cheio e gira junto
+  const arco = el.querySelector('.bas-rl-arco'); const GH = []; for (let k = 1; k <= 16; k++) for (const i of [-k, Math.max(0, n) - 1 + k]) { const g = document.createElement('i'); g.className = 'g'; arco.appendChild(g); GH.push([g, i]); }
+  const lim = (v, a, b) => Math.max(a, Math.min(b, v));
+  const pinta = () => {
+    T.forEach((t, i) => { const a = (pos - i) * st; const o = Math.abs(a) > 112 ? 0 : 1 - (Math.abs(a) / 112) ** 3; t.style.transform = `rotate(${a.toFixed(2)}deg) translateY(${R - L[i]}px)`; t.style.opacity = o.toFixed(3); });
+    GH.forEach(([g, i]) => { const a = (pos - i) * st; const o = Math.abs(a) > 112 ? 0 : 1 - (Math.abs(a) / 112) ** 3; g.style.transform = `rotate(${a.toFixed(2)}deg) translateY(${R - 14}px)`; g.style.opacity = (o * 0.28).toFixed(3); });
+    const k = n ? lim(Math.round(pos), 0, n - 1) : -1; if (k === sel) return; const pri = sel < 0; sel = k;
+    if (k < 0) { pill.innerHTML = '<span class="bas-rl-p0">Nenhum provento neste período</span>'; return; }
+    const e = E[k]; pill.innerHTML = `<span class="bas-pv2-ini" style="--bc:${PAL[k % 6]}">${esc(e[3])}</span><span class="bas-rl-pt"><b>${esc(e[0])}</b><small>${esc(e[1])}</small></span><b class="bas-rl-pv">${e[2]}</b>`;
+    el.setAttribute('aria-valuenow', k + 1); el.setAttribute('aria-valuetext', `${e[0]}, ${e[1]}`);
+    if (!pri) { try { if (navigator.vibrate && !menos && (!navigator.userActivation || navigator.userActivation.hasBeenActive)) navigator.vibrate(4); } catch (er) { /* ignora */ } }
+  };
+  const vai = (alvo) => { cancelAnimationFrame(raf); alvo = lim(alvo, 0, Math.max(0, n - 1)); if (menos) { pos = alvo; pinta(); return; }
+    const anda = () => { pos += (alvo - pos) * 0.2; if (Math.abs(alvo - pos) < 0.003) { pos = alvo; pinta(); return; } pinta(); raf = requestAnimationFrame(anda); }; anda(); };
+  let x0 = 0, p0 = 0, ux = 0, ut = 0, vel = 0, arr = false;
+  el.addEventListener('pointerdown', (e) => { if (!n) return; arr = true; cancelAnimationFrame(raf); x0 = ux = e.clientX; ut = performance.now(); p0 = pos; vel = 0; el.setPointerCapture(e.pointerId); });
+  el.addEventListener('pointermove', (e) => { if (!arr) return; const t = performance.now(); vel = (e.clientX - ux) / Math.max(1, t - ut); ux = e.clientX; ut = t; pos = lim(p0 - (e.clientX - x0) / px, -0.45, n - 0.55); pinta(); });
+  const solta = () => { if (!arr) return; arr = false; vai(Math.round(pos - (vel * 160) / px)); };
+  el.addEventListener('pointerup', solta); el.addEventListener('pointercancel', solta);
+  el.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); vai(sel + (e.key === 'ArrowLeft' ? -1 : 1)); } });
+  pinta();
+}
 // proventos: o ano (fichas), importar e o gráfico mês a mês em que tocar num mês mostra quem pagou
 // Proventos, refeito no jeito do Patrimônio (mas como subpágina): topo azul com voltar, calendário e olho; o recebido no período em destaque,
 // a variação contra o período anterior e as barras do ano (o período aceso, o mês tocado com o valor); embaixo, Registrar e Importar
@@ -2592,22 +2620,33 @@ function basTelaProventos() {
   const C = S.C; const vals = C.faturamento; const j = basJan(); const ult = S.year === NOW_Y ? NOW_M : 11; const sel = S.basProvMes != null ? S.basProvMes : j.ate;
   const soma = (de, ate) => { let t = 0; for (let m = Math.max(0, de); m <= Math.min(11, ate); m++) t += +vals[m] || 0; return t; };
   // mês tocado: o número grande, a variação e a frase passam a ser desse mês (contra o mês anterior)
-  const um0 = S.basProvMes != null; const de0 = um0 ? sel : j.de; const ate0 = um0 ? sel : j.ate;
+  const um0 = S.basProvMes != null && S.basProvVis === 'hist'; const de0 = um0 ? sel : j.de; const ate0 = um0 ? sel : j.ate;
   const tot = soma(de0, ate0); const n = ate0 - de0 + 1; const ant = de0 - n >= 0 ? soma(de0 - n, de0 - 1) : null;
   const dif = ant != null ? tot - ant : null; const up = dif == null || dif >= 0; const pctv = ant > 0 ? Math.abs(dif) / ant : null;
   const mx = Math.max(1, ...vals);
   const barras = vals.map((v, i) => { const dentro = i >= j.de && i <= j.ate; return `<button class="${dentro ? 'in' : 'fora'}${i === sel ? ' on' : ''}${i > ult ? ' fut' : ''}" data-act="bas-prov-mes" data-m="${i}" style="--h:${v > 0 ? Math.max(6, (v / mx) * 78).toFixed(1) : 3}%" aria-label="${MES_LONGO[i]}: ${esc(brl(v))}" aria-pressed="${i === sel}">${i === sel && v > 0 ? `<small>${brl0(v)}</small>` : ''}<i></i><b>${MES[i][0]}</b></button>`; }).join('');
   // quem pagou no período: soma por ativo, com a parte de cada um
   // mês tocado: a lista mostra quem pagou naquele mês (tocar de novo volta ao período)
-  const um = S.basProvMes != null; const ld = um ? sel : j.de; const la = um ? sel : j.ate; const tl = um ? soma(sel, sel) : tot; const frase = um ? `em ${MES_LONGO[sel]}` : basJanFrase();
+  const um = S.basProvMes != null && S.basProvVis === 'hist'; const ld = um ? sel : j.de; const la = um ? sel : j.ate; const tl = um ? soma(sel, sel) : tot; const frase = um ? `em ${MES_LONGO[sel]}` : basJanFrase();
   const L = S.plan.ativos.map((a) => { let t = 0; for (let m = ld; m <= la; m++) t += +a.pr[m] || 0; return { a, t }; }).filter((x) => Math.abs(x.t) > 0.005).sort((x, y) => y.t - x.t);
+  // roleta (padrão): cada provento do período é um traço do arco; o total no centro; girar com o dedo passa de um em um
+  const rlE = []; for (let m = j.de; m <= j.ate; m++) S.plan.ativos.map((a) => [a, +a.pr[m] || 0]).filter((x) => x[1] > 0.005).sort((x, y) => y[1] - x[1]).forEach(([a, v]) => rlE.push([a.nome, cap(MES_LONGO[m]), basCent(v), basIniciais(a.nome), v]));
+  const rlMx = Math.max(1, ...rlE.map((e) => e[4])); const rlTot = soma(j.de, j.ate);
+  const roleta = `<div class="bas-rl" tabindex="0" role="slider" aria-label="Proventos ${esc(basJanFrase())}. Arraste para os lados ou use as setas." aria-valuemin="1" aria-valuemax="${Math.max(1, rlE.length)}" data-r="150" data-s="9" data-ini="${rlE.length - 1}" data-e="${esc(JSON.stringify(rlE.map((e) => e.slice(0, 4))))}">
+      <span class="bas-rl-luz" aria-hidden="true"></span>
+      <div class="bas-rl-c"><small>Recebido ${esc(basJanFrase())}</small><b>${basCent(rlTot)}</b><em>${rlE.length ? `${rlE.length} ${rlE.length === 1 ? 'provento' : 'proventos'}` : 'Nenhum provento'}</em></div>
+      <div class="bas-rl-arco" aria-hidden="true">${rlE.map((e) => `<i style="--l:${(16 + 22 * (e[4] / rlMx)).toFixed(1)}px"></i>`).join('')}</div>
+      <span class="bas-rl-knob" aria-hidden="true"></span></div>
+    <div class="bas-rl-pill" data-rl-pill aria-hidden="true"></div>`;
+  const vis = S.basProvVis === 'hist' ? 'hist' : 'roleta';
+  const seg = `<div class="bas-rl-seg" role="group" aria-label="Visualização">${[['roleta', 'Roleta'], ['hist', 'Evolução']].map(([v, t]) => `<button data-act="bas-prov-vis" data-v="${v}" aria-pressed="${vis === v}">${t}</button>`).join('')}</div>`;
   const linha = (x, i) => `<li><button class="bas-pv2-l" ${basIr('provento', { id: x.a.id })}><span class="bas-pv2-ini" style="--bc:${PAL[i % 6]}">${esc(basIniciais(x.a.nome))}</span><span class="bas-pv2-n"><b>${esc(x.a.nome)}</b><small>${esc(x.a.classe || 'Ativo')}</small><i style="--p:${tl > 0 ? Math.max(3, (x.t / tl) * 100).toFixed(1) : 0}%"></i></span><b class="bas-pv2-v">${basCent(x.t)}</b></button></li>`;
   return `<div class="bas-pg bas-pg-prov"><div class="bas-gt-bg bas-pt-bg bas-pv2-bg">
     <header class="bas-pv2-h"><button class="bell bas-cal-b" data-act="bas-voltar" aria-label="Voltar">${I_VOLTA}</button><b>Proventos</b><span class="bas-noite-r"><button class="bell bas-cal-b" ${basIr('periodo')} aria-label="Período: ${esc(basJanRot())}, ${S.year}">${I_CAL}</button>${olhoHtml()}</span></header>
-    <small class="bas-pv2-k">Recebido ${um0 ? `em ${MES_LONGO[sel]}` : esc(basJanFrase())}</small>
+    ${seg}${vis === 'roleta' ? roleta : `<small class="bas-pv2-k">Recebido ${um0 ? `em ${MES_LONGO[sel]}` : esc(basJanFrase())}</small>
     <b class="bas-pv2-t">${basCent(tot)}</b>
     <p class="bas-pv2-var">${pctv != null ? `<span class="bas-ev-pct${up ? '' : ' neg'}">${up ? '↑' : '↓'} ${pct(pctv, 1)}</span>` : ''}<span>${dif != null ? `${up ? '+' : '−'}${brl0(Math.abs(dif))} contra ${um0 ? (sel ? MES_LONGO[sel - 1] : 'o mês anterior') : 'o período anterior'}` : `${S.year}`}</span></p>
-    <div class="bas-pv2-g" role="group" aria-label="Proventos mês a mês. Toque num mês.">${barras}</div>
+    <div class="bas-pv2-g" role="group" aria-label="Proventos mês a mês. Toque num mês.">${barras}</div>`}
   </div><div class="bas-gt-folha">
     <div class="bas-pg-per bas-gt-acoes">${S.plan.ativos.length ? `<button class="bas-inv-pl" ${basIr('provento')}>${I.plus}<span>Registrar</span></button>` : ''}<button class="bas-circ bas-en-bt" data-act="bas-importar">${I_IMP}<span>Importar</span></button></div>
     ${L.length ? basSecao(`Quem pagou ${frase}`, `<small class="bas-pv2-q">${L.length} ${L.length === 1 ? 'ativo' : 'ativos'} · ${brl0(tl)}</small>`, `<ul class="card bas-pv2-ls">${L.map(linha).join('')}</ul>`) : basCard(basVazio(`Nenhum provento ${frase}.`))}
@@ -2929,6 +2968,7 @@ function basAcao(act, ds, el) {
     case 'bas-ah-mes': S.basAhMes = S.basAhMes === +ds.m ? null : +ds.m; basSom('toque'); render(); return true;
     case 'bas-ah-ano': { const t = basTopoPilha(); if (t && t.t === 'ano-hist') { t.id = String(ds.y); S.basAhMes = null; basSom('toque'); render(); } return true; }
     case 'bas-prov-mes': S.basProvMes = S.basProvMes === +ds.m ? null : +ds.m; basSom('toque'); render(); return true;
+    case 'bas-prov-vis': S.basProvVis = ds.v; S.basProvMes = null; basSom('toque'); render(); return true;
     case 'bas-prov-ano': if (+ds.y !== S.year && S.plans[+ds.y]) { S.basProvMes = null; switchYear(+ds.y); } return true;
     case 'bas-al-passo': case 'bas-al-igual': case 'bas-al-100': case 'bas-al-zero': basAlAcao(act, el); return true;
     case 'bas-cores': S.basCores = !S.basCores; basSom('toque'); render(); return true;
