@@ -1,10 +1,10 @@
-/* Avatares do perfil: foto enviada pelo cliente (recortada no aparelho) ou um dos 3 avatares da coleção AVEN,
+/* Avatares do perfil: foto enviada pelo cliente (recortada no aparelho) ou um dos 3 avatares da coleção Cifrão,
    desenhados em SVG com os gradientes, o vidro e a seta da marca (leves, nítidos em qualquer tamanho).
    Avatares antigos que saíram da coleção mostram a inicial do nome. Imagens próprias: CFG.avatares no config.js. */
 'use strict';
 
 const AV_GRUPOS = [
-  { id: 'aven', nome: 'Coleção AVEN', perfil: null, desc: 'Desenhados com as cores, o vidro e a seta da marca.' },
+  { id: 'aven', nome: 'Coleção Cifrão', perfil: null, desc: 'Desenhados com as cores e o vidro da marca.' },
 ];
 
 // [id, nome, grupo, cor inicial, cor final]
@@ -19,8 +19,8 @@ let avSeq = 0;
 const avVidro = (x, y, w, h, r, u, op) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}" fill="#fff" fill-opacity="${op || 0.16}"/><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="${r}" fill="url(#${u}v)"/><rect x="${x + 0.6}" y="${y + 0.6}" width="${w - 1.2}" height="${h - 1.2}" rx="${r - 0.6}" fill="none" stroke="url(#${u}b)" stroke-width="1.2"/>`;
 function avDesenho(id, u) {
   switch (id) {
-    // a seta do "A" do AVEN, sobre a placa de vidro, com um brilho azul atrás
-    case 'marca': return `<circle cx="50" cy="56" r="30" fill="#0A84FF" fill-opacity=".35" filter="url(#${u}f)"/>${avVidro(20, 20, 60, 60, 16, u, 0.1)}<g transform="translate(29 30) scale(.42)"><path d="M0 100 33 0h26l33 100H67L46 34 25 100Z" fill="#fff"/><path d="M46 56 61 100H31Z" fill="#5AC8FA"/></g>`;
+    // um "$" sobre a placa de vidro, com um brilho azul atrás
+    case 'marca': return `<circle cx="50" cy="56" r="30" fill="#0A84FF" fill-opacity=".35" filter="url(#${u}f)"/>${avVidro(20, 20, 60, 60, 16, u, 0.1)}<text x="50" y="66" text-anchor="middle" font-family="inherit" font-size="40" font-weight="800" fill="#fff">$</text>`;
     // curva de crescimento atravessando uma placa de vidro, com luzes da aurora
     case 'aurora': return `<circle cx="24" cy="22" r="26" fill="#5AC8FA" fill-opacity=".45" filter="url(#${u}f)"/><circle cx="82" cy="30" r="24" fill="#5E5CE6" fill-opacity=".5" filter="url(#${u}f)"/>${avVidro(16, 30, 68, 46, 12, u, 0.12)}<path d="M22 68 36 58 48 62 62 46 78 36V76H22Z" fill="url(#${u}a)"/><polyline points="22,68 36,58 48,62 62,46 78,36" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="78" cy="36" r="4" fill="#fff"/>`;
     // três placas de vidro empilhadas, como os cartões do painel

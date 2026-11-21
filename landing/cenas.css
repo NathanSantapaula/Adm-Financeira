@@ -264,7 +264,7 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; background: 
 .ix-leg strong { font-size: 40px; line-height: 1.04; font-weight: 500; letter-spacing: -.045em; } .ix-leg span { font-size: 17px; line-height: 1.45; color: #ffffffd0; }
 .ix-leg.troca strong, .ix-leg.troca span { animation: surge .5s cubic-bezier(.2, .8, .2, 1) both; } .ix-leg.troca span { animation-delay: .08s; }
 @keyframes surge { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
-/* A AVEN */
+/* O Cifrão */
 .ix-app { position: absolute; border-radius: 30px; background: #05080F; box-shadow: 0 40px 80px -40px #000c, inset 0 0 0 1px #ffffff14; }
 .ix-app-h { position: absolute; left: 20px; right: 20px; top: 20px; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .ix-app-t { font-size: 15px; font-weight: 500; }
@@ -320,7 +320,7 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; background: 
 .ix-doc.lendo .ix-mira { opacity: 1; animation: mira 1.1s ease-in-out infinite alternate; }
 @keyframes mira { to { inset: 4px; } }
 
-/* Painel da AVEN claro sobre o azul (substitui o bloco preto) */
+/* Painel do Cifrão claro sobre o azul (substitui o bloco preto) */
 .ix-app { background: #F7F4ED; color: #0B0B0C; box-shadow: 0 50px 90px -40px #021a5acc, 0 0 0 1px #ffffff40; }
 .ix-arq { background: #0B0B0C0f; color: #3B3B40; }
 .ix-solta { border-color: #0B0B0C33; color: #6B6B66; } .ix-solta b { color: #0B0B0C; } .ix-solta .icon { background: #0A84FF; }
@@ -578,7 +578,7 @@ body::before { content: ""; position: fixed; inset: 0; z-index: -1; background: 
 .fone-st u { width: 18px; height: 9px; margin-left: 4px; border-radius: 3px; box-shadow: inset 0 0 0 1px #ffffffb3; background: linear-gradient(90deg, #fff 70%, transparent 70%) 2px 2px / 12px 5px no-repeat; }
 .fone-tit { display: grid; grid-template-columns: 26px 1fr 26px; align-items: center; margin: 0; padding-bottom: 8px; border-bottom: 1px solid #ffffff1a; font-size: 15px; font-weight: 600; letter-spacing: -.01em; color: #fff; text-align: center; }
 .fone-tit svg { width: 18px; height: 18px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; opacity: .8; } .fone-tit svg:last-child { justify-self: end; }
-/* Com você: o celular mostra a tela de bloqueio com o widget do AVEN. */
+/* Com você: o celular mostra a tela de bloqueio com o widget do Cifrão. */
 .deitado-tela.bloq { background: radial-gradient(120% 90% at 30% 10%, #1F5BD0, #0A2258 60%, #061433); color: #fff; padding: 26px 22px 0; text-align: center; }
 .bloq-dia { font-size: 10px; opacity: .8; margin-top: 4px; text-transform: lowercase; } .bloq-dia::first-letter { text-transform: uppercase; }
 .bloq-hora { font-size: 46px; font-weight: 300; letter-spacing: -.03em; line-height: 1.05; }

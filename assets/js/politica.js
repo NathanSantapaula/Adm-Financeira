@@ -4,7 +4,7 @@
 const POLITICA_VERSAO = '2026-11-16';
 function politicaHtml(cfg, nuvem) {
   const e = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  const marca = e(cfg.marca || 'AVEN'); const quem = e(cfg.controlador || cfg.consultor || ''); const cons = e(cfg.consultor || '');
+  const marca = e(cfg.marca || 'Cifrão'); const quem = e(cfg.controlador || cfg.consultor || ''); const cons = e(cfg.consultor || '');
   const mail = e(cfg.encarregadoEmail || cfg.email || ''); const zap = e(cfg.whatsapp || '');
   const [a, m, d] = POLITICA_VERSAO.split('-'); const MESES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
   const sec = (t, corpo) => `<h4>${t}</h4>${corpo}`; const li = (xs) => `<ul>${xs.map((x) => `<li>${x}</li>`).join('')}</ul>`;

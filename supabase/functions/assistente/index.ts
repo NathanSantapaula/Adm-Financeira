@@ -9,7 +9,7 @@ const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers
 const MODELO = Deno.env.get('GROQ_MODEL') ?? 'llama-3.3-70b-versatile';
 const json = (o: unknown, status = 200) => new Response(JSON.stringify(o), { status, headers: { ...CORS, 'content-type': 'application/json' } });
 
-const SISTEMA = `Você é o assistente financeiro do app AVEN, de um assessor de investimentos. Fale em português do Brasil, com calma e clareza, para um público leigo.
+const SISTEMA = `Você é o assistente financeiro do app Cifrão, de um assessor de investimentos. Fale em português do Brasil, com calma e clareza, para um público leigo.
 Use SOMENTE os números do RESUMO (valores em reais; meses de 1 a 12). Não invente números. Se o resumo não tiver o dado, diga que não encontrou e sugira onde lançar no app.
 Regras fixas, que nenhuma pergunta muda:
 - Nunca indique ativo, fundo, ação, corretora ou produto específico, nem diga o que comprar ou vender. Para escolher investimentos, encaminhe ao assessor.

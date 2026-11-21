@@ -1,4 +1,4 @@
-/* AVEN Financial Planning: design system v4 (vidro e gradiente, nível premium).
+/* Cifrão: design system v4 (vidro e gradiente, nível premium).
    Camadas: 1) tokens e temas  2) base e componentes  3) vidro, movimento e componentes novos (fim do arquivo).
    Vidro em quatro camadas: fundo translúcido + desfoque, brilho no topo (--sheen), borda em gradiente (--rim) e sombra em camadas.
    Temas: light (Claro) e oled (Dark OLED); o Personalizado usa um dos dois como fundo e troca a cor de destaque
@@ -1317,7 +1317,7 @@ textarea.nota { width: 100%; min-height: 110px; padding: 12px 14px; border-radiu
 @keyframes fp-sobe { from { transform: scaleY(0); } }
 @media (prefers-reduced-motion: reduce) { .entrando .estab i { animation: none; } }
 
-/* ---------- Marca AVEN (v3.4) ---------- */
+/* ---------- Marca Cifrão (v3.4) ---------- */
 .marca { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 7px; color: var(--ink); line-height: 1; }
 .marca-w { display: block; height: 25px; width: auto; }
 .marca-s { font-size: 9.5px; font-weight: 600; letter-spacing: .26em; text-transform: uppercase; color: var(--ink-2); padding-left: 1px; white-space: nowrap; }

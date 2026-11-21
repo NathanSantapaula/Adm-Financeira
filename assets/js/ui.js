@@ -40,19 +40,9 @@ const I = {
   mail: ic('<rect x="3.5" y="5.5" width="17" height="13" rx="3"/><path d="m4.5 7.5 7.5 5.5 7.5-5.5"/>'),
   tel: ic('<rect x="7" y="3" width="10" height="18" rx="2.5"/><path d="M11 17.5h2"/>'),
 };
-/* Marca AVEN: letras desenhadas em grade de altura 100 (não dependem de fonte).
-   O "A" sem travessa é uma seta para cima, com a seta azul dentro; "A" e "V" juntos formam duas setas.
-   Cores seguem o tema (currentColor / --ink / --bg); a seta é azul (AVEN_AZUL), exceto no tema Personalizado com outra cor,
-   em que acompanha as letras (classe seta-aven, regra :root[data-mono] em app.css). */
-const AVEN_AZUL = '#0A84FF';
-const AVEN_A = 'M0 100 33 0h26l33 100H67L46 34 25 100Z';
-const AVEN_V = 'M0 0h25l21 66L67 0h25L59 100H33Z';
-const AVEN_SETA = `<path class="seta-aven" d="M46 56 61 100H31Z" fill="${AVEN_AZUL}"/>`;
-const AVEN_LETRAS = `<path d="${AVEN_A}"/>${AVEN_SETA}<path transform="translate(69 0)" d="${AVEN_V}"/><path transform="translate(171 0)" d="M0 0h66v21H24v19h36v20H24v19h42v21H0Z"/><path transform="translate(247 0)" d="M0 100V0h23l38 58V0h23v100H61L23 42v58Z"/>`;
-// Ícone (quadrado com "AV" e a seta azul): favicon, ícone do app e espaços pequenos
-const LOGO = `<svg class="logo-ic" width="28" height="28" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="24" fill="var(--ink)"/><g transform="translate(14.6 28) scale(.44)"><path d="${AVEN_A}" fill="var(--bg)"/>${AVEN_SETA}<path transform="translate(69 0)" d="${AVEN_V}" fill="var(--bg)"/></g></svg>`;
-// Assinatura completa: AVEN + subtítulo
-const logoMarca = (cls) => `<span class="marca${cls ? ' ' + cls : ''}" role="img" aria-label="${esc(CFG.marca)}${CFG.submarca ? ', ' + esc(CFG.submarca) : ''}"><svg class="marca-w" viewBox="0 0 331 100" fill="currentColor" aria-hidden="true">${AVEN_LETRAS}</svg>${CFG.submarca ? `<span class="marca-s" aria-hidden="true">${esc(CFG.submarca)}</span>` : ''}</span>`;
+// Marca provisória (a logo nova ainda vai ser criada): o nome escrito, e no ícone pequeno um "$"
+const LOGO = `<svg class="logo-ic" width="28" height="28" viewBox="0 0 100 100" aria-hidden="true"><rect width="100" height="100" rx="24" fill="var(--ink)"/><text x="50" y="73" text-anchor="middle" font-family="inherit" font-size="66" font-weight="800" fill="var(--bg)">$</text></svg>`;
+const logoMarca = (cls) => `<span class="marca${cls ? ' ' + cls : ''}" role="img" aria-label="${esc(CFG.marca)}${CFG.submarca ? ', ' + esc(CFG.submarca) : ''}"><svg class="marca-w" viewBox="0 0 270 100" fill="currentColor" aria-hidden="true"><text x="0" y="80" font-family="inherit" font-size="92" font-weight="800" letter-spacing="-3">${esc(CFG.marca)}</text></svg>${CFG.submarca ? `<span class="marca-s" aria-hidden="true">${esc(CFG.submarca)}</span>` : ''}</span>`;
 
 /* ---------- contato com o consultor ---------- */
 const waDigits = () => String(CFG.whatsapp || '').replace(/\D/g, '');

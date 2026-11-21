@@ -286,7 +286,7 @@
   function makeBackup(perfil, planos) { return { app: 'financial-planning', formato: FORMATO_BACKUP, exportadoEm: new Date().toISOString(), perfil, planos }; }
   function parseBackup(obj, newId) {
     const avisos = [];
-    if (!obj || typeof obj !== 'object') return { ok: false, erro: 'O arquivo não é um backup do AVEN.' };
+    if (!obj || typeof obj !== 'object') return { ok: false, erro: 'O arquivo não é um backup do Cifrão.' };
     let planos = {}; let perfil = null;
     if (obj.app === 'financial-planning' && obj.planos) {
       if ((obj.formato | 0) > FORMATO_BACKUP) return { ok: false, erro: 'Este backup é de uma versão mais nova do sistema.' };
@@ -294,7 +294,7 @@
       Object.keys(obj.planos).forEach((y) => { if (obj.planos[y] && Array.isArray(obj.planos[y].ativos || [])) planos[+y] = migratePlan(Object.assign({}, obj.planos[y], { year: +y }), newId); });
     } else if (obj.year && (obj.rendas || obj.ativos)) { // JSON de um único ano (versão anterior)
       planos[+obj.year] = migratePlan(obj, newId); avisos.push('Arquivo de um único ano (versão anterior): somente o planejamento de ' + obj.year + ' será restaurado.');
-    } else return { ok: false, erro: 'O arquivo não é um backup do AVEN.' };
+    } else return { ok: false, erro: 'O arquivo não é um backup do Cifrão.' };
     if (!Object.keys(planos).length) return { ok: false, erro: 'O backup não contém nenhum planejamento.' };
     return { ok: true, perfil, planos, avisos };
   }
@@ -305,7 +305,7 @@
     const M = MES.slice(); const flat = (x) => new Array(12).fill(x); const ramp = (a) => a.concat(new Array(12 - a.length).fill(0));
     return [
       { name: 'Instruções', rows: [
-        ['AVEN Financial Planning: modelo de importação'], [''],
+        ['Cifrão: modelo de importação'], [''],
         ['Como usar'],
         ['1. Preencha as abas que quiser: Rendas, Despesas, Parcelados, Investimentos, Proventos e Carteira. Só as abas encontradas são importadas.'],
         ['2. Não altere os nomes das abas nem os cabeçalhos da primeira linha de cada aba.'],

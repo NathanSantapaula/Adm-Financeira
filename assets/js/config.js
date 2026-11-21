@@ -2,8 +2,8 @@
    Nada aqui é segredo: a chave "anon" do Supabase é pública por projeto e protegida pelas regras de acesso (RLS) de supabase/schema.sql.
    Campos vazios simplesmente não aparecem no site. */
 window.FP_CONFIG = {
-  marca: 'AVEN',
-  submarca: 'Financial Planning', // linha abaixo do logo
+  marca: 'Cifrão',
+  submarca: '', // linha abaixo do logo (vazia: só o nome)
   consultor: 'Nathan Santapaula',
   consultorCurto: 'Nathan',
 
