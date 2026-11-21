@@ -1,4 +1,4 @@
-/* Cifrão, o mascote da AVEN. Um modelo de pose (posição, giro, olhar, piscada, achatamento)
+/* Cifrão, o mascote do Cifrão. Um modelo de pose (posição, giro, olhar, piscada, achatamento)
    interpolado por quadros-chave, com um controlador de atenção que respira, olha em volta e pisca.
    SVG puro: corpo preto/creme, olhos recortados, sem braços nem pernas (cartilha). */
 (() => {

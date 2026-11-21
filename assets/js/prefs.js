@@ -10,7 +10,7 @@ const TEMAS = {
 };
 // cores de destaque do tema Personalizado (o contraste é ajustado sozinho para o fundo escolhido)
 // cores bem distintas entre si (matizes espaçados no círculo de cores), para cada tema personalizado ter cara própria
-const CORES_DESTAQUE = [['#0A84FF', 'Azul AVEN'], ['#7C3AED', 'Violeta'], ['#D946EF', 'Magenta'], ['#F43F5E', 'Rubi'], ['#FF6B2C', 'Tangerina'], ['#F5B700', 'Âmbar'], ['#84CC16', 'Lima'], ['#10B981', 'Esmeralda'], ['#06B6D4', 'Ciano'], ['#64748B', 'Grafite']];
+const CORES_DESTAQUE = [['#0A84FF', 'Azul Cifrão'], ['#7C3AED', 'Violeta'], ['#D946EF', 'Magenta'], ['#F43F5E', 'Rubi'], ['#FF6B2C', 'Tangerina'], ['#F5B700', 'Âmbar'], ['#84CC16', 'Lima'], ['#10B981', 'Esmeralda'], ['#06B6D4', 'Ciano'], ['#64748B', 'Grafite']];
 // matiz (0–360) e saturação (0–1) de um #rrggbb, e o caminho de volta
 const hexHs = (hex) => { const [r, g, b] = hexRgb(hex).map((v) => v / 255); const mx = Math.max(r, g, b); const d = mx - Math.min(r, g, b); const l = mx - d / 2;
   const h = !d ? 0 : mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; return [(h * 60 + 360) % 360, d ? Math.min(1, d / (1 - Math.abs(2 * l - 1))) : 0]; };

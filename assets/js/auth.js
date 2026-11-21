@@ -59,7 +59,7 @@ function authHtml() {
    assets/img/tour-capa.jpg ou CFG.cadastroVideoCapa) e o assessor num bloquinho */
 function cadAssessorHtml() {
   const capa = CFG.cadastroVideoCapa || 'assets/img/tour-capa.jpg';
-  const tela = CFG.cadastroVideo ? `<video src="${esc(CFG.cadastroVideo)}" poster="${esc(capa)}" controls preload="metadata" playsinline></video>` : `<img src="${esc(capa)}" alt="O painel do ${esc(CFG.marca || 'AVEN')}">`;
+  const tela = CFG.cadastroVideo ? `<video src="${esc(CFG.cadastroVideo)}" poster="${esc(capa)}" controls preload="metadata" playsinline></video>` : `<img src="${esc(capa)}" alt="O painel do ${esc(CFG.marca || 'Cifrão')}">`;
   return `${logoMarca()}<div class="cad-ass-c"><h1>Seu dinheiro inteiro,<br><em>numa tela só.</em></h1><p class="cad-lead">Gastos, investimentos e objetivos se conectando sozinhos.${CFG.cadastroVideo ? ' Dê o play e veja.' : ''}</p>
     <figure class="cad-jan"><header aria-hidden="true"><i></i><i></i><i></i><span>${esc((CFG.marca || 'aven').toLowerCase())}.app</span></header>${tela}</figure>
     ${cadBlocoHtml('“Eu acompanho o seu plano com você, mês a mês.”')}</div>`;
