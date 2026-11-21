@@ -12,7 +12,9 @@ const basCelular = () => { try { return matchMedia('(pointer: coarse)').matches 
 const basSaasLiberado = () => planoAtual() === 'completo' || !!S.isAdmin; // o SaaS é do plano Assessoria (e do consultor)
 const basTelaPequena = () => { try { return basCelular() || Math.min(screen.width, screen.height) < 600 || innerWidth < 700; } catch (e) { return false; } };
 const basInterface = () => !basSaasLiberado() || basTelaPequena() ? 'basico' : E.interfaceDe(planoAtual(), basUiLocal() || (basCelular() ? 'basico' : S.profile.interface), BASICO_PAGANTES);
-const modoBasico = () => S.screen === 'app' && !!S.profile && basInterface() === 'basico';
+// abaixo de 901 px o SaaS não tem versão encolhida: abre o App
+const modoBasico = () => S.screen === 'app' && !!S.profile && (basInterface() === 'basico' || innerWidth < 901);
+try { matchMedia('(max-width: 900px)').addEventListener('change', () => { if (S.screen === 'app') render(); }); } catch (e) { /* navegador antigo */ }
 const basEscolhe = () => BASICO_PAGANTES && basSaasLiberado() && !basTelaPequena(); // pagantes e o consultor escolhem a versão
 const BAS_NOMES = { basico: 'App', completo: 'SaaS' }; // nomes das duas versões na tela: App (celular; no gratuito, a única) e SaaS (o painel completo)
 // seletor dos dois modos: Perfil do Simples, página inicial do painel e o Mais do celular no Completo (só para quem pode escolher)
@@ -2842,7 +2844,8 @@ function basObHtml() { return basEscolhe() ? `<div class="bas-ob"><p class="qn">
 // ações data-act do modo Básico (chamadas pelo default do onClick em main.js)
 function basAcao(act, ds, el) {
   switch (act) {
-    case 'bas-aba': { if (ds.v === 'perfil' && S.basAba !== 'perfil') S.basAbaAntes = S.basAba; const l = document.querySelector('.bas-tab-lente'); if (l && l.style.transform) S.basTabX = parseFloat(l.style.transform.slice(11)) || S.basTabX; }
+    case 'bas-aba': if (!modoBasico()) { basLimpar(); S.basAba = ds.v; S.view = { inicio: 'geral', gastos: 'despesas', investir: 'inv', perfil: 'perfil' }[ds.v] || 'geral'; render(); window.scrollTo(0, 0); return true; } // SaaS: a aba do App vira a aba do topo
+    { if (ds.v === 'perfil' && S.basAba !== 'perfil') S.basAbaAntes = S.basAba; const l = document.querySelector('.bas-tab-lente'); if (l && l.style.transform) S.basTabX = parseFloat(l.style.transform.slice(11)) || S.basTabX; }
       if (S.basAba !== ds.v || basPilha().length) basSom('toque'); basTransicao('aba', () => { basLimpar(); S.basAba = ds.v; render(); window.scrollTo(0, 0); }); return true;
     case 'bas-mes': S.mes = Math.max(0, Math.min(11, S.mes + +ds.d)); render(); return true;
     case 'bas-oi-reg': basOiRegistrar(); return true;

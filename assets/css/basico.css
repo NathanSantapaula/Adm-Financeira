@@ -1704,7 +1704,7 @@ body[data-ui="basico"][data-screen="app"] .tabbar { left: 50%; right: auto; widt
 @media (prefers-reduced-motion: reduce) { .bas-ccv, .bas-ccv.sai, .bas-ccv-i { animation: none; } .bas-gt-c { transition: none; } }
 
 /* fundo azul de ponta a ponta no alto de Gastos; a folha de baixo sobe por cima dele e cobre a base dos cartões */
-body[data-ui="basico"] { --bas-azul: #0A84FF; --bas-azul-1: #3b6cff; --bas-azul-2: #1428f5; --bas-azul-3: #03061f; }
+body:is([data-ui="basico"], [data-ui="completo"]) { --bas-azul: #0A84FF; --bas-azul-1: #3b6cff; --bas-azul-2: #1428f5; --bas-azul-3: #03061f; }
 .bas-gt-bg { position: relative; overflow: hidden; margin: -16px -16px 0; padding: 16px 16px 0; color: #fff;
   background: linear-gradient(180deg, var(--bas-azul-1) 0%, var(--bas-azul-2) 42%, var(--bas-azul-3) 100%); }
 .bas-gt-bg > .bas-topo .bas-eu-t small { color: rgba(255, 255, 255, .75); }
@@ -1740,11 +1740,11 @@ body[data-ui="basico"] { --bas-azul: #0A84FF; --bas-azul-1: #3b6cff; --bas-azul-
    - cor com moderação: só a ação principal é "prominent" (vidro tingido na cor de destaque), o resto é vidro neutro;
    - formas em cápsula e círculo, concêntricas; ao toque o vidro cresce um pouco e acende;
    - reduzir transparência deixa fosco e sólido; mais contraste dá borda definida; reduzir movimento tira a escala. ===== */
-body[data-ui="basico"] {
+body:is([data-ui="basico"], [data-ui="completo"]) {
   --lg-bg: rgba(255, 255, 255, .42); --lg-bg-on: rgba(255, 255, 255, .62); --lg-aro: rgba(255, 255, 255, .75); --lg-aro-b: rgba(255, 255, 255, .28);
   --lg-sombra: 0 1px 1.5px rgba(0, 0, 0, .06), 0 8px 22px -10px rgba(0, 0, 0, .22); --lg-txt: var(--ink); --lg-desfoque: blur(14px) saturate(190%);
 }
-:root[data-theme="oled"] body[data-ui="basico"] { --lg-bg: rgba(255, 255, 255, .08); --lg-bg-on: rgba(255, 255, 255, .16); --lg-aro: rgba(255, 255, 255, .32); --lg-aro-b: rgba(255, 255, 255, .08); --lg-sombra: 0 1px 1.5px rgba(0, 0, 0, .3), 0 8px 22px -10px rgba(0, 0, 0, .6); }
+:root[data-theme="oled"] body:is([data-ui="basico"], [data-ui="completo"]) { --lg-bg: rgba(255, 255, 255, .08); --lg-bg-on: rgba(255, 255, 255, .16); --lg-aro: rgba(255, 255, 255, .32); --lg-aro-b: rgba(255, 255, 255, .08); --lg-sombra: 0 1px 1.5px rgba(0, 0, 0, .3), 0 8px 22px -10px rgba(0, 0, 0, .6); }
 /* vidro claro sobre fundo colorido (o azul de Gastos): mais transparente, rótulo branco */
 .bas-gt-bg { --lg-bg: rgba(255, 255, 255, .14); --lg-bg-on: rgba(255, 255, 255, .26); --lg-aro: rgba(255, 255, 255, .55); --lg-aro-b: rgba(255, 255, 255, .15); --lg-txt: #fff; }
 body[data-ui="basico"] :is(.olho, .bell, .bas-circ, .bas-per, .bas-gt-chip, .bas-ct2-b) {
@@ -2089,7 +2089,7 @@ body[data-ui="basico"] .bas-gt-folha .bas-pt-acoes > :is(.bas-circ, .bas-inv-pl)
 #bas-ev-ln stop:nth-child(3) { stop-color: #fff; stop-opacity: 1; }
 .bas-pt-bg > .bas-ev .bas-ev-l { stroke: url(#bas-ev-ln); }
 /* linha opaca, com um degradê bem visível: ciano à esquerda, ciano-claro no meio, branco no mês atual */
-body[data-ui="basico"] { --bas-ciano: #4fd1ff; }
+body:is([data-ui="basico"], [data-ui="completo"]) { --bas-ciano: #4fd1ff; }
 #bas-ev-ln stop:nth-child(1) { stop-color: var(--bas-ciano); stop-opacity: 1; }
 #bas-ev-ln stop:nth-child(2) { stop-color: color-mix(in srgb, var(--bas-ciano) 45%, #fff); stop-opacity: 1; }
 #bas-ev-ln stop:nth-child(3) { stop-color: #fff; stop-opacity: 1; }
@@ -3334,39 +3334,39 @@ body[data-ui="basico"][data-screen="app"] .tabbar { bottom: max(8px, calc(env(sa
 .bas-oi-reg { margin-top: 16px; }
 .card.bas-oi-c, .bas-oi-v, .bas-oi-v span { min-width: 0; } .bas-oi-v input { width: 100%; min-width: 0; }
 /* ===== Globo no App: fundo branco com halos azuis e o planeta azul; textos em azul-marinho; botões como nas outras telas (azul sólido e vidro claro) ===== */
-body[data-ui="basico"] .ab, :root[data-theme] body[data-ui="basico"] .ab { --ab-ink: #0B1640; --ab-ink-2: #5B6487; --ab-ink-3: #8A92AE; color: #0B1640;
+body:is([data-ui="basico"], [data-ui="completo"]) .ab, :root[data-theme] body:is([data-ui="basico"], [data-ui="completo"]) .ab { --ab-ink: #0B1640; --ab-ink-2: #5B6487; --ab-ink-3: #8A92AE; color: #0B1640;
   background: radial-gradient(70% 45% at 50% 70%, rgba(47, 107, 255, .18), transparent 70%), radial-gradient(60% 40% at 0% 0%, rgba(56, 214, 255, .14), transparent 70%), linear-gradient(180deg, #F7F9FF 0%, #EEF2FF 100%) !important; }
-body[data-ui="basico"] .ab-capa-k { color: #5B6487; }
-body[data-ui="basico"] .ab-capa-t { color: #0B1640; text-shadow: none; }
-body[data-ui="basico"] .ab-capa-s { color: #5B6487 !important; font-weight: 500; text-shadow: none !important; }
-body[data-ui="basico"] .ab-capa-n, body[data-ui="basico"] .ab-capa-n.neg { color: var(--bas-azul-2) !important; text-shadow: 0 0 20px rgba(47, 107, 255, .3) !important; }
-body[data-ui="basico"] .ab-capa-b { gap: 10px; }
-body[data-ui="basico"] .ab-capa-b .hp-btn { width: 100%; height: 54px; border-radius: 999px !important; font-size: 17px; font-weight: 700; }
-body[data-ui="basico"] :is(.ab-capa-entrar, .ab-entrar) { color: #fff !important; border: 0 !important; background: linear-gradient(170deg, #5B8CFF, #1F4FF5 60%, #1428C8) !important; box-shadow: 0 14px 28px -14px rgba(20, 40, 245, .75), inset 0 1px 0 rgba(255, 255, 255, .35) !important; }
-body[data-ui="basico"] .ab-capa-ver { color: #0B1640 !important; background: rgba(255, 255, 255, .72) !important; border: .5px solid rgba(11, 22, 64, .12) !important; box-shadow: 0 10px 24px -16px rgba(11, 22, 64, .5) !important; -webkit-backdrop-filter: blur(18px) saturate(1.6); backdrop-filter: blur(18px) saturate(1.6); }
-body[data-ui="basico"] .ab-tit { background: none !important; -webkit-text-fill-color: #0B1640 !important; color: #0B1640 !important; }
-body[data-ui="basico"] .ab-vivo { background: rgba(255, 255, 255, .72) !important; border: .5px solid rgba(11, 22, 64, .1) !important; color: #0B1640; -webkit-backdrop-filter: blur(18px) saturate(1.6); backdrop-filter: blur(18px) saturate(1.6); }
+body:is([data-ui="basico"], [data-ui="completo"]) .ab-capa-k { color: #5B6487; }
+body:is([data-ui="basico"], [data-ui="completo"]) .ab-capa-t { color: #0B1640; text-shadow: none; }
+body:is([data-ui="basico"], [data-ui="completo"]) .ab-capa-s { color: #5B6487 !important; font-weight: 500; text-shadow: none !important; }
+body:is([data-ui="basico"], [data-ui="completo"]) .ab-capa-n, body:is([data-ui="basico"], [data-ui="completo"]) .ab-capa-n.neg { color: var(--bas-azul-2) !important; text-shadow: 0 0 20px rgba(47, 107, 255, .3) !important; }
+body:is([data-ui="basico"], [data-ui="completo"]) .ab-capa-b { gap: 10px; }
+body:is([data-ui="basico"], [data-ui="completo"]) .ab-capa-b .hp-btn { width: 100%; height: 54px; border-radius: 999px !important; font-size: 17px; font-weight: 700; }
+body:is([data-ui="basico"], [data-ui="completo"]) :is(.ab-capa-entrar, .ab-entrar) { color: #fff !important; border: 0 !important; background: linear-gradient(170deg, #5B8CFF, #1F4FF5 60%, #1428C8) !important; box-shadow: 0 14px 28px -14px rgba(20, 40, 245, .75), inset 0 1px 0 rgba(255, 255, 255, .35) !important; }
+body:is([data-ui="basico"], [data-ui="completo"]) .ab-capa-ver { color: #0B1640 !important; background: rgba(255, 255, 255, .72) !important; border: .5px solid rgba(11, 22, 64, .12) !important; box-shadow: 0 10px 24px -16px rgba(11, 22, 64, .5) !important; -webkit-backdrop-filter: blur(18px) saturate(1.6); backdrop-filter: blur(18px) saturate(1.6); }
+body:is([data-ui="basico"], [data-ui="completo"]) .ab-tit { background: none !important; -webkit-text-fill-color: #0B1640 !important; color: #0B1640 !important; }
+body:is([data-ui="basico"], [data-ui="completo"]) .ab-vivo { background: rgba(255, 255, 255, .72) !important; border: .5px solid rgba(11, 22, 64, .1) !important; color: #0B1640; -webkit-backdrop-filter: blur(18px) saturate(1.6); backdrop-filter: blur(18px) saturate(1.6); }
 /* globo do App no tema escuro: fundo quase preto com um halo do azul da marca; textos brancos; botões no mesmo jeito */
-:root:not([data-theme="light"]) body[data-ui="basico"] .ab { --ab-ink: #fff; --ab-ink-2: rgba(255, 255, 255, .72); --ab-ink-3: rgba(255, 255, 255, .5); color: #fff;
+:root:not([data-theme="light"]) body:is([data-ui="basico"], [data-ui="completo"]) .ab { --ab-ink: #fff; --ab-ink-2: rgba(255, 255, 255, .72); --ab-ink-3: rgba(255, 255, 255, .5); color: #fff;
   background: radial-gradient(70% 45% at 50% 68%, rgba(20, 40, 245, .32), transparent 70%), radial-gradient(60% 40% at 0% 0%, rgba(47, 107, 255, .14), transparent 70%), linear-gradient(180deg, #05070F 0%, #000 100%) !important; }
-:root:not([data-theme="light"]) body[data-ui="basico"] :is(.ab-capa-t, .ab-tit) { color: #fff !important; -webkit-text-fill-color: #fff !important; }
-:root:not([data-theme="light"]) body[data-ui="basico"] :is(.ab-capa-k, .ab-capa-s) { color: rgba(255, 255, 255, .72) !important; }
-:root:not([data-theme="light"]) body[data-ui="basico"] :is(.ab-capa-n, .ab-capa-n.neg) { color: #8FB4FF !important; text-shadow: 0 0 22px rgba(47, 107, 255, .6) !important; }
-:root:not([data-theme="light"]) body[data-ui="basico"] .ab-marca, :root:not([data-theme="light"]) body[data-ui="basico"] .ab-marca .marca-s { color: #fff; }
-:root:not([data-theme="light"]) body[data-ui="basico"] .ab-capa-ver { color: #fff !important; background: rgba(255, 255, 255, .1) !important; border-color: rgba(255, 255, 255, .2) !important; }
-:root:not([data-theme="light"]) body[data-ui="basico"] .ab-vivo { background: rgba(255, 255, 255, .07) !important; border-color: rgba(255, 255, 255, .14) !important; color: #fff; }
+:root:not([data-theme="light"]) body:is([data-ui="basico"], [data-ui="completo"]) :is(.ab-capa-t, .ab-tit) { color: #fff !important; -webkit-text-fill-color: #fff !important; }
+:root:not([data-theme="light"]) body:is([data-ui="basico"], [data-ui="completo"]) :is(.ab-capa-k, .ab-capa-s) { color: rgba(255, 255, 255, .72) !important; }
+:root:not([data-theme="light"]) body:is([data-ui="basico"], [data-ui="completo"]) :is(.ab-capa-n, .ab-capa-n.neg) { color: #8FB4FF !important; text-shadow: 0 0 22px rgba(47, 107, 255, .6) !important; }
+:root:not([data-theme="light"]) body:is([data-ui="basico"], [data-ui="completo"]) .ab-marca, :root:not([data-theme="light"]) body:is([data-ui="basico"], [data-ui="completo"]) .ab-marca .marca-s { color: #fff; }
+:root:not([data-theme="light"]) body:is([data-ui="basico"], [data-ui="completo"]) .ab-capa-ver { color: #fff !important; background: rgba(255, 255, 255, .1) !important; border-color: rgba(255, 255, 255, .2) !important; }
+:root:not([data-theme="light"]) body:is([data-ui="basico"], [data-ui="completo"]) .ab-vivo { background: rgba(255, 255, 255, .07) !important; border-color: rgba(255, 255, 255, .14) !important; color: #fff; }
 /* ===== Globo do App no tema claro, no jeito Apple: aura azul atrás do globo sobre branco perolado, joia de cristal azul, vidro fosco nativo ===== */
-:root[data-theme="light"] body[data-ui="basico"] .ab { --ab-ink: #0F172A; --ab-ink-2: #475569; --ab-ink-3: #94A3B8; color: #0F172A;
+:root[data-theme="light"] body:is([data-ui="basico"], [data-ui="completo"]) .ab { --ab-ink: #0F172A; --ab-ink-2: #475569; --ab-ink-3: #94A3B8; color: #0F172A;
   background: radial-gradient(48% 34% at 50% 52%, #DBEAFE 0%, rgba(219, 234, 254, 0) 100%), radial-gradient(60% 40% at 22% 24%, #E0F2FE 0%, rgba(224, 242, 254, 0) 100%),
     radial-gradient(55% 40% at 80% 34%, #E0E7FF 0%, rgba(224, 231, 255, 0) 100%), radial-gradient(70% 50% at 50% 40%, rgba(219, 234, 254, .7) 0%, rgba(248, 250, 252, 0) 100%), #F8FAFC !important; }
-:root[data-theme="light"] body[data-ui="basico"] :is(.ab-capa-t, .ab-tit) { color: #0F172A !important; -webkit-text-fill-color: #0F172A !important; text-shadow: none !important; }
-:root[data-theme="light"] body[data-ui="basico"] :is(.ab-capa-k, .ab-capa-s, .ab-saud) { color: #475569 !important; }
-:root[data-theme="light"] body[data-ui="basico"] :is(.ab-capa-n, .ab-capa-n.neg) { color: #0F172A !important; text-shadow: none !important; }
-:root[data-theme="light"] body[data-ui="basico"] .ab-marca, :root[data-theme="light"] body[data-ui="basico"] .ab-marca .marca-s { color: #0F172A; }
-:root[data-theme="light"] body[data-ui="basico"] .ab-vivo { background: rgba(255, 255, 255, .72) !important; border: 1px solid rgba(255, 255, 255, .9) !important; box-shadow: 0 10px 30px -14px rgba(37, 99, 235, .25) !important; color: #0F172A; -webkit-backdrop-filter: blur(20px) saturate(1.6); backdrop-filter: blur(20px) saturate(1.6); }
-:root[data-theme="light"] body[data-ui="basico"] .ab-vivo :is(small, .ab-desde, p) { color: #475569 !important; }
-:root[data-theme="light"] body[data-ui="basico"] .ab-vivo .ab-pill { color: #DC2626; background: rgba(239, 68, 68, .1); border: 0; }
-:root[data-theme="light"] body[data-ui="basico"] .ab-vivo .ab-pill i { background: #EF4444; box-shadow: 0 0 0 3px rgba(239, 68, 68, .15); }
+:root[data-theme="light"] body:is([data-ui="basico"], [data-ui="completo"]) :is(.ab-capa-t, .ab-tit) { color: #0F172A !important; -webkit-text-fill-color: #0F172A !important; text-shadow: none !important; }
+:root[data-theme="light"] body:is([data-ui="basico"], [data-ui="completo"]) :is(.ab-capa-k, .ab-capa-s, .ab-saud) { color: #475569 !important; }
+:root[data-theme="light"] body:is([data-ui="basico"], [data-ui="completo"]) :is(.ab-capa-n, .ab-capa-n.neg) { color: #0F172A !important; text-shadow: none !important; }
+:root[data-theme="light"] body:is([data-ui="basico"], [data-ui="completo"]) .ab-marca, :root[data-theme="light"] body:is([data-ui="basico"], [data-ui="completo"]) .ab-marca .marca-s { color: #0F172A; }
+:root[data-theme="light"] body:is([data-ui="basico"], [data-ui="completo"]) .ab-vivo { background: rgba(255, 255, 255, .72) !important; border: 1px solid rgba(255, 255, 255, .9) !important; box-shadow: 0 10px 30px -14px rgba(37, 99, 235, .25) !important; color: #0F172A; -webkit-backdrop-filter: blur(20px) saturate(1.6); backdrop-filter: blur(20px) saturate(1.6); }
+:root[data-theme="light"] body:is([data-ui="basico"], [data-ui="completo"]) .ab-vivo :is(small, .ab-desde, p) { color: #475569 !important; }
+:root[data-theme="light"] body:is([data-ui="basico"], [data-ui="completo"]) .ab-vivo .ab-pill { color: #DC2626; background: rgba(239, 68, 68, .1); border: 0; }
+:root[data-theme="light"] body:is([data-ui="basico"], [data-ui="completo"]) .ab-vivo .ab-pill i { background: #EF4444; box-shadow: 0 0 0 3px rgba(239, 68, 68, .15); }
 
 /* ===== Minha carteira: Classes, Produtos e Ativos; barra fina de peso em cada grupo; movimentações do ativo em janela ===== */
 .bas-ct-vis { display: flex; width: 100%; margin: 0 0 14px; }
@@ -4279,22 +4279,22 @@ body[data-ui="basico"] .bas-sm2-v input { width: 100%; min-width: 0; max-width: 
 :root[data-theme="light"] .bas-voz-orb { box-shadow: inset 0 2px 0 rgba(255, 255, 255, .6), inset 0 -8px 16px rgba(3, 6, 31, .3), 0 0 0 6px #EDF1FA, 0 16px 34px -10px rgba(20, 40, 245, .7); }
 :root[data-theme="light"] .bas-iax-voz { color: #1428F5; background: color-mix(in srgb, #3B6CFF 12%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, #3B6CFF 22%, transparent); }
 /* globo no App: ano, olho e o cartão Ao vivo em vidro, como os botões */
-body[data-ui="basico"] .ab .ab-ano, body[data-ui="basico"] .ab .ab-olho, body[data-ui="basico"] .ab .ab-vivo {
+body:is([data-ui="basico"], [data-ui="completo"]) .ab .ab-ano, body:is([data-ui="basico"], [data-ui="completo"]) .ab .ab-olho, body:is([data-ui="basico"], [data-ui="completo"]) .ab .ab-vivo {
   -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); border: 0 !important;
   background: radial-gradient(90% 70% at 30% 0%, rgba(255, 255, 255, .16), transparent 65%), linear-gradient(155deg, rgba(255, 255, 255, .13), rgba(255, 255, 255, .04) 55%, rgba(255, 255, 255, .08)) !important;
   box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, .42), inset 0 0 0 .5px rgba(255, 255, 255, .22), inset 0 -10px 18px -12px rgba(140, 170, 255, .35), 0 12px 28px -14px rgba(0, 0, 0, .7) !important; }
 /* capa do globo no App: sem anel de foco em volta do botão azul; "Ver o meu universo" no mesmo vidro */
-body[data-ui="basico"] .ab .ab-capa-entrar, body[data-ui="basico"] .ab .ab-capa-entrar:focus, body[data-ui="basico"] .ab .ab-capa-entrar:focus-visible { outline: none !important; box-shadow: 0 14px 30px -14px rgba(20, 40, 245, .8) !important; }
-body[data-ui="basico"] .ab .ab-capa-ver { color: #fff !important; border: 0 !important; outline: none !important; -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+body:is([data-ui="basico"], [data-ui="completo"]) .ab .ab-capa-entrar, body:is([data-ui="basico"], [data-ui="completo"]) .ab .ab-capa-entrar:focus, body:is([data-ui="basico"], [data-ui="completo"]) .ab .ab-capa-entrar:focus-visible { outline: none !important; box-shadow: 0 14px 30px -14px rgba(20, 40, 245, .8) !important; }
+body:is([data-ui="basico"], [data-ui="completo"]) .ab .ab-capa-ver { color: #fff !important; border: 0 !important; outline: none !important; -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
   background: radial-gradient(90% 70% at 30% 0%, rgba(255, 255, 255, .16), transparent 65%), linear-gradient(155deg, rgba(255, 255, 255, .13), rgba(255, 255, 255, .04) 55%, rgba(255, 255, 255, .08)) !important;
   box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, .42), inset 0 0 0 .5px rgba(255, 255, 255, .22), inset 0 -10px 18px -12px rgba(140, 170, 255, .35), 0 12px 28px -14px rgba(0, 0, 0, .7) !important; }
 /* capa: "Ver o meu universo" com o mesmo vidro sempre (sem desfoque, que o iPhone liga e desliga na animação da capa) */
-body[data-ui="basico"] .ab .ab-capa-ver { -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+body:is([data-ui="basico"], [data-ui="completo"]) .ab .ab-capa-ver { -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
   background: radial-gradient(90% 80% at 30% 0%, rgba(255, 255, 255, .2), transparent 65%), linear-gradient(155deg, rgba(120, 150, 255, .26), rgba(40, 60, 160, .22) 55%, rgba(90, 120, 255, .24)) !important; }
-body[data-ui="basico"] .ab .ab-capa-ver::before, body[data-ui="basico"] .ab .ab-capa-ver::after { content: none !important; }
+body:is([data-ui="basico"], [data-ui="completo"]) .ab .ab-capa-ver::before, body:is([data-ui="basico"], [data-ui="completo"]) .ab .ab-capa-ver::after { content: none !important; }
 /* detalhe de um item do globo: vidro tingido pela cor dele e só o essencial */
-body[data-ui="basico"] .ab .ab-card { border: 0 !important; -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+body:is([data-ui="basico"], [data-ui="completo"]) .ab .ab-card { border: 0 !important; -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
   background: radial-gradient(90% 70% at 25% 0%, rgba(255, 255, 255, .16), transparent 65%), linear-gradient(155deg, color-mix(in srgb, var(--ab-cor, #3B6CFF) 34%, transparent), color-mix(in srgb, var(--ab-cor, #3B6CFF) 12%, rgba(10, 14, 40, .35))) !important;
   box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, .4), inset 0 0 0 .5px color-mix(in srgb, var(--ab-cor, #fff) 45%, transparent), 0 16px 32px -14px color-mix(in srgb, var(--ab-cor, #000) 60%, rgba(0, 0, 0, .6)) !important; }
-body[data-ui="basico"] .ab .ab-card > span:not(.ab-v) { display: none; }
-body[data-ui="basico"] .ab .ab-card .ab-zbtn { border: 0; color: #fff; background: rgba(255, 255, 255, .16); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35); }
+body:is([data-ui="basico"], [data-ui="completo"]) .ab .ab-card > span:not(.ab-v) { display: none; }
+body:is([data-ui="basico"], [data-ui="completo"]) .ab .ab-card .ab-zbtn { border: 0; color: #fff; background: rgba(255, 255, 255, .16); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35); }
