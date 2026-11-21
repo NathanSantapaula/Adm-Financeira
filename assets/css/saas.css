@@ -260,3 +260,22 @@
   html body .bas.sa[data-sa="perfil"] :is(.bas-secs, .bas-gt-folha) > * { grid-column: span 1 !important; }
   html body .bas.sa[data-sa="perfil"] :is(.bas-secs, .bas-gt-folha) > :is(h2, .bas-ch, .bas-pg-per, .bas-membro, .bas-mb) { grid-column: 1 / -1 !important; }
 }
+@media (min-width: 901px) {
+  /* sonho principal: anel à esquerda, ícone, nome e prazo à direita (vence a regra antiga das fotos) */
+  .sa2 .sa-c.sa-sonho .sa-sonho-b { flex-direction: row !important; align-items: center !important; justify-content: flex-start !important; min-height: 0 !important; height: auto !important; color: var(--sa-ink) !important; padding: 18px !important; }
+  .sa2 .sa-c.sa-sonho .sa-sonho-t { flex: 1; }
+  .sa2 .sa-c.sa-sonho .sa-sonho-t b { color: var(--sa-ink); }
+  .sa2 .sa-c.sa-sonho .sa-sonho-ic { width: 34px; height: 34px; margin-bottom: 4px; }
+  body[data-ui="completo"] .bas-ia-fab.sa-fab.alerta { animation: none; }
+}
+@media (min-width: 901px) {
+  /* listas dentro de cartões: linhas planas com divisória, sem cartão dentro de cartão */
+  .sa2 .sa-ativ { display: flex; flex-direction: column; gap: 0 !important; background: none !important; box-shadow: none !important; padding: 0 !important; }
+  .sa2 .sa-ativ > li, .sa2 .sa-ativ > li > button { background: none !important; box-shadow: none !important; border-radius: 12px !important; border: 0 !important; margin: 0 !important; }
+  .sa2 .sa-ativ > li + li { border-top: 1px solid var(--sa-borda) !important; border-radius: 0 !important; }
+  .sa2 .sa-ativ > li > button:hover { background: color-mix(in srgb, var(--sa-ink) 4%, transparent) !important; }
+  /* botão do Cifrão: a bola azul do App em qualquer tema */
+  html body[data-ui="completo"] .bas-ia-fab.sa-fab { background: radial-gradient(70% 45% at 50% 18%, rgba(140, 200, 255, .55), transparent 70%), linear-gradient(180deg, #3b6cff 0%, #1428f5 48%, #03061f 100%) !important;
+    box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .55), inset 0 2px 0 rgba(255, 255, 255, .45), 0 14px 30px -10px rgba(0, 10, 80, .65) !important; border: 0 !important; }
+}
+@media (min-width: 901px) { .sa2 .sa-sonho-ic .obj-ic { width: 100%; height: 100%; background: none !important; box-shadow: none !important; color: inherit !important; display: grid; place-items: center; } .sa2 .sa-sonho-ic .obj-ic svg { width: 20px; height: 20px; stroke: currentColor; } }
