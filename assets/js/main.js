@@ -23,7 +23,7 @@ function renderSide() {
   const mini = document.documentElement.classList.contains('side-mini');
   // topo da página (barra de vidro de ponta a ponta): à esquerda, foto e nome; depois período, assistente (com a busca), olho e globo; a marca fica no menu lateral
   const htAntes = $('#topo .htools'); // olho, globo e período movidos pelo render() (renderSide sozinho, no redimensionar, não os perde)
-  $('#topo').innerHTML = `<span class="topo-marca">${logoMarca()}</span><nav class="topo-nav" aria-label="Seções">${navAgrupado(items.filter((i) => i[0] !== 'rendas'), ([k, l]) => btn([k, SA_NOME[k] || l]))}</nav><button class="topo-eu" data-act="nav" data-view="perfil" aria-label="Abrir o seu perfil e o painel" title="${esc(nome)} · ${esc(planLabel())}">${avatarHtml(S.profile)}<span class="topo-eu-t"><b>${esc(nome)}</b><small>${esc(planLabel())}</small></span><svg class="topo-eu-v" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><div class="topo-r"><div class="topo-ic"><button class="sa-ia" ${basIr('ia')} aria-label="Cifrão Intelligence" title="Cifrão Intelligence">${IA_ICONE}<b>Cifrão Intelligence</b>${basAvisosNovos() ? `<em>${basAvisosNovos()}</em>` : ''}</button></div></div>`;
+  $('#topo').innerHTML = `<span class="topo-marca">${logoMarca()}</span><nav class="topo-nav" aria-label="Seções">${navAgrupado(items.filter((i) => i[0] !== 'rendas'), ([k, l]) => btn([k, SA_NOME[k] || l]))}</nav><button class="topo-eu" data-act="nav" data-view="perfil" aria-label="Abrir o seu perfil e o painel" title="${esc(nome)} · ${esc(planLabel())}">${avatarHtml(S.profile)}<span class="topo-eu-t"><b>${esc(nome)}</b><small>${esc(planLabel())}</small></span><svg class="topo-eu-v" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><div class="topo-r"><div class="topo-ic"><button class="sa-cal" ${basIr('periodo')} aria-label="Período" title="Período: ${esc(basJanRot())} ${S.year}">${I_CAL}</button>${olhoHtml()}</div></div>`;
   if (htAntes) $('#topo .topo-r').prepend(htAntes);
   $('#side').innerHTML = `<div class="brand"><span class="brand-full">${logoMarca()}</span><span class="brand-mini" aria-hidden="true">${LOGO}</span>
       <button class="side-tog" data-act="side-toggle" aria-expanded="${!mini}" aria-label="${mini ? 'Expandir o menu' : 'Recolher o menu'}" title="${mini ? 'Expandir o menu' : 'Recolher o menu'}">${I.chev}</button></div>
@@ -45,7 +45,8 @@ function viewHtml() {
   if (SA_VISTA[S.view]) { // SaaS no jeito do App: a aba é a tela do App num layout largo; telas internas abrem na folha ao lado
     let corpo; try { corpo = SA_VISTA[S.view](); } catch (e) { console.error(e); corpo = '<div class="bas-falha"><b>Algo não carregou direito</b></div>'; }
     const t = basTopoPilha(); const f = t && BAS_TELAS[t.t];
-    return `<div class="bas sa" data-aba="${SA_ABA[S.view]}" data-sa="${S.view}">${corpo}</div>${f ? `<div class="sa-veu" data-act="bas-voltar" aria-hidden="true"></div><div class="bas bas-tela sa-folha" data-t="${t.t}" role="dialog" aria-modal="true">${f(t)}</div>` : ''}`;
+    const av = basAvisosNovos(); const fab = `<button class="bas-ia-fab sa-fab${av ? ' alerta' : ''}" data-act="bas-ia-fab" aria-label="Cifrão Intelligence${av ? `: ${av} avisos novos` : ''}"><span class="cifrao" aria-hidden="true"></span>${av ? `<em>${av}</em>` : ''}</button>`;
+    return `${fab}<div class="bas sa" data-aba="${SA_ABA[S.view]}" data-sa="${S.view}">${corpo}</div>${f ? `<div class="sa-veu" data-act="bas-voltar" aria-hidden="true"></div><div class="bas bas-tela sa-folha" data-t="${t.t}" role="dialog" aria-modal="true">${f(t)}</div>` : ''}`;
   }
   if (PAT_ABAS.includes(S.view)) { S.patUlt = S.view; return patAbasHtml() + viewHtmlAba(); }
   return viewHtmlAba();

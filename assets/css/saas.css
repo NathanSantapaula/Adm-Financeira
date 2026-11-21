@@ -197,3 +197,43 @@
 @media (prefers-reduced-motion: reduce) { .sa2 .sa-ln-p { animation: none; } }
 @media (min-width: 901px) { .sa2 .sa-ln svg :is(path, polygon):not(.sa-ln-l) { stroke: none; } .sa2 .sa-ln svg polyline.sa-ac-b { fill: none; } }
 @media (min-width: 901px) { .sa2 .sa-col .sa-br-m.meta .sa-br-p i { background: linear-gradient(180deg, #8af0a8, #30d158) !important; opacity: 1 !important; } }
+
+/* rodada 2: Cifrão no canto, topo só com calendário e olho, cartões dentro da folha, mesma altura em todas as abas, pílulas em vidro */
+@media (min-width: 901px) {
+  body[data-ui="completo"] .bas-ia-fab.sa-fab { position: fixed; left: auto; top: auto; right: 28px; bottom: 28px; translate: none; z-index: 55; width: 66px; height: 66px; --cif-size: 46px; overflow: visible; }
+  body[data-ui="completo"] .sa-fab em { position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px; background: #ff453a; color: #fff; font-style: normal; font-size: 11px; font-weight: 700; display: grid; place-items: center; box-shadow: 0 0 0 2px var(--bg); }
+  html body[data-ui="completo"][data-screen="app"] .topo-r > .htools { display: none !important; }
+  html body[data-ui="completo"][data-screen="app"] .topo-r .topo-ic { display: flex; gap: 8px; }
+  html body[data-ui="completo"][data-screen="app"] .topo :is(.sa-cal, .olho) { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; cursor: pointer;
+    background: radial-gradient(120% 90% at 20% 0%, rgba(255, 255, 255, .34), rgba(255, 255, 255, 0) 55%), linear-gradient(180deg, rgba(255, 255, 255, .2), rgba(255, 255, 255, .07)) !important;
+    border: 1px solid rgba(255, 255, 255, .28) !important; color: #fff !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55), 0 8px 24px -12px rgba(3, 6, 31, .6) !important; -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
+  html body[data-ui="completo"][data-screen="app"] .topo .sa-cal svg { width: 18px; height: 18px; }
+
+  .sa2 .sa-hero { min-height: 300px; padding: 30px 0 46px; align-items: center; }
+  .sa2 .sa-hero-d { align-self: center; }
+  .sa2 .sa-folha2 { padding-top: 26px; }
+  .sa2 .sa-grid { top: 0; margin-bottom: 0; }
+
+  /* pílulas de ação em Liquid Glass (as do App) */
+  .sa2 .sa-pl { background: radial-gradient(120% 100% at 20% 0%, rgba(255, 255, 255, .42), rgba(255, 255, 255, 0) 60%), linear-gradient(180deg, rgba(255, 255, 255, .24), rgba(255, 255, 255, .08)); color: #fff;
+    border: 1px solid rgba(255, 255, 255, .32); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .6), inset 0 -1px 0 rgba(255, 255, 255, .1), 0 10px 26px -14px rgba(3, 6, 31, .7); -webkit-backdrop-filter: blur(18px) saturate(1.6); backdrop-filter: blur(18px) saturate(1.6); }
+  .sa2 .sa-pl:hover { background: radial-gradient(120% 100% at 20% 0%, rgba(255, 255, 255, .5), rgba(255, 255, 255, 0) 60%), linear-gradient(180deg, rgba(255, 255, 255, .32), rgba(255, 255, 255, .12)); }
+  .sa2 .sa-lk, .sa2 .sa-c-acs .btn:not(.primary) { background: linear-gradient(180deg, color-mix(in srgb, var(--sa-ink) 6%, transparent), color-mix(in srgb, var(--sa-ink) 2%, transparent)); box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 40%, transparent); }
+
+  /* sonho principal sem foto: anel, ícone do tipo e os números */
+  .sa2 .sa-sonho { padding: 20px 22px 22px; }
+  .sa2 .sa-sonho > .sa-c-h { display: flex; }
+  .sa2 .sa-sonho-b { min-height: 0; height: auto; flex-direction: row; align-items: center; justify-content: flex-start; gap: 18px; padding: 16px; border-radius: 18px; color: var(--sa-ink);
+    background: linear-gradient(135deg, color-mix(in srgb, var(--sa-azul) 14%, transparent), color-mix(in srgb, var(--sa-azul) 4%, transparent)); }
+  .sa2 .sa-sonho-t { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+  .sa2 .sa-sonho-t b { font-size: 18px; letter-spacing: -.02em; } .sa2 .sa-sonho-t small { font-size: 12.5px; color: var(--sa-ink2); opacity: 1; }
+  .sa2 .sa-sonho-ic { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: color-mix(in srgb, var(--sa-azul) 16%, transparent); color: var(--sa-azul); }
+  .sa2 .sa-sonho-ic :is(svg, .obj-ic) { width: 22px; height: 22px; }
+  .sa2 .sa-sn > button:not(.sa-sn-novo) { background: radial-gradient(120% 90% at 100% 0%, rgba(120, 170, 255, .45), transparent 60%), linear-gradient(160deg, #2f6bff, #1428f5 55%, #0b1a8a); }
+  .sa2 .sa-sn .sa-sonho-ic { background: rgba(255, 255, 255, .18); color: #fff; margin-bottom: auto; }
+
+  /* folha lateral das telas do App: mais larga, no fundo da página, cantos do App */
+  .sa-folha { width: min(500px, calc(100vw - 24px)); padding: 0 16px 16px; background: var(--bg); border: 1px solid var(--sa-borda, transparent); }
+  .sa-folha > :first-child { margin-top: 0; }
+}
+@media (min-width: 901px) { html body[data-ui="completo"][data-screen="app"] .topo .sa-cal svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; } }
