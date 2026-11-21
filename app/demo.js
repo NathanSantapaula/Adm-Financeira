@@ -2,7 +2,7 @@
    Dois anos de rendas, gastos do dia a dia, contas fixas, investimentos, proventos e sonhos, para ver todos os widgets com valores. */
 if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
   window.FP_CONFIG.supabase = null;
-  if (localStorage.getItem('fp:demo') !== '3') {
+  if (localStorage.getItem('fp:demo') !== '4') {
     let sd = 7; const rnd = () => ((sd = (sd * 9301 + 49297) % 233280) / 233280); // sempre os mesmos números
     const z = () => Array(12).fill(0); const ate = (ano) => (ano === 2026 ? 10 : 11); // 2026 vai até novembro
     const id = (() => { let n = 0; return () => 'x' + (n++); })();
@@ -24,14 +24,14 @@ if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname)) {
         { nome: 'IVVB11', tipo: 'ETF', classe: 'Exterior', ap: ap(500, 0.8) }, { nome: 'ITSA4', tipo: 'Ação', classe: 'Ações', ap: ap(400, 0.9) }, { nome: 'BBAS3', tipo: 'Ação', classe: 'Ações', ap: ap(300, 0.9) },
         { nome: 'HGLG11', tipo: 'FII', classe: 'Fundos Imobiliários', ap: ap(450, 0.7) }, { nome: 'MXRF11', tipo: 'FII', classe: 'Fundos Imobiliários', ap: ap(250, 0.7) }]
         .map((a) => Object.assign({ id: id(), pr: v(() => (a.classe === 'Fundos Imobiliários' ? 40 + Math.round(rnd() * 60) : a.classe === 'Ações' ? (rnd() > 0.6 ? 30 + Math.round(rnd() * 50) : 0) : 0)) }, a));
-      return { v: 2, year: ano, rendas, despesas, ativos, lancamentos: L, orcamento: z(), metasAporte: Array(12).fill(null), settings: { metaAporte: 3500, metaInvAno: 42000, orcPadrao: 9500, patrimonioInicial: null } };
+      return { v: 2, year: ano, rendas, despesas, ativos, lancamentos: L, orcamento: Array(12).fill(null), metasAporte: Array(12).fill(null), settings: { metaAporte: 3500, metaInvAno: 42000, orcPadrao: 9500, patrimonioInicial: null } };
     };
     localStorage.setItem('fp:user', JSON.stringify({ id: 'local', email: 'demo@cifrao.local', nome: 'Nathan' }));
     localStorage.setItem('fp:profile', JSON.stringify({ nome: 'Nathan', onboarded: true, anoRef: 2025, patrimonioInicial: 120000, patrimonioAno: 2025, rendaMensal: 11800, instituicoes: ['xp', 'nubank', 'itau', 'ifood'],
-      objetivos: [{ id: 'o1', tipo: 'viagem', nome: 'Japão em família', valor: 45000, ano: 2027, modo: 'fatia', fatia: 40 }, { id: 'o2', tipo: 'imovel', nome: 'Entrada do apartamento', valor: 180000, ano: 2030, modo: 'fatia', fatia: 60 }],
+      objetivos: [{ id: 'o1', tipo: 'viagem', nome: 'Japão em família', valor: 45000, ano: 2027, modo: 'fatia', pct: 40 }, { id: 'o2', tipo: 'imovel', nome: 'Entrada do apartamento', valor: 180000, ano: 2030, modo: 'fatia', pct: 60 }],
       objetivoFoco: 'o1', limites: {} }));
     localStorage.setItem('fp:plan:2025', JSON.stringify(plano(2025)));
     localStorage.setItem('fp:plan:2026', JSON.stringify(plano(2026)));
-    localStorage.setItem('fp:demo', '3');
+    localStorage.setItem('fp:demo', '4');
   }
 }

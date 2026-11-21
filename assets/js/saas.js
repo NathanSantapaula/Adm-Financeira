@@ -13,14 +13,14 @@ const saSoma = (a) => a.reduce((s, v) => s + (+v || 0), 0);
 
 /* ---------- gráficos em SVG (largura pela viewBox, texto em HTML para não esticar) ---------- */
 // linha com área em degradê; meses futuros não aparecem; o último ponto pulsa
-function saLinha(vals, ate, id) {
-  const W = 600, H = 190, P = 6; const vs = vals.slice(0, ate + 1); const mx = Math.max(...vs, 1) * 1.08; const mn = Math.min(...vs) * 0.92;
+function saLinha(vals, ate, id, ref) {
+  const W = 600, H = 190, P = 6; const vs = vals.slice(0, ate + 1); const todos = ref ? vs.concat(ref) : vs; const mx = Math.max(...todos, 1) * 1.08; const mn = Math.min(...todos) * 0.92;
   const x = (i) => P + (i * (W - 2 * P)) / 11; const y = (v) => H - P - ((v - mn) / (mx - mn || 1)) * (H - 2 * P);
   const pts = vs.map((v, i) => [x(i), y(v)]); const d = curvaSaas(pts);
   const ult = pts[pts.length - 1] || [0, H];
   return `<div class="sa-ln"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--bas-azul, #0A84FF)" stop-opacity=".35"/><stop offset="1" stop-color="var(--bas-azul, #0A84FF)" stop-opacity="0"/></linearGradient></defs>
       ${[0.25, 0.5, 0.75].map((f) => `<line x1="0" x2="${W}" y1="${H * f}" y2="${H * f}" class="sa-grade"/>`).join('')}
-      <path d="${d} L${ult[0]},${H} L${P},${H} Z" fill="url(#${id})"/><path d="${d}" class="sa-ln-l" vector-effect="non-scaling-stroke"/></svg>
+      <path d="${d} L${ult[0]},${H} L${P},${H} Z" fill="url(#${id})"/><path d="${d}" class="sa-ln-l" vector-effect="non-scaling-stroke"/>${ref ? `<path d="${curvaSaas(ref.map((v, i) => [x(i), y(v)]))}" class="sa-ln-ref" vector-effect="non-scaling-stroke"/>` : ''}</svg>
     <i class="sa-ln-p" style="left:${(ult[0] / W) * 100}%;top:${(ult[1] / H) * 100}%"></i>
     <div class="sa-ln-hit">${vs.map((v, i) => `<span style="--x:${(pts[i][0] / W) * 100}%;--y:${(pts[i][1] / H) * 100}%"><b>${esc(cap(MES_LONGO[i]))}<em>${esc(brl0(v))}</em></b></span>`).join('')}</div>
     <div class="sa-eixo">${MES.map((n, i) => `<span${i === ate ? ' class="on"' : ''}>${n}</span>`).join('')}</div></div>`;
@@ -80,6 +80,8 @@ document.addEventListener('input', (e) => { const i = e.target.closest && e.targ
 document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('[data-sa-ord]'); if (!b) return; const tb = b.closest('[data-sa-tb]'); const k = 'o' + b.dataset.saOrd;
   const dir = b.dataset.dir === 'desc' ? 'asc' : 'desc'; tb.querySelectorAll('[data-sa-ord]').forEach((x) => delete x.dataset.dir); b.dataset.dir = dir; const corpo = tb.querySelector('tbody'); const rs = [...corpo.rows];
   const num = rs.every((r) => r.dataset[k] !== '' && !isNaN(+r.dataset[k])); rs.sort((a, c) => { const x = a.dataset[k], y = c.dataset[k]; const r = num ? (+x) - (+y) : x.localeCompare(y, 'pt-BR'); return dir === 'asc' ? r : -r; }).forEach((r) => corpo.appendChild(r)); });
+document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('[data-sa-alt]'); if (!b) return; const c = b.closest('.sa-c'); const k = b.dataset.saAlt; const v = b.dataset.v;
+  if (v != null) { c.dataset[k] = v; c.querySelectorAll(`[data-sa-alt="${k}"]`).forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.v === v))); } else { const on = c.toggleAttribute('data-' + k); b.setAttribute('aria-pressed', String(on)); } });
 const saInstNome = (k) => (INSTITUICOES.find((x) => x.id === k) || { nome: k || '' }).nome;
 function saLancLinhas(L) { return L.map((l) => { const d = E.parseDataISO(l.data); return { attrs: basIr('gasto-ver', { id: l.id }), txt: `${l.desc} ${l.area} ${saInstNome(l.inst)}`,
   cel: [`<span class="sa-dt">${pad2(d.dia)}/${pad2(d.mes + 1)}</span>`, `<b class="sa-tx">${esc(l.desc || l.area || '')}</b>`, `<span class="sa-cat">${esc(l.area || 'Outros')}</span>`, l.inst ? `<span class="sa-bco">${instIcone(l.inst)}${esc(saInstNome(l.inst))}</span>` : '<span class="sa-tag">—</span>', `<b>${basCent(Math.abs(l.valor))}</b>`],
@@ -98,35 +100,67 @@ const saHero = (esq, dir) => `<section class="sa-hero"><div class="sa-hero-e">${
 const saFerr = () => `<div class="sa-ferr"><button class="sa-per" ${basIr('periodo')}>${typeof I_CAL !== 'undefined' ? I_CAL : ''}<span>${esc(basJanRot())} ${S.year}</span></button>${olhoHtml()}</div>`;
 const saVar = (d, txt) => `<span class="sa-var ${d >= 0 ? 'pos' : 'neg'}">${d >= 0 ? '↑' : '↓'} ${txt}</span>`;
 
-/* ---------- Início: como estou e o que faço agora ---------- */
+/* ---------- Início: a organização da Visão geral antiga, no visual novo ----------
+   1) patrimônio estimado (com o ritmo da meta) e o próximo objetivo; 2) quatro indicadores; 3) proventos e composição; 4) ano a ano e orçamento */
+const saInd = (rot, val, sub, f, tom, chip) => `<div class="sa-c sa-ind w3"><small>${rot}</small><b class="${tom || ''}">${val}${chip || ''}</b>${f != null ? `<span class="sa-ind-b ${tom || ''}"><i style="width:${Math.min(100, Math.max(0, f) * 100).toFixed(1)}%"></i></span>` : ''}<p>${sub}</p></div>`;
+const SA_ORC = { pos: 'Dentro', warn: 'Perto', neg: 'Acima', sem: 'Sem orçamento' };
+function saOrc(ate) { // gasto de cada mês colorido pela situação do orçamento, com a marca do orçado
+  const C = S.C; const mx = Math.max(...C.despesas.slice(0, ate + 1), ...C.orcamento.slice(0, ate + 1), 1) * 1.05;
+  return `<div class="sa-br sa-col sa-orc">${C.despesas.slice(0, ate + 1).map((v, i) => { const o = C.orcamento[i] || 0; const st = orcSit(i);
+    return `<button class="sa-br-m ${st}${i === ate ? ' on' : ''}"><em class="sa-tip"><b>${esc(cap(MES_LONGO[i]))}</b><span>Gastou ${esc(brl0(v))}</span><span>${o > 0 ? `Orçado ${esc(brl0(o))}` : 'Sem orçamento'}</span></em>
+      <span class="sa-br-p"><i style="height:${(v / mx) * 100}%"></i>${o > 0 ? `<u style="bottom:${(o / mx) * 100}%"></u>` : ''}</span><small>${MES[i]}</small></button>`; }).join('')}</div>`;
+}
+function saAnoAno() { // fim de cada ano, encadeado a partir do diagnóstico; com um ano só, o começo e agora
+  const H = histDados(); const C = S.C; const ult = S.year === NOW_Y ? NOW_M : 11;
+  const anos = (H.anos || []).filter((l) => l.preenchido).slice(-5);
+  const pts = anos.length > 1 ? anos.map((l) => ({ k: l.ano === NOW_Y ? 'Hoje' : String(l.ano), v: l.patrimonioFim, ano: l.ano }))
+    : [{ k: `Início de ${S.year}`, v: +C.patrimonioBase || 0 }, { k: 'Hoje', v: C.patrimonio[ult] || 0, ano: S.year }];
+  const W = 600, H2 = 170; const vs = pts.map((q) => q.v); const mn = Math.min(...vs), mx = Math.max(...vs); const fo = (mx - mn) * 0.25 || mx * 0.1 || 1;
+  const P = pts.map((q, k) => [24 + (k / Math.max(1, pts.length - 1)) * (W - 48), H2 - 12 - ((q.v - (mn - fo)) / ((mx + fo) - (mn - fo))) * (H2 - 28)]); const d = curvaSaas(P);
+  return `<div class="sa-ln sa-aa"><svg viewBox="0 0 ${W} ${H2}" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="sa-g-aa" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--bas-azul, #0A84FF)" stop-opacity=".3"/><stop offset="1" stop-color="var(--bas-azul, #0A84FF)" stop-opacity="0"/></linearGradient></defs>
+      ${P.slice(1, -1).map((q) => `<line x1="${q[0]}" x2="${q[0]}" y1="0" y2="${H2}" class="sa-grade"/>`).join('')}<path d="${d} L${P[P.length - 1][0]},${H2} L${P[0][0]},${H2} Z" fill="url(#sa-g-aa)"/><path d="${d}" class="sa-ln-l" vector-effect="non-scaling-stroke"/></svg>
+      ${P.map((q, k) => `<i class="sa-aa-p${k === P.length - 1 ? ' fim' : ''}" style="left:${(q[0] / W) * 100}%;top:${(q[1] / H2) * 100}%"></i>`).join('')}</div>
+    <ul class="sa-aa-anos" style="--n:${pts.length}">${pts.map((q, k) => { const a = k ? pts[k - 1].v : 0; const dv = k && a > 0 ? (q.v - a) / a : null;
+      return `<li class="${k === pts.length - 1 ? 'on' : ''}">${q.ano ? `<button ${basIr('ano-hist', { id: q.ano })}>` : '<span>'}<small>${esc(q.k)}</small><b>${tickFmt(q.v)}</b>${dv != null ? `<em class="${dv >= 0 ? 'pos' : 'neg'}">${dv >= 0 ? '+' : '−'}${pct(Math.abs(dv))}</em>` : ''}${q.ano ? '</button>' : '</span>'}</li>`; }).join('')}</ul>`;
+}
 function saInicio() {
   const C = S.C; const m = saMes(); const p = C.patrimonio[m] || 0; const ant = m > 0 ? C.patrimonio[m - 1] : C.patrimonioBase || p; const dv = p - ant;
-  const ent = C.receita[m] || 0; const sai = C.despesas[m] || 0; const sob = ent - sai;
-  const D = E.disponivelAporte({ C, mes: m, metaMes: C.metaAporteMes }); const meta = C.metaAporteMes[m] || 0;
-  const g = objFoco(objAnalise()); const areas = saAreasMes(m); const totA = saSoma(areas.map((a) => a[1]));
-  const ac = saAcum(m); const av = notifLista().filter((n) => !n.lida).slice(0, 3);
+  const base = +C.patrimonioBase || 0; const A = objAnalise(); const g = objFoco(A);
   const hero = saHero(`<small class="sa-k">Patrimônio total · ${esc(saMesNome())}</small><b class="sa-v">${basCent(p)}</b>
       <div class="sa-lin">${saVar(dv, `${brl0(Math.abs(dv))} no mês`)}<span class="sa-lin-t">${ant ? `${(dv / ant * 100).toFixed(1).replace('.', ',')}% desde ${esc(MES_LONGO[Math.max(0, m - 1)])}` : ''}</span></div>${saAcoes()}`, '');
-  const sobA = C.receita.map((r, i) => r - C.despesas[i]);
-  const kpis = `<div class="sa-kpis w12">${saKpi('Patrimônio', brl0(p), saVarMes(C.patrimonio, m), saUlt6(C.patrimonio, m))}${saKpi(`Entrou em ${esc(saMesNome())}`, brl0(ent), saVarMes(C.receita, m), saUlt6(C.receita, m))}
-    ${saKpi(`Saiu em ${esc(saMesNome())}`, brl0(sai), saVarMes(C.despesas, m), saUlt6(C.despesas, m), false)}${saKpi('Sobrou', brl0(sob), saVarMes(sobA, m), saUlt6(sobA, m), true, ent > 0 ? `${Math.round((sob / ent) * 100)}% da renda` : '')}
-    ${saKpi('Dá para investir', brl0(D.disponivel), null, [], true, meta > 0 ? `meta ${brl0(meta)}` : '')}</div>`;
-  const cards = [kpis,
-    saCard('w8', 'Evolução do patrimônio', saLk(basIr('historico'), 'Histórico'), `<div class="sa-c-n"><b>${brl0(p)}</b>${saVar(p - (C.patrimonioBase || 0), `${brl0(Math.abs(p - (C.patrimonioBase || 0)))} em ${S.year}`)}</div>${saLinha(C.patrimonio, m, 'sa-g-patr')}`),
-    saCard('w4 sa-disp', 'Dá para investir', '', `<div class="sa-disp-c">${saAnel(meta > 0 ? (D.aportado || 0) / meta : 0, meta > 0 ? saPct((D.aportado || 0) / meta) : '—')}
-        <div><b class="sa-big">${basCent(D.disponivel)}</b><small>${meta > 0 ? `Meta do mês ${brl0(meta)} · investido ${brl0(D.aportado || 0)}` : 'Sem meta definida para o mês'}</small></div></div>
-      <div class="sa-c-acs"><button class="btn primary" ${basIrInv()}>${I_APLICAR}Investir agora</button>${saLk(basIr('meta'), 'Meta')}</div>`),
-    saCard('w7 sa-escuro', 'Entradas x gastos', `<span class="sa-tag">${S.year}</span>`, `${saBarras(C.receita, C.despesas, m, ['Entrou', 'Saiu'])}
-      <footer class="sa-leg"><span><i class="cheia"></i>Entradas ${brl0(saSoma(C.receita.slice(0, m + 1)))}</span><span><i class="listra"></i>Gastos ${brl0(saSoma(C.despesas.slice(0, m + 1)))}</span></footer>`),
-    saCard('w5', 'Gastos do mês, dia a dia', `<span class="sa-tag">${ac.antes != null ? (ac.este <= ac.antes ? 'Abaixo do mês passado' : 'Acima do mês passado') : ''}</span>`, `${ac.svg}
-      <footer class="sa-leg"><span><i class="cheia"></i>${esc(cap(saMesNome()))} ${brl0(ac.este)}</span>${ac.antes != null ? `<span><i class="tracejado"></i>Mesmo dia em ${esc(MES_LONGO[m - 1])} ${brl0(ac.antes)}</span>` : ''}</footer>`),
-    g ? saCard('w4 sa-sonho', 'Seu sonho principal', saLk(basIr('sonhos'), 'Sonhos'), `<button class="sa-sonho-b" ${basIr('sonho-det', { id: g.id })}>${saAnel(g.progresso || 0, saPct(g.progresso || 0))}<span class="sa-sonho-t"><span class="sa-sonho-ic">${objIcone(g, 0)}</span><b>${esc(objNomeDe(g))}</b><small>${g.ano ? `Até ${g.ano}` : 'Sem prazo'}${g.status && BAS_OBJ_ST[g.status] ? ` · ${esc(BAS_OBJ_ST[g.status])}` : ''}</small></span></button>
-        <div class="sa-kv"><span>Guardado<b>${brl0(g.saldo)}</b></span><span>Falta<b>${brl0(Math.max(0, g.falta || 0))}</b></span></div>`)
-      : saCard('w4', 'Seu sonho', '', `<p class="sa-p">Dê um nome ao que você quer conquistar e veja quanto falta, mês a mês.</p><button class="btn primary" ${basIr('sonho-novo')}>${I_META}Criar meu sonho</button>`),
-    saCard('w4', 'Para onde foi o dinheiro', saLk('data-act="nav" data-view="despesas"', 'Gastos'), areas.length ? `<div class="sa-ro-w">${saRosca(saPartes(areas, 5), brl0(totA), esc(saMesNome()))}
-        <ul class="sa-lista">${saPartes(areas, 5).map(([n, v], i) => `<li><i style="background:${SA_CORES[i % 6]}"></i><span>${esc(n)}</span><b>${saPct(v / (totA || 1))}</b></li>`).join('')}</ul></div>` : `<p class="sa-p">Nenhum gasto em ${esc(saMesNome())}.</p>`),
-    saCard('w4 sa-ia-c', `<span class="cifrao sa-cif" data-volume aria-hidden="true"></span><span>Cifrão Intelligence</span>`, saLk(basIr('ia'), 'Abrir'), av.length ? `<ul class="sa-av">${av.map((n) => `<li><button ${basIr('ia', { aba: 'avisos' })}><i class="${esc(n.nivel || 'info')}"></i><span>${esc(n.titulo || '')}</span>${I.chev}</button></li>`).join('')}</ul>`
-      : `<p class="sa-p">Tudo em ordem por aqui. Pergunte qualquer coisa sobre o seu dinheiro.</p>`),
+  // 1) patrimônio estimado: a linha do ano e, num botão, o ritmo da meta (início do ano mais a meta de aporte acumulada)
+  let acc = base; const ritmo = C.metaAporteMes.map((v) => (acc += +v || 0)); const temMeta = saSoma(C.metaAporteMes) > 0;
+  const patr = saCard('w8 sa-patr', 'Patrimônio estimado', `<span class="sa-c-acs2">${temMeta ? `<button class="sa-lk sa-alt" data-sa-alt="meta" aria-pressed="false"><i class="sa-alt-t" aria-hidden="true"></i>Ritmo da meta</button>` : ''}${saLk(basIr('historico'), 'Histórico')}</span>`,
+    `<div class="sa-c-n"><b>${brl0(p)}</b>${saVar(p - base, `${base > 0 ? pct(Math.abs(p - base) / base) : brl0(Math.abs(p - base))} em ${S.year}`)}${temMeta ? `<span class="sa-lin-t sa-meta-t">no ritmo da meta: ${brl0(ritmo[m])} em ${esc(MES_LONGO[m])}</span>` : ''}</div>${saLinha(C.patrimonio, m, 'sa-g-patr', temMeta ? ritmo : null)}`);
+  // 1) próximo objetivo: o objeto 3D do App, o anel, quanto falta, a previsão, fichas para trocar e o "E se?"
+  const obj = !g ? saCard('w4 sa-obj vazio', 'Seu próximo objetivo', '', `<p class="sa-p">Imóvel, carro, viagem, filhos: dê um nome ao que você quer conquistar e acompanhe aqui.</p><button class="btn primary" ${basIr('sonho-novo')}>${I_META}Criar meu sonho</button>`)
+    : saCard('w4 sa-obj', 'Seu próximo objetivo', `<span class="sa-c-acs2">${g.status !== 'concluido' && g.valor > 0 && basPago() ? `<button class="sa-lk" ${basIr('simular', { id: g.id })}>E se?</button>` : ''}${saLk(basIr('sonhos'), 'Sonhos')}</span>`,
+      `<button class="sa-obj-palco" ${basIr('sonho-det', { id: g.id })} aria-label="Ver ${esc(objNomeDe(g))}"><span class="bas-o3 sa-o3" id="bas-o3" data-tipo="${esc(obj3dDe(g))}">${obj3dHtml(obj3dDe(g))}<span class="bas-o3-ic" aria-hidden="true">${objIcone(g, 0)}</span></span>${saAnel(g.progresso || 0, saPct(g.progresso || 0))}</button>
+      <div class="sa-obj-t"><b>${esc(objNomeDe(g))}</b><span class="sa-obj-f">${g.valor > g.saldo ? `Faltam ${brl0(g.valor - g.saldo)}` : 'Meta coberta'}</span><small>meta de ${brl0(g.valor)}${g.ano ? ` · ${g.status === 'concluido' ? 'concluído' : g.previsto ? `previsão ${esc(MES_LONGO[g.previsto.mes])} de ${g.previsto.ano}` : `até ${g.ano}`}` : ''}</small></div>
+      ${A.itens.length > 1 ? `<div class="sa-obj-ch" role="tablist" aria-label="Trocar de objetivo">${A.itens.map((x, k) => `<button role="tab" aria-selected="${x.id === g.id}" data-act="bas-foco" data-id="${esc(x.id)}" title="${esc(objNomeDe(x))}">${objIcone(x, k)}<span>${esc(objNomeDe(x))}</span></button>`).join('')}</div>` : ''}`);
+  // 2) indicadores do ano até o mês aberto
+  const rec = saSoma(C.receita.slice(0, m + 1)); const sob = saSoma(C.investAlocado.slice(0, m + 1)); const poup = rec > 0 ? sob / rec : null;
+  const u = C.usoOrc[m]; const tomO = u == null ? '' : u > 1 ? 'neg' : u > 0.85 ? 'warn' : 'pos';
+  const apl = saSoma(C.aplicado.slice(0, m + 1)); const metaAno = (S.plan.settings && +S.plan.settings.metaInvAno) || saSoma(C.metaAporteMes);
+  const prov = C.dividendos || Array(12).fill(0); const provAno = saSoma(prov.slice(0, m + 1)); const md = prov.slice(0, m + 1).filter((v) => v > 0).length;
+  const inds = saInd(`Taxa de poupança em ${S.year}`, poup == null ? '—' : pct(poup), rec <= 0 ? 'Aparece quando houver entradas' : sob >= 0 ? `${brl0(sob)} sobraram para investir` : `Gastos ${brl0(-sob)} acima das entradas`, poup, poup == null ? '' : poup >= 0.2 ? 'pos' : poup < 0.1 ? 'warn' : '')
+    + saInd(`Orçamento de ${esc(MES_LONGO[m])}`, u == null ? '—' : pct(u), C.orcamento[m] > 0 ? (C.restante[m] >= 0 ? `Restam ${brl0(C.restante[m])}` : `${brl0(-C.restante[m])} acima do orçado`) : `<button class="sa-lk" ${basIr('limite')}>Definir</button>`, u, tomO)
+    + saInd(`Aportes na meta de ${S.year}`, metaAno > 0 ? pct(Math.min(1, apl / metaAno)) : '—', metaAno > 0 ? `${brl0(apl)} de ${brl0(metaAno)}` : `<button class="sa-lk" ${basIr('meta')}>Definir</button>`, metaAno > 0 ? apl / metaAno : null, metaAno > 0 && apl >= metaAno ? 'pos' : '')
+    + saInd(`Dividendos em ${S.year}`, brl0(provAno), md ? `média de ${brl0(provAno / md)} por mês com pagamento` : 'Nenhum provento registrado', null, '', typeof varChip === 'function' ? varChip('dividendos', 1) : '');
+  // 3) proventos (mês a mês ou acumulado) e composição da carteira
+  let pa = 0; const provAc = prov.map((v) => (pa += +v || 0));
+  const cls = {}; (S.plan.ativos || []).forEach((a) => { cls[a.classe || 'Outros'] = (cls[a.classe || 'Outros'] || 0) + saSoma(a.ap || []); });
+  const cL = Object.entries(cls).filter((x) => x[1] > 0).sort((a, b) => b[1] - a[1]); const cT = saSoma(cL.map((x) => x[1]));
+  const provC = `<div class="sa-c w7 sa-prov" data-modo="mes"><header class="sa-c-h"><h3>Proventos mês a mês</h3><span class="sa-seg" role="group" aria-label="Ver proventos"><button data-sa-alt="modo" data-v="mes" aria-pressed="true">Mês a mês</button><button data-sa-alt="modo" data-v="acum" aria-pressed="false">Acumulado</button></span></header>
+      <div class="sa-c-n"><b>${brl0(provAno)}</b><span class="sa-lin-t">em ${S.year} · ${saLk(basIr('proventos'), 'Ver todos')}</span></div><div class="sa-prov-mes">${saColunas(prov, m, 0)}</div><div class="sa-prov-acum">${saLinha(provAc, m, 'sa-g-prov')}</div></div>`;
+  const comp = saCard('w5', 'Composição da carteira', saLk(basIr('carteira'), 'Carteira'), cL.length ? `<div class="sa-ro-w">${saRosca(saPartes(cL, 6), brl0(cT), 'investido')}<ul class="sa-lista">${saPartes(cL, 6).map(([n, v], i) => `<li><i style="background:${SA_CORES[i % 6]}"></i><span>${esc(n)}</span><b>${saPct(v / (cT || 1))}</b></li>`).join('')}</ul></div>` : `<p class="sa-p">Registre seu primeiro investimento.</p><button class="btn primary" ${basIrInv()}>${I_APLICAR}Investir</button>`);
+  // 4) patrimônio ano a ano e orçamento e gastos
+  const lim = S.year === NOW_Y ? NOW_M : 11; const mO = []; for (let i = 0; i <= Math.min(m, lim); i++) if (C.orcamento[i] > 0) mO.push(i);
+  const dentro = mO.filter((i) => C.despesas[i] <= C.orcamento[i]).length; const sits = [...new Set(C.despesas.slice(0, m + 1).map((v, i) => orcSit(i)))];
+  const aa = saCard('w6', 'Patrimônio ano a ano', saLk(basIr('historico'), 'Linha do tempo'), saAnoAno());
+  const orc = saCard('w6 sa-orc-c', 'Orçamento e gastos', `<span class="sa-tag">${mO.length ? `Meses dentro <b>${dentro} de ${mO.length}</b>` : 'Sem orçamento'}</span>`, `${saOrc(m)}
+      <footer class="sa-leg">${['pos', 'warn', 'neg', 'sem'].filter((k) => sits.includes(k)).map((k) => `<span><i class="sa-orc-${k}"></i>${SA_ORC[k]}</span>`).join('')}${mO.length ? '<span><i class="sa-orc-ref"></i>Orçado</span>' : ''}</footer>`);
+  const cards = [patr, obj, inds, provC, comp, aa, orc,
     saCard('w12', 'Atividade recente', saLk('data-act="nav" data-view="despesas"', 'Ver todos os gastos'), saTabela('ativ', SA_COLS_LANC, saLancLinhas(saLancMes(m).slice(0, 8)))),
   ];
   return `<div class="sa2" data-aba="inicio">${hero}<div class="sa-folha2"><div class="sa-grid">${cards.join('')}</div></div></div>`;
