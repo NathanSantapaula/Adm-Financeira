@@ -344,3 +344,32 @@
 }
 @media (min-width: 901px) and (max-width: 1180px) { .sa2 .sa-kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); } .sa2 .sa-kpi:nth-child(4) { border-left: 0; } .sa2 .sa-kpi:nth-child(n+4) { border-top: 1px solid var(--sa-borda); } }
 @media (prefers-reduced-motion: reduce) { .sa2 .sa-tip, .sa2 .sa-tab tbody tr { transition: none; } }
+
+/* ---------- parte 2: design system do SaaS ----------
+   uma escala só: espaço 4/8/12/16/20/24/32, cantos 12/16/24, texto 11.5/12.5/14/15/24/32/64; um acento (o azul); estados de foco visíveis */
+@media (min-width: 901px) {
+  .sa2 { --sa-r-lg: 24px; --sa-r-md: 16px; --sa-r-sm: 12px; --sa-gap: 20px; --sa-pad: 24px; }
+  .sa2 .sa-grid { gap: var(--sa-gap); }
+  .sa2 :is(.sa-c, .sa-kpis) { border-radius: var(--sa-r-lg); }
+  .sa2 .sa-c { padding: var(--sa-pad); gap: 16px; }
+  .sa2 .sa-c-h { min-height: 32px; }
+  .sa2 .sa-c-h h3 { font-size: 15px; font-weight: 650; letter-spacing: -.01em; }
+  .sa2 :is(.sa-kv span, .sa-av button, .sa-busca, .sa-sonho-b) { border-radius: var(--sa-r-sm) !important; }
+  .sa2 .sa-sn > button { border-radius: var(--sa-r-md); }
+  .sa2 .sa-tag { font-size: 12.5px; font-weight: 600; }
+  .sa2 :is(.sa-c-n b) { font-size: 24px; }
+  .sa2 .sa-big { font-size: 32px; }
+  /* alvo de clique mínimo de 40 px sem engordar o desenho */
+  .sa2 .sa-lk { position: relative; height: 32px; }
+  .sa2 .sa-lk::after { content: ""; position: absolute; inset: -4px; }
+  /* foco de teclado visível em tudo que é clicável */
+  .sa2 :is(button, [data-act], input):focus-visible { outline: 2px solid var(--sa-azul); outline-offset: 2px; }
+  .sa2 .sa-tab tbody tr:focus-visible { outline-offset: -2px; }
+  /* transições curtas e só do que muda */
+  .sa2 :is(.sa-lk, .sa-pl, .sa-av button, .sa-cats button, .sa-contas button) { transition: background-color 150ms ease-out, transform 150ms ease-out, box-shadow 150ms ease-out; }
+  .sa2 .sa-pl:active, .sa2 .sa-lk:active { transform: scale(.97); }
+  /* números sempre alinhados */
+  .sa2 :is(b, td, .sa-v, .sa-big) { font-variant-numeric: tabular-nums; }
+  .sa2 :is(h3, .sa-p) { text-wrap: pretty; }
+}
+@media (prefers-reduced-motion: reduce) { .sa2 :is(.sa-lk, .sa-pl, .sa-av button, .sa-cats button, .sa-contas button) { transition: none; } }

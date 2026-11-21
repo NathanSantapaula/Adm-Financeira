@@ -55,9 +55,6 @@ function viewHtml() {
 const SA_ABA = { geral: 'inicio', despesas: 'gastos', rendas: 'gastos', inv: 'investir', pro: 'investir', cart: 'investir', futuro: 'investir', perfil: 'perfil' };
 // atalhos do Hoje em pílulas brancas sobre o azul (como Add money / Send da referência)
 const saAcoes = () => `<div class="sa-acoes"><button class="sa-pl" ${basIr('gasto')}>${I.plus}Novo gasto</button><button class="sa-pl" ${basIr('entrada')}>${I_ENTRADA}Nova entrada</button><button class="sa-pl" ${basIrInv()}>${I_APLICAR}Investir</button><button class="sa-pl" ${basIr('sonho-novo')}>${I_META}Novo sonho</button></div>`;
-// os widgets antigos do SaaS entram embaixo dos do App, na mesma folha (o cabeçalho antigo some no CSS)
-const saAntigos = (f) => { try { return `<div class="sa-antigos">${f()}</div>`; } catch (e) { console.error(e); return ''; } };
-const saFolhaFim = (html, extra) => html.replace(/<\/div><\/div>\s*$/, `${extra}</div></div>`); // basPgAzul fecha a folha e a página
 const SA_VISTA = { geral: () => saInicio(), despesas: () => saGastos(), inv: () => saPatrimonio(), pro: () => saPatrimonio(), cart: () => saPatrimonio(), perfil: () => basPerfil() };
 const SA_NOME = { geral: 'Início', despesas: 'Gastos', inv: 'Patrimônio', pro: 'Patrimônio', cart: 'Patrimônio' };
 // Patrimônio: Aportes, Proventos, Carteira e Relatório são abas internas de uma área só (cada uma continua sendo a tela de antes)
