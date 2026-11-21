@@ -114,7 +114,7 @@ function render(opts) {
   if (S.pendingFocus) { const c = findCell(S.pendingFocus.ri, S.pendingFocus.m); if (c) c.focus(); S.pendingFocus = null; }
   const ad = $('#admin'); if (S.adminOpen && ad && ad.open) { const ae = document.activeElement; if (!(ae && ad.contains(ae) && /INPUT|SELECT|TEXTAREA/.test(ae.tagName))) renderAdmin(); }
 }
-function drawAll() { if (S.screen === 'landing') drawLanding(); else if (S.screen === 'app') { if (modoBasico()) { basDesenhar(); return; } if (typeof basTelaPequena === 'function' && basTelaPequena()) return; drawDashboard(); drawLedger(); drawAssets(); drawRelatorio(); } }
+function drawAll() { if (S.screen === 'landing') drawLanding(); else if (S.screen === 'app') { if (modoBasico() || (SA_VISTA[S.view] && !basTelaPequena())) { basDesenhar(); return; } if (typeof basTelaPequena === 'function' && basTelaPequena()) return; drawDashboard(); drawLedger(); drawAssets(); drawRelatorio(); } }
 function renderLater() { S.stale = true; clearTimeout(S.staleT); S.staleT = setTimeout(() => { if (S.stale) { S.stale = false; render(); } }, 450); }
 
 /* ---------- eventos ---------- */

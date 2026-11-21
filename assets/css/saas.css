@@ -251,3 +251,12 @@
   .sa2 .sa-ln-hit span:hover b { display: flex; }
   .sa2 .sa-ln-hit span:hover { background: linear-gradient(90deg, transparent calc(50% - .5px), color-mix(in srgb, var(--sa-azul) 45%, transparent) calc(50% - .5px), color-mix(in srgb, var(--sa-azul) 45%, transparent) calc(50% + .5px), transparent calc(50% + .5px)); }
 }
+@media (min-width: 901px) {
+  .sa-folha .bas-vl-in, .sa-folha .bas-vl-in > span { display: flex; align-items: baseline; width: 100%; min-width: 0; box-sizing: border-box; }
+  .sa-folha .bas-vl-in input { flex: 1; min-width: 0; width: 100% !important; }
+  /* Perfil em duas colunas na largura da página */
+  html body .bas.sa[data-sa="perfil"] { max-width: none; }
+  html body .bas.sa[data-sa="perfil"] :is(.bas-secs, .bas-gt-folha) { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; align-items: start !important; }
+  html body .bas.sa[data-sa="perfil"] :is(.bas-secs, .bas-gt-folha) > * { grid-column: span 1 !important; }
+  html body .bas.sa[data-sa="perfil"] :is(.bas-secs, .bas-gt-folha) > :is(h2, .bas-ch, .bas-pg-per, .bas-membro, .bas-mb) { grid-column: 1 / -1 !important; }
+}
