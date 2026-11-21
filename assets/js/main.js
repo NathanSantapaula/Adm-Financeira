@@ -23,7 +23,7 @@ function renderSide() {
   const mini = document.documentElement.classList.contains('side-mini');
   // topo da página (barra de vidro de ponta a ponta): à esquerda, foto e nome; depois período, assistente (com a busca), olho e globo; a marca fica no menu lateral
   const htAntes = $('#topo .htools'); // olho, globo e período movidos pelo render() (renderSide sozinho, no redimensionar, não os perde)
-  $('#topo').innerHTML = `<span class="topo-marca">${logoMarca()}</span><nav class="topo-nav" aria-label="Seções">${navAgrupado(items, btn)}</nav><button class="topo-eu" data-act="nav" data-view="perfil" aria-label="Abrir o seu perfil e o painel" title="${esc(nome)} · ${esc(planLabel())}">${avatarHtml(S.profile)}<span class="topo-eu-t"><b>${esc(nome)}</b><small>${esc(planLabel())}</small></span><svg class="topo-eu-v" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><div class="topo-r"><div class="topo-ic">${buscaBtnHtml()}${typeof sinoHtml === 'function' ? sinoHtml() : ''}</div></div>`;
+  $('#topo').innerHTML = `<span class="topo-marca">${logoMarca()}</span><nav class="topo-nav" aria-label="Seções">${navAgrupado(items, btn)}</nav><button class="topo-eu" data-act="admin-open" aria-label="Abrir o seu perfil e o painel" title="${esc(nome)} · ${esc(planLabel())}">${avatarHtml(S.profile)}<span class="topo-eu-t"><b>${esc(nome)}</b><small>${esc(planLabel())}</small></span><svg class="topo-eu-v" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button><div class="topo-r"><div class="topo-ic">${buscaBtnHtml()}${typeof sinoHtml === 'function' ? sinoHtml() : ''}</div></div>`;
   if (htAntes) $('#topo .topo-r').prepend(htAntes);
   $('#side').innerHTML = `<div class="brand"><span class="brand-full">${logoMarca()}</span><span class="brand-mini" aria-hidden="true">${LOGO}</span>
       <button class="side-tog" data-act="side-toggle" aria-expanded="${!mini}" aria-label="${mini ? 'Expandir o menu' : 'Recolher o menu'}" title="${mini ? 'Expandir o menu' : 'Recolher o menu'}">${I.chev}</button></div>
@@ -54,8 +54,7 @@ function viewHtml() {
 const SA_ABA = { geral: 'inicio', despesas: 'gastos', rendas: 'gastos', inv: 'investir', pro: 'investir', cart: 'investir', futuro: 'investir', perfil: 'perfil' };
 // atalhos do Hoje em pílulas brancas sobre o azul (como Add money / Send da referência)
 const saAcoes = () => `<div class="sa-acoes"><button class="sa-pl" ${basIr('gasto')}>${I.plus}Novo gasto</button><button class="sa-pl" ${basIr('entrada')}>${I_ENTRADA}Nova entrada</button><button class="sa-pl" ${basIrInv()}>${I_APLICAR}Investir</button><button class="sa-pl" ${basIr('sonho-novo')}>${I_META}Novo sonho</button></div>`;
-const SA_VISTA = { geral: () => basInicio(S.mes).replace('<div class="bas-noite-par">', `${saAcoes()}<div class="bas-noite-par">`), despesas: () => basGastos(S.mes), rendas: () => basTelaEntradas(), inv: () => basInvestir(S.mes),
-  pro: () => BAS_TELAS.proventos({}), cart: () => BAS_TELAS.carteira({}), futuro: () => BAS_TELAS.sonhos({}), perfil: () => basPerfil() };
+const SA_VISTA = { perfil: () => basPerfil() };
 // Patrimônio: Aportes, Proventos, Carteira e Relatório são abas internas de uma área só (cada uma continua sendo a tela de antes)
 const PAT_ABAS = ['inv', 'pro', 'cart', 'relatorio'];
 function patAbasHtml() {
