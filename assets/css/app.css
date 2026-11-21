@@ -3699,9 +3699,4 @@ body[data-ui="basico"]:is([data-screen="landing"], [data-screen="auth"], [data-s
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), 0 -1px 0 rgba(255, 255, 255, .06), 0 -18px 40px -18px rgba(0, 0, 0, .55) !important; min-height: 60vh !important; }
   :root[data-theme="light"] html body .bas.sa :is(.bas-secs, .bas-gt-folha) { box-shadow: 0 -1px 0 rgba(255, 255, 255, .5), 0 -18px 40px -18px rgba(3, 6, 31, .35) !important; }
   html body .bas.sa > .bas-secs ~ .bas-org { display: none; }
-  .sa-antigos { grid-column: 1 / -1; min-width: 0; margin-top: 6px; }
-  .sa-antigos :is(.welcome, .page-h, .htools, .year, .pat-abas, .per-seg, .g-head > .htools) { display: none !important; }
-  .sa-antigos :is(.wg, .card) { background: var(--sa-card) !important; border: 1px solid var(--sa-borda) !important; box-shadow: var(--sa-sombra) !important; border-radius: 22px !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
-  .sa-antigos .wg-grid { gap: 20px; }
 }
-@media (min-width: 901px) { html body .bas.sa :is(.bas-secs, .bas-gt-folha) > .sa-antigos { grid-column: 1 / -1 !important; } }

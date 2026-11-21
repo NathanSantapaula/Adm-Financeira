@@ -4298,3 +4298,39 @@ body:is([data-ui="basico"], [data-ui="completo"]) .ab .ab-card { border: 0 !impo
   box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, .4), inset 0 0 0 .5px color-mix(in srgb, var(--ab-cor, #fff) 45%, transparent), 0 16px 32px -14px color-mix(in srgb, var(--ab-cor, #000) 60%, rgba(0, 0, 0, .6)) !important; }
 body:is([data-ui="basico"], [data-ui="completo"]) .ab .ab-card > span:not(.ab-v) { display: none; }
 body:is([data-ui="basico"], [data-ui="completo"]) .ab .ab-card .ab-zbtn { border: 0; color: #fff; background: rgba(255, 255, 255, .16); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .35); }
+
+/* tela de sucesso ao salvar gasto ou investimento (basFesta): tela cheia azul, luz suave, o Cifrão em movimento e o OK */
+.bas-ok { position: fixed; inset: 0; z-index: 400; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 24px 28px calc(120px + env(safe-area-inset-bottom)); text-align: center; overflow: hidden; isolation: isolate;
+  --cif-body: #fff; --cif-eyes: #06122A; color: #fff; background: linear-gradient(180deg, #02040f 0%, #050a36 30%, #0b1a8f 62%, #1c3cf0 88%, #2d55ff 100%); animation: bas-ok-in 320ms cubic-bezier(.2, .8, .2, 1) both; }
+.bas-ok.sai { opacity: 0; transition: opacity 280ms ease; }
+.bas-ok-bg, .bas-ok-bg::before, .bas-ok-bg::after { position: absolute; pointer-events: none; }
+.bas-ok-bg { inset: 0; z-index: -2; background: radial-gradient(80% 32% at 50% 104%, rgba(120, 160, 255, .75), transparent 70%); }
+.bas-ok-pts i { position: absolute; left: var(--x); bottom: -10px; width: var(--s); height: var(--s); border-radius: 50%; background: #fff; box-shadow: 0 0 6px rgba(160, 200, 255, .9); opacity: 0; animation: bas-ok-pt var(--d) linear var(--k) infinite; }
+@keyframes bas-ok-pt { 10% { opacity: .8; } 80% { opacity: .5; } 100% { transform: translateY(-75vh); opacity: 0; } }
+.bas-ok-bg::before, .bas-ok-bg::after { content: ""; width: 120vmax; height: 120vmax; border-radius: 50%; filter: blur(40px); animation: bas-ok-aura 9s ease-in-out infinite alternate; }
+.bas-ok-bg::before { left: -40vmax; top: -55vmax; background: radial-gradient(closest-side, rgba(130, 175, 255, .55), transparent); }
+.bas-ok-bg::after { right: -55vmax; bottom: -60vmax; background: radial-gradient(closest-side, rgba(70, 200, 255, .28), transparent); animation-direction: alternate-reverse; }
+.bas-ok-cif { position: absolute; left: 0; top: 0; width: 150px; height: 150px; transform: translateY(120vh); will-change: transform; }
+.bas-ok-cif .cifrao { display: block; width: 100%; height: 100%; filter: drop-shadow(0 14px 22px rgba(0, 6, 60, .4)); }
+.bas-ok-cif .cifrao > svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.bas-ok.sobe .bas-ok.fim .bas-ok-v { position: relative; width: 92px; height: 92px; margin-bottom: 14px; opacity: 0; transform: scale(.92); }
+.bas-ok-v svg { width: 100%; height: 100%; fill: none; stroke: #fff; stroke-linecap: round; stroke-linejoin: round; overflow: visible; }
+.bas-ok-v circle { stroke-width: 2; stroke-dasharray: 151; stroke-dashoffset: 151; transform: rotate(-90deg); transform-origin: 26px 26px; }
+.bas-ok-v path { stroke-width: 3.2; stroke-dasharray: 32; stroke-dashoffset: 32; }
+.bas-ok-onda { position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(closest-side, rgba(255, 255, 255, .22), transparent); opacity: 0; }
+.bas-ok-t, .bas-ok-m, .bas-ok-bt { opacity: 0; transform: translateY(8px); }
+.bas-ok-t { margin: 0; font-size: 27px; font-weight: 600; letter-spacing: -.025em; }
+.bas-ok-m { margin: 0; max-width: 300px; font-size: 15px; line-height: 1.45; color: rgba(255, 255, 255, .72); }
+.bas-ok-bt { position: absolute; left: 24px; right: 24px; bottom: calc(30px + env(safe-area-inset-bottom)); max-width: 360px; margin: 0 auto; height: 54px; border: 0; border-radius: 16px; cursor: pointer;
+  font: inherit; font-size: 16px; font-weight: 600; letter-spacing: -.01em; color: #1430e8; background: #fff; box-shadow: 0 16px 32px -16px rgba(0, 8, 70, .8); }
+.bas-ok.fim .bas-ok-v { opacity: 1; transform: none; transition: opacity 240ms ease, transform 520ms cubic-bezier(.2, .9, .25, 1); }
+.bas-ok.fim .bas-ok-v circle { stroke-dashoffset: 0; transition: stroke-dashoffset 560ms cubic-bezier(.65, 0, .35, 1); }
+.bas-ok.fim .bas-ok-v path { stroke-dashoffset: 0; transition: stroke-dashoffset 320ms 420ms cubic-bezier(.4, 0, .2, 1); }
+.bas-ok.fim .bas-ok-onda { animation: bas-ok-onda 1100ms 500ms cubic-bezier(.2, .8, .2, 1) both; }
+.bas-ok.fim .bas-ok-t, .bas-ok.fim .bas-ok-m, .bas-ok.fim .bas-ok-bt { opacity: 1; transform: none; transition: opacity 360ms ease, transform 480ms cubic-bezier(.2, .8, .2, 1); }
+.bas-ok.fim .bas-ok-t { transition-delay: 380ms; } .bas-ok.fim .bas-ok-m { transition-delay: 460ms; } .bas-ok.fim .bas-ok-bt { transition-delay: 560ms; }
+@keyframes bas-ok-in { from { opacity: 0; } }
+@keyframes bas-ok-aura { to { transform: translate(6vmax, 4vmax) scale(1.08); } }
+@keyframes bas-ok-onda { 0% { opacity: .9; transform: scale(.9); } 100% { opacity: 0; transform: scale(2.4); } }
+@media (prefers-reduced-motion: reduce) { .bas-ok, .bas-ok-bg::before, .bas-ok-bg::after, .bas-ok-pts i { animation: none; } .bas-ok.fim .bas-ok-onda { animation: none; }
+  .bas-ok.fim .bas-ok-v, .bas-ok.fim .bas-ok-v circle, .bas-ok.fim .bas-ok-v path, .bas-ok.fim .bas-ok-t, .bas-ok.fim .bas-ok-m, .bas-ok.fim .bas-ok-bt { transition: none; } }
