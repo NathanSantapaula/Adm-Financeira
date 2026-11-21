@@ -283,7 +283,10 @@
 .sa2 .sa-c:not(.sa-escuro) .cifrao { --cif-body: #0B0B0C; --cif-eyes: #F7F4ED; }
 :root[data-theme="oled"] .sa2 .sa-c .cifrao { --cif-body: #F7F4ED; --cif-eyes: #06122A; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .sa2 .sa-c .cifrao { --cif-body: #F7F4ED; --cif-eyes: #06122A; } }
-/* Cifrão preto: olhos brancos com um leve volume (o brilho vira um ponto escuro de pupila) */
-.sa2 .sa-c:not(.sa-escuro) .cifrao :is([data-le], [data-re]) { fill: #fff; }
-.sa2 .sa-c:not(.sa-escuro) .cifrao :is([data-lb], [data-rb]) { fill: #0B0B0C; }
-:root[data-theme="oled"] .sa2 .sa-c .cifrao :is([data-le], [data-re]) { fill: revert-layer; }
+/* olhos brancos só na versão preta do Cifrão (cartões brancos no tema claro); a pupila vira o brilho escuro */
+:root[data-theme="light"] .sa2 .sa-c:not(.sa-escuro) .cifrao :is([data-le], [data-re]) { fill: #fff; }
+:root[data-theme="light"] .sa2 .sa-c:not(.sa-escuro) .cifrao :is([data-lb], [data-rb]) { fill: #0B0B0C; }
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="oled"]):not([data-theme="light"]) .sa2 .sa-c:not(.sa-escuro) .cifrao :is([data-le], [data-re]) { fill: #fff; }
+  :root:not([data-theme="oled"]):not([data-theme="light"]) .sa2 .sa-c:not(.sa-escuro) .cifrao :is([data-lb], [data-rb]) { fill: #0B0B0C; }
+}
