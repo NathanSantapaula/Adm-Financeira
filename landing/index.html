@@ -14,12 +14,12 @@
   <link rel="stylesheet" href="./landing.css?v=20261115d">
   <link rel="stylesheet" href="./cenas.css?v=20261128b">
   <script src="../assets/js/config.js?v=20261115d" defer></script>
-  <script src="./cifrao.js?v=20261115d" defer></script>
+  <script src="./cifrao.js?v=20261202a" defer></script>
   <script src="./scroll.js?v=20261115d" defer></script>
   <script src="./story.js?v=20261115d" defer></script>
-  <script src="./mes.js?v=20261115d" defer></script>
+  <script src="./mes.js?v=20261121b" defer></script>
   <script src="./imp.js?v=20261115d" defer></script>
-  <script src="./trilha.js?v=20261115d" defer></script>
+  <script src="./trilha.js?v=20261121b" defer></script>
   <script src="./cenas.js?v=20261115d" defer></script>
   <script src="./landing.js?v=20261115d" defer></script>
 </head>
@@ -51,7 +51,7 @@
   <main id="main">
     <section class="hero" aria-labelledby="hero-title">
       <div class="hero-content">
-        <h1 id="hero-title" aria-label="Conheça o Cifrão"><span class="hero-title-word">Conheça</span><button class="hero-mascot cifrao" type="button" aria-label="Cumprimentar o Cifrão" title="Dê um oi ao Cifrão"></button><span class="hero-title-word">Cifrão</span></h1>
+        <h1 id="hero-title" aria-label="Conheça o Cifrão"><span class="hero-title-word">Conheça</span><button class="hero-mascot cifrao" data-volume type="button" aria-label="Cumprimentar o Cifrão" title="Dê um oi ao Cifrão"></button><span class="hero-title-word">Cifrão</span></h1>
         <p class="hero-description">O app que organiza seu dinheiro e o assessor<br class="hero-br"> que cuida dos seus investimentos.</p>
         <div class="hero-cta">
           <a class="button" data-cta href="../">Criar conta grátis <svg class="icon" aria-hidden="true"><use href="#arrow-up"/></svg></a>
@@ -153,13 +153,13 @@
             <div class="aviso"><img class="ico3d app-ico" src="./assets/app-icone.webp" width="240" height="240" alt="" loading="lazy" aria-hidden="true"><div><p><b>Cifrão</b><span>agora</span></p><p>Mercado chegou a 80% do limite.</p><small>Faltam R$ 260 até o fim do mês.</small></div></div>
             <div class="aviso"><img class="ico3d app-ico" src="./assets/app-icone.webp" width="240" height="240" alt="" loading="lazy" aria-hidden="true"><div><p><b>Cifrão</b><span>agora</span></p><p>Sobrou R$ 1.900 este mês.</p><small>Falta renda fixa na carteira. Quer ver?</small></div></div>
           </div>
-          <div class="deitado" aria-hidden="true"><div class="deitado-tela"><i class="fone-ilha"></i><p class="deitado-pill"><span class="cifrao"></span>Cifrão</p><p class="deitado-b">Constância se constrói aporte por aporte. Este mês: Tesouro IPCA+ e mais 2 itens.</p><ul><li>Tesouro IPCA+ 2029<b>R$ 760</b></li><li>CDB liquidez diária<b>R$ 760</b></li><li>Fundos imobiliários<b>R$ 380</b></li></ul></div></div>
+          <div class="deitado" aria-hidden="true"><div class="deitado-tela"><i class="fone-ilha"></i><p class="deitado-pill"><span class="cifrao" data-volume></span>Cifrão</p><p class="deitado-b">Constância se constrói aporte por aporte. Este mês: Tesouro IPCA+ e mais 2 itens.</p><ul><li>Tesouro IPCA+ 2029<b>R$ 760</b></li><li>CDB liquidez diária<b>R$ 760</b></li><li>Fundos imobiliários<b>R$ 380</b></li></ul></div></div>
         </article>
         <article class="tb tb-mini tb-pat1" data-rev style="--i:2">
           <h3 class="tb-tit">Patrimônio</h3>
           <p class="tb-n">R$ 98,7 <small>mil</small></p>
           <p class="tb-s">+4,1% no mês</p>
-          <span class="ancora ancora-chart" data-ancora data-tam="46" data-expr="confiante" aria-hidden="true"></span>
+          <span class="ancora ancora-chart" data-ancora data-tam="46" data-forma="seta" data-expr="sobe" aria-hidden="true"></span>
           <svg class="curva" viewBox="0 0 280 100" preserveAspectRatio="none" role="img" aria-label="Curva do patrimônio subindo ao longo do ano" focusable="false"><path class="curva-area" d="M4 88 C20 88 22 80 40 78 S60 70 78 66 S100 62 114 56 S136 48 152 44 S173 36 192 30 S217 24 234 20 S260 12 276 12 L276 100 L4 100 Z"/><path class="curva-linha" d="M4 88 C20 88 22 80 40 78 S60 70 78 66 S100 62 114 56 S136 48 152 44 S173 36 192 30 S217 24 234 20 S260 12 276 12" fill="none" vector-effect="non-scaling-stroke"/></svg>
         </article>
         <article class="tb tb-mini tb-patr tb-div" data-rev style="--i:3" aria-label="Dividendos dos últimos seis meses, subindo mês a mês">
@@ -201,7 +201,7 @@
               <ol class="ix-cards"><li class="ix-card ok" data-ix-card><i class="ix-check" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 8.5 2.6 2.6L12 5.5"/></svg></i><span>Mercado Bom Preço</span><em>Mercado</em><b>− 312,40</b></li><li class="ix-card ok" data-ix-card><i class="ix-check" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 8.5 2.6 2.6L12 5.5"/></svg></i><span>Enel SP</span><em>Moradia</em><b>− 184,90</b></li><li class="ix-card ok" data-ix-card><i class="ix-check" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 8.5 2.6 2.6L12 5.5"/></svg></i><span>Uber</span><em>Transporte</em><b>− 27,80</b></li><li class="ix-card neutro" data-ix-card><i class="ix-check" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 8.5 2.6 2.6L12 5.5"/></svg></i><span>Fatura do cartão</span><em>Não é gasto</em><b>− 2.140,00</b></li><li class="ix-card ok" data-ix-card><i class="ix-check" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 8.5 2.6 2.6L12 5.5"/></svg></i><span>Salário</span><em>Renda</em><b>+ 8.000,00</b></li><li class="ix-card neutro" data-ix-card><i class="ix-check" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 8.5 2.6 2.6L12 5.5"/></svg></i><span>Mercado Bom Preço</span><em>Duplicado</em><b>− 312,40</b></li></ol>
               <button class="ix-btn" type="button" data-ix-btn tabindex="-1" aria-hidden="true">Importar 4 lançamentos</button>
               <div class="ix-ok" data-ix-ok><i aria-hidden="true"><svg viewBox="0 0 16 16"><path d="m4 8.5 2.6 2.6L12 5.5"/></svg></i><strong>Pronto, está no seu mês.</strong><span>4 lançamentos importados · 2 ignorados</span><ul><li>Mercado</li><li>Moradia</li><li>Transporte</li><li>Renda</li></ul></div>
-              <span class="ancora ancora-ix" data-ancora data-em=".03" data-tam="56" data-expr="curioso" aria-hidden="true"></span>
+              <span class="ancora ancora-ix" data-ancora data-em=".03" data-tam="56" data-forma="cadeado" data-expr="destranca" aria-hidden="true"></span>
             </div>
             <div class="ix-doc" data-ix-doc aria-hidden="true">
               <div class="ix-doc-topo"><span class="ix-nu"></span><span class="ix-doc-tit">Extrato da conta<small>1 a <span data-dias>30</span> de <span data-mes>novembro</span> de <span data-ano>2026</span></small></span></div>
@@ -222,7 +222,7 @@
     <section class="ass" id="assessoria" aria-labelledby="ass-titulo">
       <div class="ass-cartao" data-rev>
         <div class="ass-foto" data-nathan-comp>
-          <span class="ancora ancora-nathan" data-ancora data-tam="68" data-expr="animado" aria-hidden="true"></span>
+          <span class="ancora ancora-nathan" data-ancora data-tam="68" data-forma="mais" data-expr="soma" aria-hidden="true"></span>
           <span class="ass-luz" aria-hidden="true"></span>
           <div class="ass-quadro"><img class="ass-q" data-nathan-foto src="../assets/img/nathan.jpg" width="843" height="1131" loading="lazy" alt="Foto do assessor"></div>
           <div class="ass-cabeca" aria-hidden="true"><img class="ass-c" data-nathan-cab src="../assets/img/nathan.jpg" width="843" height="1131" loading="lazy" alt=""></div>

@@ -15,7 +15,7 @@
     on = mes.classList.contains('is-animated') && getComputedStyle(traveler).position === 'fixed';
     if (!on) {
       // Sem a história rolável (tela baixa ou menos movimento): um Cifrão vivo em cada pouso.
-      if (!estatico) { estatico = true; els.forEach((el) => { if (el.hasAttribute('data-fim')) return; const c = document.createElement('span'); c.className = 'cifrao cif-pouso'; c.style.setProperty('--cif-size', `${el.dataset.tam || 56}px`); if (el.dataset.tema === 'escuro') { c.style.setProperty('--cif-body', CLARO); c.style.setProperty('--cif-eyes', NAVY); } el.append(c); }); }
+      if (!estatico) { estatico = true; els.forEach((el) => { if (el.hasAttribute('data-fim')) return; const c = document.createElement('span'); c.className = 'cifrao cif-pouso'; if (el.dataset.forma) c.dataset.forma = el.dataset.forma; c.style.setProperty('--cif-size', `${el.dataset.tam || 56}px`); if (el.dataset.tema === 'escuro') { c.style.setProperty('--cif-body', CLARO); c.style.setProperty('--cif-eyes', NAVY); } el.append(c); }); }
       return;
     }
     // A história voltou (a primeira medida às vezes chega antes dela, no celular): some com os Cifrões parados, senão aparecem dois.
@@ -27,7 +27,7 @@
       const r = el.getBoundingClientRect();
       const k = em !== undefined ? topo(sec) + (sec.offsetHeight - vh) * +em : r.top + window.scrollY + r.height / 2 - vh * .55;
       // O último pouso precisa ser alcançável: a chave nunca passa do fim da página.
-      pts.push({ el, k: Math.min(Math.max(k, pts[pts.length - 1].k + 240), document.documentElement.scrollHeight - vh - 2), tam: +(el.dataset.tam || 60), tema: el.dataset.tema || '', expr: el.dataset.expr || '', fim: el.hasAttribute('data-fim'),
+      pts.push({ el, k: Math.min(Math.max(k, pts[pts.length - 1].k + 240), document.documentElement.scrollHeight - vh - 2), tam: +(el.dataset.tam || 60), tema: el.dataset.tema || '', expr: el.dataset.expr || '', forma: el.dataset.forma || '', fim: el.hasAttribute('data-fim'),
         // Pouso numa seção presa (data-em): ele só sai quando a seção termina de rolar.
         ate: em !== undefined ? topo(sec) + sec.offsetHeight - vh : 0 });
     }
@@ -75,6 +75,7 @@
         tema(e < .1 ? A.tema : e > .9 ? B.tema : '');
         traveler.setAttribute('data-scroll-suspended', '');
         traveler.style.pointerEvents = 'none';
+        if (pouso !== -1) window.Cifrao?.forma(traveler, 'cifrao');
         pouso = -1;
         traveler.dispatchEvent(new CustomEvent('cifrao:scroll-pose', { detail: motion.withMomentum({
           yaw: dir * .5 * fôlego, rotation: dir * .13 * fôlego + Math.sin(fase * Math.PI * 2) * .05 * fôlego,
@@ -89,7 +90,7 @@
       tema(A.tema);
       traveler.removeAttribute('data-scroll-suspended');
       traveler.style.pointerEvents = A.fim ? 'none' : 'auto';
-      if (pouso !== i) { pouso = i; if (A.expr) window.Cifrao?.expressao(traveler, A.expr); }
+      if (pouso !== i) { pouso = i; window.Cifrao?.forma(traveler, A.forma || 'cifrao'); if (A.expr) window.Cifrao?.expressao(traveler, A.expr); }
     }
     traveler.classList.add('is-active', 'is-flying'); traveler.classList.remove('is-surface');
     traveler.style.clipPath = '';

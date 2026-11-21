@@ -56,6 +56,7 @@
     // O Cifrão acompanha a ficha com os olhos, salta quando ela cai e sorri no fim.
     if (traveler && chegada === 1 && p < 1) {
       const pulo = Math.sin(range(p, .68, .78) * Math.PI), feliz = ease(range(p, .8, .92));
+      window.Cifrao?.forma(traveler, p >= .46 && p < .7 ? 'moeda' : 'cifrao');
       traveler.dispatchEvent(new CustomEvent('cifrao:scroll-pose', { detail: motion.withMomentum({
         gazeX: mix(-.075, .075, voo) * ease(range(p, .1, .2)), gazeY: .045 - .03 * Math.sin(voo * Math.PI), y: -.07 * pulo, scaleY: 1 + .07 * pulo, scaleX: 1 - .05 * pulo,
         rotation: mix(-.07, .07, voo) * ease(range(p, .1, .2)), eyeScaleX: 1 + .3 * pulo + .12 * sobra, leftEyeSmile: .8 * feliz, rightEyeSmile: .8 * feliz, marcas: pulo > .7 ? 1 : 0,
