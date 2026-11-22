@@ -2598,48 +2598,43 @@ function basMetaDispHtml() {
     <p class="bas-dp2-s">Sobrou <b>${brl(D.sobra)}</b> · investido <b>${brl(D.aportado)}</b>${exc ? ` · <b class="neg">${brl(D.excedente)}</b> além` : ''}</p></section>`;
   return meta + disp;
 }
-// arco das fontes de renda (Entradas): trecho cinza = fontes antes da escolhida, verde = a escolhida (entre a bolinha escura e a clara),
-// cinza claro = as que vêm depois, listrado = o que falta até o melhor mês; a agulha desce da bolinha clara. Tocar ou arrastar no arco escolhe a fonte; as setas passam de uma em uma.
+// arco das fontes de renda (Entradas): uma fatia por fonte, como num gráfico de pizza; listrado = o que falta até o melhor mês.
+// Tocar numa fatia ou na bolinha dela destaca a fonte; as setas passam de uma em uma.
 function basArLigar() {
   const el = document.querySelector('.bas-ar[data-f]'); if (!el || el.dataset.on) return; el.dataset.on = '1';
-  const F = JSON.parse(el.dataset.f); const q = el.dataset.q; const svg = el.querySelector('svg'); const $ = (c) => el.querySelector(c);
-  const CX = 170, CY = 200, R = 165, A0 = 204, A1 = -24; /* as pontas descem até passar por baixo da folha */ /* cada fonte ganha um trecho mínimo, para as bolinhas não se tocarem */ const wt = F.map((f) => Math.max(f[4], 0.2)); const sw = wt.reduce((x, y) => x + y, 0); const ini = [0]; wt.forEach((w, i) => ini.push(ini[i] + (sw > 1 ? w / sw : w))); const fim = ini[F.length];
-  // as fontes ficam só no trecho visível: as bolinhas (raio 28) param acima da folha escura; as pontas que passam por baixo dela são só continuação
+  const F = JSON.parse(el.dataset.f); const q = el.dataset.q; const svg = el.querySelector('svg'); const $ = (c) => el.querySelector(c); const NS = 'http://www.w3.org/2000/svg';
+  const CX = 170, CY = 200, R = 165, A0 = 204, A1 = -24; /* as pontas descem até passar por baixo da folha */
+  /* cada fonte ganha um trecho mínimo, para as bolinhas não se tocarem */ const wt = F.map((f) => Math.max(f[4], 0.2)); const sw = wt.reduce((x, y) => x + y, 0); const ini = [0]; wt.forEach((w, i) => ini.push(ini[i] + (sw > 1 ? w / sw : w))); const fim = ini[F.length];
+  // as fontes ficam só no trecho visível: as bolinhas param acima da folha escura e longe das laterais; as pontas que passam por baixo dela são só continuação
   const rs = svg.getBoundingClientRect(); const fo = document.querySelector('.bas-gt-folha'); const ylim = fo && rs.width ? ((fo.getBoundingClientRect().top - rs.top) * 340) / rs.width - 34 : 170;
-  const gv = Math.max(34, Math.min(60, (Math.asin(Math.max(-1, Math.min(1, (CY - ylim) / R))) * 180) / Math.PI)); /* 34°: a bolinha também não encosta nas laterais */ const D0 = 180 - gv, D1 = gv;
+  const gv = Math.max(34, Math.min(60, (Math.asin(Math.max(-1, Math.min(1, (CY - ylim) / R))) * 180) / Math.PI)); const D0 = 180 - gv, D1 = gv;
   const angD = (f) => D0 - (D0 - D1) * f; const ptG = (g) => [CX + R * Math.cos((g * Math.PI) / 180), CY - R * Math.sin((g * Math.PI) / 180)]; const pt = (f) => ptG(angD(f));
   const arc = (g0, g1) => { if (g0 - g1 < 0.05) return ''; const [x0, y0] = ptG(g0), [x1, y1] = ptG(g1); return `M${x0.toFixed(2)} ${y0.toFixed(2)}A${R} ${R} 0 ${g0 - g1 > 180 ? 1 : 0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`; };
-  const menos = matchMedia('(prefers-reduced-motion: reduce)').matches; let sel = -1, s0 = 0, s1 = 0, raf = 0;
-  const KS = F.map((_, i) => { const g = document.createElementNS('http://www.w3.org/2000/svg', 'g'); g.innerHTML = '<circle r="27" style="fill:#3E63FF;stroke:rgba(255,255,255,.45);stroke-width:1.5"/><circle r="13" style="fill:#0B1A8F;stroke:none"/>'; const [x, y] = pt(ini[i + 1]); g.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)})`); $('.bas-ar-ks').appendChild(g); return g; });
-  const pinta = (a, b) => {
-    $('.bas-ar-cin').setAttribute('d', arc(A0, angD(a))); $('.bas-ar-ver').setAttribute('d', arc(angD(a), angD(b))); $('.bas-ar-lis').setAttribute('d', arc(angD(b), angD(fim))); $('.bas-ar-tri').setAttribute('d', arc(angD(fim), A1));
-    const [x0, y0] = pt(a), [x1, y1] = pt(b); $('.bas-ar-k0').setAttribute('transform', `translate(${x0.toFixed(1)} ${y0.toFixed(1)})`); $('.bas-ar-k1').setAttribute('transform', `translate(${x1.toFixed(1)} ${y1.toFixed(1)})`);
-    
-  };
+  // como um gráfico de pizza: cada fonte é uma fatia fixa, com a sua cor; tocar destaca a fatia e mostra os números dela
+  const COR = ['#FFFFFF', '#B9CCFF', '#7E9DFF', '#DCE5FF', '#9BB4FF', '#5F84FF'];
+  $('.bas-ar-cin').setAttribute('d', arc(A0, D0)); $('.bas-ar-tri').setAttribute('d', arc(angD(fim), A1)); $('.bas-ar-ver').remove(); $('.bas-ar-lis').remove(); $('.bas-ar-k0').remove(); $('.bas-ar-k1').remove();
+  const ks = $('.bas-ar-ks');
+  const SG = F.map((_, i) => { const p = document.createElementNS(NS, 'path'); p.setAttribute('class', 'bas-ar-sg'); p.setAttribute('d', arc(angD(ini[i]), angD(ini[i + 1]))); p.setAttribute('style', `fill:none;stroke:${COR[i % COR.length]};stroke-width:46`); svg.insertBefore(p, ks); return p; });
+  // uma bolinha em cada divisa (no começo, entre as fatias e no fim da última); a que fecha a fatia escolhida fica branca
+  const KN = ini.map((v) => { const g = document.createElementNS(NS, 'g'); g.innerHTML = '<circle r="27"/><circle r="13"/>'; const [x, y] = pt(v); g.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)})`); ks.appendChild(g); return g; });
+  const tinge = (g, branca) => { const [a, b] = g.children; a.setAttribute('style', branca ? 'fill:#FFFFFF;stroke:rgba(20,40,245,.12);stroke-width:1.5' : 'fill:#3E63FF;stroke:rgba(255,255,255,.45);stroke-width:1.5'); b.setAttribute('style', `fill:${branca ? '#1F45FF' : '#0B1A8F'};stroke:none`); };
+  let sel = -1;
   const escolhe = (i) => {
-    if (!F.length) { pinta(0, 0); $('.bas-ar-k1').style.opacity = '0'; $('.bas-ar-n').textContent = 'Nenhuma entrada'; $('.bas-ar-v').textContent = 'Toque em Nova entrada para anotar.'; return; }
+    if (!F.length) { KN.forEach((g) => tinge(g, false)); $('.bas-ar-n').textContent = 'Nenhuma entrada'; $('.bas-ar-v').textContent = 'Toque em Nova entrada para anotar.'; return; }
     i = Math.max(0, Math.min(F.length - 1, i)); if (i === sel) return; const pri = sel < 0; sel = i; const f = F[i];
-    KS.forEach((g, k) => { g.style.opacity = k === i || k === i - 1 ? '0' : '1'; }); // as divisas da escolhida viram as bolinhas grandes
+    SG.forEach((p, k) => p.classList.toggle('on', k === i)); KN.forEach((g, k) => tinge(g, k === i + 1));
     $('.bas-ar-n').textContent = f[0]; $('.bas-ar-v').textContent = `${f[1]} · ${f[2]} do que entrou`;
     $('.bas-ar-s').textContent = f[3] == null || !q ? (F.length > 1 ? `${i + 1} de ${F.length} fontes` : 'Sua única fonte no período') : f[3] === 0 ? `Igual a ${q}` : `${f[3] > 0 ? 'Subiu' : 'Caiu'} ${f[3] > 0 ? '+' : '−'}${Math.abs(f[3])}% contra ${q}`;
     el.setAttribute('aria-valuenow', i + 1); el.setAttribute('aria-valuetext', `${f[0]}, ${f[1]}, ${f[2]}`);
-    const a = ini[i], b = ini[i + 1]; cancelAnimationFrame(raf);
-    if (pri || menos) { s0 = a; s1 = b; pinta(a, b); return; }
-    try { if (navigator.vibrate && (!navigator.userActivation || navigator.userActivation.hasBeenActive)) navigator.vibrate(4); } catch (e) { /* ignora */ }
-    const f0 = s0, f1 = s1, t0 = performance.now();
-    const anda = (t) => { const k = Math.min(1, (t - t0) / 380), e = 1 - (1 - k) ** 3; s0 = f0 + (a - f0) * e; s1 = f1 + (b - f1) * e; pinta(s0, s1); if (k < 1) raf = requestAnimationFrame(anda); };
-    raf = requestAnimationFrame(anda);
+    if (!pri) { try { if (navigator.vibrate && (!navigator.userActivation || navigator.userActivation.hasBeenActive)) navigator.vibrate(4); } catch (e) { /* ignora */ } }
   };
-  // dedo no arco: o ângulo do toque diz qual fonte está ali
-  const onde = (e) => { const r = svg.getBoundingClientRect(); const x = ((e.clientX - r.left) / r.width) * 340 - CX, y = CY - ((e.clientY - r.top) / r.height) * 214;
-    /* tocar numa bolinha mostra a fonte que ela fecha */ const vx = x + CX, vy = CY - y; let bi = -1, bd = 36; F.forEach((_, i) => { const [px, py] = pt(ini[i + 1]); const d = Math.hypot(px - vx, py - vy); if (d < bd) { bd = d; bi = i; } }); if (bi >= 0) return bi;
-    const g = (Math.atan2(y, x) * 180) / Math.PI; const f = (D0 - (g < -90 ? g + 360 : g)) / (D0 - D1); let i = 0; while (i < F.length - 1 && ini[i + 1] < f) i++; return i; };
-  let arr = false;
-  el.addEventListener('pointerdown', (e) => { if (!F.length) return; arr = true; el.setPointerCapture(e.pointerId); escolhe(onde(e)); });
-  el.addEventListener('pointermove', (e) => { if (arr) escolhe(onde(e)); });
-  el.addEventListener('pointerup', () => { arr = false; }); el.addEventListener('pointercancel', () => { arr = false; });
+  // toque: numa bolinha, a fatia que ela fecha (a do começo abre a primeira); fora delas, a fatia sob o dedo
+  const onde = (e) => { const r = svg.getBoundingClientRect(); const vx = ((e.clientX - r.left) / r.width) * 340, vy = ((e.clientY - r.top) / r.height) * 214;
+    let bi = -1, bd = 36; ini.forEach((v, k) => { const [px, py] = pt(v); const d = Math.hypot(px - vx, py - vy); if (d < bd) { bd = d; bi = k; } }); if (bi >= 0) return Math.max(0, bi - 1);
+    const g = (Math.atan2(CY - vy, vx - CX) * 180) / Math.PI; const f = (D0 - (g < -90 ? g + 360 : g)) / (D0 - D1); if (f < -0.03 || f > fim + 0.03) return -1; let i = 0; while (i < F.length - 1 && ini[i + 1] < f) i++; return i; };
+  el.addEventListener('click', (e) => { if (!F.length) return; const i = onde(e); if (i >= 0) escolhe(i); });
   el.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); escolhe(sel + (e.key === 'ArrowLeft' ? -1 : 1)); } });
-  escolhe(F.length - 1); // abre na maior fonte, que fica por último (as menores em cinza antes dela)
+  escolhe(F.length - 1); // abre na maior fonte, que fica por último
 }
 // roleta dos proventos: arrastar gira o arco (um traço por provento), solta com embalo e para no mais próximo; setas do teclado passam de um em um
 function basRlLigar() {

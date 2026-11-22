@@ -4371,12 +4371,14 @@ body:is([data-ui="basico"], [data-ui="completo"]) .ab .ab-card .ab-zbtn { border
 
 /* arco das fontes de renda (basArLigar), no desenho da referência: cartão escuro, faixa grossa em cinza, verde e listrado, duas bolinhas e a agulha */
 .bas-ar { position: relative; margin: 10px -16px -46px; padding: 0; overflow: visible; background: none; border: 0;
-  box-shadow: none; touch-action: pan-y; cursor: pointer; user-select: none; -webkit-user-select: none; outline: none; }
+  box-shadow: none; cursor: pointer; user-select: none; -webkit-user-select: none; outline: none; }
 .bas-ar:focus-visible { box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .55); border-radius: 20px; }
 .bas-ar .bas-ar-svg { display: block; width: 100% !important; height: auto !important; max-width: none; overflow: visible; }
 .bas-ar-k0, .bas-ar-k1, .bas-ar-ks g { transition: opacity 200ms ease; }
 .bas-ar-k1 circle:first-child { filter: drop-shadow(0 4px 12px rgba(0, 10, 90, .45)) drop-shadow(0 0 10px rgba(255, 255, 255, .35)); }
-.bas-ar-ver { filter: drop-shadow(0 0 10px rgba(255, 255, 255, .35)); }
+.bas-ar-sg { opacity: .42; transition: opacity 220ms ease, stroke-width 220ms ease; }
+.bas-ar-sg.on { opacity: 1; stroke-width: 54px !important; filter: drop-shadow(0 0 10px rgba(255, 255, 255, .4)); }
+.bas-ar-ks g { cursor: pointer; }
 .bas-ar-tx { position: absolute; left: 0; right: 0; bottom: 54px; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 0 24px; text-align: center; pointer-events: none; }
 .bas-ar-n { font-size: 18px; font-weight: 650; letter-spacing: -.01em; color: #fff; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bas-ar-v { font-size: 14px; font-weight: 500; color: rgba(255, 255, 255, .78); font-variant-numeric: tabular-nums; }
