@@ -391,10 +391,8 @@ function basTelaEntradas() {
   const arF = fontes.slice().reverse().map(([r, v]) => { const a0 = arAnt(r); return [r.nome, brl0(v), pct(v / totF), a0 > 0 ? Math.round(((v - a0) / a0) * 100) : null, (v / totF) * arCheio]; });
   const arQuando = j.de - n >= 0 ? (n === 1 ? MES_LONGO[j.de - 1] : 'o período anterior') : '';
   const arco = `<div class="bas-ar" data-f="${esc(JSON.stringify(arF))}" data-q="${esc(arQuando)}" tabindex="0" role="slider" aria-label="Fontes de renda ${esc(basJanFrase())}. Toque ou arraste no arco." aria-valuemin="1" aria-valuemax="${Math.max(1, arF.length)}">
-      <svg class="bas-ar-svg" viewBox="0 0 340 214" aria-hidden="true"><defs><pattern id="bas-ar-lis" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(40)"><rect width="7" height="7" style="fill:rgba(255,255,255,.05);stroke:none"/><line x1="0" y1="0" x2="0" y2="7" style="stroke:rgba(255,255,255,.32);stroke-width:2;fill:none"/></pattern>
-        <linearGradient id="bas-ar-ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9A9A9F"/><stop offset="1" stop-color="#9A9A9F" stop-opacity="0"/></linearGradient></defs>
+      <svg class="bas-ar-svg" viewBox="0 0 340 214" aria-hidden="true"><defs><pattern id="bas-ar-lis" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(40)"><rect width="7" height="7" style="fill:rgba(255,255,255,.05);stroke:none"/><line x1="0" y1="0" x2="0" y2="7" style="stroke:rgba(255,255,255,.32);stroke-width:2;fill:none"/></pattern></defs>
         <path class="bas-ar-tri" style="fill:none;stroke:url(#bas-ar-lis);stroke-width:46"/><path class="bas-ar-lis" style="fill:none;stroke:rgba(255,255,255,.34);stroke-width:46"/><path class="bas-ar-cin" style="fill:none;stroke:rgba(255,255,255,.16);stroke-width:46"/><path class="bas-ar-ver" style="fill:none;stroke:rgba(255,255,255,.95);stroke-width:46"/>
-        <line class="bas-ar-ag" style="stroke:rgba(255,255,255,.55);stroke-width:2;stroke-linecap:round;fill:none"/>
         <g class="bas-ar-ks"></g><g class="bas-ar-k0"><circle r="27" style="fill:#3E63FF;stroke:rgba(255,255,255,.45);stroke-width:1.5"/><circle r="13" style="fill:#0B1A8F;stroke:none"/></g>
         <g class="bas-ar-k1"><circle r="27" style="fill:#FFFFFF;stroke:rgba(20,40,245,.12);stroke-width:1.5"/><circle r="13" style="fill:#1F45FF;stroke:none"/></g></svg>
       <div class="bas-ar-tx" aria-live="polite"><b class="bas-ar-n"></b><span class="bas-ar-v"></span><small class="bas-ar-s"></small></div></div>`;
@@ -2616,7 +2614,7 @@ function basArLigar() {
   const pinta = (a, b) => {
     $('.bas-ar-cin').setAttribute('d', arc(A0, angD(a))); $('.bas-ar-ver').setAttribute('d', arc(angD(a), angD(b))); $('.bas-ar-lis').setAttribute('d', arc(angD(b), angD(fim))); $('.bas-ar-tri').setAttribute('d', arc(angD(fim), A1));
     const [x0, y0] = pt(a), [x1, y1] = pt(b); $('.bas-ar-k0').setAttribute('transform', `translate(${x0.toFixed(1)} ${y0.toFixed(1)})`); $('.bas-ar-k1').setAttribute('transform', `translate(${x1.toFixed(1)} ${y1.toFixed(1)})`);
-    const ag = $('.bas-ar-ag'); ag.setAttribute('x1', x1.toFixed(1)); ag.setAttribute('x2', x1.toFixed(1)); ag.setAttribute('y1', (y1 + 31).toFixed(1)); ag.setAttribute('y2', (y1 + 50).toFixed(1));
+    
   };
   const escolhe = (i) => {
     if (!F.length) { pinta(0, 0); $('.bas-ar-k1').style.opacity = '0'; $('.bas-ar-n').textContent = 'Nenhuma entrada'; $('.bas-ar-v').textContent = 'Toque em Nova entrada para anotar.'; return; }
@@ -2634,6 +2632,7 @@ function basArLigar() {
   };
   // dedo no arco: o ângulo do toque diz qual fonte está ali
   const onde = (e) => { const r = svg.getBoundingClientRect(); const x = ((e.clientX - r.left) / r.width) * 340 - CX, y = CY - ((e.clientY - r.top) / r.height) * 214;
+    /* tocar numa bolinha mostra a fonte que ela fecha */ const vx = x + CX, vy = CY - y; let bi = -1, bd = 36; F.forEach((_, i) => { const [px, py] = pt(ini[i + 1]); const d = Math.hypot(px - vx, py - vy); if (d < bd) { bd = d; bi = i; } }); if (bi >= 0) return bi;
     const g = (Math.atan2(y, x) * 180) / Math.PI; const f = (D0 - (g < -90 ? g + 360 : g)) / (D0 - D1); let i = 0; while (i < F.length - 1 && ini[i + 1] < f) i++; return i; };
   let arr = false;
   el.addEventListener('pointerdown', (e) => { if (!F.length) return; arr = true; el.setPointerCapture(e.pointerId); escolhe(onde(e)); });
