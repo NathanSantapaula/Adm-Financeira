@@ -4407,3 +4407,10 @@ body:is([data-ui="basico"], [data-ui="completo"]) .ab .ab-card .ab-zbtn { border
 .bas-en3-g button.on .bas-en3-ex { background: repeating-linear-gradient(135deg, #FFFFFF 0 3px, #6FCBFF 3px 6px); }
 /* a pílula da variação nunca quebra em duas linhas */
 .bas-pv2-var .bas-ev-pct { flex: none; white-space: nowrap; }
+/* com renda extra: dois blocos separados, extra (listrado) em cima e fixa embaixo */
+.bas-en3-g i.dv { display: flex; flex-direction: column; gap: 3px; overflow: visible; background: none !important; box-shadow: none !important; }
+.bas-en3-g i.dv > * { display: block; border-radius: 8px; }
+.bas-en3-g i.dv .bas-en3-ex { position: static; flex: none; min-height: 6px; }
+.bas-en3-fx { flex: 1; background: linear-gradient(180deg, #B8FBFF, #38D6FF 55%, #3D8BFF); }
+.bas-en3-g button.on i.dv .bas-en3-fx { background: linear-gradient(180deg, #FFFFFF, #B8FBFF 30%, #38D6FF 70%, #3D8BFF); }
+.bas-en3-g button.on i.dv > * { box-shadow: 0 0 0 2px #fff, 0 0 26px rgba(184, 251, 255, .9), 0 0 50px rgba(56, 214, 255, .4); }
