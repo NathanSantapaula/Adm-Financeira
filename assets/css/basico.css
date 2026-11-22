@@ -4569,7 +4569,7 @@ html[data-theme="light"] { --tp1: #DCE1EC; --tp2: #E9ECF3; --tp-ink: #1B1F2A; }
 /* topo na cor do tema: o degradê azul vira um tom acima do fundo (grafite no escuro, cinza-claro no claro) */
 html[data-topo="tema"] body:is([data-ui="basico"], [data-ui="completo"]) { --bas-azul-1: #3A3D47; --bas-azul-2: #1C1E25; --bas-azul-3: #0A0B0E; }
 html[data-topo="tema"][data-theme="light"] body:is([data-ui="basico"], [data-ui="completo"]) { --bas-azul-1: #D6DBE7; --bas-azul-2: #E3E7EF; --bas-azul-3: #EEF0F5; }
-html[data-topo="tema"][data-theme="light"] .bas-gt-bg { color: var(--ink); --lg-bg: rgba(20, 30, 60, .06); --lg-bg-on: rgba(20, 30, 60, .12); --lg-aro: rgba(20, 30, 60, .14); --lg-aro-b: rgba(20, 30, 60, .05); --lg-txt: var(--ink); }
+html[data-topo="tema"][data-theme="light"] :is(.bas-gt-bg, .bas-noite) { color: var(--ink); --lg-bg: rgba(20, 30, 60, .06); --lg-bg-on: rgba(20, 30, 60, .12); --lg-aro: rgba(20, 30, 60, .14); --lg-aro-b: rgba(20, 30, 60, .05); --lg-txt: var(--ink); }
 /* Notificações v2: tela de bloqueio com a hora e os avisos empilhados, com o ícone do app */
 .bas-nt-ls { position: relative; margin: 18px 0 44px; padding: 20px 12px 12px; border-radius: 30px; overflow: hidden; text-align: center; color: #fff;
   background: radial-gradient(120% 70% at 50% 0%, rgba(150, 190, 255, .35), transparent 62%), linear-gradient(180deg, rgba(10, 16, 70, .5), rgba(4, 7, 30, .78));
@@ -4590,14 +4590,30 @@ html[data-topo="tema"][data-theme="light"] .bas-gt-bg { color: var(--ink); --lg-
 @media (prefers-reduced-motion: reduce) { .bas-nt-n, .bas-nt-zz { animation: none; } .bas-ap-th { transition: none; } }
 .bas-ap-op.bas-ap-topo { grid-template-columns: repeat(2, 1fr); } .bas-ap-topo .bas-ap-tp { height: 78px; }
 /* topo na cor do tema, no claro: o texto branco do topo passa ao escuro do tema (menos onde há fundo escuro próprio) */
-html[data-topo="tema"][data-theme="light"] .bas-gt-bg :is(b, strong, small, span, p, em, h1, h2, h3, header, label):not(.bas-ev-pct, .bas-ev-pct *, .bas-ap-pb, .bas-pv2-g small, .bas-rl-seg [aria-pressed="true"], .bas-rl-seg [aria-pressed="true"] *, .bas-pf-av, .bas-pf-av *) { color: var(--ink) !important; }
-html[data-topo="tema"][data-theme="light"] .bas-gt-bg :is(small, em, .bas-cf-sub, .bas-pv2-var > span:not(.bas-ev-pct), .bas-pv2-k):not(.bas-ev-pct, .bas-pv2-g small) { color: var(--ink-2) !important; }
-html[data-topo="tema"][data-theme="light"] .bas-gt-bg :is(.bas-pv2-t span, .bas-ap-prev > b span) { color: var(--ink-3) !important; }
-html[data-topo="tema"][data-theme="light"] .bas-gt-bg :is(.bas-cf-modo, .bas-ap-prev, .bas-id-hero, .bas-sg-hero) { background: rgba(255, 255, 255, .7); box-shadow: inset 0 0 0 .5px rgba(20, 30, 60, .1), 0 18px 36px -26px rgba(20, 30, 60, .5); }
-html[data-topo="tema"][data-theme="light"] .bas-gt-bg :is(.bas-cf-mic, .bas-sg-ic) { background: rgba(20, 40, 120, .08); } html[data-topo="tema"][data-theme="light"] .bas-gt-bg :is(.bas-cf-mic, .bas-sg-ic) svg { stroke: var(--ink) !important; }
-html[data-topo="tema"][data-theme="light"] .bas-gt-bg .bas-ap-pg i:not(.on), html[data-topo="tema"][data-theme="light"] .bas-gt-bg .bas-pv2-g i { background-color: rgba(20, 40, 120, .14); }
-html[data-topo="tema"][data-theme="light"] .bas-gt-bg :is(.bas-ar-svg, .bas-rl-arco) { filter: invert(.88) hue-rotate(180deg); }
-html[data-topo="tema"][data-theme="light"] .bas-gt-bg :is(.bas-circ, .bas-pf-globo, .bell, .olho, .bas-voltar) { color: var(--ink) !important; }
-html[data-topo="tema"][data-theme="light"] .bas-gt-bg :is(.bas-circ, .bas-pf-globo, .bell, .olho, .bas-voltar) :is(svg, svg *) { stroke: var(--ink) !important; color: var(--ink) !important; }
-html[data-topo="tema"][data-theme="light"] .bas-gt-bg .bas-rl-seg button:not([aria-pressed="true"]) { color: var(--ink-2) !important; }
-html[data-topo="tema"][data-theme="light"] .bas-gt-bg .bas-ev-pct:not(.neg) { color: var(--ink) !important; background: rgba(20, 40, 120, .08) !important; }
+html[data-topo="tema"][data-theme="light"] :is(.bas-gt-bg, .bas-noite) :is(b, strong, small, span, p, em, h1, h2, h3, header, label):not(.bas-ev-pct, .bas-ev-pct *, .bas-ap-pb, .bas-pv2-g small, .bas-rl-seg [aria-pressed="true"], .bas-rl-seg [aria-pressed="true"] *, .bas-pf-av, .bas-pf-av *) { color: var(--ink) !important; }
+html[data-topo="tema"][data-theme="light"] :is(.bas-gt-bg, .bas-noite) :is(small, em, .bas-cf-sub, .bas-pv2-var > span:not(.bas-ev-pct), .bas-pv2-k):not(.bas-ev-pct, .bas-pv2-g small) { color: var(--ink-2) !important; }
+html[data-topo="tema"][data-theme="light"] :is(.bas-gt-bg, .bas-noite) :is(.bas-pv2-t span, .bas-ap-prev > b span) { color: var(--ink-3) !important; }
+html[data-topo="tema"][data-theme="light"] :is(.bas-gt-bg, .bas-noite) :is(.bas-cf-modo, .bas-ap-prev, .bas-id-hero, .bas-sg-hero) { background: rgba(255, 255, 255, .7); box-shadow: inset 0 0 0 .5px rgba(20, 30, 60, .1), 0 18px 36px -26px rgba(20, 30, 60, .5); }
+html[data-topo="tema"][data-theme="light"] :is(.bas-gt-bg, .bas-noite) :is(.bas-cf-mic, .bas-sg-ic) { background: rgba(20, 40, 120, .08); } html[data-topo="tema"][data-theme="light"] :is(.bas-gt-bg, .bas-noite) :is(.bas-cf-mic, .bas-sg-ic) svg { stroke: var(--ink) !important; }
+html[data-topo="tema"][data-theme="light"] :is(.bas-gt-bg, .bas-noite) .bas-ap-pg i:not(.on), html[data-topo="tema"][data-theme="light"] :is(.bas-gt-bg, .bas-noite) .bas-pv2-g i { background-color: rgba(20, 40, 120, .14); }
+html[data-topo="tema"][data-theme="light"] :is(.bas-gt-bg, .bas-noite) :is(.bas-ar-svg, .bas-rl-arco) { filter: brightness(.62) sepia(1) hue-rotate(185deg) saturate(6); }
+html[data-topo="tema"][data-theme="light"] :is(.bas-gt-bg, .bas-noite) :is(.bas-circ, .bas-pf-globo, .bell, .olho, .bas-voltar) { color: var(--ink) !important; }
+html[data-topo="tema"][data-theme="light"] :is(.bas-gt-bg, .bas-noite) :is(.bas-circ, .bas-pf-globo, .bell, .olho, .bas-voltar) :is(svg, svg *) { stroke: var(--ink) !important; color: var(--ink) !important; }
+html[data-topo="tema"][data-theme="light"] :is(.bas-gt-bg, .bas-noite) .bas-rl-seg button:not([aria-pressed="true"]) { color: var(--ink-2) !important; }
+html[data-topo="tema"][data-theme="light"] :is(.bas-gt-bg, .bas-noite) .bas-ev-pct:not(.neg) { color: var(--ink) !important; background: rgba(20, 40, 120, .08) !important; }
+/* claro + topo na cor do tema: vidro claro nos botões e pílulas, barras e listras em azul (o branco sumia no cinza-claro) */
+html[data-topo="tema"][data-theme="light"] body[data-ui="basico"] :is(.bas-gt-bg, .bas-noite) :is(.olho, .bell, .bas-circ, .bas-per, .bas-gt-chip, .bas-ct2-b, .bas-var-p, .bas-cat-ed, .bas-ev-pct:not(.neg), .bas-ah2-anos button:not(.on), .bas-pf-globo, .bas-noite-par > *) {
+  color: var(--ink) !important; background: linear-gradient(155deg, rgba(255, 255, 255, .96), rgba(255, 255, 255, .72)) !important;
+  box-shadow: inset 0 0 0 .5px rgba(20, 30, 60, .12), inset 0 1px 0 #fff, 0 6px 16px -10px rgba(20, 30, 60, .45) !important; }
+html[data-topo="tema"][data-theme="light"] body[data-ui="basico"] :is(.bas-gt-bg, .bas-noite) :is(.olho, .bell, .bas-circ, .bas-per, .bas-gt-chip, .bas-var-p, .bas-ev-pct, .bas-pf-globo, .bas-noite-par > *) :is(b, span, small, svg, svg *) { color: var(--ink) !important; stroke: currentColor; }
+html[data-topo="tema"][data-theme="light"] body[data-ui="basico"] :is(.bas-gt-bg, .bas-noite) .bas-var-p.pos :is(b, span) { color: #15803D !important; }
+html[data-topo="tema"][data-theme="light"] .bas-gt-bg .bas-pv2-g i { background: linear-gradient(180deg, #A9C0FF, #6C8CFF) !important; box-shadow: none !important; }
+html[data-topo="tema"][data-theme="light"] .bas-gt-bg .bas-pv2-g button.on i { background: linear-gradient(180deg, #7FD8FF, #2D55FF) !important; box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px #2D55FF, 0 10px 22px -8px rgba(45, 85, 255, .7) !important; }
+html[data-topo="tema"][data-theme="light"] .bas-gt-bg .bas-en3-g i.dv { background: none !important; box-shadow: none !important; }
+html[data-topo="tema"][data-theme="light"] .bas-gt-bg .bas-en3-fx { background: linear-gradient(180deg, #A9C0FF, #6C8CFF) !important; }
+html[data-topo="tema"][data-theme="light"] .bas-gt-bg .bas-en3-g button.on i.dv .bas-en3-fx { background: linear-gradient(180deg, #7FD8FF, #2D55FF) !important; }
+html[data-topo="tema"][data-theme="light"] .bas-gt-bg .bas-en3-g button.on i.dv > * { box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px #2D55FF !important; }
+html[data-topo="tema"][data-theme="light"] .bas-gt-bg .bas-en3-ex { background: repeating-linear-gradient(135deg, #5B7FFF 0 3px, rgba(91, 127, 255, .3) 3px 6px) !important; }
+html[data-topo="tema"][data-theme="light"] .bas-gt-bg .bas-en2-leg .ex { background: repeating-linear-gradient(135deg, #5B7FFF 0 2px, rgba(91, 127, 255, .3) 2px 4px); } html[data-topo="tema"][data-theme="light"] .bas-gt-bg .bas-en2-leg .fx { background: linear-gradient(180deg, #A9C0FF, #6C8CFF); }
+html[data-topo="tema"][data-theme="light"] .bas-gt-bg .bas-pv2-g b { color: var(--ink-3) !important; } html[data-topo="tema"][data-theme="light"] .bas-gt-bg .bas-pv2-g button.on b { color: var(--ink) !important; }
+html[data-topo="tema"][data-theme="light"] .bas-gt-bg :is(.bas-hs-c, .bas-ctw-r) > svg { filter: brightness(.62) sepia(1) hue-rotate(185deg) saturate(6); }
