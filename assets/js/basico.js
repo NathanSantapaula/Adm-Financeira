@@ -404,7 +404,7 @@ function basTelaEntradas() {
     <header class="bas-pv2-h"><button class="bell bas-cal-b" data-act="bas-voltar" aria-label="Voltar">${I_VOLTA}</button><b>Entradas</b><span class="bas-noite-r"><button class="bell bas-cal-b" ${basIr('periodo')} aria-label="Período: ${esc(basJanRot())}, ${S.year}">${I_CAL}</button>${olhoHtml()}</span></header>
     ${seg}<small class="bas-pv2-k">Entrou ${esc(basJanFrase())}</small>
     <b class="bas-pv2-t">${basCent(tot)}</b>
-    ${vis === 'fontes' ? arco : `<p class="bas-pv2-var">${pv != null ? `<span class="bas-ev-pct${up ? '' : ' neg'}">${up ? '↑' : '↓'} ${pct(pv, 1)}</span><span>${up ? '+' : '−'}${brl0(Math.abs(dif))} contra o período anterior</span>` : ''}</p>
+    ${vis === 'fontes' ? arco : `<p class="bas-pv2-var">${pv != null ? `<span class="bas-ev-pct${up ? '' : ' neg'}">${up ? '↑' : '↓'} ${pct(pv, 1)}</span><span>${up ? '+' : '−'}${brl0(Math.abs(dif))} contra ${n === 1 ? MES_LONGO[j.de - 1] : 'o período anterior'}</span>` : ''}</p>
     <div class="bas-en2-leg" aria-hidden="true"><span><i class="fx"></i>Renda fixa</span><span><i class="ex"></i>Extra</span></div>
     <div class="bas-pv2-g bas-en3-g" role="group" aria-label="Entradas mês a mês, renda fixa e extra">${col}</div>`}
   </div><div class="bas-gt-folha">
