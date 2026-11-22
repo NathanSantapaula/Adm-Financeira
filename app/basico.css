@@ -4693,3 +4693,21 @@ html[data-topo="tema"][data-theme="light"] .bas-gt-bg .bas-gg-svg { filter: brig
   --cif-size: 34px; --cif-body: #fff; --cif-eyes: #06122A; filter: drop-shadow(0 6px 10px rgba(20, 40, 140, .35)); }
 .bas-iax-av .cifrao { width: 34px; height: 34px; }
 .bas-iax-av { border-radius: 50%; background: radial-gradient(60% 50% at 35% 25%, rgba(255, 255, 255, .45), transparent 70%), linear-gradient(160deg, #4D7BFF, #1A33D9); box-shadow: inset 0 -4px 8px rgba(10, 20, 90, .4); --cif-size: 26px; } .bas-iax-av .cifrao { width: 26px; height: 26px; }
+
+/* IA: chips logo acima da caixa de escrever; conversa com bolhas mais macias e o Cifrão maior ao lado das respostas */
+.bas-iax:not(:has(.bas-iax-log .ia-m)) .bas-iax-f { margin-top: 0; }
+.bas-iax:not(:has(.bas-iax-log .ia-m)) .bas-iax-mq { margin-top: auto; margin-bottom: 12px; }
+.bas-iax-log { gap: 14px; }
+.bas-iax-log .ia-m { max-width: 84%; font-size: 16px; line-height: 1.5; letter-spacing: -.005em; }
+.bas-iax-log .ia-m.ia { margin-left: 56px; max-width: calc(100% - 60px); padding: 13px 16px !important; border-radius: 8px 22px 22px 22px !important;
+  background: linear-gradient(165deg, rgba(255, 255, 255, .13), rgba(255, 255, 255, .06)) !important; box-shadow: inset 0 0 0 .5px rgba(255, 255, 255, .18), 0 10px 26px -18px rgba(0, 0, 30, .55) !important; -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+.bas-iax-log .ia-m.eu { align-self: flex-end; padding: 11px 16px !important; border-radius: 22px 22px 8px 22px !important; box-shadow: 0 10px 24px -16px rgba(0, 0, 30, .6) !important; font-weight: 500; }
+.bas-iax-av { width: 44px; height: 44px; --cif-size: 34px; box-shadow: inset 0 -5px 10px rgba(10, 20, 90, .4), 0 8px 18px -8px rgba(10, 20, 90, .6), 0 0 0 2px rgba(255, 255, 255, .14); }
+.bas-iax-av .cifrao { width: 34px; height: 34px; }
+:root[data-theme="light"] .bas-iax-log .ia-m.ia { background: #fff !important; box-shadow: 0 10px 26px -16px rgba(20, 30, 80, .3), inset 0 0 0 .5px rgba(20, 30, 80, .08) !important; }
+:root[data-theme="light"] .bas-iax-log .ia-m.eu { background: linear-gradient(160deg, #4673FF, #1F45FF) !important; color: #fff !important; }
+.bas-iax-log .ia-m .btn { margin-top: 10px; background: #fff !important; color: #0B2A9E !important; border: 0 !important; border-radius: 999px; font-weight: 600; box-shadow: 0 6px 16px -10px rgba(0, 0, 30, .6) !important; }
+:root[data-theme="light"] .bas-iax-log .ia-m .btn { background: color-mix(in srgb, var(--accent) 12%, #fff) !important; color: var(--accent) !important; }
+.bas-iax-av { width: 52px; height: 52px; --cif-size: 42px; margin-left: -4px; } .bas-iax-av .cifrao { width: 42px; height: 42px; }
+.bas-iax-log .ia-m.ia { margin-left: 58px; max-width: calc(100% - 60px); }
+.bas-iax-av { margin-left: 0; --cif-body: #fff; --cif-eyes: #06122A; } .bas-iax-av .cifrao > svg { display: block; width: 100% !important; height: 100% !important; overflow: visible; fill: initial; stroke: none; filter: drop-shadow(0 3px 6px rgba(0, 20, 90, .45)); }
