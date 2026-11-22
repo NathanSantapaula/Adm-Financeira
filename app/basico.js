@@ -614,7 +614,7 @@ const BAS_GUIAS = [
     { s: '.bas-esc', t: 'Medalhas', d: 'Uma a cada marco. Toque numa conquistada para ver de perto, girar e virar.' }] },
   { id: 'organizar', t: 'Como organizo a tela inicial?', k: ['organizar', 'widget', 'ordem', 'tirar bloco', 'personalizar', 'mudar o inicio', 'adicionar bloco'], passos: [
     { ir: basGuiaIr('inicio'), s: '.bas-org', t: 'Organizar esta tela', d: 'No fim de cada aba. Arraste pela alça para mudar a ordem, tire o que não usa e coloque blocos novos.' }] },
-  { id: 'cor', t: 'Como mudo a cor, o tema ou o jeito de falar?', k: ['cor', 'tema', 'modo escuro', 'modo claro', 'aparencia', 'jeito de falar', 'voz'], passos: [
+  { id: 'cor', t: 'Como mudo a cor ou o tema?', k: ['cor', 'tema', 'modo escuro', 'modo claro', 'aparencia', 'jeito de falar', 'voz'], passos: [
     { ir: basGuiaIr('perfil'), s: '.bas-pf-cfg', t: 'Configurações', d: 'A engrenagem no alto do Perfil.' },
     { ir: basGuiaIr('perfil', 'config-ap'), s: '.bas-ap-seg', t: 'Aparência', d: 'O tema, a cor do topo, o tamanho do texto e o estilo dos cantos.' },
     { s: '.bas-voz', t: 'Jeito de falar', d: 'Consultivo, Direto ou Acolhedor. Muda os textos; os números são sempre os mesmos.' }] },
@@ -2895,7 +2895,7 @@ function basTelaConfig() {
   const hero = `<button class="bas-cf-modo" data-act="bas-cf-modo" role="switch" aria-checked="${noite}" aria-label="Modo escuro"><span class="bas-cf-mic" aria-hidden="true">${noite ? I_CF.lua : I_CF.sol}</span>
     <span class="bas-cf-mt"><b>${noite ? 'Modo escuro' : 'Modo claro'}</b><small>${t === 'auto' ? 'Automático, segue o celular' : noite ? 'Toque para o claro' : 'Toque para o escuro'}</small></span>${basCeu(noite)}</button>`;
   const folha = `${basCfH('Personalização')}<ul class="card bas-cf-l">${basCfLi(basIr('config-ap'), '#8B7CFF', I_CF.ap, 'Aparência', `${c.topo === 'tema' ? 'Topo na cor do tema' : 'Topo azul'} · Texto ${BAS_TEXTO.find((x) => x[0] === c.texto)[1].toLowerCase()} · ${BAS_CANTOS.find((x) => x[0] === c.cantos)[1]}`)}
-      ${basCfLi(basIr('config-id'), '#3EA6FF', I_CF.id, 'Idioma', `<span translate="no">${esc((IDIOMAS.find((x) => x[0] === idiomaAtual()) || IDIOMAS[0])[1])}</span>`)}${basCfLi(basIr('voz'), '#2FD4C0', I_CF.voz, 'Jeito de falar', esc((VOZES[tomAtual()] || {}).nome || ''))}</ul>
+      ${basCfLi(basIr('config-id'), '#3EA6FF', I_CF.id, 'Idioma', `<span translate="no">${esc((IDIOMAS.find((x) => x[0] === idiomaAtual()) || IDIOMAS[0])[1])}</span>`)}</ul>
     ${basCfH('Alertas')}<ul class="card bas-cf-l">${basCfLi(basIr('config-not'), '#FF9F43', I_CF.not, 'Notificações', c.push ? `${nAv} ${nAv === 1 ? 'aviso ligado' : 'avisos ligados'}` : 'Pausadas')}</ul>
     ${basCfH('Privacidade e segurança')}<ul class="card bas-cf-l">${basCfLi(basIr('config-priv'), '#34C759', I_CF.priv, 'Privacidade', S.privado ? 'Valores escondidos · Seus dados' : 'Valores à mostra · Seus dados')}
       ${basCfLi(basIr('config-seg'), '#5B8CFF', I_CF.seg, 'Segurança', 'Sessão e conta')}</ul>`;
