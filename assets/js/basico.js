@@ -1687,22 +1687,22 @@ function basFesta(tipo, titulo, msg, valor) {
     ${valor > 0 ? `<p class="bas-ok-val">${basFestaValor(valor)}</p>` : ''}<p class="bas-ok-t">${esc(titulo)}</p>${msg ? `<p class="bas-ok-m">${esc(msg)}</p>` : ''}<button type="button" class="bas-ok-bt">OK</button>`;
   const fecha = () => { el.classList.add('sai'); setTimeout(() => el.remove(), 300); };
   el.querySelector('.bas-ok-bt').addEventListener('click', fecha); document.body.appendChild(el); // só fecha no OK
-  const fim = () => el.classList.add('fim');
+  const fim = () => el.classList.add('fim'); const depois = () => setTimeout(fim, 350); // o OK só aparece depois que o Cifrão saiu da tela
   if (!menos) requestAnimationFrame(() => requestAnimationFrame(() => { const h = el.querySelector('.cifrao'), w = el.querySelector('.bas-ok-cif'); if (!window.Cifrao || !h.cifrao || !w.animate) { fim(); return; }
     window.Cifrao.expressao(h, inv ? 'celebraInv' : 'celebraGasto');
     if (!inv) {
       const t = (y) => `translate(${W / 2 - 75}px, ${y}px)`, cy = H * .42 - 75;
-      setTimeout(() => window.Cifrao.forma(h, 'moeda'), 820); // troca de costas, no meio do giro
+      setTimeout(() => window.Cifrao.forma(h, 'moeda'), 1070); // troca de costas, no meio do giro
       const voo = w.animate([{ transform: t(H + 20), easing: 'cubic-bezier(.15, .75, .3, 1)' }, { transform: t(cy - 10), offset: .32, easing: 'cubic-bezier(.45, 0, .55, 1)' },
-        { transform: t(cy), offset: .74, easing: 'cubic-bezier(.55, 0, .85, .35)' }, { transform: t(H + 40) }], { duration: 2300, fill: 'forwards' });
-      voo.finished.then(fim, fim);
+        { transform: t(cy), offset: .74, easing: 'cubic-bezier(.55, 0, .85, .35)' }, { transform: t(H + 40) }], { duration: 3000, fill: 'forwards' });
+      voo.finished.then(depois, fim);
     } else {
       // investimento: jogado para cima, vira seta no caminho, para um instante no alto, pisca e dispara para cima
       const t = (y) => `translate(${W / 2 - 75}px, ${y}px)`, cy = H * .4 - 75;
-      setTimeout(() => window.Cifrao.forma(h, 'seta'), 430);
+      setTimeout(() => window.Cifrao.forma(h, 'seta'), 570);
       const voo = w.animate([{ transform: t(H + 20), easing: 'cubic-bezier(.15, .75, .3, 1)' }, { transform: t(cy - 8), offset: .32, easing: 'cubic-bezier(.45, 0, .55, 1)' },
-        { transform: t(cy), offset: .74, easing: 'cubic-bezier(.45, 0, .55, 1)' }, { transform: t(cy + 12), offset: .81, easing: 'cubic-bezier(.5, 0, .85, .25)' }, { transform: t(-260) }], { duration: 1950, fill: 'forwards' });
-      voo.finished.then(fim, fim);
+        { transform: t(cy), offset: .74, easing: 'cubic-bezier(.45, 0, .55, 1)' }, { transform: t(cy + 12), offset: .81, easing: 'cubic-bezier(.5, 0, .85, .25)' }, { transform: t(-260) }], { duration: 2600, fill: 'forwards' });
+      voo.finished.then(depois, fim);
     } }));
 }
 // som e vibração juntos, no mesmo quadro (o retorno precisa chegar junto com a mudança na tela)
@@ -2624,8 +2624,19 @@ function basIaxPulo() {
     const meio = Math.min(de, ny) - 46;
     const a = av.animate([{ transform: `translateY(${de}px) scale(1)` }, { transform: `translateY(${de + 6}px) scale(1.08, .86)`, offset: .14 }, { transform: `translateY(${meio}px) scale(.62)`, offset: .52 }, { transform: `translateY(${ny + 4}px) scale(1.1, .88)`, offset: .86 }, { transform: `translateY(${ny}px) scale(1)` }], { duration: 720, easing: 'cubic-bezier(.35, .1, .3, 1)' });
     av.style.transform = `translateY(${ny}px)`;
-    a.finished.then(() => { try { window.Cifrao && window.Cifrao.forma(cif, 'cifrao'); } catch (e) { /* ignora */ } }, () => {});
+    a.finished.then(() => { try { window.Cifrao && window.Cifrao.forma(cif, 'cifrao'); } catch (e) { /* ignora */ } setTimeout(() => reage(ult), 380); }, () => {});
   };
+  // reage ao que respondeu: comemora o que é bom, estranha o que passou do ponto, concorda no resto
+  const reage = (m) => { const t = (m && m.textContent || '').toLowerCase(); const C = window.Cifrao; if (!C) return;
+    const nome = /passou|além|estour|caiu|negativ|ainda não tem|cuidado|atenção|acima do/.test(t) ? (Math.random() < .5 ? 'confuso' : 'susto') : /sobr|parabéns|conclu|subiu|bateu|ótimo|dá para|disponíveis|livres|cresceu/.test(t) ? (Math.random() < .5 ? 'festa' : 'comemorando') : (Math.random() < .5 ? 'sim' : 'piscadela');
+    try { C.expressao(cif, nome); } catch (e) { /* ignora */ } };
+  // pensando enquanto a resposta não chega
+  new MutationObserver(() => { if (log.querySelector('.ia-m.dig')) try { window.Cifrao && window.Cifrao.expressao(cif, 'calculando'); } catch (e) { /* ignora */ } }).observe(log, { childList: true, subtree: true });
+  // no toque, às vezes vira uma das outras formas (moeda, cadeado, mais, seta) e volta sozinho
+  cif.addEventListener('click', () => { if (Math.random() < .45) try { const F = ['moeda', 'cadeado', 'mais', 'seta']; window.Cifrao.forma(cif, F[Math.floor(Math.random() * F.length)]); } catch (e) { /* ignora */ } });
+  // parado, de tempos em tempos ele faz um gesto pequeno para parecer vivo
+  const vivo = setInterval(() => { if (!cif.isConnected) { clearInterval(vivo); return; } if (quieto || document.hidden || (cif.cifrao && cif.cifrao.seq)) return;
+    const G = ['espiada', 'curioso', 'piscadela', 'animado', 'espiando', 'carinho', 'sim']; try { window.Cifrao.expressao(cif, G[Math.floor(Math.random() * G.length)]); } catch (e) { /* ignora */ } }, 3800);
   new MutationObserver(() => requestAnimationFrame(ajeita)).observe(log, { childList: true });
   ajeita();
 }
