@@ -2613,15 +2613,15 @@ function basArLigar() {
   const el = document.querySelector('.bas-gg[data-f]'); if (!el || el.dataset.on) return; el.dataset.on = '1';
   const F = JSON.parse(el.dataset.f); const q = el.dataset.q; const svg = el.querySelector('svg'); const NS = 'http://www.w3.org/2000/svg';
   // medidor: arco de 270° aberto embaixo; cada fonte é uma parte azul, separada da seguinte por um corte com um risquinho; depois, marquinhas até o melhor mês e o trilho escuro
-  const CX = 170, CY = 158, R = 140, A0 = 225, SW = 270, W = 22, GAP = 8.5; const CAP = (W / 2 / R) * 180 / Math.PI;
+  const CX = 170, CY = 158, R = 140, A0 = 225, SW = 270, W = 22, GAP = 6.4; const CAP = (W / 2 / R) * 180 / Math.PI;
   const ang = (f) => A0 - SW * f; const pt = (g, r) => [CX + r * Math.cos((g * Math.PI) / 180), CY - r * Math.sin((g * Math.PI) / 180)];
   const arc = (g0, g1) => { if (g0 - g1 < 0.3) return ''; const [x0, y0] = pt(g0, R), [x1, y1] = pt(g1, R); return `M${x0.toFixed(2)} ${y0.toFixed(2)}A${R} ${R} 0 ${g0 - g1 > 180 ? 1 : 0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`; };
   const poe = (tag, at) => { const n = document.createElementNS(NS, tag); Object.entries(at).forEach(([a, b]) => n.setAttribute(a, b)); svg.appendChild(n); return n; };
   const wt = F.map((f) => Math.max(f[4], 0.12)); const sw = wt.reduce((x, y) => x + y, 0); const ini = [0]; wt.forEach((w, i) => ini.push(ini[i] + (sw > 1 ? w / sw : w))); const fim = ini[F.length];
-  poe('path', { d: arc(A0, A0 - SW), style: `fill:none;stroke:rgba(255,255,255,.1);stroke-width:${W};stroke-linecap:round` });
+  poe('path', { d: arc(A0, A0 - SW), style: `fill:none;stroke:rgba(255,255,255,.16);stroke-width:${W};stroke-linecap:round` });
   /* marquinhas finas e radiais logo depois da última parte, sumindo aos poucos */ if (F.length && fim < 0.99) { const g0 = ang(fim) - CAP - 2.2, g1 = Math.max(ang(1), g0 - 62); for (let g = g0, n = 0; g > g1; g -= 3.4, n++) { const [a1, b1] = pt(g, R - 7), [a2, b2] = pt(g, R + 7); poe('line', { x1: a1.toFixed(1), y1: b1.toFixed(1), x2: a2.toFixed(1), y2: b2.toFixed(1), style: `stroke:rgba(255,255,255,${(0.34 - 0.2 * ((g0 - g) / (g0 - g1))).toFixed(2)});stroke-width:1.8;stroke-linecap:round` }); } }
-  const SG = F.map((_, i) => poe('path', { class: 'bas-gg-sg', d: arc(ang(ini[i]) - (i ? GAP : 0), ang(ini[i + 1]) + (i < F.length - 1 ? GAP : 0)), style: `fill:none;stroke:#2F6BFF;stroke-width:${W};stroke-linecap:round` }));
-  ini.slice(1, F.length).forEach((v) => { const g = ang(v); const [x1, y1] = pt(g, R + 7), [x2, y2] = pt(g, R - 7); poe('line', { x1: x1.toFixed(1), y1: y1.toFixed(1), x2: x2.toFixed(1), y2: y2.toFixed(1), style: 'stroke:rgba(255,255,255,.55);stroke-width:2;stroke-linecap:round' }); });
+  const SG = F.map((_, i) => poe('path', { class: 'bas-gg-sg', d: arc(ang(ini[i]) - (i ? GAP : 0), ang(ini[i + 1]) + (i < F.length - 1 ? GAP : 0)), style: `fill:none;stroke:#FFFFFF;stroke-width:${W};stroke-linecap:round` }));
+  ini.slice(1, F.length).forEach((v) => { const g = ang(v); const [x1, y1] = pt(g, R + 6), [x2, y2] = pt(g, R - 6); poe('line', { x1: x1.toFixed(1), y1: y1.toFixed(1), x2: x2.toFixed(1), y2: y2.toFixed(1), style: 'stroke:rgba(255,255,255,.8);stroke-width:2;stroke-linecap:round' }); });
   if (!F.length) return;
   const k = el.querySelector('.bas-gg-k'), v = el.querySelector('.bas-gg-v'), s = el.querySelector('.bas-gg-s'); let sel = -1;
   const total = () => { sel = -1; SG.forEach((p) => p.classList.remove('apaga')); k.textContent = el.dataset.tk; v.textContent = el.dataset.t;

@@ -4666,7 +4666,7 @@ html.tema-anim body[data-ui="basico"], html.tema-anim body[data-ui="basico"] *, 
 html[data-topo="tema"][data-theme="light"] .bas-ar-s b.up { color: #15803D !important; } html[data-topo="tema"][data-theme="light"] .bas-ar-s b.dn { color: #C0263D !important; }
 
 /* Entradas > Fontes como medidor: fundo preto, arco grande e inteiro, partes azuis; no meio, o rótulo, o valor e a frase */
-.bas-pt-bg.bas-en2-bg.ar-on { background: #000 !important; padding-bottom: 34px; }
+.bas-pt-bg.bas-en2-bg.ar-on { padding-bottom: 34px; }
 .bas-en2-bg.ar-on > :is(.bas-pv2-k, .bas-pv2-t) { display: none; }
 .bas-gg { position: relative; margin: 14px -4px 0; cursor: pointer; -webkit-tap-highlight-color: transparent; outline: none; }
 .bas-gg.vazio { cursor: default; }
@@ -4678,6 +4678,6 @@ html[data-topo="tema"][data-theme="light"] .bas-ar-s b.up { color: #15803D !impo
 .bas-gg-s { max-width: 270px; font-size: 16px; line-height: 1.4; color: rgba(255, 255, 255, .55); }
 .bas-gg-s b { font-weight: 500; } .bas-gg-s b.up { color: #5FD47A; } .bas-gg-s b.dn { color: #FF6B6B; }
 .bas-gg .bas-ar-bt { pointer-events: auto; }
-html[data-topo="tema"][data-theme="light"] .bas-en2-bg.ar-on :is(b, strong, small, span, p, em, h1, h2, h3, header, label):not(.bas-rl-seg [aria-pressed="true"], .bas-rl-seg [aria-pressed="true"] *, .bas-gg-s b) { color: #fff !important; }
-html[data-topo="tema"][data-theme="light"] .bas-en2-bg.ar-on :is(.bas-gg-k, .bas-gg-s) { color: rgba(255, 255, 255, .55) !important; }
 .bas-gg-tx { left: 20%; right: 20%; gap: 6px; } .bas-gg-k { font-size: 14px; } .bas-gg-v { font-size: min(32px, 8.4vw); font-weight: 650; letter-spacing: -.015em; } .bas-gg-s { font-size: 13.5px; max-width: 200px; }
+html[data-topo="tema"][data-theme="light"] .bas-gt-bg .bas-gg-svg { filter: brightness(0) invert(17%) sepia(92%) saturate(4200%) hue-rotate(232deg); }
+.bas-gg-sg.apaga { opacity: .45; }
