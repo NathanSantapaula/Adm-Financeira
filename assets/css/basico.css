@@ -4740,3 +4740,8 @@ html[data-topo="tema"][data-theme="light"] .bas-gt-bg .bas-gg-svg { filter: brig
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .75), inset 0 -1px 0 rgba(255, 255, 255, .28), inset 0 0 0 .5px rgba(255, 255, 255, .28), 0 1px 1.5px rgba(0, 0, 0, .06), 0 8px 22px -10px rgba(0, 0, 0, .22) !important; }
 .bas-iax-b:active { transform: scale(1.06); }
 @media (prefers-reduced-transparency: reduce) { .bas-iax-b { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--surface) !important; color: var(--ink); } }
+/* Meus sonhos: principal maior no topo; cartões com sombra suave em volta, sem a faixa azul embaixo */
+.bas-sn2-flut { width: 196px; margin: 0 0 14px; }
+.bas-sn2-arte.hero { border-radius: 48px; }
+:root[data-theme="light"] .bas-sn2-t .bas-sn2-arte { box-shadow: inset 0 1.5px 0 #fff, inset 0 0 0 1px rgba(20, 30, 80, .06), 0 1px 3px rgba(20, 30, 80, .05), 0 8px 24px -8px rgba(20, 30, 80, .12) !important; }
+:root:not([data-theme="light"]) .bas-sn2-t .bas-sn2-arte:not(.hero) { box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, .45), inset 0 0 0 1px rgba(255, 255, 255, .12), inset 0 0 22px rgba(59, 108, 255, .14), 0 8px 24px -8px rgba(0, 0, 0, .45) !important; }
