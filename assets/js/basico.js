@@ -1635,7 +1635,7 @@ function basRsDados(m) {
 }
 function basTelaResumo(o) {
   const m = o && o.id != null ? +o.id : S.mes; const R = basRsDados(m); const op = basRsOp();
-  const card = `<div class="bas-story bas-rs"><img class="bas-rs-ic" src="assets/img/icon-192.png" alt="" aria-hidden="true"><small>${esc(cap(MES_LONGO[m]))} de ${S.year}</small><b class="bas-story-v">${esc(R.head.v)}</b><span class="bas-story-k">${R.head.k}</span>
+  const card = `<div class="bas-story bas-rs"><img class="bas-rs-ic" src="assets/img/icon-preto-192.png" alt="" aria-hidden="true"><small>${esc(cap(MES_LONGO[m]))} de ${S.year}</small><b class="bas-story-v">${esc(R.head.v)}</b><span class="bas-story-k">${R.head.k}</span>
       ${R.L.length ? `<ul>${R.L.map(([n, v, c]) => `<li><span>${n}</span><b class="${c}">${esc(v)}</b></li>`).join('')}</ul>` : ''}
       ${R.g ? `<div class="bas-story-g"><span>${esc(R.g.nome)}</span>${basBarra(R.g.p)}<b>${pct(R.g.p)}</b></div>` : ''}<p class="bas-rs-pe">Feito com ${esc(CFG.marca || 'Cifrão')}</p></div>`;
   const opcoes = `<section class="card bas-rs-op"><small class="bas-k">O que vai na imagem</small>
@@ -1873,20 +1873,18 @@ function basOrgLigar() {
 function basStoryPng(m) {
   const R = basRsDados(m); const cs = getComputedStyle(document.documentElement); const acc = cs.getPropertyValue('--accent').trim() || '#0A84FF'; const acc2 = cs.getPropertyValue('--accent-2').trim() || '#5E5CE6';
   const fonte = getComputedStyle(document.body).fontFamily; const W = 1080; const H = 1350; const cv = document.createElement('canvas'); cv.width = W; cv.height = H; const x = cv.getContext('2d');
-  const ic = new Image(); ic.src = new URL('assets/img/icon-512.png', document.baseURI).href;
+  const ic = new Image(); ic.src = new URL('assets/img/icon-preto-512.png', document.baseURI).href;
   return (ic.decode ? ic.decode() : Promise.resolve()).catch(() => null).then(() => {
-    x.fillStyle = '#0E0F13'; x.fillRect(0, 0, W, H);
-    const brilho = (cx, cy, r, cor, a) => { const gr = x.createRadialGradient(cx, cy, 0, cx, cy, r); gr.addColorStop(0, cor); gr.addColorStop(1, 'rgba(0,0,0,0)'); x.globalAlpha = a; x.fillStyle = gr; x.fillRect(0, 0, W, H); x.globalAlpha = 1; };
-    brilho(W * 0.5, -60, 760, acc, 0.75); brilho(W * 0.5, H + 120, 760, acc2, 0.5);
-    x.fillStyle = 'rgba(255,255,255,0.10)'; for (let yy = 30; yy < 620; yy += 36) for (let xx = 30; xx < W; xx += 36) { x.globalAlpha = 0.9 * (1 - yy / 620); x.fillRect(xx, yy, 2.5, 2.5); } x.globalAlpha = 1;
+    { const gr = x.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, '#3B6CFF'); gr.addColorStop(.46, '#1428F5'); gr.addColorStop(.78, '#0A1290'); gr.addColorStop(1, '#03061F'); x.fillStyle = gr; x.fillRect(0, 0, W, H); }
+    { const gr = x.createRadialGradient(W / 2, 0, 0, W / 2, 0, 640); gr.addColorStop(0, 'rgba(150,185,255,0.55)'); gr.addColorStop(1, 'rgba(150,185,255,0)'); x.fillStyle = gr; x.fillRect(0, 0, W, H); }
     const txt = (t, px, peso, cor, y, al) => { x.font = `${peso} ${px}px ${fonte}`; x.fillStyle = cor; x.textAlign = al || 'center'; x.fillText(t, al === 'left' ? 96 : al === 'right' ? W - 96 : W / 2, y); };
     // o ícone do Cifrão no alto, com cantos redondos
     if (ic.complete && ic.naturalWidth) { x.save(); x.beginPath(); x.roundRect(W / 2 - 72, 70, 144, 144, 34); x.clip(); x.drawImage(ic, W / 2 - 72, 70, 144, 144); x.restore(); }
     txt(`${cap(MES_LONGO[R.m])} de ${S.year}`, 38, 500, 'rgba(245,245,247,0.7)', 286);
     txt(R.head.v, R.head.v.length > 14 ? 104 : 128, 800, '#ffffff', 420); txt(R.head.k, 38, 500, 'rgba(245,245,247,0.7)', 485);
-    const y0 = 560; R.L.forEach(([n, val, c], i) => { const y = y0 + i * 118; x.fillStyle = 'rgba(255,255,255,0.07)'; x.beginPath(); x.roundRect(80, y, W - 160, 96, 28); x.fill(); txt(n, 38, 500, 'rgba(245,245,247,0.7)', y + 61, 'left'); txt(val, 42, 700, c === 'pos' ? '#30D158' : '#ffffff', y + 62, 'right'); });
+    const y0 = 560; R.L.forEach(([n, val, c], i) => { const y = y0 + i * 118; x.fillStyle = 'rgba(255,255,255,0.13)'; x.beginPath(); x.roundRect(80, y, W - 160, 96, 28); x.fill(); x.strokeStyle = 'rgba(255,255,255,0.22)'; x.lineWidth = 2; x.stroke(); txt(n, 38, 500, 'rgba(255,255,255,0.82)', y + 61, 'left'); txt(val, 42, 700, c === 'pos' ? '#8CF7B8' : '#ffffff', y + 62, 'right'); });
     if (R.g) { const y = y0 + R.L.length * 118 + 44; txt(`${R.g.nome} · ${pct(R.g.p)} do caminho`, 36, 600, '#ffffff', y, 'left'); x.fillStyle = 'rgba(255,255,255,0.14)'; x.beginPath(); x.roundRect(96, y + 30, W - 192, 22, 11); x.fill();
-      const gr = x.createLinearGradient(96, 0, W - 96, 0); gr.addColorStop(0, acc2); gr.addColorStop(1, acc); x.fillStyle = gr; x.beginPath(); x.roundRect(96, y + 30, Math.max(22, (W - 192) * R.g.p), 22, 11); x.fill(); }
+      const gr = x.createLinearGradient(96, 0, W - 96, 0); gr.addColorStop(0, '#ffffff'); gr.addColorStop(1, '#CFE3FF'); x.fillStyle = gr; x.beginPath(); x.roundRect(96, y + 30, Math.max(22, (W - 192) * R.g.p), 22, 11); x.fill(); }
     txt(`Feito com ${CFG.marca || 'Cifrão'}`, 30, 500, 'rgba(245,245,247,0.5)', H - 70);
     return new Promise((ok) => cv.toBlob((b) => ok(b), 'image/png'));
   });
@@ -2217,7 +2215,7 @@ function basWidgetsInicio(secs) {
   const mR = S.mes; const Dr = E.disponivelAporte({ C, mes: mR, metaMes: C.metaAporteMes }); const topR = Math.max(1, C.receita[mR], C.despesas[mR], Dr.aportado); const Cr = C;
   secs.resumo = `<div class="card bas-w-res"><div class="bas-w-res-t"><small>Retrospectiva de ${MES_LONGO[mR]}</small><b>Seu mês num story</b><span>Reveja como foi o mês e, no final, compartilhe a imagem.</span>
       <span class="bas-w-res-bts"><button class="bas-sn-bt prim" ${basIr('retro', { id: mR })}>${I_PLAY}Ver retrospectiva</button></span></div>
-    <button class="bas-w-res-s" ${basIr('retro', { id: mR })} aria-label="Ver a retrospectiva de ${MES_LONGO[mR]}"><img class="bas-w-res-m" src="assets/img/icon-192.png" alt="" aria-hidden="true"><small>${cap(MES_LONGO[mR])}</small><b>${Cr.receita[mR] > 0 ? pct(Math.max(0, Cr.investAlocado[mR] / Cr.receita[mR])) : brl0(Cr.investAlocado[mR])}</b><em>${Cr.receita[mR] > 0 ? 'ficou com você' : 'sobraram'}</em>
+    <button class="bas-w-res-s" ${basIr('retro', { id: mR })} aria-label="Ver a retrospectiva de ${MES_LONGO[mR]}"><img class="bas-w-res-m" src="assets/img/icon-preto-192.png" alt="" aria-hidden="true"><small>${cap(MES_LONGO[mR])}</small><b>${Cr.receita[mR] > 0 ? pct(Math.max(0, Cr.investAlocado[mR] / Cr.receita[mR])) : brl0(Cr.investAlocado[mR])}</b><em>${Cr.receita[mR] > 0 ? 'ficou com você' : 'sobraram'}</em>
       <span class="bas-w-res-l" aria-hidden="true">${[['pos', C.receita[mR]], ['', C.despesas[mR]], ['acc', Dr.aportado]].map(([c, v]) => `<i class="${c}" style="--w:${Math.max(6, (v / topR) * 100).toFixed(0)}%"></i>`).join('')}</span></button></div>`;
   // o que o assistente notou: o aviso mais importante ainda não lido
   const av = (typeof notifLista === 'function' ? notifLista() : []).filter((n) => !n.lida); const ordem = { critico: 0, alerta: 1, info: 2 }; av.sort((a, b) => (ordem[a.nivel] ?? 3) - (ordem[b.nivel] ?? 3)); const n = av[0];

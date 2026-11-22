@@ -4797,3 +4797,17 @@ html:not([data-topo="tema"]) .bas-gt-c { background: linear-gradient(180deg, rgb
 .bas-rs-op + .bas-cta { margin-top: 16px; }
 /* cartão do Início: o ícone do Cifrão no lugar do $ */
 img.bas-w-res-m { width: 30px; height: 30px; border-radius: 8px; box-shadow: 0 4px 10px -4px rgba(0, 0, 0, .5); }
+/* Palco 3D do detalhe: arrastar gira o objeto e a pinça amplia (a página não rola nem amplia por cima dele) */
+.bas-sn2-o3 { touch-action: none; cursor: grab; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.bas-sn2-o3:active { cursor: grabbing; }
+
+/* Resumo do mês no design novo: azul do topo do app, linhas de vidro, sem pontinhos; ícone do Cifrão no fundo preto */
+.bas-story.bas-rs { color: #fff; background: radial-gradient(70% 38% at 50% 0%, rgba(140, 175, 255, .55), transparent 70%), linear-gradient(180deg, #3B6CFF 0%, #1428F5 46%, #0A1290 78%, #03061F 100%);
+  box-shadow: 0 24px 50px -24px rgba(20, 40, 245, .65), inset 0 1px 0 rgba(255, 255, 255, .35); }
+.bas-story.bas-rs::before { display: none; }
+.bas-rs .bas-rs-ic { width: 56px; height: 56px; border-radius: 16px; box-shadow: 0 10px 24px -10px rgba(0, 0, 40, .7), 0 0 0 1px rgba(255, 255, 255, .18); }
+.bas-rs > small, .bas-rs .bas-story-k, .bas-rs-pe { color: rgba(255, 255, 255, .78) !important; }
+.bas-rs li { background: rgba(255, 255, 255, .12); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .22), inset 0 0 0 .5px rgba(255, 255, 255, .14); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.bas-rs li span { color: rgba(255, 255, 255, .8) !important; } .bas-rs li b { color: #fff !important; } .bas-rs li b.pos { color: #8CF7B8 !important; }
+.bas-rs .bas-story-g .bas-bar { background: rgba(255, 255, 255, .2); } .bas-rs .bas-story-g .bas-bar i { background: linear-gradient(90deg, #fff, #CFE3FF) !important; box-shadow: 0 0 10px rgba(255, 255, 255, .5); }
+html[data-topo="tema"][data-theme="light"] .bas-rs :is(b, span, small, p) { color: #fff !important; }
