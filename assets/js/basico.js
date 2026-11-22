@@ -228,11 +228,13 @@ window.addEventListener('popstate', (e) => { // voltar do celular ou do navegado
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modoBasico() && basPilha().length && !$('#modal').open) { e.preventDefault(); basFechar(); } });
 document.addEventListener('submit', (e) => { const f = e.target; if (f.dataset.form !== 'bas') return; e.preventDefault(); basSalvar(f); });
 
+// telas sem valores pessoais: o olho de esconder valores não faz sentido nelas
+const BAS_SEM_OLHO = ['config', 'config-ap', 'config-id', 'config-not', 'config-priv', 'config-seg', 'voz', 'perfil', 'privacidade', 'contato', 'duvidas', 'perfil-inv'];
 function basicoHtml() {
   if (!S.plan) return `<div class="bas">${basCard(`<h2 class="bas-h2">Vamos começar</h2><p class="bas-p">${voz('bas_vazio')}</p><button class="btn primary lg bas-cta" data-act="create-plan">Começar ${S.year || NOW_Y}</button>`)}</div>`;
   if (S.profile) basAplicarAp();
   const t = basTopoPilha();
-  if (t) { const f = BAS_TELAS[t.t]; return `<div class="bas bas-tela" data-t="${t.t}">${f ? f(t) : basSumiu()}</div>`; }
+  if (t) { const f = BAS_TELAS[t.t]; const h = f ? f(t) : basSumiu(); return `<div class="bas bas-tela" data-t="${t.t}">${BAS_SEM_OLHO.includes(t.t) ? h.replace(olhoHtml(), '') : h}</div>`; }
   const a = basAba(); const m = S.mes;
   return `<div class="bas" data-aba="${a}">${a === 'gastos' ? basGastos(m) : a === 'investir' ? basInvestir(m) : a === 'perfil' ? basPerfil() : basInicio(m)}</div>`;
 }
@@ -543,7 +545,7 @@ function basPerfil() {
     <div class="bas-pf-eu"><label class="bas-pf-av" for="av-file" aria-label="Trocar a foto de perfil">${avatarHtml(p)}<span class="bas-pf-pen" aria-hidden="true">${I_CAM}</span></label><input id="av-file" type="file" accept="image/jpeg,image/png,image/webp" hidden>
       <b>${esc(p.nome || 'Você')}</b>${p.email ? `<small>${esc(p.email)}</small>` : ''}</div></div>`;
   const lista = `<ul class="card bas-pf-l">${lin(basIr('perfil'), I.user, 'Dados pessoais')}${lin(basIr('perfil-inv'), I.inv, 'Perfil de investidor', `<small>${esc((S.profile.perfilInvestidor && E.PERFIS[S.profile.perfilInvestidor.resultado] || {}).nome || 'Fazer o teste')}</small>`)}${lin(basIr('planejamento'), I_PLANO, 'Planejamento', `<small>${instMinhas().length} ${instMinhas().length === 1 ? 'banco' : 'bancos'}</small>`)}${lin(basIr('config'), I_ENG, 'Configurações')}</ul>`;
-  return `<div class="bas-pg bas-pg-p">${topoPf}<div class="bas-gt-folha bas-pf-folha">${basPlanoCard()}${lista}
+  return `<div class="bas-pg bas-pg-p">${topoPf}<div class="bas-gt-folha bas-pf-folha">${lista}${basPlanoCard()}
     ${modo ? basSecao('Versão', '', modo) : ''}
     ${cli}<ul class="bas-ativ bas-sair"><li><button data-act="bas-sair">${basNome('Sair')}</button></li></ul></div></div>`;
 }
@@ -614,7 +616,7 @@ const BAS_GUIAS = [
     { ir: basGuiaIr('inicio'), s: '.bas-org', t: 'Organizar esta tela', d: 'No fim de cada aba. Arraste pela alça para mudar a ordem, tire o que não usa e coloque blocos novos.' }] },
   { id: 'cor', t: 'Como mudo a cor, o tema ou o jeito de falar?', k: ['cor', 'tema', 'modo escuro', 'modo claro', 'aparencia', 'jeito de falar', 'voz'], passos: [
     { ir: basGuiaIr('perfil'), s: '.bas-pf-cfg', t: 'Configurações', d: 'A engrenagem no alto do Perfil.' },
-    { ir: basGuiaIr('perfil', 'config-ap'), s: '.bas-ap-cor', t: 'Sua cor', d: 'A cor de destaque, o tema, o tamanho do texto e o estilo dos cantos.' },
+    { ir: basGuiaIr('perfil', 'config-ap'), s: '.bas-ap-seg', t: 'Aparência', d: 'O tema, a cor do topo, o tamanho do texto e o estilo dos cantos.' },
     { s: '.bas-voz', t: 'Jeito de falar', d: 'Consultivo, Direto ou Acolhedor. Muda os textos; os números são sempre os mesmos.' }] },
   { id: 'saude', t: 'O que é a saúde financeira?', k: ['saude', 'nota', 'rostinho', 'reserva de emergencia', 'estou bem'], passos: [
     { ir: basGuiaIr('inicio', 'saude'), s: '.bas-sdx', t: 'Saúde financeira', d: 'Uma nota de 0 a 100 pela reserva, pela sobra do ano, pelas contas fixas e pelo seu sonho. Toque para ver cada ponto e o que fazer.' }] },
@@ -2869,12 +2871,12 @@ const I_CF = { ap: ic('<path d="M14.5 4.5l5 5L10 19H5v-5z"/><path d="M12.5 6.5l5
   sair: ic('<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 8l-4 4 4 4M6 12h10"/>'), lixo: ic('<path d="M5 7h14M10 7V5h4v2M7 7l1 13h8l1-13"/>'), sol: ic('<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/>'),
   lua: ic('<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>'), ok: ic('<path d="m6 12.5 4 4 8-9"/>') };
 function basCf() {
-  const p = S.profile.prefs; p.cf = Object.assign({ texto: 'm', cantos: 'redondo', vibrar: true, push: false }, p.cf);
+  const p = S.profile.prefs; p.cf = Object.assign({ texto: 'm', cantos: 'redondo', topo: 'azul', vibrar: true, push: false }, p.cf);
   p.cf.avisos = Object.assign({ contas: true, resumo: true, prov: true, dicas: false }, p.cf.avisos); return p.cf;
 }
 function basAplicarAp() {
   if (!S.profile || !S.profile.prefs) return; const c = basCf(); const h = document.documentElement;
-  if (h.dataset.texto !== c.texto) h.dataset.texto = c.texto; if (h.dataset.cantos !== c.cantos) h.dataset.cantos = c.cantos;
+  if (h.dataset.texto !== c.texto) h.dataset.texto = c.texto; if (h.dataset.cantos !== c.cantos) h.dataset.cantos = c.cantos; if (h.dataset.topo !== c.topo) h.dataset.topo = c.topo;
   // vibração desligada: um filtro único em navigator.vibrate vale para todos os toques do app
   try { if (navigator.vibrate && !navigator.vibrate.basCf) { const v = navigator.vibrate.bind(navigator); const f = (x) => (S.profile && S.profile.prefs.cf && S.profile.prefs.cf.vibrar === false ? false : v(x)); f.basCf = 1; navigator.vibrate = f; } } catch (e) { /* ignora */ }
 }
@@ -2892,7 +2894,7 @@ function basTelaConfig() {
   const nAv = Object.values(c.avisos).filter(Boolean).length;
   const hero = `<button class="bas-cf-modo" data-act="bas-cf-modo" role="switch" aria-checked="${noite}" aria-label="Modo escuro"><span class="bas-cf-mic" aria-hidden="true">${noite ? I_CF.lua : I_CF.sol}</span>
     <span class="bas-cf-mt"><b>${noite ? 'Modo escuro' : 'Modo claro'}</b><small>${t === 'auto' ? 'Automático, segue o celular' : noite ? 'Toque para o claro' : 'Toque para o escuro'}</small></span>${basCeu(noite)}</button>`;
-  const folha = `${basCfH('Personalização')}<ul class="card bas-cf-l">${basCfLi(basIr('config-ap'), '#8B7CFF', I_CF.ap, 'Aparência', `${esc(cor)} · Texto ${BAS_TEXTO.find((x) => x[0] === c.texto)[1].toLowerCase()} · ${BAS_CANTOS.find((x) => x[0] === c.cantos)[1]}`)}
+  const folha = `${basCfH('Personalização')}<ul class="card bas-cf-l">${basCfLi(basIr('config-ap'), '#8B7CFF', I_CF.ap, 'Aparência', `${c.topo === 'tema' ? 'Topo na cor do tema' : 'Topo azul'} · Texto ${BAS_TEXTO.find((x) => x[0] === c.texto)[1].toLowerCase()} · ${BAS_CANTOS.find((x) => x[0] === c.cantos)[1]}`)}
       ${basCfLi(basIr('config-id'), '#3EA6FF', I_CF.id, 'Idioma', 'Português (Brasil)')}${basCfLi(basIr('voz'), '#2FD4C0', I_CF.voz, 'Jeito de falar', esc((VOZES[tomAtual()] || {}).nome || ''))}</ul>
     ${basCfH('Alertas')}<ul class="card bas-cf-l">${basCfLi(basIr('config-not'), '#FF9F43', I_CF.not, 'Notificações', c.push ? `${nAv} ${nAv === 1 ? 'aviso ligado' : 'avisos ligados'}` : 'Pausadas')}</ul>
     ${basCfH('Privacidade e segurança')}<ul class="card bas-cf-l">${basCfLi(basIr('config-priv'), '#34C759', I_CF.priv, 'Privacidade', S.privado ? 'Valores escondidos · Seus dados' : 'Valores à mostra · Seus dados')}
@@ -2903,8 +2905,10 @@ function basTelaConfigAp() {
   const p = S.profile.prefs; const c = basCf(); const t = p.tema || 'auto'; const k = typeof temaCustom === 'function' ? temaCustom() : { cor: '' }; const custom = t === 'custom' || (t === 'auto' && p.manual === 'custom');
   const tm = (v) => (t === 'custom' ? (p.custom && p.custom.base === 'oled' ? 'oled' : 'light') : t) === v;
   const hero = `<div class="bas-ap-prev" aria-hidden="true"><span class="bas-ap-pk">Entrou em novembro</span><b>R$ 13.237<span>,00</span></b><span class="bas-ap-pg"><i style="--h:40%"></i><i style="--h:62%"></i><i style="--h:48%"></i><i class="on" style="--h:88%"></i><i style="--h:30%"></i></span><span class="bas-ap-pb">Nova entrada</span></div>`;
-  const folha = `${basCfH('Tema', t === 'auto' ? 'Automático' : basEscuro() ? 'Escuro' : 'Claro')}<div class="bas-ap-op" role="group" aria-label="Tema">${[['auto', 'Automático', 'au'], ['light', 'Claro', 'cl'], ['oled', 'Escuro', 'es']].map(([v, n, m]) => `<button data-act="bas-tema" data-v="${v}" aria-pressed="${tm(v)}"><span class="bas-ap-mk ${m}" aria-hidden="true"><i></i><i></i><i class="ac"></i></span>${n}</button>`).join('')}</div>
-    ${basCfH('Cor de destaque')}<div class="card bas-ap-cor"><div class="bas-cores" role="group" aria-label="Cor de destaque">${CORES_DESTAQUE.map(([cc, n]) => `<button style="--c:${cc}" data-act="bas-cor" data-v="${cc}" aria-label="${n}" aria-pressed="${custom && !!k.cor && k.cor.toLowerCase() === cc.toLowerCase()}"></button>`).join('')}</div></div>
+  const ti = Math.max(0, ['auto', 'light', 'oled'].findIndex(tm));
+  // tema: uma pílula com a marca que desliza até a opção; cor do topo: o degradê azul ou a cor do tema (um tom acima do fundo)
+  const folha = `${basCfH('Tema', t === 'auto' ? 'Automático' : basEscuro() ? 'Escuro' : 'Claro')}<div class="bas-ap-seg" role="radiogroup" aria-label="Tema" style="--i:${ti}"><span class="bas-ap-th" aria-hidden="true"></span>${[['auto', 'Automático', '<circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/>'], ['light', 'Claro', '<circle cx="12" cy="12" r="4"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4"/>'], ['oled', 'Escuro', '<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>']].map(([v, n, d], i) => `<button role="radio" data-act="bas-ap-tema" data-v="${v}" data-i="${i}" aria-checked="${i === ti}">${ic(d)}<span>${n}</span></button>`).join('')}</div>
+    ${basCfH('Cor do topo', c.topo === 'tema' ? 'Cor do tema' : 'Azul Cifrão')}<div class="bas-ap-op bas-ap-topo" role="group" aria-label="Cor do topo">${[['azul', 'Azul Cifrão'], ['tema', 'Cor do tema']].map(([v, n]) => `<button data-act="bas-cf" data-k="topo" data-v="${v}" aria-pressed="${c.topo === v}"><span class="bas-ap-tp ${v}" aria-hidden="true"><i></i><i></i><b></b></span>${n}</button>`).join('')}</div>
     ${basCfH('Tamanho do texto', BAS_TEXTO.find((x) => x[0] === c.texto)[1])}<div class="bas-ap-tx" role="group" aria-label="Tamanho do texto">${BAS_TEXTO.map(([v, n, px]) => `<button data-act="bas-cf" data-k="texto" data-v="${v}" aria-label="${n}" aria-pressed="${c.texto === v}"><span style="font-size:${px}px">Aa</span></button>`).join('')}</div>
     ${basCfH('Estilo', BAS_CANTOS.find((x) => x[0] === c.cantos)[1])}<div class="bas-ap-op" role="group" aria-label="Estilo dos cantos">${BAS_CANTOS.map(([v, n]) => `<button data-act="bas-cf" data-k="cantos" data-v="${v}" aria-pressed="${c.cantos === v}"><span class="bas-ap-mk st ${v}" aria-hidden="true"><i class="ac"></i></span>${n}</button>`).join('')}</div>`;
   return basCfPg('bas-pg-ap', 'Aparência', 'O app muda na hora, enquanto você escolhe.', hero, folha);
@@ -2917,8 +2921,14 @@ function basTelaConfigId() {
 }
 function basTelaConfigNot() {
   const c = basCf(); const nega = typeof Notification !== 'undefined' && Notification.permission === 'denied';
-  const hero = `<div class="bas-nt-prev${c.push ? '' : ' off'}" aria-hidden="true"><div class="bas-nt-card"><span class="bas-nt-app">$</span><span class="bas-nt-tx"><b>Cifrão <small>agora</small></b><span>${c.push ? 'Sua conta de luz vence amanhã: R$ 182,40.' : 'As notificações estão pausadas.'}</span></span></div>
-    <span class="bas-nt-chips"><span>${I_CF.not}${c.push ? 'Ligadas' : 'Pausadas'}</span><span>${I_CF.vib}${c.vibrar ? 'Vibra' : 'Sem vibrar'}</span></span></div>`;
+  // prévia na tela de bloqueio: os avisos ligados aparecem empilhados, com o ícone do app; pausadas, o aviso some e fica o convite
+  const EX = { contas: ['Conta de luz vence amanhã', 'R$ 182,40 no débito automático.'], resumo: ['Novembro fechou no azul', 'Sobraram R$ 4.924 para investir.'], prov: ['MXRF11 pagou proventos', 'Caíram R$ 38,20 na sua conta.'], dicas: ['O assistente notou algo', 'O delivery subiu 18% este mês.'] };
+  const on = BAS_AVISOS.map((a) => a[0]).filter((k) => c.avisos[k]); const vivo = c.push && on.length; const ag = new Date();
+  const icone = '<img class="bas-nt-ico" src="assets/img/icon-192.png" alt="">';
+  const pilha = vivo ? on.slice(0, 3).map((k, i) => `<div class="bas-nt-n" style="--i:${i}">${icone}<span class="bas-nt-tx"><b>Cifrão<small>${i ? `há ${i * 12} min` : 'agora'}</small></b><em>${EX[k][0]}</em><span>${EX[k][1]}</span></span></div>`).join('')
+    : `<div class="bas-nt-zz">${icone}<span class="bas-nt-tx"><b>Notificações pausadas</b><span>${c.push ? 'Ligue ao menos um aviso abaixo.' : 'Ligue abaixo para o Cifrão avisar você.'}</span></span></div>`;
+  const hero = `<div class="bas-nt-ls${vivo ? '' : ' off'}" aria-hidden="true"><span class="bas-nt-hora">${String(ag.getHours()).padStart(2, '0')}:${String(ag.getMinutes()).padStart(2, '0')}</span><span class="bas-nt-dia">${esc(ag.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }))}</span>
+    <div class="bas-nt-pilha">${pilha}</div></div>`;
   const folha = `<ul class="card bas-cf-l">${basCfLi('', '#FF9F43', I_CF.not, 'Notificações no celular', c.push ? 'Ligadas neste aparelho' : nega ? 'Bloqueadas nos ajustes do celular' : 'Pausadas. Você não recebe nenhum aviso.', basCfSw('bas-cf-push', c.push, 'Notificações no celular'))}</ul>
     ${basCfH('Me avise sobre')}<ul class="card bas-cf-l${c.push ? '' : ' apagada'}">${BAS_AVISOS.map(([k, n, s, cor, d]) => basCfLi('', cor, ic(d), n, s, basCfSw('bas-cf-sw', c.avisos[k], n, ` data-k="avisos.${k}"`))).join('')}</ul>
     ${basCfH('Toque')}<ul class="card bas-cf-l">${basCfLi('', '#5B8CFF', I_CF.vib, 'Vibração', 'Um toque leve a cada ação', basCfSw('bas-cf-sw', c.vibrar, 'Vibração', ' data-k="vibrar"'))}</ul>`;
@@ -3169,7 +3179,9 @@ function basAcao(act, ds, el) {
     case 'bas-excluir': basExcluir(el); return true;
     case 'bas-pagar': basPagar(); return true;
     case 'bas-ano': { const y = +ds.y; basLimpar(); if (S.plans[y]) { if (y !== S.year) switchYear(y); else render(); } else createPlan(y, S.plan); return true; }
-    case 'bas-cf': { const c = basCf(); if (ds.k === 'texto' || ds.k === 'cantos') c[ds.k] = ds.v; touch('profile'); basAplicarAp(); render(); return true; }
+    case 'bas-ap-tema': { const g = el.parentElement; g.style.setProperty('--i', ds.i); g.querySelectorAll('button').forEach((x) => x.setAttribute('aria-checked', String(x === el)));
+      setTimeout(() => { if (ds.v !== 'auto') S.profile.prefs.tema = ds.v; definirTema(ds.v === 'auto' ? 'auto-on' : ds.v); render(); }, 320); return true; }
+    case 'bas-cf': { const c = basCf(); if (['texto', 'cantos', 'topo'].includes(ds.k)) c[ds.k] = ds.v; touch('profile'); basAplicarAp(); render(); return true; }
     // chaves: a bolinha corre antes, e a tela se redesenha depois (a animação aparece)
     case 'bas-cf-sw': { const c = basCf(); const [a, b] = String(ds.k).split('.'); const o = b ? c[a] : c; const kk = b || a; o[kk] = !o[kk]; touch('profile'); el.setAttribute('aria-checked', String(o[kk])); setTimeout(render, 260); return true; }
     case 'bas-cf-push': { const c = basCf(); const liga = () => { c.push = true; touch('profile'); render(); };
