@@ -4617,3 +4617,10 @@ html[data-topo="tema"][data-theme="light"] .bas-gt-bg .bas-en3-ex { background: 
 html[data-topo="tema"][data-theme="light"] .bas-gt-bg .bas-en2-leg .ex { background: repeating-linear-gradient(135deg, #5B7FFF 0 2px, rgba(91, 127, 255, .3) 2px 4px); } html[data-topo="tema"][data-theme="light"] .bas-gt-bg .bas-en2-leg .fx { background: linear-gradient(180deg, #A9C0FF, #6C8CFF); }
 html[data-topo="tema"][data-theme="light"] .bas-gt-bg .bas-pv2-g b { color: var(--ink-3) !important; } html[data-topo="tema"][data-theme="light"] .bas-gt-bg .bas-pv2-g button.on b { color: var(--ink) !important; }
 html[data-topo="tema"][data-theme="light"] .bas-gt-bg :is(.bas-hs-c, .bas-ctw-r) > svg { filter: brightness(.62) sepia(1) hue-rotate(185deg) saturate(6); }
+/* claro + topo na cor do tema: sem luzes de fundo; o que era branco nos gráficos passa a azul-escuro */
+html[data-topo="tema"][data-theme="light"] :is(.bas-gt-bg, .bas-noite) :is(*, *::before, *::after) { text-shadow: none !important; }
+html[data-topo="tema"][data-theme="light"] :is(.bas-gt-bg, .bas-noite) :is(.bas-rl-luz, .bas-gt-luz, .bas-noite-luz) { display: none !important; }
+html[data-topo="tema"][data-theme="light"] :is(.bas-gt-bg, .bas-noite) :is(.bas-ar-svg, .bas-rl-arco, .bas-hs-c > svg, .bas-ctw-r > svg, .bas-ev svg) { filter: brightness(0) invert(17%) sepia(92%) saturate(4200%) hue-rotate(232deg) !important; }
+html[data-topo="tema"][data-theme="light"] .bas-pt-bg > .bas-ev .bas-ev-p { background: #fff !important; border-color: #1E3BD8 !important; box-shadow: 0 4px 10px -4px rgba(20, 30, 90, .5) !important; }
+html[data-topo="tema"][data-theme="light"] .bas-pt-bg > .bas-ev .bas-ev-guia { background: #1E3BD8 !important; box-shadow: none !important; opacity: .35 !important; }
+html[data-topo="tema"][data-theme="light"] :is(.bas-gt-bg, .bas-noite) .bas-rl-arco i { box-shadow: none !important; }

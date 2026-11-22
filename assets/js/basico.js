@@ -541,7 +541,7 @@ function basPerfil() {
   const cli = S.isAdmin && Store.mode === 'cloud' ? basSecao('Consultor', '', `<ul class="bas-ativ">${basRow(basIr('clientes'), I.clientes, 'Clientes', 'Cadastros e planos', I.chev)}</ul>`) : '';
   // Perfil no jeito de app: degradê azul no alto com fechar, a foto com a câmera, o nome e "Editar perfil"; embaixo, a folha com as opções em lista
   const lin = (a, icone, nome, dir) => `<li><button class="bas-pf-li" ${a}><span class="bas-pf-ic" aria-hidden="true">${icone}</span><span class="bas-pf-nm">${nome}</span>${dir || ''}${I.chev}</button></li>`;
-  const topoPf = `<div class="bas-gt-bg bas-pf-bg"><header class="bas-pf-h"><button class="bas-circ bas-pf-volta" data-act="bas-aba" data-v="${esc(S.basAbaAntes || 'inicio')}" aria-label="Fechar">${I.x}</button><span class="bas-pf-hr">${typeof aberturaPode === 'function' && aberturaPode() ? `<button class="bas-pf-globo" data-act="bas-globo" aria-label="Globo do seu Patrimônio" title="Globo do seu Patrimônio"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.7 3.9 5.7 3.9 9s-1.3 6.3-3.9 9c-2.6-2.7-3.9-5.7-3.9-9S9.4 5.7 12 3z"/></svg></button>` : ''}<button class="bas-pf-globo bas-pf-cfg" ${basIr('config')} aria-label="Configurações" title="Configurações">${I_ENG}</button></span></header>
+  const topoPf = `<div class="bas-gt-bg bas-pf-bg"><header class="bas-pf-h"><button class="bas-circ bas-pf-volta" data-act="bas-aba" data-v="${esc(S.basAbaAntes || 'inicio')}" aria-label="Fechar">${I.x}</button><span class="bas-pf-hr">${typeof aberturaPode === 'function' && aberturaPode() ? `<button class="bas-pf-globo" data-act="bas-globo" aria-label="Globo do seu Patrimônio" title="Globo do seu Patrimônio"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.7 3.9 5.7 3.9 9s-1.3 6.3-3.9 9c-2.6-2.7-3.9-5.7-3.9-9S9.4 5.7 12 3z"/></svg></button>` : ''}</span></header>
     <div class="bas-pf-eu"><label class="bas-pf-av" for="av-file" aria-label="Trocar a foto de perfil">${avatarHtml(p)}<span class="bas-pf-pen" aria-hidden="true">${I_CAM}</span></label><input id="av-file" type="file" accept="image/jpeg,image/png,image/webp" hidden>
       <b>${esc(p.nome || 'Você')}</b>${p.email ? `<small>${esc(p.email)}</small>` : ''}</div></div>`;
   const lista = `<ul class="card bas-pf-l">${lin(basIr('perfil'), I.user, 'Dados pessoais')}${lin(basIr('perfil-inv'), I.inv, 'Perfil de investidor', `<small>${esc((S.profile.perfilInvestidor && E.PERFIS[S.profile.perfilInvestidor.resultado] || {}).nome || 'Fazer o teste')}</small>`)}${lin(basIr('planejamento'), I_PLANO, 'Planejamento', `<small>${instMinhas().length} ${instMinhas().length === 1 ? 'banco' : 'bancos'}</small>`)}${lin(basIr('config'), I_ENG, 'Configurações')}</ul>`;
@@ -917,7 +917,7 @@ function basGastoPop(id, conta, mm) {
   if (!l) return;
   document.querySelector('.bas-gp')?.remove();
   const dt = l.data ? new Date(l.data + 'T12:00:00') : null; const ok = dt && !isNaN(dt);
-  const data = ok ? dt.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }) : 'Sem data';
+  const data = ok ? dt.toLocaleDateString(document.documentElement.lang || 'pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }) : 'Sem data';
   const nome = l.desc || l.area || 'Gasto'; const inst = l.inst && instDe(l.inst);
   const m = l.conta ? l.mm : ok ? dt.getMonth() : S.mes; const totMes = +(S.C.despesas[m] || 0); const parte = totMes > 0 ? (+l.valor / totMes) : 0;
   const chave = basSemAcento(nome); const iguais = p.lancamentos.filter((x) => basSemAcento(x.desc || x.area || '') === chave); const somaIg = iguais.reduce((t, x) => t + (+x.valor || 0), 0);
@@ -955,7 +955,7 @@ function basTelaGastoVer(o) {
   const p = S.plan; const l = p.lancamentos.find((x) => x.id === o.id);
   if (!l) return basSumiu();
   const dt = l.data ? new Date(l.data + 'T12:00:00') : null; const ok = dt && !isNaN(dt);
-  const data = ok ? dt.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : 'Sem data';
+  const data = ok ? dt.toLocaleDateString(document.documentElement.lang || 'pt-BR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) : 'Sem data';
   const nome = l.desc || l.area || 'Gasto'; const inst = l.inst && instDe(l.inst);
   const m = ok ? dt.getMonth() : S.mes; const totMes = +(S.C.despesas[m] || 0); const parte = totMes > 0 ? (+l.valor / totMes) : 0;
   const chave = basSemAcento(nome); const iguais = p.lancamentos.filter((x) => basSemAcento(x.desc || x.area || '') === chave); const somaIg = iguais.reduce((t, x) => t + (+x.valor || 0), 0);
@@ -2895,7 +2895,7 @@ function basTelaConfig() {
   const hero = `<button class="bas-cf-modo" data-act="bas-cf-modo" role="switch" aria-checked="${noite}" aria-label="Modo escuro"><span class="bas-cf-mic" aria-hidden="true">${noite ? I_CF.lua : I_CF.sol}</span>
     <span class="bas-cf-mt"><b>${noite ? 'Modo escuro' : 'Modo claro'}</b><small>${t === 'auto' ? 'Automático, segue o celular' : noite ? 'Toque para o claro' : 'Toque para o escuro'}</small></span>${basCeu(noite)}</button>`;
   const folha = `${basCfH('Personalização')}<ul class="card bas-cf-l">${basCfLi(basIr('config-ap'), '#8B7CFF', I_CF.ap, 'Aparência', `${c.topo === 'tema' ? 'Topo na cor do tema' : 'Topo azul'} · Texto ${BAS_TEXTO.find((x) => x[0] === c.texto)[1].toLowerCase()} · ${BAS_CANTOS.find((x) => x[0] === c.cantos)[1]}`)}
-      ${basCfLi(basIr('config-id'), '#3EA6FF', I_CF.id, 'Idioma', 'Português (Brasil)')}${basCfLi(basIr('voz'), '#2FD4C0', I_CF.voz, 'Jeito de falar', esc((VOZES[tomAtual()] || {}).nome || ''))}</ul>
+      ${basCfLi(basIr('config-id'), '#3EA6FF', I_CF.id, 'Idioma', `<span translate="no">${esc((IDIOMAS.find((x) => x[0] === idiomaAtual()) || IDIOMAS[0])[1])}</span>`)}${basCfLi(basIr('voz'), '#2FD4C0', I_CF.voz, 'Jeito de falar', esc((VOZES[tomAtual()] || {}).nome || ''))}</ul>
     ${basCfH('Alertas')}<ul class="card bas-cf-l">${basCfLi(basIr('config-not'), '#FF9F43', I_CF.not, 'Notificações', c.push ? `${nAv} ${nAv === 1 ? 'aviso ligado' : 'avisos ligados'}` : 'Pausadas')}</ul>
     ${basCfH('Privacidade e segurança')}<ul class="card bas-cf-l">${basCfLi(basIr('config-priv'), '#34C759', I_CF.priv, 'Privacidade', S.privado ? 'Valores escondidos · Seus dados' : 'Valores à mostra · Seus dados')}
       ${basCfLi(basIr('config-seg'), '#5B8CFF', I_CF.seg, 'Segurança', 'Sessão e conta')}</ul>`;
@@ -2914,9 +2914,10 @@ function basTelaConfigAp() {
   return basCfPg('bas-pg-ap', 'Aparência', 'O app muda na hora, enquanto você escolhe.', hero, folha);
 }
 function basTelaConfigId() {
-  const L = [['Português (Brasil)', 'Português', 1], ['English', 'Inglês'], ['Español', 'Espanhol'], ['Français', 'Francês'], ['Italiano', 'Italiano']];
-  const hero = `<div class="bas-id-hero"><b>Olá</b><small>Menus, avisos e o assistente falam português</small></div>`;
-  const folha = `${basCfH('Todos os idiomas')}<ul class="card bas-cf-l bas-id-l">${L.map(([n, s, on]) => `<li><div class="bas-cf-li${on ? '' : ' off'}" aria-disabled="${!on}"><span class="bas-cf-nm"><b>${n}</b><small>${s}</small></span>${on ? `<span class="bas-id-ok" aria-label="Escolhido">${I_CF.ok}</span>` : '<em class="bas-id-em">Em breve</em>'}</div></li>`).join('')}</ul>`;
+  // cada idioma aparece no próprio nome (não se traduz) e, embaixo, no idioma atual do app; tocar troca e recarrega
+  const cur = idiomaAtual();
+  const hero = `<div class="bas-id-hero"><b translate="no">${esc(OLA[cur] || 'Olá')}</b><small>O app inteiro muda para o idioma escolhido.</small></div>`;
+  const folha = `${basCfH('Todos os idiomas')}<ul class="card bas-cf-l bas-id-l">${IDIOMAS.map(([c, n]) => `<li><button class="bas-cf-li" data-act="bas-idioma" data-v="${c}" aria-pressed="${c === cur}"><span class="bas-cf-nm"><b translate="no">${esc(n)}</b><small translate="no">${esc(idiomaNome(c))}</small></span>${c === cur ? `<span class="bas-id-ok" aria-label="Escolhido">${I_CF.ok}</span>` : ''}</button></li>`).join('')}</ul>`;
   return basCfPg('bas-pg-id', 'Idioma', 'A língua em que o app fala com você.', hero, folha);
 }
 function basTelaConfigNot() {
@@ -2927,7 +2928,7 @@ function basTelaConfigNot() {
   const icone = '<img class="bas-nt-ico" src="assets/img/icon-192.png" alt="">';
   const pilha = vivo ? on.slice(0, 3).map((k, i) => `<div class="bas-nt-n" style="--i:${i}">${icone}<span class="bas-nt-tx"><b>Cifrão<small>${i ? `há ${i * 12} min` : 'agora'}</small></b><em>${EX[k][0]}</em><span>${EX[k][1]}</span></span></div>`).join('')
     : `<div class="bas-nt-zz">${icone}<span class="bas-nt-tx"><b>Notificações pausadas</b><span>${c.push ? 'Ligue ao menos um aviso abaixo.' : 'Ligue abaixo para o Cifrão avisar você.'}</span></span></div>`;
-  const hero = `<div class="bas-nt-ls${vivo ? '' : ' off'}" aria-hidden="true"><span class="bas-nt-hora">${String(ag.getHours()).padStart(2, '0')}:${String(ag.getMinutes()).padStart(2, '0')}</span><span class="bas-nt-dia">${esc(ag.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }))}</span>
+  const hero = `<div class="bas-nt-ls${vivo ? '' : ' off'}" aria-hidden="true"><span class="bas-nt-hora">${String(ag.getHours()).padStart(2, '0')}:${String(ag.getMinutes()).padStart(2, '0')}</span><span class="bas-nt-dia">${esc(ag.toLocaleDateString(document.documentElement.lang || 'pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }))}</span>
     <div class="bas-nt-pilha">${pilha}</div></div>`;
   const folha = `<ul class="card bas-cf-l">${basCfLi('', '#FF9F43', I_CF.not, 'Notificações no celular', c.push ? 'Ligadas neste aparelho' : nega ? 'Bloqueadas nos ajustes do celular' : 'Pausadas. Você não recebe nenhum aviso.', basCfSw('bas-cf-push', c.push, 'Notificações no celular'))}</ul>
     ${basCfH('Me avise sobre')}<ul class="card bas-cf-l${c.push ? '' : ' apagada'}">${BAS_AVISOS.map(([k, n, s, cor, d]) => basCfLi('', cor, ic(d), n, s, basCfSw('bas-cf-sw', c.avisos[k], n, ` data-k="avisos.${k}"`))).join('')}</ul>
@@ -3181,6 +3182,7 @@ function basAcao(act, ds, el) {
     case 'bas-ano': { const y = +ds.y; basLimpar(); if (S.plans[y]) { if (y !== S.year) switchYear(y); else render(); } else createPlan(y, S.plan); return true; }
     case 'bas-ap-tema': { const g = el.parentElement; g.style.setProperty('--i', ds.i); g.querySelectorAll('button').forEach((x) => x.setAttribute('aria-checked', String(x === el)));
       setTimeout(() => { if (ds.v !== 'auto') S.profile.prefs.tema = ds.v; definirTema(ds.v === 'auto' ? 'auto-on' : ds.v); render(); }, 320); return true; }
+    case 'bas-idioma': trocarIdioma(ds.v); return true;
     case 'bas-cf': { const c = basCf(); if (['texto', 'cantos', 'topo'].includes(ds.k)) c[ds.k] = ds.v; touch('profile'); basAplicarAp(); render(); return true; }
     // chaves: a bolinha corre antes, e a tela se redesenha depois (a animação aparece)
     case 'bas-cf-sw': { const c = basCf(); const [a, b] = String(ds.k).split('.'); const o = b ? c[a] : c; const kk = b || a; o[kk] = !o[kk]; touch('profile'); el.setAttribute('aria-checked', String(o[kk])); setTimeout(render, 260); return true; }
