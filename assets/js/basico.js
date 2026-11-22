@@ -381,8 +381,9 @@ function basTelaEntradas() {
   const fixaM = (m) => p.rendas.filter((r) => r.cat === 'fixa').reduce((a, r) => a + (+((r.valores || [])[m]) || 0), 0);
   const n = j.ate - j.de + 1; let ant = null; if (j.de - n >= 0) { ant = 0; for (let m = j.de - n; m < j.de; m++) ant += +C.rendas[m] || 0; }
   const dif = ant != null ? tot - ant : null; const up = dif == null || dif >= 0; const pv = ant > 0 ? Math.abs(dif) / ant : null;
-  const col = C.rendas.map((v, m) => { const fx = Math.min(v, fixaM(m)); const ex = Math.max(0, v - fx); const dentro = m >= j.de && m <= j.ate;
-    return `<button class="${dentro ? 'in' : 'fora'}${m > ult ? ' fut' : ''}" data-act="bas-en-mes" data-m="${m}" aria-label="${cap(MES_LONGO[m])}: ${esc(brl0(v))}" aria-pressed="${dentro}"><span class="bas-en2-col" style="--h:${Math.max(3, (v / mx) * 78).toFixed(1)}%"><i class="ex" style="--p:${v > 0 ? ((ex / v) * 100).toFixed(1) : 0}%"></i><i class="fx"></i></span><b>${MES[m][0]}</b></button>`; }).join('');
+  // mesmas barras de Proventos; o topo listrado de cada uma é a renda extra, a base lisa é a renda fixa
+  const col = C.rendas.map((v, m) => { const fx = Math.min(v, fixaM(m)); const ex = Math.max(0, v - fx); const dentro = m >= j.de && m <= j.ate; const on = n === 1 && m === j.ate;
+    return `<button class="${dentro ? 'in' : 'fora'}${on ? ' on' : ''}${m > ult ? ' fut' : ''}" data-act="bas-en-mes" data-m="${m}" style="--h:${v > 0 ? Math.max(6, (v / mx) * 78).toFixed(1) : 3}%" aria-label="${cap(MES_LONGO[m])}: ${esc(brl0(v))}${ex > 0 ? `, ${esc(brl0(ex))} extra` : ''}" aria-pressed="${dentro}">${on && v > 0 ? `<small>${brl0(v)}</small>` : ''}<i>${ex > 0 ? `<em class="bas-en3-ex" style="--p:${((ex / v) * 100).toFixed(1)}%"></em>` : ''}</i><b>${MES[m][0]}</b></button>`; }).join('');
   const k = (nome, v, sub) => `<span><small>${nome}</small><b>${v}</b>${sub ? `<em>${sub}</em>` : ''}</span>`;
   const fonte = ([r, v], i) => `<li><button class="bas-pv2-l" ${basIr('entrada', { id: r.id })}><span class="bas-pv2-ini bas-ren-ic" style="--bc:${PAL[i % 6]}">${ic(BAS_REN_IC[basRenIcId(r)][1])}</span><span class="bas-pv2-n"><b>${esc(r.nome)}</b><small>${esc(((p.rendaCats || []).find((c) => c.id === r.cat) || {}).nome || 'Renda')} · ${recDe(r.id) ? 'todo mês' : 'pontual'}${r.soGasto ? ' · só para gastos' : ''}</small><i style="--p:${((v / totF) * 100).toFixed(1)}%"></i></span><b class="bas-pv2-v">+${basCent(v)}</b></button></li>`;
   // arco das fontes (padrão): cada fonte do período ocupa um trecho do arco pelo valor; a escolhida fica em verde
@@ -405,7 +406,7 @@ function basTelaEntradas() {
     <b class="bas-pv2-t">${basCent(tot)}</b>
     ${vis === 'fontes' ? arco : `<p class="bas-pv2-var">${pv != null ? `<span class="bas-ev-pct${up ? '' : ' neg'}">${up ? '↑' : '↓'} ${pct(pv, 1)}</span><span>${up ? '+' : '−'}${brl0(Math.abs(dif))} contra o período anterior</span>` : ''}</p>
     <div class="bas-en2-leg" aria-hidden="true"><span><i class="fx"></i>Renda fixa</span><span><i class="ex"></i>Extra</span></div>
-    <div class="bas-en2-g" role="group" aria-label="Entradas mês a mês, renda fixa e extra">${col}</div>`}
+    <div class="bas-pv2-g bas-en3-g" role="group" aria-label="Entradas mês a mês, renda fixa e extra">${col}</div>`}
   </div><div class="bas-gt-folha">
     <div class="bas-pg-per bas-gt-acoes bas-en2-acoes"><button class="bas-circ bas-en-bt" ${basIr('entrada')}>${I.plus}<span>Nova entrada</span></button></div>
     <div class="card bas-en2-ks">${k('Média por mês', brl0(R.mediaMes))}${k('Previsível', fontes.length ? pct(prev) : '–', `${brl0(prevMes)}/mês`)}${k('Guardou', R.poupanca != null ? pct(R.poupanca) : '–', `${brl0(R.sobraMes)}/mês`)}</div>

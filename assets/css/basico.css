@@ -4396,3 +4396,12 @@ body:is([data-ui="basico"], [data-ui="completo"]) .ab .ab-card .ab-zbtn { border
 .bas-ar-bt { display: inline-flex; align-items: center; gap: 6px; height: 40px; margin-top: 8px; padding: 0 18px; border: 0; border-radius: 999px; pointer-events: auto; cursor: pointer;
   font: inherit; font-size: 14px; font-weight: 650; color: #1430e8; background: #fff; box-shadow: 0 10px 22px -10px rgba(0, 8, 70, .7); }
 .bas-ar-bt svg { width: 16px !important; height: 16px !important; }
+
+/* Entradas > Evolução: as mesmas barras de Proventos; o topo listrado é a renda extra */
+.bas-en3-g { margin-top: 14px; }
+.bas-en3-g i { position: relative; overflow: hidden; }
+.bas-en3-ex { position: absolute; inset: 0 0 auto; height: var(--p); border-bottom: 2px solid rgba(10, 26, 143, .55);
+  background: repeating-linear-gradient(135deg, rgba(255, 255, 255, .92) 0 3px, rgba(255, 255, 255, .38) 3px 6px); }
+.bas-en2-leg .fx { background: linear-gradient(180deg, #B8FBFF, #38D6FF 55%, #3D8BFF); }
+.bas-en2-leg .ex { background: repeating-linear-gradient(135deg, rgba(255, 255, 255, .95) 0 2px, rgba(255, 255, 255, .35) 2px 4px); }
+.bas-en3-g button.on .bas-en3-ex { border-bottom-color: rgba(10, 26, 143, .75); background: repeating-linear-gradient(135deg, #FFFFFF 0 3px, #6FCBFF 3px 6px); }
