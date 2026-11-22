@@ -4626,3 +4626,32 @@ html[data-topo="tema"][data-theme="light"] .bas-pt-bg > .bas-ev .bas-ev-guia { b
 html[data-topo="tema"][data-theme="light"] :is(.bas-gt-bg, .bas-noite) .bas-rl-arco i { box-shadow: none !important; }
 /* no jeito de celular a troca de tema é imediata: a transição de cor em cada elemento atrasava a troca e deixava textos apagados no meio */
 html.tema-anim body[data-ui="basico"], html.tema-anim body[data-ui="basico"] *, html.tema-anim body[data-ui="basico"] *::before, html.tema-anim body[data-ui="basico"] *::after { transition: none !important; }
+/* Assistente: sem conversa, saudação grande e três faixas de perguntas deslizando (alternando o sentido); com conversa, o Cifrão grande sai do topo e cada resposta traz o ícone do app */
+.bas-iax-ola { display: none; text-align: center; margin: 6px 0 18px; }
+.bas-iax-ola h2 { margin: 0; font-size: 34px; font-weight: 800; letter-spacing: -.03em; color: var(--ink); }
+.bas-iax-ola h2 span { background: linear-gradient(100deg, #3E6BFF, #8A5CFF 60%, #C86BFF); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.bas-iax-ola p { margin: 6px 0 0; font-size: 15px; color: var(--ink-3); }
+.bas-iax-mq { display: none; flex-direction: column; gap: 10px; margin: 0 -16px 14px; -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+.bas-iax-mr { overflow: hidden; }
+.bas-iax-mr > div { display: flex; gap: 10px; width: max-content; padding: 4px 0; animation: bas-iax-mq 46s linear infinite; }
+.bas-iax-mr.volta > div { animation-direction: reverse; animation-duration: 52s; }
+.bas-iax-mr:nth-child(3) > div { animation-duration: 40s; }
+.bas-iax-mq:active .bas-iax-mr > div { animation-play-state: paused; }
+@keyframes bas-iax-mq { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+.bas-iax-ch { flex: none; display: inline-flex; align-items: center; gap: 10px; height: 52px; padding: 0 18px 0 8px; border: 0; border-radius: 999px; font: inherit; font-size: 15px; white-space: nowrap; cursor: pointer;
+  color: var(--ink); background: var(--surface); box-shadow: 0 8px 22px -14px rgba(30, 40, 120, .45), inset 0 0 0 .5px var(--line); transition: transform 140ms; }
+.bas-iax-ch:active { transform: scale(.96); }
+.bas-iax-ch b { font-weight: 700; } .bas-iax-ch em { font-style: normal; font-weight: 600; color: var(--c); margin-left: -4px; }
+.bas-iax-chi { flex: none; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; color: var(--c); background: color-mix(in srgb, var(--c) 15%, transparent); }
+.bas-iax-chi svg { width: 18px !important; height: 18px !important; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.bas-iax:not(:has(.bas-iax-log .ia-m)) :is(.bas-iax-ola) { display: block; }
+.bas-iax:not(:has(.bas-iax-log .ia-m)) .bas-iax-mq { display: flex; }
+.bas-iax:not(:has(.bas-iax-log .ia-m)) :is(.bas-iax-cs, .bas-iax-fi) { display: none !important; }
+.bas-iax:not(:has(.bas-iax-log .ia-m)) .bas-iax-topo { margin-bottom: 8px; }
+.bas-iax:not(:has(.bas-iax-log .ia-m)) .bas-iax-st { display: none; }
+.bas-iax:has(.bas-iax-log .ia-m) .bas-iax-topo { display: none; }
+.bas-iax:has(.bas-iax-log .ia-m) .bas-iax-log { padding-top: 8px; }
+.bas-iax-log .ia-m.ia { position: relative; margin-left: 42px; }
+.bas-iax-log .ia-m.ia::before { content: ''; position: absolute; left: -42px; top: 2px; width: 32px; height: 32px; border-radius: 10px; background: var(--ico) center / cover; box-shadow: 0 4px 10px -4px rgba(20, 30, 90, .45); }
+.bas-iax-log .ia-m.ia + .ia-m.ia::before { display: none; }
+@media (prefers-reduced-motion: reduce) { .bas-iax-mr > div { animation: none; } .bas-iax-mr { overflow-x: auto; } }

@@ -686,9 +686,18 @@ function basIaTela() {
   const C = S.C; const j = basJan(); const D = E.disponivelAporte({ C, mes: j.de, ate: j.ate, metaMes: C.metaAporteMes }); const sai = basSomaJ(C.despesas); const av = basAvisosNovos();
   const st = iaEstado(); const ult = st.msgs.slice().reverse().find((m) => m.de === 'eu');
   const card = (q, rot, val, ic0) => `<button class="bas-iax-c" data-act="ia-perg" data-q="${esc(q)}"><small>${esc(rot)}</small><b>${val}</b><span class="bas-iax-cr"><span class="bas-iax-ci" aria-hidden="true">${ic0}</span><span class="bas-iax-ca" aria-hidden="true">${I.chev}</span></span></button>`;
-  return `<div class="bas-iax"><span class="bas-iax-brilho" aria-hidden="true"></span>
+  // sem conversa: saudação e três faixas de perguntas que deslizam (alternando o sentido); com conversa, as respostas trazem o ícone do app
+  const MQ = [[['resumo', I.geral, '#3E6BFF'], ['gastos', I.despesas, '#FF7A59'], ['compra', I.cart, '#B06BFF'], ['previsao', I.up, '#2FB57A'], ['fixos', I.rendas, '#F5A623']],
+    [['aporte', I.inv, '#2FB57A'], ['carteira', I.cart, '#3E6BFF'], ['proventos', I.pro, '#F5A623'], ['patrimonio', I.up, '#B06BFF'], ['objetivos', I.check, '#FF5A8A']],
+    [['dicas', I.chat, '#B06BFF'], ['reserva', I.lock, '#3E6BFF'], ['produto', I.geral, '#2FB57A'], ['divida', I.despesas, '#FF7A59'], ['renda_extra', I.rendas, '#F5A623']]];
+  const chip = ([k, ic0, cor]) => { const q = E.IA_FICHAS[k] || ''; const w = q.split(' '); return `<button class="bas-iax-ch" data-act="ia-perg" data-q="${esc(q)}" style="--c:${cor}"><span class="bas-iax-chi" aria-hidden="true">${ic0}</span><b>${esc(w.slice(0, 2).join(' '))}</b> <em>${esc(w.slice(2).join(' '))}</em></button>`; };
+  const nome = String((S.profile && (S.profile.apelido || S.profile.nome)) || '').trim().split(/\s+/)[0];
+  const ola = `<div class="bas-iax-ola"><h2>Oi${nome ? `, <span>${esc(nome)}</span>` : ''}</h2><p>Pergunte o que quiser sobre o seu dinheiro.</p></div>
+    <div class="bas-iax-mq" role="group" aria-label="Sugestões de perguntas">${MQ.map((r, i) => `<div class="bas-iax-mr${i % 2 ? ' volta' : ''}"><div>${r.map(chip).join('')}${r.map(chip).join('').replace(/<button /g, '<button tabindex="-1" aria-hidden="true" ')}</div></div>`).join('')}</div>`;
+  return `<div class="bas-iax" style="--ico:url('${new URL('assets/img/icon-192.png', document.baseURI).href}')"><span class="bas-iax-brilho" aria-hidden="true"></span>
     <header class="bas-iax-h"><button class="bas-iax-b" data-act="bas-voltar" aria-label="Voltar">${I_VOLTA}</button><span class="bas-iax-hr"><button class="bas-iax-b" ${basIr('duvidas')} aria-label="Dúvidas">?</button><button class="bas-iax-b" ${basIr('avisos-tela')} aria-label="Avisos${av ? `: ${av} novos` : ''}">${I_IA_SINO}${av ? '<i class="bas-iax-pt"></i>' : ''}</button></span></header>
     <div class="bas-iax-topo"><span class="bas-iax-orb" aria-hidden="true"><span class="cifrao" data-sem-giro></span></span><p class="bas-iax-st" aria-live="polite"><span class="ok" data-cif-st>Como posso ajudar?</span><span class="pe">Pensando…</span></p></div>
+    ${ola}
     <div class="ia-log bas-iax-log" data-ia-log="b" role="log" aria-live="polite">${st.msgs.length ? iaLogHtml('b') : ''}</div>
     <div class="bas-iax-cs">${card(E.IA_FICHAS.aporte, 'Dá para investir', basCent(D.disponivel), I.inv)}${card(E.IA_FICHAS.gastos, `Gastou ${basJanFrase()}`, basCent(sai), I.despesas)}</div>
     <div class="ia-fichas bas-iax-fi" data-ia-fichas role="group" aria-label="Sugestões de perguntas">${iaFichasHtml()}</div>
