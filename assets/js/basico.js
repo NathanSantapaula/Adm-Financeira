@@ -3374,3 +3374,5 @@ const BAS_VV_SEL = '.bas-gt-bg :is(.olho, .bell, .bas-circ, .bas-per, .bas-gt-ch
   document.addEventListener('pointermove', (e) => { if (!el) return; if (!el.isConnected) { solta(); return; } ult = { x: e.clientX, y: e.clientY }; if (!raf) raf = requestAnimationFrame(pinta); }, { passive: true });
   ['pointerup', 'pointercancel', 'blur'].forEach((t) => window.addEventListener(t, solta, { passive: true }));
 })();
+// iPhone: quando o teclado fecha, a barra de abas fixa às vezes fica parada no meio da tela até rolar; um empurrão de rolagem a recoloca no pé
+document.addEventListener('focusout', (e) => { if (!e.target.matches || !e.target.matches('input, textarea, select')) return; setTimeout(() => { const a = document.activeElement; if (a && a.matches && a.matches('input, textarea, select')) return; window.scrollBy(0, 1); window.scrollBy(0, -1); }, 150); });
