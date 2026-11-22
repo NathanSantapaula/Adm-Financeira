@@ -400,7 +400,7 @@ function basTelaEntradas() {
       <div class="bas-ar-tx" aria-live="polite"><b class="bas-ar-n"></b><span class="bas-ar-v"></span><small class="bas-ar-s"></small></div></div>`;
   const vis = S.basEnVis === 'hist' ? 'hist' : 'fontes';
   const seg = `<div class="bas-rl-seg" role="group" aria-label="Visualização">${[['fontes', 'Fontes'], ['hist', 'Evolução']].map(([v, t]) => `<button data-act="bas-en-vis" data-v="${v}" aria-pressed="${vis === v}">${t}</button>`).join('')}</div>`;
-  return `<div class="bas-pg bas-pg-ent"><div class="bas-gt-bg bas-pt-bg bas-en2-bg">
+  return `<div class="bas-pg bas-pg-ent"><div class="bas-gt-bg bas-pt-bg bas-en2-bg${vis === 'fontes' ? ' ar-on' : ''}">
     <header class="bas-pv2-h"><button class="bell bas-cal-b" data-act="bas-voltar" aria-label="Voltar">${I_VOLTA}</button><b>Entradas</b><span class="bas-noite-r"><button class="bell bas-cal-b" ${basIr('periodo')} aria-label="Período: ${esc(basJanRot())}, ${S.year}">${I_CAL}</button>${olhoHtml()}</span></header>
     ${seg}<small class="bas-pv2-k">Entrou ${esc(basJanFrase())}</small>
     <b class="bas-pv2-t">${basCent(tot)}</b>
@@ -2605,14 +2605,14 @@ function basMetaDispHtml() {
 function basArLigar() {
   const el = document.querySelector('.bas-ar[data-f]'); if (!el || el.dataset.on) return; el.dataset.on = '1';
   const F = JSON.parse(el.dataset.f); const q = el.dataset.q; const svg = el.querySelector('svg'); const $ = (c) => el.querySelector(c);
-  const CX = 170, CY = 200, R = 165, A0 = 184, A1 = -4; const ini = [0]; F.forEach((f, i) => ini.push(ini[i] + f[4])); const fim = ini[F.length];
+  const CX = 170, CY = 200, R = 165, A0 = 204, A1 = -24; /* as pontas descem até passar por baixo da folha */ const ini = [0]; F.forEach((f, i) => ini.push(ini[i] + f[4])); const fim = ini[F.length];
   const ang = (f) => ((A0 - (A0 - A1) * f) * Math.PI) / 180; const pt = (f) => [CX + R * Math.cos(ang(f)), CY - R * Math.sin(ang(f))];
   const arc = (f0, f1) => { if (f1 - f0 < 0.0005) return ''; const [x0, y0] = pt(f0), [x1, y1] = pt(f1); return `M${x0.toFixed(2)} ${y0.toFixed(2)}A${R} ${R} 0 ${(A0 - A1) * (f1 - f0) > 180 ? 1 : 0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`; };
   const menos = matchMedia('(prefers-reduced-motion: reduce)').matches; let sel = -1, s0 = 0, s1 = 0, raf = 0;
   const pinta = (a, b) => {
     $('.bas-ar-cin').setAttribute('d', arc(0, a)); $('.bas-ar-ver').setAttribute('d', arc(a, b)); $('.bas-ar-lis').setAttribute('d', arc(b, fim)); $('.bas-ar-tri').setAttribute('d', arc(fim, 1));
     const [x0, y0] = pt(a), [x1, y1] = pt(b); $('.bas-ar-k0').setAttribute('transform', `translate(${x0.toFixed(1)} ${y0.toFixed(1)})`); $('.bas-ar-k1').setAttribute('transform', `translate(${x1.toFixed(1)} ${y1.toFixed(1)})`);
-    const ag = $('.bas-ar-ag'); ag.setAttribute('x1', x1.toFixed(1)); ag.setAttribute('x2', x1.toFixed(1)); ag.setAttribute('y1', (y1 + 31).toFixed(1)); ag.setAttribute('y2', (y1 + 78).toFixed(1));
+    const ag = $('.bas-ar-ag'); ag.setAttribute('x1', x1.toFixed(1)); ag.setAttribute('x2', x1.toFixed(1)); ag.setAttribute('y1', (y1 + 31).toFixed(1)); ag.setAttribute('y2', (y1 + 50).toFixed(1));
     $('.bas-ar-k0').style.opacity = a < 0.002 ? '0' : '1';
   };
   const escolhe = (i) => {
