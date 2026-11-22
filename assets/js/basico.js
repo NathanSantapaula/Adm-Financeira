@@ -384,13 +384,29 @@ function basTelaEntradas() {
     return `<button class="${dentro ? 'in' : 'fora'}${m > ult ? ' fut' : ''}" data-act="bas-en-mes" data-m="${m}" aria-label="${cap(MES_LONGO[m])}: ${esc(brl0(v))}" aria-pressed="${dentro}"><span class="bas-en2-col" style="--h:${Math.max(3, (v / mx) * 78).toFixed(1)}%"><i class="ex" style="--p:${v > 0 ? ((ex / v) * 100).toFixed(1) : 0}%"></i><i class="fx"></i></span><b>${MES[m][0]}</b></button>`; }).join('');
   const k = (nome, v, sub) => `<span><small>${nome}</small><b>${v}</b>${sub ? `<em>${sub}</em>` : ''}</span>`;
   const fonte = ([r, v], i) => `<li><button class="bas-pv2-l" ${basIr('entrada', { id: r.id })}><span class="bas-pv2-ini bas-ren-ic" style="--bc:${PAL[i % 6]}">${ic(BAS_REN_IC[basRenIcId(r)][1])}</span><span class="bas-pv2-n"><b>${esc(r.nome)}</b><small>${esc(((p.rendaCats || []).find((c) => c.id === r.cat) || {}).nome || 'Renda')} · ${recDe(r.id) ? 'todo mês' : 'pontual'}${r.soGasto ? ' · só para gastos' : ''}</small><i style="--p:${((v / totF) * 100).toFixed(1)}%"></i></span><b class="bas-pv2-v">+${basCent(v)}</b></button></li>`;
+  // arco das fontes (padrão): cada fonte do período ocupa um trecho do arco pelo valor; a escolhida fica em verde
+  const arAnt = (r) => { if (j.de - n < 0) return null; let t = 0; for (let m = j.de - n; m < j.de; m++) t += +((r.valores || [])[m]) || 0; return t; };
+  // escala do arco: o seu melhor mês do ano (vezes o número de meses do período); o listrado no fim é o que falta até ele
+  const arCheio = fontes.length ? Math.min(1, totF / Math.max(totF, n * Math.max(...C.receita))) : 0;
+  const arF = fontes.slice().reverse().map(([r, v]) => { const a0 = arAnt(r); return [r.nome, brl0(v), pct(v / totF), a0 > 0 ? Math.round(((v - a0) / a0) * 100) : null, (v / totF) * arCheio]; });
+  const arQuando = j.de - n >= 0 ? (n === 1 ? MES_LONGO[j.de - 1] : 'o período anterior') : '';
+  const arco = `<div class="card bas-ar" data-f="${esc(JSON.stringify(arF))}" data-q="${esc(arQuando)}" tabindex="0" role="slider" aria-label="Fontes de renda ${esc(basJanFrase())}. Toque ou arraste no arco." aria-valuemin="1" aria-valuemax="${Math.max(1, arF.length)}">
+      <svg class="bas-ar-svg" viewBox="0 0 340 214" aria-hidden="true"><defs><pattern id="bas-ar-lis" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(40)"><rect width="7" height="7" style="fill:#1A1A1C;stroke:none"/><line x1="0" y1="0" x2="0" y2="7" style="stroke:#3D3D40;stroke-width:2.4;fill:none"/></pattern>
+        <linearGradient id="bas-ar-ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9A9A9F"/><stop offset="1" stop-color="#9A9A9F" stop-opacity="0"/></linearGradient></defs>
+        <path class="bas-ar-tri" style="fill:none;stroke:url(#bas-ar-lis);stroke-width:46"/><path class="bas-ar-lis" style="fill:none;stroke:#3A3A3E;stroke-width:46"/><path class="bas-ar-cin" style="fill:none;stroke:#2C2C2F;stroke-width:46"/><path class="bas-ar-ver" style="fill:none;stroke:#6CC28C;stroke-width:46"/>
+        <line class="bas-ar-ag" style="stroke:#7C7C82;stroke-opacity:.75;stroke-width:2;stroke-linecap:round;fill:none"/>
+        <g class="bas-ar-k0"><circle r="27" style="fill:#2E2E31;stroke:rgba(255,255,255,.07);stroke-width:1.5"/><circle r="13" style="fill:#0C0C0D;stroke:none"/></g>
+        <g class="bas-ar-k1"><circle r="28" style="fill:#86D3A1;stroke:rgba(255,255,255,.2);stroke-width:1.5"/><circle r="14" style="fill:#F4F5F4;stroke:none"/></g></svg>
+      <div class="bas-ar-tx" aria-live="polite"><b class="bas-ar-n"></b><span class="bas-ar-v"></span><small class="bas-ar-s"></small></div></div>`;
+  const vis = S.basEnVis === 'hist' ? 'hist' : 'fontes';
+  const seg = `<div class="bas-rl-seg" role="group" aria-label="Visualização">${[['fontes', 'Fontes'], ['hist', 'Evolução']].map(([v, t]) => `<button data-act="bas-en-vis" data-v="${v}" aria-pressed="${vis === v}">${t}</button>`).join('')}</div>`;
   return `<div class="bas-pg bas-pg-ent"><div class="bas-gt-bg bas-pt-bg bas-en2-bg">
     <header class="bas-pv2-h"><button class="bell bas-cal-b" data-act="bas-voltar" aria-label="Voltar">${I_VOLTA}</button><b>Entradas</b><span class="bas-noite-r"><button class="bell bas-cal-b" ${basIr('periodo')} aria-label="Período: ${esc(basJanRot())}, ${S.year}">${I_CAL}</button>${olhoHtml()}</span></header>
-    <small class="bas-pv2-k">Entrou ${esc(basJanFrase())}</small>
+    ${seg}<small class="bas-pv2-k">Entrou ${esc(basJanFrase())}</small>
     <b class="bas-pv2-t">${basCent(tot)}</b>
-    <p class="bas-pv2-var">${pv != null ? `<span class="bas-ev-pct${up ? '' : ' neg'}">${up ? '↑' : '↓'} ${pct(pv, 1)}</span><span>${up ? '+' : '−'}${brl0(Math.abs(dif))} contra o período anterior</span>` : ''}</p>
+    ${vis === 'fontes' ? arco : `<p class="bas-pv2-var">${pv != null ? `<span class="bas-ev-pct${up ? '' : ' neg'}">${up ? '↑' : '↓'} ${pct(pv, 1)}</span><span>${up ? '+' : '−'}${brl0(Math.abs(dif))} contra o período anterior</span>` : ''}</p>
     <div class="bas-en2-leg" aria-hidden="true"><span><i class="fx"></i>Renda fixa</span><span><i class="ex"></i>Extra</span></div>
-    <div class="bas-en2-g" role="group" aria-label="Entradas mês a mês, renda fixa e extra">${col}</div>
+    <div class="bas-en2-g" role="group" aria-label="Entradas mês a mês, renda fixa e extra">${col}</div>`}
   </div><div class="bas-gt-folha">
     <div class="bas-pg-per bas-gt-acoes bas-en2-acoes"><button class="bas-circ bas-en-bt" ${basIr('entrada')}>${I.plus}<span>Nova entrada</span></button></div>
     <div class="card bas-en2-ks">${k('Média por mês', brl0(R.mediaMes))}${k('Previsível', fontes.length ? pct(prev) : '–', `${brl0(prevMes)}/mês`)}${k('Guardou', R.poupanca != null ? pct(R.poupanca) : '–', `${brl0(R.sobraMes)}/mês`)}</div>
@@ -826,7 +842,7 @@ function basIaxLigar() {
 function basDesenhar() {
   const st = document.getElementById('bas-o3');
   if (st) { const falhou = () => st.classList.add('sem-3d'); if (typeof o3Ligar === 'function') o3Ligar(st, st.dataset.tipo, falhou); else falhou(); }
-  basRlLigar(); basAhLigar(); basSn2Ligar(); basVozLigar(); basIaxLigar(); basCifVe(); basGfLigar(); basPeriodoRepinta(); { const f = document.querySelector('.bas-form'); if (f && f.querySelector('[name="areaIc"]') && !f.dataset.ic) { f.dataset.ic = '1'; f.addEventListener('change', (e) => { if (e.target.name !== 'area') return; const r = f.querySelector(`[name="areaIc"][value="${basCatIcId(e.target.value)}"]`); if (r) r.checked = true; }); } } { const on = document.querySelector('.bas-cce-m.on'); const col = on && on.parentElement; if (col && !col.dataset.vis) { col.dataset.vis = '1'; col.scrollTop = on.offsetTop - col.clientHeight / 2 + on.offsetHeight / 2; } } basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basAtLigar(); basEfLigar(); basCtwLigar(); basOiLigar(); basInvLigar(); basIgLigar(); basGfPickLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
+  basRlLigar(); basArLigar(); basAhLigar(); basSn2Ligar(); basVozLigar(); basIaxLigar(); basCifVe(); basGfLigar(); basPeriodoRepinta(); { const f = document.querySelector('.bas-form'); if (f && f.querySelector('[name="areaIc"]') && !f.dataset.ic) { f.dataset.ic = '1'; f.addEventListener('change', (e) => { if (e.target.name !== 'area') return; const r = f.querySelector(`[name="areaIc"][value="${basCatIcId(e.target.value)}"]`); if (r) r.checked = true; }); } } { const on = document.querySelector('.bas-cce-m.on'); const col = on && on.parentElement; if (col && !col.dataset.vis) { col.dataset.vis = '1'; col.scrollTop = on.offsetTop - col.clientHeight / 2 + on.offsetHeight / 2; } } basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basAtLigar(); basEfLigar(); basCtwLigar(); basOiLigar(); basInvLigar(); basIgLigar(); basGfPickLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
   const wr = document.querySelector('.bas-wr'); if (wr && !wr.dataset.lig) { wr.dataset.lig = '1'; basWrIr(wr, 0); }
   const sq = document.querySelector('[data-sq-conta]'); if (sq && !sq.dataset.lig && !matchMedia('(prefers-reduced-motion: reduce)').matches) { sq.dataset.lig = '1'; const alvo = +sq.dataset.sqConta; const t0 = performance.now();
     const passo = (t) => { const k = Math.min(1, (t - t0) / 900); sq.textContent = Math.round(alvo * (1 - Math.pow(1 - k, 3))); if (k < 1 && sq.isConnected) requestAnimationFrame(passo); }; if (alvo > 0) requestAnimationFrame(passo); }
@@ -2584,6 +2600,44 @@ function basMetaDispHtml() {
     <p class="bas-dp2-s">Sobrou <b>${brl(D.sobra)}</b> · investido <b>${brl(D.aportado)}</b>${exc ? ` · <b class="neg">${brl(D.excedente)}</b> além` : ''}</p></section>`;
   return meta + disp;
 }
+// arco das fontes de renda (Entradas): trecho cinza = fontes antes da escolhida, verde = a escolhida (entre a bolinha escura e a clara),
+// cinza claro = as que vêm depois, listrado = o que falta até o melhor mês; a agulha desce da bolinha clara. Tocar ou arrastar no arco escolhe a fonte; as setas passam de uma em uma.
+function basArLigar() {
+  const el = document.querySelector('.bas-ar[data-f]'); if (!el || el.dataset.on) return; el.dataset.on = '1';
+  const F = JSON.parse(el.dataset.f); const q = el.dataset.q; const svg = el.querySelector('svg'); const $ = (c) => el.querySelector(c);
+  const CX = 170, CY = 200, R = 165, A0 = 184, A1 = -4; const ini = [0]; F.forEach((f, i) => ini.push(ini[i] + f[4])); const fim = ini[F.length];
+  const ang = (f) => ((A0 - (A0 - A1) * f) * Math.PI) / 180; const pt = (f) => [CX + R * Math.cos(ang(f)), CY - R * Math.sin(ang(f))];
+  const arc = (f0, f1) => { if (f1 - f0 < 0.0005) return ''; const [x0, y0] = pt(f0), [x1, y1] = pt(f1); return `M${x0.toFixed(2)} ${y0.toFixed(2)}A${R} ${R} 0 ${(A0 - A1) * (f1 - f0) > 180 ? 1 : 0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`; };
+  const menos = matchMedia('(prefers-reduced-motion: reduce)').matches; let sel = -1, s0 = 0, s1 = 0, raf = 0;
+  const pinta = (a, b) => {
+    $('.bas-ar-cin').setAttribute('d', arc(0, a)); $('.bas-ar-ver').setAttribute('d', arc(a, b)); $('.bas-ar-lis').setAttribute('d', arc(b, fim)); $('.bas-ar-tri').setAttribute('d', arc(fim, 1));
+    const [x0, y0] = pt(a), [x1, y1] = pt(b); $('.bas-ar-k0').setAttribute('transform', `translate(${x0.toFixed(1)} ${y0.toFixed(1)})`); $('.bas-ar-k1').setAttribute('transform', `translate(${x1.toFixed(1)} ${y1.toFixed(1)})`);
+    const ag = $('.bas-ar-ag'); ag.setAttribute('x1', x1.toFixed(1)); ag.setAttribute('x2', x1.toFixed(1)); ag.setAttribute('y1', (y1 + 31).toFixed(1)); ag.setAttribute('y2', (y1 + 78).toFixed(1));
+    $('.bas-ar-k0').style.opacity = a < 0.002 ? '0' : '1';
+  };
+  const escolhe = (i) => {
+    if (!F.length) { pinta(0, 0); $('.bas-ar-k1').style.opacity = '0'; $('.bas-ar-n').textContent = 'Nenhuma entrada'; $('.bas-ar-v').textContent = 'Toque em Nova entrada para anotar.'; return; }
+    i = Math.max(0, Math.min(F.length - 1, i)); if (i === sel) return; const pri = sel < 0; sel = i; const f = F[i];
+    $('.bas-ar-n').textContent = f[0]; $('.bas-ar-v').textContent = `${f[1]} · ${f[2]} do que entrou`;
+    $('.bas-ar-s').textContent = f[3] == null || !q ? (F.length > 1 ? `${i + 1} de ${F.length} fontes` : 'Sua única fonte no período') : f[3] === 0 ? `Igual a ${q}` : `${f[3] > 0 ? 'Subiu' : 'Caiu'} ${f[3] > 0 ? '+' : '−'}${Math.abs(f[3])}% contra ${q}`;
+    el.setAttribute('aria-valuenow', i + 1); el.setAttribute('aria-valuetext', `${f[0]}, ${f[1]}, ${f[2]}`);
+    const a = ini[i], b = ini[i + 1]; cancelAnimationFrame(raf);
+    if (pri || menos) { s0 = a; s1 = b; pinta(a, b); return; }
+    try { if (navigator.vibrate && (!navigator.userActivation || navigator.userActivation.hasBeenActive)) navigator.vibrate(4); } catch (e) { /* ignora */ }
+    const f0 = s0, f1 = s1, t0 = performance.now();
+    const anda = (t) => { const k = Math.min(1, (t - t0) / 380), e = 1 - (1 - k) ** 3; s0 = f0 + (a - f0) * e; s1 = f1 + (b - f1) * e; pinta(s0, s1); if (k < 1) raf = requestAnimationFrame(anda); };
+    raf = requestAnimationFrame(anda);
+  };
+  // dedo no arco: o ângulo do toque diz qual fonte está ali
+  const onde = (e) => { const r = svg.getBoundingClientRect(); const x = ((e.clientX - r.left) / r.width) * 340 - CX, y = CY - ((e.clientY - r.top) / r.height) * 214;
+    const g = (Math.atan2(y, x) * 180) / Math.PI; const f = (A0 - (g < -90 ? g + 360 : g)) / (A0 - A1); let i = 0; while (i < F.length - 1 && ini[i + 1] < f) i++; return i; };
+  let arr = false;
+  el.addEventListener('pointerdown', (e) => { if (!F.length) return; arr = true; el.setPointerCapture(e.pointerId); escolhe(onde(e)); });
+  el.addEventListener('pointermove', (e) => { if (arr) escolhe(onde(e)); });
+  el.addEventListener('pointerup', () => { arr = false; }); el.addEventListener('pointercancel', () => { arr = false; });
+  el.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); escolhe(sel + (e.key === 'ArrowLeft' ? -1 : 1)); } });
+  escolhe(F.length - 1); // abre na maior fonte, que fica por último (as menores em cinza antes dela)
+}
 // roleta dos proventos: arrastar gira o arco (um traço por provento), solta com embalo e para no mais próximo; setas do teclado passam de um em um
 function basRlLigar() {
   const el = document.querySelector('.bas-rl[data-e]'); if (!el || el.dataset.on) return; el.dataset.on = '1';
@@ -2975,6 +3029,7 @@ function basAcao(act, ds, el) {
     case 'bas-ia-avisos': S.basIaAba = 'avisos'; basAbrir('ia', {}); return true;
     case 'bas-dia': { const w = el.closest('.bas-w-cal'); if (w) { w.querySelectorAll('.bas-cal-d.sel').forEach((x) => x.classList.remove('sel')); el.classList.add('sel'); w.querySelector('.bas-cal-sel').textContent = el.dataset.r; basSom('toque'); } return true; }
     case 'bas-foco': { if (!objLista().some((x) => x.id === ds.id)) return true; S.profile.objetivoFoco = ds.id; objSalvar(); basRetorno('ok'); if (ds.volta) basFechar(); else render(); toast('Sonho principal trocado.'); return true; }
+    case 'bas-en-vis': S.basEnVis = ds.v; basSom('toque'); render(); return true;
     case 'bas-en-mes': S.basPer = null; S.mes = Math.max(0, Math.min(11, +ds.m)); basSom('toque'); render(); return true;
     case 'bas-per-at': { const n = +ds.n; const ref = S.year === NOW_Y ? NOW_M : 11; S.basPerIni = null;
       if (n <= 1) { S.basPer = null; S.mes = ref; } else if (n >= 12) { S.basPer = { de: 0, ate: 11 }; S.mes = ref; } else { S.basPer = { de: Math.max(0, ref - n + 1), ate: ref }; S.mes = ref; }
