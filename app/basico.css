@@ -4624,3 +4624,5 @@ html[data-topo="tema"][data-theme="light"] :is(.bas-gt-bg, .bas-noite) :is(.bas-
 html[data-topo="tema"][data-theme="light"] .bas-pt-bg > .bas-ev .bas-ev-p { background: #fff !important; border-color: #1E3BD8 !important; box-shadow: 0 4px 10px -4px rgba(20, 30, 90, .5) !important; }
 html[data-topo="tema"][data-theme="light"] .bas-pt-bg > .bas-ev .bas-ev-guia { background: #1E3BD8 !important; box-shadow: none !important; opacity: .35 !important; }
 html[data-topo="tema"][data-theme="light"] :is(.bas-gt-bg, .bas-noite) .bas-rl-arco i { box-shadow: none !important; }
+/* no jeito de celular a troca de tema é imediata: a transição de cor em cada elemento atrasava a troca e deixava textos apagados no meio */
+html.tema-anim body[data-ui="basico"], html.tema-anim body[data-ui="basico"] *, html.tema-anim body[data-ui="basico"] *::before, html.tema-anim body[data-ui="basico"] *::after { transition: none !important; }

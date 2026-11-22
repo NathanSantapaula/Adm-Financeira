@@ -3181,7 +3181,7 @@ function basAcao(act, ds, el) {
     case 'bas-pagar': basPagar(); return true;
     case 'bas-ano': { const y = +ds.y; basLimpar(); if (S.plans[y]) { if (y !== S.year) switchYear(y); else render(); } else createPlan(y, S.plan); return true; }
     case 'bas-ap-tema': { const g = el.parentElement; g.style.setProperty('--i', ds.i); g.querySelectorAll('button').forEach((x) => x.setAttribute('aria-checked', String(x === el)));
-      setTimeout(() => { if (ds.v !== 'auto') S.profile.prefs.tema = ds.v; definirTema(ds.v === 'auto' ? 'auto-on' : ds.v); render(); }, 320); return true; }
+      setTimeout(() => { if (ds.v !== 'auto') S.profile.prefs.tema = ds.v; definirTema(ds.v === 'auto' ? 'auto-on' : ds.v); render(); }, 140); return true; }
     case 'bas-idioma': trocarIdioma(ds.v); return true;
     case 'bas-cf': { const c = basCf(); if (['texto', 'cantos', 'topo'].includes(ds.k)) c[ds.k] = ds.v; touch('profile'); basAplicarAp(); render(); return true; }
     // chaves: a bolinha corre antes, e a tela se redesenha depois (a animação aparece)
@@ -3192,7 +3192,7 @@ function basAcao(act, ds, el) {
       Notification.requestPermission().then((r) => { if (r === 'granted') liga(); else { toast('O celular não deixou. Libere as notificações do Cifrão nos ajustes dele.'); render(); } }, () => render()); return true; }
     case 'bas-cf-priv': el.setAttribute('aria-checked', String(!S.privado)); setTimeout(alternarPrivado, 260); return true;
     case 'bas-cf-modo': { const noite = !basEscuro(); el.setAttribute('aria-checked', String(noite)); const ceu = el.querySelector('.bas-cf-ceu'); if (ceu) ceu.classList.toggle('noite', noite);
-      setTimeout(() => { const p = S.profile.prefs; if (p.tema === 'custom' || (p.tema === 'auto' && p.manual === 'custom')) { p.tema = 'custom'; definirCor('base', noite ? 'oled' : 'light'); } else definirTema(noite ? 'oled' : 'light'); render(); }, 420); return true; }
+      setTimeout(() => { const p = S.profile.prefs; if (p.tema === 'custom' || (p.tema === 'auto' && p.manual === 'custom')) { p.tema = 'custom'; definirCor('base', noite ? 'oled' : 'light'); } else definirTema(noite ? 'oled' : 'light'); render(); }, 0); return true; }
     case 'bas-sair': if (!el.dataset.ok) { el.dataset.ok = '1'; el.querySelector('b').textContent = 'Toque de novo para sair'; return true; } basLimpar(); sair(); return true;
     case 'bas-tema': if (ds.v !== 'auto') S.profile.prefs.tema = ds.v; definirTema(ds.v === 'auto' ? 'auto-on' : ds.v); render(); return true;
     case 'bas-ui': try { localStorage.setItem('fp:interface', ds.v === 'basico' ? 'basico' : 'completo'); } catch (e) { S.profile.interface = ds.v === 'basico' ? 'basico' : 'completo'; touch('profile'); } basLimpar(); if (S.screen === 'app') { closeAdmin(); S.basAba = 'inicio'; window.scrollTo(0, 0); } render(); toast(`${BAS_NOMES[ds.v === 'basico' ? 'basico' : 'completo']} ligado.`); return true;
