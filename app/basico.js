@@ -1956,27 +1956,64 @@ function basConstelacao(n) {
 }
 // marcos da sequência, como conquistas que acendem
 const BAS_SEQ_MARCOS = [[3, 'Lua crescente', '3 meses seguidos', 'bronze'], [6, 'Lua cheia', '6 meses seguidos', 'prata'], [12, 'Planeta de anéis', '12 meses seguidos', 'ouro'], [24, 'Supernova', '24 meses seguidos', 'platina'], [36, 'Buraco negro', '36 meses seguidos', 'diamante']];
-// abertura do mês: no começo de um mês novo, uma retrospectiva do mês que passou, em 4 telas que passam sozinhas
+// Retrospectiva do mês, refeita do zero: telas em story, cada uma com o próprio visual (bolhas de emoji subindo nos gastos,
+// moedas caindo nas entradas, anel do que guardou, seta subindo no investido, linha do patrimônio, o sonho em 3D) e o Cifrão
+// atravessando tudo, mudando de forma e de lugar a cada tela. Termina no compartilhar.
+const BAS_RT_EMO = [[/aliment|restaur|ifood|lanche|comida|padaria|caf[eé]/, '🍔'], [/mercad|supermerc|feira/, '🛒'], [/casa|aluguel|condom|moradia|reforma/, '🏠'],
+  [/luz|energia|[aá]gua|internet|g[aá]s|telefone|celular/, '💡'], [/transp|uber|99|combust|gasolina|carro|estacion|[oô]nibus|metr[oô]/, '🚗'], [/sa[uú]de|farm|m[eé]dic|rem[eé]d|academia|plano/, '💊'],
+  [/lazer|cinema|show|bar|festa|jogo|game/, '🎉'], [/educa|curso|escola|faculd|livro/, '📚'], [/viagem|hotel|passag|turismo/, '✈️'], [/pet|cachorro|gato|ra[cç][aã]o/, '🐶'],
+  [/roupa|vestu|moda|cal[cç]ado|t[eê]nis/, '👕'], [/assinat|stream|netflix|spotify|prime|disney/, '📺'], [/pessoal|beleza|cabel|est[eé]tica|cosm/, '💇'], [/presente|gift/, '🎁'],
+  [/relacion|namor|amor/, '❤️'], [/cart[aã]o|fatura/, '💳'], [/invest|xp|corretora/, '📈'], [/filho|crian[cç]a|beb[eê]/, '🧸']];
+const basRtEmo = (t) => { const s = String(t || '').toLowerCase(); const h = BAS_RT_EMO.find(([r]) => r.test(s)); return h ? h[1] : '💸'; };
 function basTelaRetro(o) {
   const m = o.id != null ? +o.id : NOW_M - 1; if (!(m >= 0) || !S.C) return basSumiu(); const C = S.C; const carry = E.carryItems(S.plans, S.year);
-  const sob = C.investAlocado[m]; const ent = C.receita[m]; const ar = E.gastosAreaMes(S.plan, carry, m); const top = Object.keys(ar).map((k) => [k, ar[k]]).filter((x) => x[1] > 0).sort((a, b) => b[1] - a[1]).slice(0, 3); const mxA = top.length ? top[0][1] : 1;
+  const Mes = cap(MES_LONGO[m]); const ent = +C.receita[m] || 0; const sai = +C.despesas[m] || 0; const sob = +C.investAlocado[m] || 0;
   const D = E.disponivelAporte({ C, mes: m, metaMes: C.metaAporteMes }); const n = basSeqDados().Q.atual; const pAnt = m > 0 ? C.patrimonio[m - 1] : C.patrimonioBase; const dp = C.patrimonio[m] - pAnt;
+  const ar = E.gastosAreaMes(S.plan, carry, m); const top = Object.keys(ar).map((k) => [k, ar[k]]).filter((x) => x[1] > 0).sort((a, b) => b[1] - a[1]).slice(0, 3); const totA = top.reduce((s, x) => s + x[1], 0) || 1;
+  const pg = entradasMes(m).filter((e) => +e.valor > 0); const nPg = pg.length;
+  const bol = pg.slice().sort((a, b) => b.valor - a.valor).slice(0, 36).map((e) => [basRtEmo(`${e.area} ${e.sub} ${e.nome}`), +e.valor]);
+  const fontes = (S.plan.rendas || []).filter((r) => (+((r.valores || [])[m]) || 0) > 0).length;
+  const guardP = ent > 0 ? Math.max(0, Math.min(1, sob / ent)) : 0; const g = objFoco(objAnalise());
+  const serie = []; for (let k = Math.max(0, m - 5); k <= m; k++) serie.push(+C.patrimonio[k] || 0); if (m < 5) serie.unshift(+C.patrimonioBase || 0);
+  const mn = Math.min(...serie), mx = Math.max(...serie), rg = mx - mn || 1; const pts = serie.map((v, k) => [12 + (k * 276) / Math.max(1, serie.length - 1), 110 - ((v - mn) / rg) * 90]);
+  const cont = (v, fmt) => (oculto() ? `<b class="bas-rt-n">${basCent(v)}</b>` : `<b class="bas-rt-n" data-cont="${(+v || 0).toFixed(2)}" data-fmt="${fmt || 'brl'}">${fmt === 'pct' ? '0%' : brl(0)}</b>`);
+  // [fundo, lugar do Cifrão, forma, expressão, html]
   const sl = [
-    `<small>Sua retrospectiva</small><b class="bas-wr-g">${cap(MES_LONGO[m])}<br>acabou.</b><p>Vamos ver como foi?</p>`,
-    `<small>Sobrou no mês</small><b class="bas-wr-v">${basCent(sob)}</b><p>${ent > 0 ? `Você guardou <em>${pct(Math.max(0, sob / ent))}</em> do que entrou.` : 'Anote as entradas para ver quanto guardou.'}</p>`,
-    `<small>Para onde foi o dinheiro</small>${top.length ? `<ul class="bas-wr-l">${top.map(([a, v], i) => `<li><span>${i + 1}. ${esc(a)}</span><i style="--w:${((v / mxA) * 100).toFixed(0)}%"></i><b>${brl0(v)}</b></li>`).join('')}</ul>` : '<p>Nenhum gasto anotado.</p>'}`,
-    `<small>Investido</small><b class="bas-wr-v">${basCent(D.aportado)}</b><p>${n > 0 ? `Sua sequência está em <em>${n} ${n === 1 ? 'mês' : 'meses'}</em>.` : 'Um aporte este mês começa uma sequência.'}${C.faturamento[m] > 0 ? ` E os proventos somaram ${brl0(C.faturamento[m])}.` : ''}</p>`,
-    `<small>Seu patrimônio</small><b class="bas-wr-v">${basCent(C.patrimonio[m])}</b><p>${Math.abs(dp) >= 1 ? `${dp > 0 ? 'Cresceu' : 'Caiu'} <em>${brl0(Math.abs(dp))}</em> no mês.` : 'Ficou estável no mês.'}</p><button class="bas-dp-bt" data-act="bas-retro-share" data-m="${m}">${I_PARTILHA}Compartilhar o mês</button>`,
+    ['noite', 'centro', 'cifrao', 'festa', `<small>Sua retrospectiva</small><h2 class="bas-rt-g">${Mes}<br>acabou.</h2><p>Vamos ver como foi o seu mês?</p>`],
+    ['azul', 'canto', 'moeda', 'plim', `<small>Entrou no mês</small>${cont(ent)}<p>${fontes > 1 ? `Vindo de <em>${fontes} fontes</em>.` : ent > 0 ? 'Cada real conta a história do mês.' : 'Anote suas entradas para ver aqui.'}</p><div class="bas-rt-chuva" aria-hidden="true">${Array.from({ length: 14 }, (_, k) => `<i style="--x:${(k * 41) % 96}%;--d:${(k * 0.23) % 2.4}s;--t:${2.6 + (k % 4) * 0.5}s">🪙</i>`).join('')}</div>`],
+    ['fundo', 'canto', 'cifrao', 'espiada', `<p class="bas-rt-lead">Você gastou ${oculto() ? basCent(sai) : `<b>${brl0(sai)}</b>`} em ${MES_LONGO[m]}.</p><p class="bas-rt-sub">${nPg ? `${nPg} ${nPg === 1 ? 'pagamento' : 'pagamentos'}, uma bolha cada.` : 'Nenhum gasto anotado.'}</p><div class="bas-rt-bolhas" data-b="${esc(JSON.stringify(bol))}" aria-hidden="true"></div>`],
+    ['roxo', 'canto', 'cifrao', 'pensando', `<small>Para onde foi</small>${top.length ? `<ol class="bas-rt-pod">${top.map(([a, v], i) => `<li style="--i:${i};--w:${((v / top[0][1]) * 100).toFixed(0)}%"><span class="bas-rt-pe" aria-hidden="true">${basRtEmo(a)}</span><span class="bas-rt-pn"><b>${esc(a)}</b><small>${pct(v / Math.max(1, sai))} do que gastou</small></span><b class="bas-rt-pv">${brl0(v)}</b><i></i></li>`).join('')}</ol>` : '<p>Nenhum gasto anotado.</p>'}`],
+    ['verde', 'anel', 'cadeado', 'orgulho', `<small>Ficou com você</small><div class="bas-rt-anel" style="--p:${guardP.toFixed(3)}"><svg viewBox="0 0 120 120" aria-hidden="true"><circle cx="60" cy="60" r="52"/><circle class="on" cx="60" cy="60" r="52" pathLength="1"/></svg></div>${cont(guardP, 'pct')}<p>${ent > 0 ? `Sobraram <em>${brl0(sob)}</em> do que entrou.` : 'Anote as entradas para ver quanto guardou.'}</p>`],
+    ['azul', 'sobe', 'seta', 'animado', `<small>Investido</small>${cont(D.aportado)}<p>${n > 0 ? `Sua sequência está em <em>${n} ${n === 1 ? 'mês' : 'meses'}</em> seguidos.` : 'Um aporte por mês começa uma sequência.'}</p><div class="bas-rt-seq" aria-hidden="true">${Array.from({ length: 6 }, (_, k) => `<i class="${k < Math.min(n, 6) ? 'on' : ''}" style="--k:${k}"></i>`).join('')}</div>`],
+    ['noite', 'canto', dp >= 0 ? 'mais' : 'cifrao', dp >= 0 ? 'confiante' : 'frio', `<small>Seu patrimônio</small>${cont(C.patrimonio[m])}<p>${Math.abs(dp) >= 1 ? `${dp > 0 ? 'Cresceu' : 'Caiu'} <em>${brl0(Math.abs(dp))}</em> no mês.` : 'Ficou estável no mês.'}</p><svg class="bas-rt-linha" viewBox="0 0 300 120" aria-hidden="true"><path pathLength="1" d="${basCurva(pts)}"/>${pts.length ? `<circle cx="${pts[pts.length - 1][0].toFixed(1)}" cy="${pts[pts.length - 1][1].toFixed(1)}" r="6"/>` : ''}</svg>`],
+    ...(g ? [['azul', 'canto', 'cifrao', 'carinho', `<small>Seu sonho</small><div class="bas-rt-sonho"><img src="assets/img/o3/${esc(obj3dDe(g))}.png" alt=""><span class="bas-rt-si">${objIcone(g, 0)}</span></div><h3 class="bas-rt-sn">${esc(objNomeDe(g))}</h3><div class="bas-rt-sb"><i style="--p:${Math.min(1, g.progresso || 0).toFixed(3)}"></i></div><p><em>${pct(g.progresso || 0)}</em> do caminho${g.falta > 0 ? ` · faltam ${brl0(g.falta)}` : ' · chegou lá!'}</p>`]] : []),
+    ['fim', 'centro', 'cifrao', 'comemorando', `<small>Esse foi o seu ${MES_LONGO[m]}</small><div class="bas-rt-res"><span><small>Entrou</small><b>${brl0(ent)}</b></span><span><small>Saiu</small><b>${brl0(sai)}</b></span><span><small>Guardou</small><b>${pct(guardP)}</b></span><span><small>Investiu</small><b>${brl0(D.aportado)}</b></span></div>
+      <div class="bas-rt-bts"><button class="btn primary lg" data-act="bas-retro-share" data-m="${m}">${I_PARTILHA}Compartilhar o mês</button><button class="bas-rt-de" data-act="bas-wr-de">Ver de novo</button></div>`],
   ];
-  return `<section class="bas-wr" data-n="${sl.length}" style="--n:${sl.length}"><div class="bas-wr-bar">${sl.map((_, i) => `<span><i style="--i:${i}"></i></span>`).join('')}</div>
-    <button class="bas-wr-x" data-act="bas-voltar" aria-label="Fechar">${I.x}</button>${sl.map((h, i) => `<div class="bas-wr-s${i ? '' : ' on'}" data-s="${i}">${h}</div>`).join('')}
+  return `<section class="bas-wr rt" data-n="${sl.length}" data-pos="${sl[0][1]}" style="--n:${sl.length}" data-cf="${esc(JSON.stringify(sl.map((x) => [x[1], x[2], x[3]])))}"><div class="bas-wr-bar">${sl.map((_, i) => `<span><i style="--i:${i}"></i></span>`).join('')}</div>
+    <button class="bas-wr-x" data-act="bas-voltar" aria-label="Fechar">${I.x}</button>${sl.map(([bg, , , , h], i) => `<div class="bas-wr-s bas-rt-s${i === sl.length - 1 ? ' fim' : ''}${i ? '' : ' on'}" data-s="${i}" data-bg="${bg}">${h}</div>`).join('')}
+    <span class="bas-rt-cif" aria-hidden="true"><span class="cifrao" data-sem-giro></span></span>
     <button class="bas-wr-z e" data-act="bas-wr" data-d="-1" aria-label="Anterior"></button><button class="bas-wr-z d" data-act="bas-wr" data-d="1" aria-label="Próxima"></button></section>`;
 }
-// telas da retrospectiva: troca a cada 5 s ou num toque nas metades da tela (sem render)
+// ao entrar numa tela: o Cifrão muda de lugar e de forma, os números contam, as bolhas sobem
+function basRtEntra(w, i) {
+  if (!w.classList.contains('rt')) return; const cf = JSON.parse(w.dataset.cf || '[]')[i]; const s = w.querySelectorAll('.bas-wr-s')[i]; if (!s) return;
+  const quieto = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (cf) { const ci = w.querySelector('.bas-rt-cif'); const an = cf[0] === 'anel' && s.querySelector('.bas-rt-anel'); ci.style.left = an ? `${an.offsetLeft + an.offsetWidth / 2 - 42}px` : ''; ci.style.top = an ? `${an.offsetTop + an.offsetHeight / 2 - 42}px` : ''; }
+  if (cf) { w.dataset.pos = cf[0]; const h = w.querySelector('.bas-rt-cif .cifrao'); setTimeout(() => { try { if (window.Cifrao && h) { window.Cifrao.forma(h, cf[1]); window.Cifrao.expressao(h, cf[2]); } } catch (e) { /* ignora */ } }, 380); }
+  s.querySelectorAll('[data-cont]').forEach((b) => { const alvo = +b.dataset.cont; const pc = b.dataset.fmt === 'pct'; const f = (v) => (pc ? pct(v) : brl(v));
+    if (quieto) { b.textContent = f(alvo); return; } const t0 = performance.now(); const passo = (t) => { const k = Math.min(1, (t - t0) / 1400); b.textContent = f(alvo * (1 - Math.pow(1 - k, 3))); if (k < 1 && b.isConnected) requestAnimationFrame(passo); }; requestAnimationFrame(passo); });
+  const bx = s.querySelector('.bas-rt-bolhas'); if (bx && !bx.childElementCount) { const B = JSON.parse(bx.dataset.b || '[]'); const mxv = Math.max(1, ...B.map((x) => x[1]));
+    bx.innerHTML = B.map(([e, v], k) => { const tam = 46 + Math.sqrt(v / mxv) * 58; return `<i style="--s:${tam.toFixed(0)}px;--x:${(7 + ((k * 37) % 78))}%;--d:${((k * 0.31) % 3.2).toFixed(2)}s;--t:${(5.5 + (k % 5) * 0.7).toFixed(1)}s;--o:${(k % 2 ? 1 : -1) * (6 + (k % 4) * 4)}px">${e}</i>`; }).join(''); }
+  s.querySelectorAll('.bas-rt-sonho img').forEach((im) => { if (im.complete && !im.naturalWidth) im.remove(); else im.addEventListener('error', () => im.remove(), { once: true }); }); // sem a imagem 3D, fica o ícone
+  s.classList.remove('vai'); void s.offsetWidth; s.classList.add('vai');
+}
+// telas da retrospectiva: troca sozinha ou num toque nas metades da tela (sem render)
 function basWrIr(w, i) {
   const n = +w.dataset.n; if (i >= n) { basFechar(); return; } i = Math.max(0, i); w.dataset.i = i;
   w.querySelectorAll('.bas-wr-s').forEach((x, k) => x.classList.toggle('on', k === i)); w.querySelectorAll('.bas-wr-bar i').forEach((b, k) => { b.className = k < i ? 'cheia' : k === i ? 'anda' : ''; });
-  clearTimeout(w._t); if (i < n - 1) w._t = setTimeout(() => { if (w.isConnected) basWrIr(w, i + 1); }, 5000);
+  basRtEntra(w, i);
+  clearTimeout(w._t); if (i < n - 1) w._t = setTimeout(() => { if (w.isConnected) basWrIr(w, i + 1); }, w.classList.contains('rt') ? 6500 : 5000);
 }
 // os meses que fizeram a conquista: a primeira vez em que a sequência chegou a q meses seguidos
 function basMarcoInfo(q) {
@@ -3178,6 +3215,7 @@ function basAcao(act, ds, el) {
     case 'bas-cs-ir': { const t = basTopoPilha(); if (t && t.t === 'constelacao') { t.id = String((+t.id || 0) + +ds.d); basSom('toque'); render(); } return true; }
     case 'bas-an-mes': { const w = el.closest('.bas-pm'); if (w) { w.querySelectorAll('.bas-pm-g button').forEach((p) => p.classList.toggle('sel', p === el)); w.querySelector('.bas-an-r').textContent = el.dataset.r; basSom('toque'); } return true; }
     case 'bas-sq-astro': { const a = document.querySelector('.bas-sqx-astro'); if (a && !matchMedia('(prefers-reduced-motion: reduce)').matches) { a.classList.remove('festa'); void a.offsetWidth; a.classList.add('festa'); basVibra(12); basSom('ok'); } return true; }
+    case 'bas-wr-de': { const w = el.closest('.bas-wr'); if (w) { basWrIr(w, 0); basSom('toque'); } return true; }
     case 'bas-wr': { const w = el.closest('.bas-wr'); if (w) { basWrIr(w, (+w.dataset.i || 0) + (+ds.d || 1)); basSom('toque'); } return true; }
     case 'bas-retro-share': { const m = +ds.m; basFechar(); setTimeout(() => basAbrir('resumo', { id: m }), 320); return true; }
     case 'bas-rs-modo': { const op = basRsOp(); if (ds.v !== 'pct' && ds.v !== 'val') return true; op.modo = ds.v; touch('profile'); basSom('toque'); render(); return true; }
