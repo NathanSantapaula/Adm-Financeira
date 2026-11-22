@@ -938,7 +938,7 @@ function o3Criar() {
   const camera = o3Camera();
   const key = new T.DirectionalLight(0xFFFFFF, 1.6); key.position.set(3, 4, 5); const rim = new T.DirectionalLight(0x6CB4FF, 2.2); rim.position.set(-4, 2, -4);
   scene.add(key, rim, new T.HemisphereLight(0xD6E8FF, 0x0B1630, 0.5));
-  const pivo = new T.Group(); scene.add(pivo); const sombra = o3Sombra(); scene.add(sombra);
+  const pivo = new T.Group(); scene.add(pivo); const sombra = o3Sombra(); sombra.visible = false; scene.add(sombra); // sem sombra projetada embaixo (pedido do dono)
   renderer.domElement.className = 'ob3d-canvas';
   O3 = { renderer, scene, camera, pivo, sombra, obj: null, tipo: null, M: o3Mat(), gesto: { x: 0, y: 0, z: 1, vx: 0, vy: 0, ativo: false, tz: 0 }, t0: 0, entrada: 0, raf: 0, visivel: true, host: null };
   document.addEventListener('visibilitychange', o3Rodar);
@@ -966,12 +966,12 @@ function o3Objeto(tipo) {
 }
 // miniaturas para escolher o objeto do "Outro": cada um desenhado uma vez num renderizador pequeno à parte e guardado como imagem
 const O3_MINI = new Map();
-function o3Miniaturas(tipos) {
+function o3Miniaturas(tipos, px) {
   if (!o3Suporta()) return Promise.resolve(O3_MINI);
   return o3Biblioteca().then(() => {
     const falta = tipos.filter((t) => !O3_MINI.has(t)); if (!falta.length) return O3_MINI; const T = THREE;
-    const r = new T.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true }); r.setSize(256, 256, false); r.outputEncoding = T.sRGBEncoding; r.toneMapping = T.ACESFilmicToneMapping; r.setClearColor(0x000000, 0);
-    const sc = new T.Scene(); sc.environment = o3Estudio(r); const cam = o3Camera(); const sombra = o3Sombra(); sombra.material.opacity = 0.6; sc.add(sombra);
+    const r = new T.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true }); r.setSize(px || 256, px || 256, false); r.outputEncoding = T.sRGBEncoding; r.toneMapping = T.ACESFilmicToneMapping; r.setClearColor(0x000000, 0);
+    const sc = new T.Scene(); sc.environment = o3Estudio(r); const cam = o3Camera(); const sombra = o3Sombra(); sombra.visible = false; sc.add(sombra);
     const luz = new T.DirectionalLight(0xFFFFFF, 1.6); luz.position.set(3, 4, 5); sc.add(luz, new T.HemisphereLight(0xD6E8FF, 0x0B1630, 0.5)); const M = o3Mat();
     falta.forEach((t) => { const o = o3Montar(t, M); o3Assenta(sombra, o.userData, 1, 0); sc.add(o); r.render(sc, cam); O3_MINI.set(t, r.domElement.toDataURL('image/png')); sc.remove(o); });
     r.dispose(); r.forceContextLoss(); return O3_MINI;
