@@ -2621,11 +2621,11 @@ function basArLigar() {
   poe('path', { d: arc(A0, A0 - SW), style: `fill:none;stroke:rgba(255,255,255,.1);stroke-width:${W};stroke-linecap:round` });
   /* marquinhas finas e radiais logo depois da última parte, sumindo aos poucos */ if (F.length && fim < 0.99) { const g0 = ang(fim) - CAP - 2.2, g1 = Math.max(ang(1), g0 - 62); for (let g = g0, n = 0; g > g1; g -= 3.4, n++) { const [a1, b1] = pt(g, R - 7), [a2, b2] = pt(g, R + 7); poe('line', { x1: a1.toFixed(1), y1: b1.toFixed(1), x2: a2.toFixed(1), y2: b2.toFixed(1), style: `stroke:rgba(255,255,255,${(0.34 - 0.2 * ((g0 - g) / (g0 - g1))).toFixed(2)});stroke-width:1.8;stroke-linecap:round` }); } }
   const SG = F.map((_, i) => poe('path', { class: 'bas-gg-sg', d: arc(ang(ini[i]) - (i ? GAP : 0), ang(ini[i + 1]) + (i < F.length - 1 ? GAP : 0)), style: `fill:none;stroke:#2F6BFF;stroke-width:${W};stroke-linecap:round` }));
-  ini.slice(1, F.length).forEach((v) => { const g = ang(v); const [x1, y1] = pt(g - 3, R + 7), [x2, y2] = pt(g + 3, R - 7); poe('line', { x1: x1.toFixed(1), y1: y1.toFixed(1), x2: x2.toFixed(1), y2: y2.toFixed(1), style: 'stroke:rgba(255,255,255,.55);stroke-width:2;stroke-linecap:round' }); });
+  ini.slice(1, F.length).forEach((v) => { const g = ang(v); const [x1, y1] = pt(g, R + 7), [x2, y2] = pt(g, R - 7); poe('line', { x1: x1.toFixed(1), y1: y1.toFixed(1), x2: x2.toFixed(1), y2: y2.toFixed(1), style: 'stroke:rgba(255,255,255,.55);stroke-width:2;stroke-linecap:round' }); });
   if (!F.length) return;
   const k = el.querySelector('.bas-gg-k'), v = el.querySelector('.bas-gg-v'), s = el.querySelector('.bas-gg-s'); let sel = -1;
   const total = () => { sel = -1; SG.forEach((p) => p.classList.remove('apaga')); k.textContent = el.dataset.tk; v.textContent = el.dataset.t;
-    s.textContent = F.length > 1 ? `De ${F.length} fontes. Toque numa parte do arco para ver cada uma.` : `Tudo de ${F[0][0]}.`; el.setAttribute('aria-valuenow', 0); };
+    s.textContent = F.length > 1 ? `${F.length} fontes · toque no arco` : `Tudo de ${F[0][0]}`; el.setAttribute('aria-valuenow', 0); };
   const escolhe = (i) => {
     i = (i + F.length) % F.length; sel = i; const f = F[i]; SG.forEach((p, j) => p.classList.toggle('apaga', j !== i));
     k.textContent = `${f[2]} do que entrou`; v.textContent = f[5];

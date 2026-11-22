@@ -4680,3 +4680,4 @@ html[data-topo="tema"][data-theme="light"] .bas-ar-s b.up { color: #15803D !impo
 .bas-gg .bas-ar-bt { pointer-events: auto; }
 html[data-topo="tema"][data-theme="light"] .bas-en2-bg.ar-on :is(b, strong, small, span, p, em, h1, h2, h3, header, label):not(.bas-rl-seg [aria-pressed="true"], .bas-rl-seg [aria-pressed="true"] *, .bas-gg-s b) { color: #fff !important; }
 html[data-topo="tema"][data-theme="light"] .bas-en2-bg.ar-on :is(.bas-gg-k, .bas-gg-s) { color: rgba(255, 255, 255, .55) !important; }
+.bas-gg-tx { left: 20%; right: 20%; gap: 6px; } .bas-gg-k { font-size: 14px; } .bas-gg-v { font-size: min(32px, 8.4vw); font-weight: 650; letter-spacing: -.015em; } .bas-gg-s { font-size: 13.5px; max-width: 200px; }
