@@ -1635,9 +1635,9 @@ function basRsDados(m) {
 }
 function basTelaResumo(o) {
   const m = o && o.id != null ? +o.id : S.mes; const R = basRsDados(m); const op = basRsOp();
-  const card = `<div class="bas-story bas-rs"><img class="bas-rs-ic" src="assets/img/icon-preto-192.png" alt="" aria-hidden="true"><small>${esc(cap(MES_LONGO[m]))} de ${S.year}</small><b class="bas-story-v">${esc(R.head.v)}</b><span class="bas-story-k">${R.head.k}</span>
-      ${R.L.length ? `<ul>${R.L.map(([n, v, c]) => `<li><span>${n}</span><b class="${c}">${esc(v)}</b></li>`).join('')}</ul>` : ''}
-      ${R.g ? `<div class="bas-story-g"><span>${esc(R.g.nome)}</span>${basBarra(R.g.p)}<b>${pct(R.g.p)}</b></div>` : ''}<p class="bas-rs-pe">Feito com ${esc(CFG.marca || 'Cifrão')}</p></div>`;
+  const card = `<div class="bas-story bas-rs"><span class="bas-rs-luz" aria-hidden="true"><i></i><i></i><i></i></span><img class="bas-rs-ic" src="assets/img/icon-preto-192.png" alt="" aria-hidden="true"><small>${esc(cap(MES_LONGO[m]))} de ${S.year}</small><b class="bas-story-v">${esc(R.head.v)}</b><span class="bas-story-k">${R.head.k}</span>
+      ${R.L.length ? `<div class="bas-rs-g">${R.L.map(([n, v, c]) => `<div class="bas-rs-t"><i class="bas-rs-ti" aria-hidden="true">${({ Entrou: '↓', Saiu: '↑', Investido: '↗', Proventos: '✦' })[n] || '•'}</i><small>${n}</small><b class="${c}${String(v).length > 11 ? ' pq' : ''}">${esc(v)}</b></div>`).join('')}</div>` : ''}
+      ${R.g ? `<div class="bas-rs-s"><span>${esc(R.g.nome)}<b>${pct(R.g.p)}</b></span><i><i style="width:${(R.g.p * 100).toFixed(1)}%"></i></i></div>` : ''}<p class="bas-rs-pe"><img src="assets/img/icon-preto-192.png" alt="" aria-hidden="true">Feito com ${esc(CFG.marca || 'Cifrão')}</p></div>`;
   const opcoes = `<section class="card bas-rs-op"><small class="bas-k">O que vai na imagem</small>
       <div class="bas-rs-seg" role="radiogroup" aria-label="Mostrar como">${[['pct', 'Porcentagens'], ['val', 'Valores']].map(([k, l]) => `<button type="button" role="radio" aria-checked="${op.modo === k}" data-act="bas-rs-modo" data-v="${k}"${k === 'val' && oculto() ? ' disabled' : ''}>${l}</button>`).join('')}</div>
       <div class="bas-rs-its">${BAS_RS_ITENS.map(([k, l]) => `<button type="button" class="bas-rs-it" aria-pressed="${!!op.it[k]}" data-act="bas-rs-it" data-k="${k}"><i aria-hidden="true">${op.it[k] ? '✓' : '+'}</i>${l}</button>`).join('')}</div>
@@ -1876,15 +1876,17 @@ function basStoryPng(m) {
   const ic = new Image(); ic.src = new URL('assets/img/icon-preto-512.png', document.baseURI).href;
   return (ic.decode ? ic.decode() : Promise.resolve()).catch(() => null).then(() => {
     { const gr = x.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, '#3B6CFF'); gr.addColorStop(.46, '#1428F5'); gr.addColorStop(.78, '#0A1290'); gr.addColorStop(1, '#03061F'); x.fillStyle = gr; x.fillRect(0, 0, W, H); }
-    { const gr = x.createRadialGradient(W / 2, 0, 0, W / 2, 0, 640); gr.addColorStop(0, 'rgba(150,185,255,0.55)'); gr.addColorStop(1, 'rgba(150,185,255,0)'); x.fillStyle = gr; x.fillRect(0, 0, W, H); }
+    { const gr = x.createRadialGradient(W / 2, 0, 0, W / 2, 0, 640); gr.addColorStop(0, 'rgba(150,185,255,0.55)'); gr.addColorStop(1, 'rgba(150,185,255,0)'); x.fillStyle = gr; x.fillRect(0, 0, W, H); } [[140, 100, 460, '127,168,255', .6], [W - 100, 640, 440, '110,75,255', .5], [W * .45, H + 40, 520, '15,163,255', .35]].forEach(([cx, cy, r, c, al]) => { const g2 = x.createRadialGradient(cx, cy, 0, cx, cy, r); g2.addColorStop(0, `rgba(${c},${al})`); g2.addColorStop(1, `rgba(${c},0)`); x.fillStyle = g2; x.fillRect(0, 0, W, H); });
     const txt = (t, px, peso, cor, y, al) => { x.font = `${peso} ${px}px ${fonte}`; x.fillStyle = cor; x.textAlign = al || 'center'; x.fillText(t, al === 'left' ? 96 : al === 'right' ? W - 96 : W / 2, y); };
     // o ícone do Cifrão no alto, com cantos redondos
-    if (ic.complete && ic.naturalWidth) { x.save(); x.beginPath(); x.roundRect(W / 2 - 72, 70, 144, 144, 34); x.clip(); x.drawImage(ic, W / 2 - 72, 70, 144, 144); x.restore(); }
-    txt(`${cap(MES_LONGO[R.m])} de ${S.year}`, 38, 500, 'rgba(245,245,247,0.7)', 286);
-    txt(R.head.v, R.head.v.length > 14 ? 104 : 128, 800, '#ffffff', 420); txt(R.head.k, 38, 500, 'rgba(245,245,247,0.7)', 485);
-    const y0 = 560; R.L.forEach(([n, val, c], i) => { const y = y0 + i * 118; x.fillStyle = 'rgba(255,255,255,0.13)'; x.beginPath(); x.roundRect(80, y, W - 160, 96, 28); x.fill(); x.strokeStyle = 'rgba(255,255,255,0.22)'; x.lineWidth = 2; x.stroke(); txt(n, 38, 500, 'rgba(255,255,255,0.82)', y + 61, 'left'); txt(val, 42, 700, c === 'pos' ? '#8CF7B8' : '#ffffff', y + 62, 'right'); });
-    if (R.g) { const y = y0 + R.L.length * 118 + 44; txt(`${R.g.nome} · ${pct(R.g.p)} do caminho`, 36, 600, '#ffffff', y, 'left'); x.fillStyle = 'rgba(255,255,255,0.14)'; x.beginPath(); x.roundRect(96, y + 30, W - 192, 22, 11); x.fill();
-      const gr = x.createLinearGradient(96, 0, W - 96, 0); gr.addColorStop(0, '#ffffff'); gr.addColorStop(1, '#CFE3FF'); x.fillStyle = gr; x.beginPath(); x.roundRect(96, y + 30, Math.max(22, (W - 192) * R.g.p), 22, 11); x.fill(); }
+    if (ic.complete && ic.naturalWidth) { x.save(); x.beginPath(); x.roundRect(W / 2 - 80, 70, 160, 160, 40); x.clip(); x.drawImage(ic, W / 2 - 84, 66, 168, 168); x.restore(); }
+    txt(`${cap(MES_LONGO[R.m])} de ${S.year}`, 38, 600, 'rgba(255,255,255,0.8)', 300);
+    txt(R.head.v, R.head.v.length > 14 ? 110 : 150, 800, '#ffffff', 450); txt(R.head.k, 38, 500, 'rgba(255,255,255,0.8)', 510);
+    const vidro = (x0, y, w, h) => { x.fillStyle = 'rgba(255,255,255,0.13)'; x.beginPath(); x.roundRect(x0, y, w, h, 40); x.fill(); x.strokeStyle = 'rgba(255,255,255,0.22)'; x.lineWidth = 2; x.stroke(); };
+    const y0 = 560, GW = (W - 160 - 24) / 2, GH = 170; R.L.forEach(([n, val, c], i) => { const lin = Math.floor(i / 2), col = i % 2, ult = i === R.L.length - 1 && R.L.length % 2, w = ult ? W - 160 : GW, x0 = 80 + (ult ? 0 : col * (GW + 24)), y = y0 + lin * (GH + 24);
+      vidro(x0, y, w, GH); x.textAlign = 'left'; x.font = `600 34px ${fonte}`; x.fillStyle = 'rgba(255,255,255,0.8)'; x.fillText(n, x0 + 32, y + 58); x.font = `800 ${val.length > 11 ? 46 : 62}px ${fonte}`; x.fillStyle = c === 'pos' ? '#8CF7B8' : '#ffffff'; x.fillText(val, x0 + 32, y + 132); });
+    if (R.g) { const y = y0 + Math.ceil(R.L.length / 2) * (GH + 24); vidro(80, y, W - 160, 150); x.textAlign = 'left'; x.font = `600 36px ${fonte}`; x.fillStyle = 'rgba(255,255,255,0.88)'; x.fillText(R.g.nome, 112, y + 62); x.textAlign = 'right'; x.font = `800 40px ${fonte}`; x.fillStyle = '#ffffff'; x.fillText(pct(R.g.p), W - 112, y + 62);
+      x.fillStyle = 'rgba(255,255,255,0.2)'; x.beginPath(); x.roundRect(112, y + 92, W - 224, 18, 9); x.fill(); const gr = x.createLinearGradient(112, 0, W - 112, 0); gr.addColorStop(0, '#ffffff'); gr.addColorStop(1, '#CFE3FF'); x.fillStyle = gr; x.beginPath(); x.roundRect(112, y + 92, Math.max(18, (W - 224) * R.g.p), 18, 9); x.fill(); }
     txt(`Feito com ${CFG.marca || 'Cifrão'}`, 30, 500, 'rgba(245,245,247,0.5)', H - 70);
     return new Promise((ok) => cv.toBlob((b) => ok(b), 'image/png'));
   });
