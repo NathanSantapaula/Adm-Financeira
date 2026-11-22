@@ -366,8 +366,9 @@ function basInicio() {
 // Entradas: o total do período, o mês a mês, o que é previsível, a renda passiva, cada fonte com a sua parte e leituras automáticas
 // (E.analiseRenda, a mesma análise da aba Rendas do SaaS); tocar numa fonte edita, e o + cria
 function basTelaEntradas() {
-  const j = basJan(); const C = S.C; const p = S.plan; const R = E.analiseRenda({ C, de: j.de, ate: j.ate, meses: Math.max(j.ate + 1, 1), rendas: p.rendas, rendaCats: p.rendaCats });
-  const tot = basSomaJ(C.receita); const mx = Math.max(1, ...C.receita); const ult = S.year === NOW_Y ? NOW_M : 11;
+  // só as fontes de renda (C.rendas): os proventos ficam fora, eles têm a tela deles
+  const j = basJan(); const C = S.C; const p = S.plan; const R = E.analiseRenda({ C: { ...C, receita: C.rendas }, de: j.de, ate: j.ate, meses: Math.max(j.ate + 1, 1), rendas: p.rendas, rendaCats: p.rendaCats });
+  const tot = basSomaJ(C.rendas); const mx = Math.max(1, ...C.rendas); const ult = S.year === NOW_Y ? NOW_M : 11;
   const fontes = p.rendas.map((r) => [r, (r.valores || []).slice(j.de, j.ate + 1).reduce((a, v) => a + (+v || 0), 0)]).filter((x) => x[1] > 0.005).sort((a, b) => b[1] - a[1]);
   const totF = fontes.reduce((a, x) => a + x[1], 0) || 1;
   // recorrente pelo ano até agora (não só pelo período escolhido): entrou em pelo menos 60% dos meses e em 3 ou mais
@@ -375,27 +376,27 @@ function basTelaEntradas() {
   const prev = fontes.reduce((a, [r, v]) => a + (recDe(r.id) ? v : 0), 0) / totF; const prevMes = fontes.reduce((a, [r]) => a + (recDe(r.id) ? +((r.valores || [])[ult]) || 0 : 0), 0);
   const prov = basSomaJ(C.faturamento); const futuro = S.year === NOW_Y ? p.rendas.reduce((a, r) => a + (r.valores || []).slice(NOW_M + 1).reduce((b, v) => b + (+v || 0), 0), 0) : 0;
   // tocar numa barra mostra aquele mês (o ano e vários meses ficam na pílula do período, acima)
-  const barras = C.receita.map((v, m) => `<button class="${m >= j.de && m <= j.ate ? 'on' : ''}${m > ult ? ' fut' : ''}" data-act="bas-en-mes" data-m="${m}" aria-label="${cap(MES_LONGO[m])}: ${esc(brl0(v))}" aria-pressed="${m >= j.de && m <= j.ate}"><i style="--h:${Math.max(3, (v / mx) * 100).toFixed(1)}%"></i><b>${MES[m][0]}</b></button>`).join('');
+  const barras = C.rendas.map((v, m) => `<button class="${m >= j.de && m <= j.ate ? 'on' : ''}${m > ult ? ' fut' : ''}" data-act="bas-en-mes" data-m="${m}" aria-label="${cap(MES_LONGO[m])}: ${esc(brl0(v))}" aria-pressed="${m >= j.de && m <= j.ate}"><i style="--h:${Math.max(3, (v / mx) * 100).toFixed(1)}%"></i><b>${MES[m][0]}</b></button>`).join('');
   const tile = (n, v, sub) => `<span class="bas-en-k"><small>${n}</small><b>${v}</b>${sub ? `<em>${sub}</em>` : ''}</span>`;
   const fixaM = (m) => p.rendas.filter((r) => r.cat === 'fixa').reduce((a, r) => a + (+((r.valores || [])[m]) || 0), 0);
-  const n = j.ate - j.de + 1; let ant = null; if (j.de - n >= 0) { ant = 0; for (let m = j.de - n; m < j.de; m++) ant += +C.receita[m] || 0; }
+  const n = j.ate - j.de + 1; let ant = null; if (j.de - n >= 0) { ant = 0; for (let m = j.de - n; m < j.de; m++) ant += +C.rendas[m] || 0; }
   const dif = ant != null ? tot - ant : null; const up = dif == null || dif >= 0; const pv = ant > 0 ? Math.abs(dif) / ant : null;
-  const col = C.receita.map((v, m) => { const fx = Math.min(v, fixaM(m)); const ex = Math.max(0, v - fx); const dentro = m >= j.de && m <= j.ate;
+  const col = C.rendas.map((v, m) => { const fx = Math.min(v, fixaM(m)); const ex = Math.max(0, v - fx); const dentro = m >= j.de && m <= j.ate;
     return `<button class="${dentro ? 'in' : 'fora'}${m > ult ? ' fut' : ''}" data-act="bas-en-mes" data-m="${m}" aria-label="${cap(MES_LONGO[m])}: ${esc(brl0(v))}" aria-pressed="${dentro}"><span class="bas-en2-col" style="--h:${Math.max(3, (v / mx) * 78).toFixed(1)}%"><i class="ex" style="--p:${v > 0 ? ((ex / v) * 100).toFixed(1) : 0}%"></i><i class="fx"></i></span><b>${MES[m][0]}</b></button>`; }).join('');
   const k = (nome, v, sub) => `<span><small>${nome}</small><b>${v}</b>${sub ? `<em>${sub}</em>` : ''}</span>`;
   const fonte = ([r, v], i) => `<li><button class="bas-pv2-l" ${basIr('entrada', { id: r.id })}><span class="bas-pv2-ini bas-ren-ic" style="--bc:${PAL[i % 6]}">${ic(BAS_REN_IC[basRenIcId(r)][1])}</span><span class="bas-pv2-n"><b>${esc(r.nome)}</b><small>${esc(((p.rendaCats || []).find((c) => c.id === r.cat) || {}).nome || 'Renda')} · ${recDe(r.id) ? 'todo mês' : 'pontual'}${r.soGasto ? ' · só para gastos' : ''}</small><i style="--p:${((v / totF) * 100).toFixed(1)}%"></i></span><b class="bas-pv2-v">+${basCent(v)}</b></button></li>`;
   // arco das fontes (padrão): cada fonte do período ocupa um trecho do arco pelo valor; a escolhida fica em verde
   const arAnt = (r) => { if (j.de - n < 0) return null; let t = 0; for (let m = j.de - n; m < j.de; m++) t += +((r.valores || [])[m]) || 0; return t; };
   // escala do arco: o seu melhor mês do ano (vezes o número de meses do período); o listrado no fim é o que falta até ele
-  const arCheio = fontes.length ? Math.min(1, totF / Math.max(totF, n * Math.max(...C.receita))) : 0;
+  const arCheio = fontes.length ? Math.min(1, totF / Math.max(totF, n * Math.max(...C.rendas))) : 0;
   const arF = fontes.slice().reverse().map(([r, v]) => { const a0 = arAnt(r); return [r.nome, brl0(v), pct(v / totF), a0 > 0 ? Math.round(((v - a0) / a0) * 100) : null, (v / totF) * arCheio]; });
   const arQuando = j.de - n >= 0 ? (n === 1 ? MES_LONGO[j.de - 1] : 'o período anterior') : '';
-  const arco = `<div class="bas-ar" data-f="${esc(JSON.stringify(arF))}" data-q="${esc(arQuando)}" tabindex="0" role="slider" aria-label="Fontes de renda ${esc(basJanFrase())}. Toque ou arraste no arco." aria-valuemin="1" aria-valuemax="${Math.max(1, arF.length)}">
+  const arco = `<div class="bas-ar${fontes.length ? '' : ' vazio'}" data-f="${esc(JSON.stringify(arF))}" data-q="${esc(arQuando)}" tabindex="0" role="slider" aria-label="Fontes de renda ${esc(basJanFrase())}. Toque ou arraste no arco." aria-valuemin="1" aria-valuemax="${Math.max(1, arF.length)}">
       <svg class="bas-ar-svg" viewBox="0 0 340 214" aria-hidden="true"><defs><pattern id="bas-ar-lis" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(40)"><rect width="7" height="7" style="fill:rgba(255,255,255,.05);stroke:none"/><line x1="0" y1="0" x2="0" y2="7" style="stroke:rgba(255,255,255,.32);stroke-width:2;fill:none"/></pattern></defs>
         <path class="bas-ar-tri" style="fill:none;stroke:url(#bas-ar-lis);stroke-width:46"/><path class="bas-ar-lis" style="fill:none;stroke:rgba(255,255,255,.34);stroke-width:46"/><path class="bas-ar-cin" style="fill:none;stroke:rgba(255,255,255,.16);stroke-width:46"/><path class="bas-ar-ver" style="fill:none;stroke:rgba(255,255,255,.95);stroke-width:46"/>
         <g class="bas-ar-ks"></g><g class="bas-ar-k0"><circle r="27" style="fill:#3E63FF;stroke:rgba(255,255,255,.45);stroke-width:1.5"/><circle r="13" style="fill:#0B1A8F;stroke:none"/></g>
         <g class="bas-ar-k1"><circle r="27" style="fill:#FFFFFF;stroke:rgba(20,40,245,.12);stroke-width:1.5"/><circle r="13" style="fill:#1F45FF;stroke:none"/></g></svg>
-      <div class="bas-ar-tx" aria-live="polite"><b class="bas-ar-n"></b><span class="bas-ar-v"></span><small class="bas-ar-s"></small></div></div>`;
+      <div class="bas-ar-tx" aria-live="polite">${fontes.length ? '<b class="bas-ar-n"></b><span class="bas-ar-v"></span><small class="bas-ar-s"></small>' : `<b class="bas-ar-n">Nenhuma entrada ${esc(basJanFrase())}</b><span class="bas-ar-v">Anote o seu salário, freelas e outras rendas para ver de onde vem o seu dinheiro.</span><button class="bas-ar-bt" ${basIr('entrada')}>${I.plus}<span>Anotar entrada</span></button>`}</div></div>`;
   const vis = S.basEnVis === 'hist' ? 'hist' : 'fontes';
   const seg = `<div class="bas-rl-seg" role="group" aria-label="Visualização">${[['fontes', 'Fontes'], ['hist', 'Evolução']].map(([v, t]) => `<button data-act="bas-en-vis" data-v="${v}" aria-pressed="${vis === v}">${t}</button>`).join('')}</div>`;
   return `<div class="bas-pg bas-pg-ent"><div class="bas-gt-bg bas-pt-bg bas-en2-bg${vis === 'fontes' ? ' ar-on' : ''}">
@@ -2620,7 +2621,7 @@ function basArLigar() {
   const tinge = (g, branca) => { const [a, b] = g.children; a.setAttribute('style', branca ? 'fill:#FFFFFF;stroke:rgba(20,40,245,.12);stroke-width:1.5' : 'fill:#3E63FF;stroke:rgba(255,255,255,.45);stroke-width:1.5'); b.setAttribute('style', `fill:${branca ? '#1F45FF' : '#0B1A8F'};stroke:none`); };
   let sel = -1;
   const escolhe = (i) => {
-    if (!F.length) { KN.forEach((g) => tinge(g, false)); $('.bas-ar-n').textContent = 'Nenhuma entrada'; $('.bas-ar-v').textContent = 'Toque em Nova entrada para anotar.'; return; }
+    if (!F.length) { $('.bas-ar-tri').setAttribute('d', arc(A0, A1)); return; }
     i = Math.max(0, Math.min(F.length - 1, i)); if (i === sel) return; const pri = sel < 0; sel = i; const f = F[i];
     SG.forEach((p, k) => p.classList.toggle('on', k === i)); KN.forEach((g, k) => tinge(g, k === i));
     $('.bas-ar-n').textContent = f[0]; $('.bas-ar-v').textContent = `${f[1]} · ${f[2]} do que entrou`;

@@ -4386,3 +4386,13 @@ body:is([data-ui="basico"], [data-ui="completo"]) .ab .ab-card .ab-zbtn { border
 /* na visão Fontes o total fica no meio, em cima do arco */
 .bas-en2-bg.ar-on .bas-pv2-k, .bas-en2-bg.ar-on .bas-pv2-t { text-align: center; }
 .bas-en2-bg.ar-on { overflow: hidden; }
+
+/* Entradas sem nenhuma entrada no período: arco liso e apagado, convite no meio */
+.bas-ar.vazio { cursor: default; }
+.bas-ar.vazio .bas-ar-tri { stroke: rgba(255, 255, 255, .1) !important; }
+.bas-ar.vazio .bas-ar-tx { bottom: 50px; gap: 6px; }
+.bas-ar.vazio .bas-ar-n { font-size: 17px; white-space: normal; }
+.bas-ar.vazio .bas-ar-v { max-width: 260px; font-size: 13.5px; line-height: 1.4; color: rgba(255, 255, 255, .7); }
+.bas-ar-bt { display: inline-flex; align-items: center; gap: 6px; height: 40px; margin-top: 8px; padding: 0 18px; border: 0; border-radius: 999px; pointer-events: auto; cursor: pointer;
+  font: inherit; font-size: 14px; font-weight: 650; color: #1430e8; background: #fff; box-shadow: 0 10px 22px -10px rgba(0, 8, 70, .7); }
+.bas-ar-bt svg { width: 16px !important; height: 16px !important; }
