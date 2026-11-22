@@ -395,7 +395,7 @@ function basTelaEntradas() {
         <linearGradient id="bas-ar-ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9A9A9F"/><stop offset="1" stop-color="#9A9A9F" stop-opacity="0"/></linearGradient></defs>
         <path class="bas-ar-tri" style="fill:none;stroke:url(#bas-ar-lis);stroke-width:46"/><path class="bas-ar-lis" style="fill:none;stroke:rgba(255,255,255,.34);stroke-width:46"/><path class="bas-ar-cin" style="fill:none;stroke:rgba(255,255,255,.16);stroke-width:46"/><path class="bas-ar-ver" style="fill:none;stroke:rgba(255,255,255,.95);stroke-width:46"/>
         <line class="bas-ar-ag" style="stroke:rgba(255,255,255,.55);stroke-width:2;stroke-linecap:round;fill:none"/>
-        <g class="bas-ar-k0"><circle r="27" style="fill:#3E63FF;stroke:rgba(255,255,255,.45);stroke-width:1.5"/><circle r="13" style="fill:#0B1A8F;stroke:none"/></g>
+        <g class="bas-ar-ks"></g><g class="bas-ar-k0"><circle r="27" style="fill:#3E63FF;stroke:rgba(255,255,255,.45);stroke-width:1.5"/><circle r="13" style="fill:#0B1A8F;stroke:none"/></g>
         <g class="bas-ar-k1"><circle r="28" style="fill:#FFFFFF;stroke:rgba(20,40,245,.12);stroke-width:1.5"/><circle r="14" style="fill:#1F45FF;stroke:none"/></g></svg>
       <div class="bas-ar-tx" aria-live="polite"><b class="bas-ar-n"></b><span class="bas-ar-v"></span><small class="bas-ar-s"></small></div></div>`;
   const vis = S.basEnVis === 'hist' ? 'hist' : 'fontes';
@@ -2612,6 +2612,7 @@ function basArLigar() {
   const angD = (f) => D0 - (D0 - D1) * f; const ptG = (g) => [CX + R * Math.cos((g * Math.PI) / 180), CY - R * Math.sin((g * Math.PI) / 180)]; const pt = (f) => ptG(angD(f));
   const arc = (g0, g1) => { if (g0 - g1 < 0.05) return ''; const [x0, y0] = ptG(g0), [x1, y1] = ptG(g1); return `M${x0.toFixed(2)} ${y0.toFixed(2)}A${R} ${R} 0 ${g0 - g1 > 180 ? 1 : 0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`; };
   const menos = matchMedia('(prefers-reduced-motion: reduce)').matches; let sel = -1, s0 = 0, s1 = 0, raf = 0;
+  const KS = F.map((_, i) => { const g = document.createElementNS('http://www.w3.org/2000/svg', 'g'); g.innerHTML = '<circle r="20" style="fill:#3E63FF;stroke:rgba(255,255,255,.45);stroke-width:1.5"/><circle r="8" style="fill:#0B1A8F;stroke:none"/>'; const [x, y] = pt(ini[i + 1]); g.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)})`); $('.bas-ar-ks').appendChild(g); return g; });
   const pinta = (a, b) => {
     $('.bas-ar-cin').setAttribute('d', arc(A0, angD(a))); $('.bas-ar-ver').setAttribute('d', arc(angD(a), angD(b))); $('.bas-ar-lis').setAttribute('d', arc(angD(b), angD(fim))); $('.bas-ar-tri').setAttribute('d', arc(angD(fim), A1));
     const [x0, y0] = pt(a), [x1, y1] = pt(b); $('.bas-ar-k0').setAttribute('transform', `translate(${x0.toFixed(1)} ${y0.toFixed(1)})`); $('.bas-ar-k1').setAttribute('transform', `translate(${x1.toFixed(1)} ${y1.toFixed(1)})`);
@@ -2620,6 +2621,7 @@ function basArLigar() {
   const escolhe = (i) => {
     if (!F.length) { pinta(0, 0); $('.bas-ar-k1').style.opacity = '0'; $('.bas-ar-n').textContent = 'Nenhuma entrada'; $('.bas-ar-v').textContent = 'Toque em Nova entrada para anotar.'; return; }
     i = Math.max(0, Math.min(F.length - 1, i)); if (i === sel) return; const pri = sel < 0; sel = i; const f = F[i];
+    KS.forEach((g, k) => { g.style.opacity = k === i || k === i - 1 ? '0' : '1'; }); // as divisas da escolhida viram as bolinhas grandes
     $('.bas-ar-n').textContent = f[0]; $('.bas-ar-v').textContent = `${f[1]} · ${f[2]} do que entrou`;
     $('.bas-ar-s').textContent = f[3] == null || !q ? (F.length > 1 ? `${i + 1} de ${F.length} fontes` : 'Sua única fonte no período') : f[3] === 0 ? `Igual a ${q}` : `${f[3] > 0 ? 'Subiu' : 'Caiu'} ${f[3] > 0 ? '+' : '−'}${Math.abs(f[3])}% contra ${q}`;
     el.setAttribute('aria-valuenow', i + 1); el.setAttribute('aria-valuetext', `${f[0]}, ${f[1]}, ${f[2]}`);
