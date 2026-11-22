@@ -849,7 +849,7 @@ function basIaxLigar() {
 function basDesenhar() {
   const st = document.getElementById('bas-o3');
   if (st) { const falhou = () => st.classList.add('sem-3d'); if (typeof o3Ligar === 'function') o3Ligar(st, st.dataset.tipo, falhou); else falhou(); }
-  basRlLigar(); basArLigar(); basAhLigar(); basSn2Ligar(); basVozLigar(); basIaxLigar(); basCifVe(); basGfLigar(); basPeriodoRepinta(); { const f = document.querySelector('.bas-form'); if (f && f.querySelector('[name="areaIc"]') && !f.dataset.ic) { f.dataset.ic = '1'; f.addEventListener('change', (e) => { if (e.target.name !== 'area') return; const r = f.querySelector(`[name="areaIc"][value="${basCatIcId(e.target.value)}"]`); if (r) r.checked = true; }); } } { const on = document.querySelector('.bas-cce-m.on'); const col = on && on.parentElement; if (col && !col.dataset.vis) { col.dataset.vis = '1'; col.scrollTop = on.offsetTop - col.clientHeight / 2 + on.offsetHeight / 2; } } basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basAtLigar(); basEfLigar(); basCtwLigar(); basOiLigar(); basInvLigar(); basIgLigar(); basGfPickLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
+  basRlLigar(); basArLigar(); basAhLigar(); basSn2Ligar(); basVozLigar(); basIaxLigar(); basIaxPulo(); basCifVe(); basGfLigar(); basPeriodoRepinta(); { const f = document.querySelector('.bas-form'); if (f && f.querySelector('[name="areaIc"]') && !f.dataset.ic) { f.dataset.ic = '1'; f.addEventListener('change', (e) => { if (e.target.name !== 'area') return; const r = f.querySelector(`[name="areaIc"][value="${basCatIcId(e.target.value)}"]`); if (r) r.checked = true; }); } } { const on = document.querySelector('.bas-cce-m.on'); const col = on && on.parentElement; if (col && !col.dataset.vis) { col.dataset.vis = '1'; col.scrollTop = on.offsetTop - col.clientHeight / 2 + on.offsetHeight / 2; } } basEvLigar(); basRcLigar(); basCtLigar(); basOrgLigar(); basAlSoma(); basHlLigar(); basAtLigar(); basEfLigar(); basCtwLigar(); basOiLigar(); basInvLigar(); basIgLigar(); basGfPickLigar(); basContar(); basCartoes3d(); basMedalhaLigar(); basDvLigar();
   const wr = document.querySelector('.bas-wr'); if (wr && !wr.dataset.lig) { wr.dataset.lig = '1'; basWrIr(wr, 0); }
   const sq = document.querySelector('[data-sq-conta]'); if (sq && !sq.dataset.lig && !matchMedia('(prefers-reduced-motion: reduce)').matches) { sq.dataset.lig = '1'; const alvo = +sq.dataset.sqConta; const t0 = performance.now();
     const passo = (t) => { const k = Math.min(1, (t - t0) / 900); sq.textContent = Math.round(alvo * (1 - Math.pow(1 - k, 3))); if (k < 1 && sq.isConnected) requestAnimationFrame(passo); }; if (alvo > 0) requestAnimationFrame(passo); }
@@ -2609,6 +2609,26 @@ function basMetaDispHtml() {
 }
 // arco das fontes de renda (Entradas): uma fatia por fonte, como num gráfico de pizza; listrado = o que falta até o melhor mês.
 // Tocar numa fatia ou na bolinha dela destaca a fonte; as setas passam de uma em uma.
+// na conversa, o Cifrão de verdade fica ao lado da última resposta; a cada resposta nova ele vira bolinha, pula até ela e volta a ser o Cifrão
+function basIaxPulo() {
+  const ia = document.querySelector('.bas-iax'); if (!ia || ia.dataset.pulo) return; ia.dataset.pulo = '1';
+  const log = ia.querySelector('.bas-iax-log'); const cif = ia.querySelector('.bas-iax-orb .cifrao'); if (!log || !cif) return;
+  const av = document.createElement('span'); av.className = 'bas-iax-av'; av.setAttribute('aria-hidden', 'true'); let y = null; let casa = null;
+  const quieto = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const ajeita = () => {
+    const ult = [...log.querySelectorAll('.ia-m.ia')].pop(); if (!ult) return;
+    if (!av.isConnected) { log.prepend(av); casa = cif.parentElement; av.appendChild(cif); }
+    const ny = ult.offsetTop; if (ny === y) return; const de = y; y = ny;
+    if (de == null || quieto) { av.style.transform = `translateY(${ny}px)`; return; }
+    try { window.Cifrao && window.Cifrao.forma(cif, 'moeda'); } catch (e) { /* ignora */ }
+    const meio = Math.min(de, ny) - 46;
+    const a = av.animate([{ transform: `translateY(${de}px) scale(1)` }, { transform: `translateY(${de + 6}px) scale(1.08, .86)`, offset: .14 }, { transform: `translateY(${meio}px) scale(.62)`, offset: .52 }, { transform: `translateY(${ny + 4}px) scale(1.1, .88)`, offset: .86 }, { transform: `translateY(${ny}px) scale(1)` }], { duration: 720, easing: 'cubic-bezier(.35, .1, .3, 1)' });
+    av.style.transform = `translateY(${ny}px)`;
+    a.finished.then(() => { try { window.Cifrao && window.Cifrao.forma(cif, 'cifrao'); } catch (e) { /* ignora */ } }, () => {});
+  };
+  new MutationObserver(() => requestAnimationFrame(ajeita)).observe(log, { childList: true });
+  ajeita();
+}
 function basArLigar() {
   const el = document.querySelector('.bas-gg[data-f]'); if (!el || el.dataset.on) return; el.dataset.on = '1';
   const F = JSON.parse(el.dataset.f); const q = el.dataset.q; const svg = el.querySelector('svg'); const NS = 'http://www.w3.org/2000/svg';
