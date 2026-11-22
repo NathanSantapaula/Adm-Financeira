@@ -393,14 +393,11 @@ function basTelaEntradas() {
   const arAnt = (r) => { if (j.de - n < 0) return null; let t = 0; for (let m = j.de - n; m < j.de; m++) t += +((r.valores || [])[m]) || 0; return t; };
   // escala do arco: o seu melhor mês do ano (vezes o número de meses do período); o listrado no fim é o que falta até ele
   const arCheio = fontes.length ? Math.min(1, totF / Math.max(totF, n * Math.max(...C.rendas))) : 0;
-  const arF = fontes.slice().reverse().map(([r, v]) => { const a0 = arAnt(r); return [r.nome, brl0(v), pct(v / totF), a0 > 0 ? Math.round(((v - a0) / a0) * 100) : null, (v / totF) * arCheio]; });
+  const arF = fontes.map(([r, v]) => { const a0 = arAnt(r); return [r.nome, brl0(v), pct(v / totF), a0 > 0 ? Math.round(((v - a0) / a0) * 100) : null, (v / totF) * arCheio, brl(v)]; });
   const arQuando = j.de - n >= 0 ? (n === 1 ? MES_LONGO[j.de - 1] : 'o período anterior') : '';
-  const arco = `<div class="bas-ar${fontes.length ? '' : ' vazio'}" data-f="${esc(JSON.stringify(arF))}" data-q="${esc(arQuando)}" tabindex="0" role="slider" aria-label="Fontes de renda ${esc(basJanFrase())}. Toque ou arraste no arco." aria-valuemin="1" aria-valuemax="${Math.max(1, arF.length)}">
-      <svg class="bas-ar-svg" viewBox="0 0 340 214" aria-hidden="true"><defs><pattern id="bas-ar-lis" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(40)"><rect width="7" height="7" style="fill:rgba(255,255,255,.05);stroke:none"/><line x1="0" y1="0" x2="0" y2="7" style="stroke:rgba(255,255,255,.32);stroke-width:2;fill:none"/></pattern></defs>
-        <path class="bas-ar-tri" style="fill:none;stroke:url(#bas-ar-lis);stroke-width:46"/><path class="bas-ar-lis" style="fill:none;stroke:rgba(255,255,255,.34);stroke-width:46"/><path class="bas-ar-cin" style="fill:none;stroke:rgba(255,255,255,.16);stroke-width:46"/><path class="bas-ar-ver" style="fill:none;stroke:rgba(255,255,255,.95);stroke-width:46"/>
-        <g class="bas-ar-ks"></g><g class="bas-ar-k0"><circle r="27" style="fill:#3E63FF;stroke:rgba(255,255,255,.45);stroke-width:1.5"/><circle r="13" style="fill:#0B1A8F;stroke:none"/></g>
-        <g class="bas-ar-k1"><circle r="27" style="fill:#FFFFFF;stroke:rgba(20,40,245,.12);stroke-width:1.5"/><circle r="13" style="fill:#1F45FF;stroke:none"/></g></svg>
-      <div class="bas-ar-tx" aria-live="polite">${fontes.length ? '<b class="bas-ar-n"></b><span class="bas-ar-v"></span><small class="bas-ar-s"></small>' : `<b class="bas-ar-n">Nenhuma entrada ${esc(basJanFrase())}</b><span class="bas-ar-v">Anote o seu salário, freelas e outras rendas para ver de onde vem o seu dinheiro.</span><button class="bas-ar-bt" ${basIr('entrada')}>${I.plus}<span>Anotar entrada</span></button>`}</div></div>`;
+  const arco = `<div class="bas-gg${fontes.length ? '' : ' vazio'}" data-f="${esc(JSON.stringify(arF))}" data-q="${esc(arQuando)}" data-t="${esc(brl(tot))}" data-tk="${esc(`Entrou ${basJanFrase()}`)}" tabindex="0" role="slider" aria-label="Fontes de renda ${esc(basJanFrase())}. Toque numa parte do arco." aria-valuemin="1" aria-valuemax="${Math.max(1, arF.length)}">
+      <svg class="bas-gg-svg" viewBox="0 0 340 280" aria-hidden="true"></svg>
+      <div class="bas-gg-tx" aria-live="polite">${fontes.length ? '<small class="bas-gg-k"></small><b class="bas-gg-v"></b><span class="bas-gg-s"></span>' : `<small class="bas-gg-k">Nenhuma entrada ${esc(basJanFrase())}</small><b class="bas-gg-v">${esc(brl(0))}</b><span class="bas-gg-s">Anote o seu salário, freelas e outras rendas.</span><button class="bas-ar-bt" ${basIr('entrada')}>${I.plus}<span>Anotar entrada</span></button>`}</div></div>`;
   const vis = S.basEnVis === 'hist' ? 'hist' : 'fontes';
   const seg = `<div class="bas-rl-seg" role="group" aria-label="Visualização">${[['fontes', 'Fontes'], ['hist', 'Evolução']].map(([v, t]) => `<button data-act="bas-en-vis" data-v="${v}" aria-pressed="${vis === v}">${t}</button>`).join('')}</div>`;
   return `<div class="bas-pg bas-pg-ent"><div class="bas-gt-bg bas-pt-bg bas-en2-bg${vis === 'fontes' ? ' ar-on' : ''}">
@@ -2613,43 +2610,37 @@ function basMetaDispHtml() {
 // arco das fontes de renda (Entradas): uma fatia por fonte, como num gráfico de pizza; listrado = o que falta até o melhor mês.
 // Tocar numa fatia ou na bolinha dela destaca a fonte; as setas passam de uma em uma.
 function basArLigar() {
-  const el = document.querySelector('.bas-ar[data-f]'); if (!el || el.dataset.on) return; el.dataset.on = '1';
-  const F = JSON.parse(el.dataset.f); const q = el.dataset.q; const svg = el.querySelector('svg'); const $ = (c) => el.querySelector(c); const NS = 'http://www.w3.org/2000/svg';
-  const CX = 170, CY = 200, R = 165, A0 = 204, A1 = -24; /* as pontas descem até passar por baixo da folha */
-  /* cada fonte ganha um trecho mínimo, para as bolinhas não se tocarem */ const wt = F.map((f) => Math.max(f[4], 0.2)); const sw = wt.reduce((x, y) => x + y, 0); const ini = [0]; wt.forEach((w, i) => ini.push(ini[i] + (sw > 1 ? w / sw : w))); const fim = ini[F.length];
-  // as fontes ficam só no trecho visível: as bolinhas param acima da folha escura e longe das laterais; as pontas que passam por baixo dela são só continuação
-  const rs = svg.getBoundingClientRect(); const fo = document.querySelector('.bas-gt-folha'); const ylim = fo && rs.width ? ((fo.getBoundingClientRect().top - rs.top) * 340) / rs.width - 34 : 170;
-  const gv = Math.max(34, Math.min(60, (Math.asin(Math.max(-1, Math.min(1, (CY - ylim) / R))) * 180) / Math.PI)); const D0 = 180 - gv, D1 = gv;
-  const angD = (f) => D0 - (D0 - D1) * f; const ptG = (g) => [CX + R * Math.cos((g * Math.PI) / 180), CY - R * Math.sin((g * Math.PI) / 180)]; const pt = (f) => ptG(angD(f));
-  const arc = (g0, g1) => { if (g0 - g1 < 0.05) return ''; const [x0, y0] = ptG(g0), [x1, y1] = ptG(g1); return `M${x0.toFixed(2)} ${y0.toFixed(2)}A${R} ${R} 0 ${g0 - g1 > 180 ? 1 : 0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`; };
-  // como um gráfico de pizza: cada fonte é uma fatia fixa, com a sua cor; tocar destaca a fatia e mostra os números dela
-  const COR = ['#FFFFFF', '#B9CCFF', '#7E9DFF', '#DCE5FF', '#9BB4FF', '#5F84FF'];
-  $('.bas-ar-cin').remove(); const GAP = 6; const W = 24;
-  const tri = $('.bas-ar-tri'); tri.setAttribute('d', arc(F.length ? angD(fim) - GAP : A0, A1)); tri.setAttribute('style', `fill:none;stroke:rgba(255,255,255,.09);stroke-width:${W};stroke-linecap:round`);
-  if (F.length && fim < 0.995) { const mq = document.createElementNS(NS, 'path'); mq.setAttribute('class', 'bas-ar-mq'); mq.setAttribute('d', arc(angD(fim) - GAP - 2, D1)); mq.setAttribute('style', 'fill:none;stroke:rgba(255,255,255,.3);stroke-width:13;stroke-dasharray:2.2 6'); svg.insertBefore(mq, $('.bas-ar-ks')); } $('.bas-ar-ver').remove(); $('.bas-ar-lis').remove(); $('.bas-ar-k0').remove(); $('.bas-ar-k1').remove();
-  const ks = $('.bas-ar-ks');
-  const SG = F.map((_, i) => { const p = document.createElementNS(NS, 'path'); p.setAttribute('class', 'bas-ar-sg'); p.setAttribute('d', arc(i ? angD(ini[i]) - GAP : A0, angD(ini[i + 1]) + (i < F.length - 1 ? GAP : 0))); /* a primeira fatia vem desde a ponta do arco */ p.setAttribute('style', `fill:none;stroke:${COR[i % COR.length]};stroke-width:${W};stroke-linecap:round`); svg.insertBefore(p, ks); return p; });
-  // uma bolinha por fonte, no fim da fatia dela; a da fatia escolhida fica branca
-  /* entre duas fatias, um risquinho inclinado no corte */ ini.slice(1, F.length).forEach((v) => { const g = angD(v); const r0 = (g + 3) * Math.PI / 180, r1 = (g - 3) * Math.PI / 180; const l = document.createElementNS(NS, 'line');
-    l.setAttribute('x1', (CX + (R + 10) * Math.cos(r0)).toFixed(1)); l.setAttribute('y1', (CY - (R + 10) * Math.sin(r0)).toFixed(1)); l.setAttribute('x2', (CX + (R - 10) * Math.cos(r1)).toFixed(1)); l.setAttribute('y2', (CY - (R - 10) * Math.sin(r1)).toFixed(1));
-    l.setAttribute('style', 'stroke:rgba(255,255,255,.75);stroke-width:2.4;stroke-linecap:round'); ks.appendChild(l); }); const KN = [];
-  const tinge = (g, branca) => { const [a, b] = g.children; a.setAttribute('style', branca ? 'fill:#FFFFFF;stroke:rgba(20,40,245,.12);stroke-width:1.5' : 'fill:#3E63FF;stroke:rgba(255,255,255,.45);stroke-width:1.5'); b.setAttribute('style', `fill:${branca ? '#1F45FF' : '#0B1A8F'};stroke:none`); };
-  let sel = -1;
+  const el = document.querySelector('.bas-gg[data-f]'); if (!el || el.dataset.on) return; el.dataset.on = '1';
+  const F = JSON.parse(el.dataset.f); const q = el.dataset.q; const svg = el.querySelector('svg'); const NS = 'http://www.w3.org/2000/svg';
+  // medidor: arco de 270° aberto embaixo; cada fonte é uma parte azul, separada da seguinte por um corte com um risquinho; depois, marquinhas até o melhor mês e o trilho escuro
+  const CX = 170, CY = 158, R = 140, A0 = 225, SW = 270, W = 22, GAP = 6.5;
+  const ang = (f) => A0 - SW * f; const pt = (g, r) => [CX + r * Math.cos((g * Math.PI) / 180), CY - r * Math.sin((g * Math.PI) / 180)];
+  const arc = (g0, g1) => { if (g0 - g1 < 0.3) return ''; const [x0, y0] = pt(g0, R), [x1, y1] = pt(g1, R); return `M${x0.toFixed(2)} ${y0.toFixed(2)}A${R} ${R} 0 ${g0 - g1 > 180 ? 1 : 0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`; };
+  const poe = (tag, at) => { const n = document.createElementNS(NS, tag); Object.entries(at).forEach(([a, b]) => n.setAttribute(a, b)); svg.appendChild(n); return n; };
+  const wt = F.map((f) => Math.max(f[4], 0.12)); const sw = wt.reduce((x, y) => x + y, 0); const ini = [0]; wt.forEach((w, i) => ini.push(ini[i] + (sw > 1 ? w / sw : w))); const fim = ini[F.length];
+  poe('path', { d: arc(A0, A0 - SW), style: `fill:none;stroke:rgba(255,255,255,.1);stroke-width:${W};stroke-linecap:round` });
+  if (F.length && fim < 0.99) poe('path', { d: arc(ang(fim) - GAP, Math.max(ang(1), ang(fim) - GAP - 48)), style: 'fill:none;stroke:rgba(255,255,255,.26);stroke-width:12;stroke-dasharray:2.4 6.4' });
+  const SG = F.map((_, i) => poe('path', { class: 'bas-gg-sg', d: arc(ang(ini[i]) - (i ? GAP : 0), ang(ini[i + 1]) + (i < F.length - 1 ? GAP : 0)), style: `fill:none;stroke:#2F6BFF;stroke-width:${W};stroke-linecap:round` }));
+  ini.slice(1, F.length).forEach((v) => { const g = ang(v); const [x1, y1] = pt(g + 2.6, R + 12), [x2, y2] = pt(g - 2.6, R - 12); poe('line', { x1: x1.toFixed(1), y1: y1.toFixed(1), x2: x2.toFixed(1), y2: y2.toFixed(1), style: 'stroke:rgba(255,255,255,.72);stroke-width:2.6;stroke-linecap:round' }); });
+  if (!F.length) return;
+  const k = el.querySelector('.bas-gg-k'), v = el.querySelector('.bas-gg-v'), s = el.querySelector('.bas-gg-s'); let sel = -1;
+  const total = () => { sel = -1; SG.forEach((p) => p.classList.remove('apaga')); k.textContent = el.dataset.tk; v.textContent = el.dataset.t;
+    s.textContent = F.length > 1 ? `De ${F.length} fontes. Toque numa parte do arco para ver cada uma.` : `Tudo de ${F[0][0]}.`; el.setAttribute('aria-valuenow', 0); };
   const escolhe = (i) => {
-    if (!F.length) { $('.bas-ar-tri').setAttribute('d', arc(A0, A1)); return; }
-    i = Math.max(0, Math.min(F.length - 1, i)); if (i === sel) return; const pri = sel < 0; sel = i; const f = F[i];
-    SG.forEach((p, k) => p.classList.toggle('on', k === i)); KN.forEach((g, k) => tinge(g, k === i));
-    $('.bas-ar-n').textContent = `${f[0]} · ${f[2]} do que entrou`; $('.bas-ar-v').textContent = f[1];
-    $('.bas-ar-s').innerHTML = f[3] == null || !q ? (F.length > 1 ? `${i + 1} de ${F.length} fontes` : 'Sua única fonte no período') : f[3] === 0 ? `Igual a ${esc(q)}` : `${f[3] > 0 ? 'Subiu' : 'Caiu'} <b class="${f[3] > 0 ? 'up' : 'dn'}">${f[3] > 0 ? '↑' : '↓'} ${Math.abs(f[3])}%</b> contra ${esc(q)}`;
-    el.setAttribute('aria-valuenow', i + 1); el.setAttribute('aria-valuetext', `${f[0]}, ${f[1]}, ${f[2]}`);
-    if (!pri) { try { if (navigator.vibrate && (!navigator.userActivation || navigator.userActivation.hasBeenActive)) navigator.vibrate(4); } catch (e) { /* ignora */ } }
+    i = (i + F.length) % F.length; sel = i; const f = F[i]; SG.forEach((p, j) => p.classList.toggle('apaga', j !== i));
+    k.textContent = `${f[2]} do que entrou`; v.textContent = f[5];
+    s.innerHTML = `${esc(f[0])}${f[3] == null || !q ? '' : f[3] === 0 ? `, igual a ${esc(q)}` : `, ${f[3] > 0 ? 'subiu' : 'caiu'} <b class="${f[3] > 0 ? 'up' : 'dn'}">${f[3] > 0 ? '↑' : '↓'} ${Math.abs(f[3])}%</b> contra ${esc(q)}`}`;
+    el.setAttribute('aria-valuenow', i + 1); el.setAttribute('aria-valuetext', `${f[0]}, ${f[5]}, ${f[2]}`);
+    try { if (navigator.vibrate && (!navigator.userActivation || navigator.userActivation.hasBeenActive)) navigator.vibrate(4); } catch (e) { /* ignora */ }
   };
-  // toque: numa bolinha, a fatia dela; fora delas, a fatia sob o dedo
-  const onde = (e) => { const r = svg.getBoundingClientRect(); const vx = ((e.clientX - r.left) / r.width) * 340, vy = ((e.clientY - r.top) / r.height) * 214;
-        const g = (Math.atan2(CY - vy, vx - CX) * 180) / Math.PI; const f = (D0 - (g < -90 ? g + 360 : g)) / (D0 - D1); if (f > fim + 0.03) return -1; let i = 0; while (i < F.length - 1 && ini[i + 1] < f) i++; return i; };
-  el.addEventListener('click', (e) => { if (!F.length) return; const i = onde(e); if (i >= 0) escolhe(i); });
-  el.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); escolhe(sel + (e.key === 'ArrowLeft' ? -1 : 1)); } });
-  escolhe(F.length - 1); // abre na maior fonte, que fica por último
+  // toque numa parte mostra a fonte; tocar de novo nela, no meio ou fora do arco volta ao total
+  const onde = (e) => { const r = svg.getBoundingClientRect(); const vx = ((e.clientX - r.left) / r.width) * 340, vy = ((e.clientY - r.top) / r.height) * 280;
+    const d = Math.hypot(vx - CX, vy - CY); if (d < R - 42 || d > R + 42) return -1;
+    let g = (Math.atan2(CY - vy, vx - CX) * 180) / Math.PI; if (g < A0 - 360) g += 360; const f = (A0 - g) / SW; if (f < 0 || f > fim + 0.02) return -1;
+    let i = 0; while (i < F.length - 1 && ini[i + 1] < f) i++; return i; };
+  el.addEventListener('click', (e) => { const i = onde(e); if (i < 0 || i === sel) total(); else escolhe(i); });
+  el.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); escolhe(sel < 0 ? (e.key === 'ArrowLeft' ? F.length - 1 : 0) : sel + (e.key === 'ArrowLeft' ? -1 : 1)); } else if (e.key === 'Escape') total(); });
+  total();
 }
 // roleta dos proventos: arrastar gira o arco (um traço por provento), solta com embalo e para no mais próximo; setas do teclado passam de um em um
 function basRlLigar() {

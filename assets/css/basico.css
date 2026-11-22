@@ -4664,3 +4664,19 @@ html.tema-anim body[data-ui="basico"], html.tema-anim body[data-ui="basico"] *, 
 .bas-ar-s { max-width: 250px; font-size: 14px; line-height: 1.35; color: rgba(255, 255, 255, .68); }
 .bas-ar-s b { font-weight: 700; } .bas-ar-s b.up { color: #7DF5AE; } .bas-ar-s b.dn { color: #FF9BA9; }
 html[data-topo="tema"][data-theme="light"] .bas-ar-s b.up { color: #15803D !important; } html[data-topo="tema"][data-theme="light"] .bas-ar-s b.dn { color: #C0263D !important; }
+
+/* Entradas > Fontes como medidor: fundo preto, arco grande e inteiro, partes azuis; no meio, o rótulo, o valor e a frase */
+.bas-pt-bg.bas-en2-bg.ar-on { background: #000 !important; padding-bottom: 34px; }
+.bas-en2-bg.ar-on > :is(.bas-pv2-k, .bas-pv2-t) { display: none; }
+.bas-gg { position: relative; margin: 14px -4px 0; cursor: pointer; -webkit-tap-highlight-color: transparent; outline: none; }
+.bas-gg.vazio { cursor: default; }
+.bas-gg .bas-gg-svg { display: block; width: 100% !important; height: auto !important; max-width: none; overflow: visible; }
+.bas-gg-sg { transition: opacity 220ms ease; } .bas-gg-sg.apaga { opacity: .4; }
+.bas-gg-tx { position: absolute; left: 9%; right: 9%; top: 56.4%; transform: translateY(-50%); display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; pointer-events: none; }
+.bas-gg-k { font-size: 17px; font-weight: 500; color: rgba(255, 255, 255, .55); }
+.bas-gg-v { font-size: min(42px, 10.6vw); font-weight: 600; letter-spacing: -.02em; line-height: 1.05; color: #fff; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.bas-gg-s { max-width: 270px; font-size: 16px; line-height: 1.4; color: rgba(255, 255, 255, .55); }
+.bas-gg-s b { font-weight: 500; } .bas-gg-s b.up { color: #5FD47A; } .bas-gg-s b.dn { color: #FF6B6B; }
+.bas-gg .bas-ar-bt { pointer-events: auto; }
+html[data-topo="tema"][data-theme="light"] .bas-en2-bg.ar-on :is(b, strong, small, span, p, em, h1, h2, h3, header, label):not(.bas-rl-seg [aria-pressed="true"], .bas-rl-seg [aria-pressed="true"] *, .bas-gg-s b) { color: #fff !important; }
+html[data-topo="tema"][data-theme="light"] .bas-en2-bg.ar-on :is(.bas-gg-k, .bas-gg-s) { color: rgba(255, 255, 255, .55) !important; }
