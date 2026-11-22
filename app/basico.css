@@ -4778,3 +4778,22 @@ html[data-topo="tema"][data-theme="light"] .bas-gt-bg .bas-gg-svg { filter: brig
 .bas-sne-del:active { transform: scale(.98); } .bas-sne-del[data-ok] { color: #fff; background: #E5484D; }
 /* Gastos: os cartões da pilha com fundo próprio (o azul do topo), sem depender do desfoque; no iPhone o desfoque some na troca de aba e eles ficavam transparentes por um instante */
 html:not([data-topo="tema"]) .bas-gt-c { background: linear-gradient(180deg, rgba(255, 255, 255, .26), rgba(255, 255, 255, .1)), linear-gradient(180deg, #1c33e8, #0b1699 70%, #070e66); -webkit-backdrop-filter: none; backdrop-filter: none; }
+
+/* ===== Resumo do mês refeito: ícone do Cifrão no cartão, escolha do que vai na imagem ===== */
+.bas-rs-ic { display: block; width: 52px; height: 52px; margin: 0 auto; border-radius: 14px; box-shadow: 0 8px 20px -8px rgba(0, 0, 0, .6); }
+.bas-rs .bas-story-v { margin-top: 2px; }
+.bas-rs-pe { margin: 16px 0 0; font-size: 12px; color: var(--bas-noite-2); opacity: .8; }
+.card.bas-rs-op { display: grid; gap: 14px; margin-top: 14px; padding: 18px; border-radius: 24px; }
+.bas-rs-seg { display: grid; grid-template-columns: 1fr 1fr; padding: 4px; border-radius: 999px; background: var(--surface-2, rgba(120, 120, 140, .12)); }
+.bas-rs-seg button { height: 40px; border: 0; border-radius: 999px; font: inherit; font-size: 15px; font-weight: 600; color: var(--ink-2); background: none; cursor: pointer; transition: background-color 180ms, color 180ms, box-shadow 180ms; }
+.bas-rs-seg button[aria-checked="true"] { color: var(--ink); background: var(--surface); box-shadow: 0 2px 8px -2px rgba(0, 0, 0, .18); }
+.bas-rs-seg button:disabled { opacity: .4; cursor: default; }
+.bas-rs-its { display: flex; flex-wrap: wrap; gap: 8px; }
+.bas-rs-it { display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 14px 0 8px; border: 0; border-radius: 999px; font: inherit; font-size: 14px; font-weight: 600; color: var(--ink-2); background: var(--surface-2, rgba(120, 120, 140, .12)); cursor: pointer; transition: background-color 160ms, color 160ms, transform 140ms; }
+.bas-rs-it i { width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 12px; background: rgba(120, 120, 140, .2); }
+.bas-rs-it[aria-pressed="true"] { color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); } .bas-rs-it[aria-pressed="true"] i { color: #fff; background: var(--accent); }
+.bas-rs-it:active { transform: scale(.96); }
+.bas-rs-dica { margin: 0; font-size: 13px; color: var(--ink-3); }
+.bas-rs-op + .bas-cta { margin-top: 16px; }
+/* cartão do Início: o ícone do Cifrão no lugar do $ */
+img.bas-w-res-m { width: 30px; height: 30px; border-radius: 8px; box-shadow: 0 4px 10px -4px rgba(0, 0, 0, .5); }
