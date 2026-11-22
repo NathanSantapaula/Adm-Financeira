@@ -4776,3 +4776,5 @@ html[data-topo="tema"][data-theme="light"] .bas-gt-bg .bas-gg-svg { filter: brig
 .bas-sne-ok { width: 100%; margin-top: 4px; }
 .bas-sne-del { display: block; width: 100%; height: 50px; margin: 12px 0 8px; border: 0; border-radius: 999px; font: inherit; font-size: 16px; font-weight: 650; color: #E5484D; background: color-mix(in srgb, #E5484D 10%, transparent); cursor: pointer; transition: transform 160ms, background-color 160ms; }
 .bas-sne-del:active { transform: scale(.98); } .bas-sne-del[data-ok] { color: #fff; background: #E5484D; }
+/* Gastos: os cartões da pilha com fundo próprio (o azul do topo), sem depender do desfoque; no iPhone o desfoque some na troca de aba e eles ficavam transparentes por um instante */
+html:not([data-topo="tema"]) .bas-gt-c { background: linear-gradient(180deg, rgba(255, 255, 255, .26), rgba(255, 255, 255, .1)), linear-gradient(180deg, #1c33e8, #0b1699 70%, #070e66); -webkit-backdrop-filter: none; backdrop-filter: none; }
