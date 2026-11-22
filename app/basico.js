@@ -2605,15 +2605,17 @@ function basMetaDispHtml() {
 function basArLigar() {
   const el = document.querySelector('.bas-ar[data-f]'); if (!el || el.dataset.on) return; el.dataset.on = '1';
   const F = JSON.parse(el.dataset.f); const q = el.dataset.q; const svg = el.querySelector('svg'); const $ = (c) => el.querySelector(c);
-  const CX = 170, CY = 200, R = 165, A0 = 204, A1 = -24; /* as pontas descem até passar por baixo da folha */ const ini = [0]; F.forEach((f, i) => ini.push(ini[i] + f[4])); const fim = ini[F.length];
-  const ang = (f) => ((A0 - (A0 - A1) * f) * Math.PI) / 180; const pt = (f) => [CX + R * Math.cos(ang(f)), CY - R * Math.sin(ang(f))];
-  const arc = (f0, f1) => { if (f1 - f0 < 0.0005) return ''; const [x0, y0] = pt(f0), [x1, y1] = pt(f1); return `M${x0.toFixed(2)} ${y0.toFixed(2)}A${R} ${R} 0 ${(A0 - A1) * (f1 - f0) > 180 ? 1 : 0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`; };
+  const CX = 170, CY = 200, R = 165, A0 = 204, A1 = -24; /* as pontas descem até passar por baixo da folha */ /* cada fonte ganha um trecho mínimo, para as bolinhas não se tocarem */ const wt = F.map((f) => Math.max(f[4], 0.2)); const sw = wt.reduce((x, y) => x + y, 0); const ini = [0]; wt.forEach((w, i) => ini.push(ini[i] + (sw > 1 ? w / sw : w))); const fim = ini[F.length];
+  // as fontes ficam só no trecho visível: as bolinhas (raio 28) param acima da folha escura; as pontas que passam por baixo dela são só continuação
+  const rs = svg.getBoundingClientRect(); const fo = document.querySelector('.bas-gt-folha'); const ylim = fo && rs.width ? ((fo.getBoundingClientRect().top - rs.top) * 340) / rs.width - 34 : 170;
+  const gv = Math.max(34, Math.min(60, (Math.asin(Math.max(-1, Math.min(1, (CY - ylim) / R))) * 180) / Math.PI)); /* 34°: a bolinha também não encosta nas laterais */ const D0 = 180 - gv, D1 = gv;
+  const angD = (f) => D0 - (D0 - D1) * f; const ptG = (g) => [CX + R * Math.cos((g * Math.PI) / 180), CY - R * Math.sin((g * Math.PI) / 180)]; const pt = (f) => ptG(angD(f));
+  const arc = (g0, g1) => { if (g0 - g1 < 0.05) return ''; const [x0, y0] = ptG(g0), [x1, y1] = ptG(g1); return `M${x0.toFixed(2)} ${y0.toFixed(2)}A${R} ${R} 0 ${g0 - g1 > 180 ? 1 : 0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`; };
   const menos = matchMedia('(prefers-reduced-motion: reduce)').matches; let sel = -1, s0 = 0, s1 = 0, raf = 0;
   const pinta = (a, b) => {
-    $('.bas-ar-cin').setAttribute('d', arc(0, a)); $('.bas-ar-ver').setAttribute('d', arc(a, b)); $('.bas-ar-lis').setAttribute('d', arc(b, fim)); $('.bas-ar-tri').setAttribute('d', arc(fim, 1));
+    $('.bas-ar-cin').setAttribute('d', arc(A0, angD(a))); $('.bas-ar-ver').setAttribute('d', arc(angD(a), angD(b))); $('.bas-ar-lis').setAttribute('d', arc(angD(b), angD(fim))); $('.bas-ar-tri').setAttribute('d', arc(angD(fim), A1));
     const [x0, y0] = pt(a), [x1, y1] = pt(b); $('.bas-ar-k0').setAttribute('transform', `translate(${x0.toFixed(1)} ${y0.toFixed(1)})`); $('.bas-ar-k1').setAttribute('transform', `translate(${x1.toFixed(1)} ${y1.toFixed(1)})`);
     const ag = $('.bas-ar-ag'); ag.setAttribute('x1', x1.toFixed(1)); ag.setAttribute('x2', x1.toFixed(1)); ag.setAttribute('y1', (y1 + 31).toFixed(1)); ag.setAttribute('y2', (y1 + 50).toFixed(1));
-    $('.bas-ar-k0').style.opacity = a < 0.002 ? '0' : '1';
   };
   const escolhe = (i) => {
     if (!F.length) { pinta(0, 0); $('.bas-ar-k1').style.opacity = '0'; $('.bas-ar-n').textContent = 'Nenhuma entrada'; $('.bas-ar-v').textContent = 'Toque em Nova entrada para anotar.'; return; }
@@ -2630,7 +2632,7 @@ function basArLigar() {
   };
   // dedo no arco: o ângulo do toque diz qual fonte está ali
   const onde = (e) => { const r = svg.getBoundingClientRect(); const x = ((e.clientX - r.left) / r.width) * 340 - CX, y = CY - ((e.clientY - r.top) / r.height) * 214;
-    const g = (Math.atan2(y, x) * 180) / Math.PI; const f = (A0 - (g < -90 ? g + 360 : g)) / (A0 - A1); let i = 0; while (i < F.length - 1 && ini[i + 1] < f) i++; return i; };
+    const g = (Math.atan2(y, x) * 180) / Math.PI; const f = (D0 - (g < -90 ? g + 360 : g)) / (D0 - D1); let i = 0; while (i < F.length - 1 && ini[i + 1] < f) i++; return i; };
   let arr = false;
   el.addEventListener('pointerdown', (e) => { if (!F.length) return; arr = true; el.setPointerCapture(e.pointerId); escolhe(onde(e)); });
   el.addEventListener('pointermove', (e) => { if (arr) escolhe(onde(e)); });
