@@ -390,13 +390,13 @@ function basTelaEntradas() {
   const arCheio = fontes.length ? Math.min(1, totF / Math.max(totF, n * Math.max(...C.receita))) : 0;
   const arF = fontes.slice().reverse().map(([r, v]) => { const a0 = arAnt(r); return [r.nome, brl0(v), pct(v / totF), a0 > 0 ? Math.round(((v - a0) / a0) * 100) : null, (v / totF) * arCheio]; });
   const arQuando = j.de - n >= 0 ? (n === 1 ? MES_LONGO[j.de - 1] : 'o período anterior') : '';
-  const arco = `<div class="card bas-ar" data-f="${esc(JSON.stringify(arF))}" data-q="${esc(arQuando)}" tabindex="0" role="slider" aria-label="Fontes de renda ${esc(basJanFrase())}. Toque ou arraste no arco." aria-valuemin="1" aria-valuemax="${Math.max(1, arF.length)}">
-      <svg class="bas-ar-svg" viewBox="0 0 340 214" aria-hidden="true"><defs><pattern id="bas-ar-lis" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(40)"><rect width="7" height="7" style="fill:#1A1A1C;stroke:none"/><line x1="0" y1="0" x2="0" y2="7" style="stroke:#3D3D40;stroke-width:2.4;fill:none"/></pattern>
+  const arco = `<div class="bas-ar" data-f="${esc(JSON.stringify(arF))}" data-q="${esc(arQuando)}" tabindex="0" role="slider" aria-label="Fontes de renda ${esc(basJanFrase())}. Toque ou arraste no arco." aria-valuemin="1" aria-valuemax="${Math.max(1, arF.length)}">
+      <svg class="bas-ar-svg" viewBox="0 0 340 214" aria-hidden="true"><defs><pattern id="bas-ar-lis" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(40)"><rect width="7" height="7" style="fill:rgba(255,255,255,.05);stroke:none"/><line x1="0" y1="0" x2="0" y2="7" style="stroke:rgba(255,255,255,.32);stroke-width:2;fill:none"/></pattern>
         <linearGradient id="bas-ar-ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9A9A9F"/><stop offset="1" stop-color="#9A9A9F" stop-opacity="0"/></linearGradient></defs>
-        <path class="bas-ar-tri" style="fill:none;stroke:url(#bas-ar-lis);stroke-width:46"/><path class="bas-ar-lis" style="fill:none;stroke:#3A3A3E;stroke-width:46"/><path class="bas-ar-cin" style="fill:none;stroke:#2C2C2F;stroke-width:46"/><path class="bas-ar-ver" style="fill:none;stroke:#6CC28C;stroke-width:46"/>
-        <line class="bas-ar-ag" style="stroke:#7C7C82;stroke-opacity:.75;stroke-width:2;stroke-linecap:round;fill:none"/>
-        <g class="bas-ar-k0"><circle r="27" style="fill:#2E2E31;stroke:rgba(255,255,255,.07);stroke-width:1.5"/><circle r="13" style="fill:#0C0C0D;stroke:none"/></g>
-        <g class="bas-ar-k1"><circle r="28" style="fill:#86D3A1;stroke:rgba(255,255,255,.2);stroke-width:1.5"/><circle r="14" style="fill:#F4F5F4;stroke:none"/></g></svg>
+        <path class="bas-ar-tri" style="fill:none;stroke:url(#bas-ar-lis);stroke-width:46"/><path class="bas-ar-lis" style="fill:none;stroke:rgba(255,255,255,.34);stroke-width:46"/><path class="bas-ar-cin" style="fill:none;stroke:rgba(255,255,255,.16);stroke-width:46"/><path class="bas-ar-ver" style="fill:none;stroke:rgba(255,255,255,.95);stroke-width:46"/>
+        <line class="bas-ar-ag" style="stroke:rgba(255,255,255,.55);stroke-width:2;stroke-linecap:round;fill:none"/>
+        <g class="bas-ar-k0"><circle r="27" style="fill:#3E63FF;stroke:rgba(255,255,255,.45);stroke-width:1.5"/><circle r="13" style="fill:#0B1A8F;stroke:none"/></g>
+        <g class="bas-ar-k1"><circle r="28" style="fill:#FFFFFF;stroke:rgba(20,40,245,.12);stroke-width:1.5"/><circle r="14" style="fill:#1F45FF;stroke:none"/></g></svg>
       <div class="bas-ar-tx" aria-live="polite"><b class="bas-ar-n"></b><span class="bas-ar-v"></span><small class="bas-ar-s"></small></div></div>`;
   const vis = S.basEnVis === 'hist' ? 'hist' : 'fontes';
   const seg = `<div class="bas-rl-seg" role="group" aria-label="Visualização">${[['fontes', 'Fontes'], ['hist', 'Evolução']].map(([v, t]) => `<button data-act="bas-en-vis" data-v="${v}" aria-pressed="${vis === v}">${t}</button>`).join('')}</div>`;
