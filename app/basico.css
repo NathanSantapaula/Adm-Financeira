@@ -4655,3 +4655,12 @@ html.tema-anim body[data-ui="basico"], html.tema-anim body[data-ui="basico"] *, 
 .bas-iax-log .ia-m.ia::before { content: ''; position: absolute; left: -42px; top: 2px; width: 32px; height: 32px; border-radius: 10px; background: var(--ico) center / cover; box-shadow: 0 4px 10px -4px rgba(20, 30, 90, .45); }
 .bas-iax-log .ia-m.ia + .ia-m.ia::before { display: none; }
 @media (prefers-reduced-motion: reduce) { .bas-iax-mr > div { animation: none; } .bas-iax-mr { overflow-x: auto; } }
+
+/* Entradas > Fontes no estilo medidor: no meio, a fonte e a parte dela em cima, o valor grande e a variação embaixo */
+.bas-ar-sg { opacity: .45; } .bas-ar-sg.on { opacity: 1; stroke-width: 24px !important; filter: none; }
+.bas-ar-tx { gap: 4px; bottom: 46px; }
+.bas-ar-n { font-size: 14px; font-weight: 500; color: rgba(255, 255, 255, .72); }
+.bas-ar-v { font-size: 34px; font-weight: 800; letter-spacing: -.02em; color: #fff; line-height: 1.1; }
+.bas-ar-s { max-width: 250px; font-size: 14px; line-height: 1.35; color: rgba(255, 255, 255, .68); }
+.bas-ar-s b { font-weight: 700; } .bas-ar-s b.up { color: #7DF5AE; } .bas-ar-s b.dn { color: #FF9BA9; }
+html[data-topo="tema"][data-theme="light"] .bas-ar-s b.up { color: #15803D !important; } html[data-topo="tema"][data-theme="light"] .bas-ar-s b.dn { color: #C0263D !important; }

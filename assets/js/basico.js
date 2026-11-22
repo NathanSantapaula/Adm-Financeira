@@ -2624,26 +2624,29 @@ function basArLigar() {
   const arc = (g0, g1) => { if (g0 - g1 < 0.05) return ''; const [x0, y0] = ptG(g0), [x1, y1] = ptG(g1); return `M${x0.toFixed(2)} ${y0.toFixed(2)}A${R} ${R} 0 ${g0 - g1 > 180 ? 1 : 0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`; };
   // como um gráfico de pizza: cada fonte é uma fatia fixa, com a sua cor; tocar destaca a fatia e mostra os números dela
   const COR = ['#FFFFFF', '#B9CCFF', '#7E9DFF', '#DCE5FF', '#9BB4FF', '#5F84FF'];
-  $('.bas-ar-cin').remove(); $('.bas-ar-tri').setAttribute('d', arc(angD(fim), A1)); $('.bas-ar-ver').remove(); $('.bas-ar-lis').remove(); $('.bas-ar-k0').remove(); $('.bas-ar-k1').remove();
+  $('.bas-ar-cin').remove(); const GAP = 6; const W = 24;
+  const tri = $('.bas-ar-tri'); tri.setAttribute('d', arc(F.length ? angD(fim) - GAP : A0, A1)); tri.setAttribute('style', `fill:none;stroke:rgba(255,255,255,.09);stroke-width:${W};stroke-linecap:round`);
+  if (F.length && fim < 0.995) { const mq = document.createElementNS(NS, 'path'); mq.setAttribute('class', 'bas-ar-mq'); mq.setAttribute('d', arc(angD(fim) - GAP - 2, D1)); mq.setAttribute('style', 'fill:none;stroke:rgba(255,255,255,.3);stroke-width:13;stroke-dasharray:2.2 6'); svg.insertBefore(mq, $('.bas-ar-ks')); } $('.bas-ar-ver').remove(); $('.bas-ar-lis').remove(); $('.bas-ar-k0').remove(); $('.bas-ar-k1').remove();
   const ks = $('.bas-ar-ks');
-  const SG = F.map((_, i) => { const p = document.createElementNS(NS, 'path'); p.setAttribute('class', 'bas-ar-sg'); p.setAttribute('d', arc(i ? angD(ini[i]) : A0, angD(ini[i + 1]))); /* a primeira fatia vem desde a ponta do arco */ p.setAttribute('style', `fill:none;stroke:${COR[i % COR.length]};stroke-width:46`); svg.insertBefore(p, ks); return p; });
+  const SG = F.map((_, i) => { const p = document.createElementNS(NS, 'path'); p.setAttribute('class', 'bas-ar-sg'); p.setAttribute('d', arc(i ? angD(ini[i]) - GAP : A0, angD(ini[i + 1]) + (i < F.length - 1 ? GAP : 0))); /* a primeira fatia vem desde a ponta do arco */ p.setAttribute('style', `fill:none;stroke:${COR[i % COR.length]};stroke-width:${W};stroke-linecap:round`); svg.insertBefore(p, ks); return p; });
   // uma bolinha por fonte, no fim da fatia dela; a da fatia escolhida fica branca
-  const KN = ini.slice(1).map((v) => { const g = document.createElementNS(NS, 'g'); g.innerHTML = '<circle r="27"/><circle r="13"/>'; const [x, y] = pt(v); g.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)})`); ks.appendChild(g); return g; });
+  /* entre duas fatias, um risquinho inclinado no corte */ ini.slice(1, F.length).forEach((v) => { const g = angD(v); const r0 = (g + 3) * Math.PI / 180, r1 = (g - 3) * Math.PI / 180; const l = document.createElementNS(NS, 'line');
+    l.setAttribute('x1', (CX + (R + 10) * Math.cos(r0)).toFixed(1)); l.setAttribute('y1', (CY - (R + 10) * Math.sin(r0)).toFixed(1)); l.setAttribute('x2', (CX + (R - 10) * Math.cos(r1)).toFixed(1)); l.setAttribute('y2', (CY - (R - 10) * Math.sin(r1)).toFixed(1));
+    l.setAttribute('style', 'stroke:rgba(255,255,255,.75);stroke-width:2.4;stroke-linecap:round'); ks.appendChild(l); }); const KN = [];
   const tinge = (g, branca) => { const [a, b] = g.children; a.setAttribute('style', branca ? 'fill:#FFFFFF;stroke:rgba(20,40,245,.12);stroke-width:1.5' : 'fill:#3E63FF;stroke:rgba(255,255,255,.45);stroke-width:1.5'); b.setAttribute('style', `fill:${branca ? '#1F45FF' : '#0B1A8F'};stroke:none`); };
   let sel = -1;
   const escolhe = (i) => {
     if (!F.length) { $('.bas-ar-tri').setAttribute('d', arc(A0, A1)); return; }
     i = Math.max(0, Math.min(F.length - 1, i)); if (i === sel) return; const pri = sel < 0; sel = i; const f = F[i];
     SG.forEach((p, k) => p.classList.toggle('on', k === i)); KN.forEach((g, k) => tinge(g, k === i));
-    $('.bas-ar-n').textContent = f[0]; $('.bas-ar-v').textContent = `${f[1]} · ${f[2]} do que entrou`;
-    $('.bas-ar-s').textContent = f[3] == null || !q ? (F.length > 1 ? `${i + 1} de ${F.length} fontes` : 'Sua única fonte no período') : f[3] === 0 ? `Igual a ${q}` : `${f[3] > 0 ? 'Subiu' : 'Caiu'} ${f[3] > 0 ? '+' : '−'}${Math.abs(f[3])}% contra ${q}`;
+    $('.bas-ar-n').textContent = `${f[0]} · ${f[2]} do que entrou`; $('.bas-ar-v').textContent = f[1];
+    $('.bas-ar-s').innerHTML = f[3] == null || !q ? (F.length > 1 ? `${i + 1} de ${F.length} fontes` : 'Sua única fonte no período') : f[3] === 0 ? `Igual a ${esc(q)}` : `${f[3] > 0 ? 'Subiu' : 'Caiu'} <b class="${f[3] > 0 ? 'up' : 'dn'}">${f[3] > 0 ? '↑' : '↓'} ${Math.abs(f[3])}%</b> contra ${esc(q)}`;
     el.setAttribute('aria-valuenow', i + 1); el.setAttribute('aria-valuetext', `${f[0]}, ${f[1]}, ${f[2]}`);
     if (!pri) { try { if (navigator.vibrate && (!navigator.userActivation || navigator.userActivation.hasBeenActive)) navigator.vibrate(4); } catch (e) { /* ignora */ } }
   };
   // toque: numa bolinha, a fatia dela; fora delas, a fatia sob o dedo
   const onde = (e) => { const r = svg.getBoundingClientRect(); const vx = ((e.clientX - r.left) / r.width) * 340, vy = ((e.clientY - r.top) / r.height) * 214;
-    let bi = -1, bd = 36; ini.slice(1).forEach((v, k) => { const [px, py] = pt(v); const d = Math.hypot(px - vx, py - vy); if (d < bd) { bd = d; bi = k; } }); if (bi >= 0) return bi;
-    const g = (Math.atan2(CY - vy, vx - CX) * 180) / Math.PI; const f = (D0 - (g < -90 ? g + 360 : g)) / (D0 - D1); if (f > fim + 0.03) return -1; let i = 0; while (i < F.length - 1 && ini[i + 1] < f) i++; return i; };
+        const g = (Math.atan2(CY - vy, vx - CX) * 180) / Math.PI; const f = (D0 - (g < -90 ? g + 360 : g)) / (D0 - D1); if (f > fim + 0.03) return -1; let i = 0; while (i < F.length - 1 && ini[i + 1] < f) i++; return i; };
   el.addEventListener('click', (e) => { if (!F.length) return; const i = onde(e); if (i >= 0) escolhe(i); });
   el.addEventListener('keydown', (e) => { if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') { e.preventDefault(); escolhe(sel + (e.key === 'ArrowLeft' ? -1 : 1)); } });
   escolhe(F.length - 1); // abre na maior fonte, que fica por último
