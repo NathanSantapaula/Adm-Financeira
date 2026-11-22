@@ -93,7 +93,7 @@ function objEscolha3d(g) {
     return `<label class="o3-op" title="${esc(n)}"><input type="radio" name="i-${esc(g.id)}" data-objf="icone" data-id="${esc(g.id)}" value="${v}" ${v === at ? 'checked' : ''}><span><img alt="" data-o3="${v}" ${src ? `src="${src}"` : 'hidden'}><small>${esc(n)}</small></span></label>`; }).join('')}</fieldset></details>`;
 }
 function objMiniLigar() { o3Miniaturas(OBJ_3D_ESCOLHA.map(([v]) => v)).then((M) => document.querySelectorAll('img[data-o3]').forEach((im) => { const s = M.get(im.dataset.o3); if (s) { im.src = s; im.hidden = false; } })); }
-const obj3dDe = (g) => (g.tipo === 'outro' && g.icone ? g.icone : g.tipo);
+const obj3dDe = (g) => (g.modelo && typeof O3_VARIA !== 'undefined' && (O3_VARIA[g.tipo] || []).some((x) => x[0] === g.modelo) ? g.modelo : g.tipo === 'outro' && g.icone ? g.icone : g.tipo);
 const obj3dHtml = (tipo) => `<div class="ob3d" aria-hidden="true" data-tipo="${OBJ_3D_TIPOS.includes(tipo) ? tipo : 'outro'}"><div class="ob3d-gl"></div></div>`;
 function obj3dLigar() {
   const card = document.getElementById('obj-card'); const o = card && card.querySelector('.ob3d'); if (!o) return;

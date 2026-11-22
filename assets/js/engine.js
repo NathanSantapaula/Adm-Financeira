@@ -589,7 +589,7 @@
       nome: typeof x.nome === 'string' ? x.nome.trim().slice(0, 60) : '', valor: Math.max(0, +x.valor || 0),
       ano: Number.isInteger(+x.ano) && +x.ano >= 1990 && +x.ano <= 2100 && x.ano !== null && x.ano !== '' ? +x.ano : null,
       // modo "marco": basta o patrimônio total chegar ao valor (não separa fatia); "fatia": reserva uma parte do patrimônio e do aporte
-      modo: x.modo === 'marco' ? 'marco' : 'fatia', icone: typeof x.icone === 'string' ? x.icone.replace(/[^a-z]/g, '').slice(0, 20) : '',
+      modo: x.modo === 'marco' ? 'marco' : 'fatia', icone: typeof x.icone === 'string' ? x.icone.replace(/[^a-z]/g, '').slice(0, 20) : '', modelo: typeof x.modelo === 'string' ? x.modelo.replace(/[^a-z-]/g, '').slice(0, 30) : '',
       pct: x.modo === 'marco' ? 0 : Math.max(0, Math.min(100, Math.round(+x.pct || 0))) }));
     const tot = sum(out.map((x) => x.pct)); if (tot > 100) { const nv = repartir(out.map((x) => x.pct), 100); out.forEach((x, i) => { x.pct = nv[i]; }); }
     return out;

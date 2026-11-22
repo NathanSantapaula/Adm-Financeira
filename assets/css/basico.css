@@ -4928,3 +4928,7 @@ html[data-topo="tema"][data-theme="light"] .bas-rs :is(b, span, small, p) { colo
 @media (prefers-reduced-motion: reduce) { .bas-rt-s.vai > *, .bas-rt-chuva i, .bas-rt-bolhas i, .bas-wr.rt[data-pos="sobe"] .bas-rt-cif, .bas-rt-sonho img { animation: none !important; } .bas-rt-bolhas i { opacity: 1; bottom: auto; top: calc(30% + var(--d) * 80px); } .bas-rt-anel circle.on { stroke-dashoffset: calc(1 - var(--p)); } .bas-rt-linha path { stroke-dashoffset: 0; } .bas-rt-sb i { width: calc(var(--p) * 100%); } .bas-rt-pod li > i { width: var(--w); } }
 .bas-wr.rt .bas-rt-cif { z-index: 4; } .bas-wr.rt .bas-wr-bar { z-index: 5; } .bas-wr.rt .bas-wr-x { z-index: 6; }
 .bas-wr.rt[data-pos="centro"] .bas-rt-s.fim.on { padding-top: calc(13vh + 172px); }
+
+/* sonhos: a arte vem de uma imagem pronta (sem esperar o 3D desenhar no aparelho); escolha de modelo no editar */
+.bas-sn2-arte > img.o3p { position: relative; z-index: 1; width: 82%; height: 82%; object-fit: contain; }
+.bas-sne-mods { display: flex; gap: 10px; overflow-x: auto; margin: 0 -16px; padding: 4px 16px 14px; scrollbar-width: none; } .bas-sne-mods::-webkit-scrollbar { display: none; }

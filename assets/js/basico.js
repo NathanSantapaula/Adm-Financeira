@@ -2286,7 +2286,7 @@ const r2Bas = (v) => Math.round((+v || 0) * 100) / 100;
 // ===== Sonhos, refeitos (pedido do Nathan, referências de apps de bolsos e do fluxo de criação do Believe) =====
 // arte do sonho: a miniatura do objeto 3D (desenhada uma vez, objMiniLigar) sobre um degradê; sem WebGL fica o ícone
 const basSnPct = (g) => (Math.max(0, Math.min(1, +g.progresso || 0)) * 100).toFixed(1);
-const basSnArte = (g, i, cls) => `<span class="bas-sn2-arte${cls ? ' ' + cls : ''}" aria-hidden="true"><span class="bas-sn2-ic">${objIcone(g, i || 0)}</span><img alt="" data-o3="${esc(obj3dDe(g))}" hidden></span>`;
+const basSnArte = (g, i, cls) => `<span class="bas-sn2-arte${cls ? ' ' + cls : ''}" aria-hidden="true"><span class="bas-sn2-ic">${objIcone(g, i || 0)}</span><img class="o3p" alt="" src="assets/img/o3/${esc(obj3dDe(g))}.png" decoding="async"></span>`;
 function basTelaSonhos() {
   const A = objAnalise(); const g = objFoco(A); const L = A.itens;
   const topo = g ? `<div class="bas-sn2-hero"><span class="bas-sn2-flut">${basSnArte(g, 0, 'hero')}</span>
@@ -2324,11 +2324,12 @@ function basTelaSonhoDet(o) {
 // Editar um sonho numa tela só: tipo, nome, valor, prazo, principal e excluir, tudo à vista (antes era o fluxo de criação de novo)
 function basTelaSonhoEd(o) {
   const g = objLista().find((x) => x.id === o.id); if (!g) return basSumiu();
-  if (!S.basSn2 || S.basSn2.ed !== g.id || !o.ini) { o.ini = 1; S.basSn2 = { p: 2, ed: g.id, tipo: g.tipo || 'outro', nome: g.nome || '', valor: g.valor ? (g.valor % 1 ? nf.format(g.valor) : basInt(g.valor)) : '', ano: g.ano || null }; }
+  if (!S.basSn2 || S.basSn2.ed !== g.id || !o.ini) { o.ini = 1; S.basSn2 = { p: 2, ed: g.id, tipo: g.tipo || 'outro', modelo: g.modelo || (g.tipo === 'outro' ? g.icone || '' : ''), nome: g.nome || '', valor: g.valor ? (g.valor % 1 ? nf.format(g.valor) : basInt(g.valor)) : '', ano: g.ano || null }; }
   const st = S.basSn2; const nomeT = (t) => (OBJETIVOS.find((x) => x[0] === t) || [, 'Sonho'])[1]; const principal = g.id === S.profile.objetivoFoco; const n = st.ano ? st.ano - NOW_Y : 0;
-  const topo = `<div class="bas-sn2-hero bas-sne-hero"><span class="bas-sn2-flut">${basSnArte({ tipo: st.tipo }, 0, 'hero')}</span><small class="bas-pv2-k">Editando</small><b class="bas-sn2-hn">${esc(st.nome || nomeT(st.tipo))}</b></div>`;
+  const topo = `<div class="bas-sn2-hero bas-sne-hero"><span class="bas-sn2-flut">${basSnArte({ tipo: st.tipo, modelo: st.modelo }, 0, 'hero')}</span><small class="bas-pv2-k">Editando</small><b class="bas-sn2-hn">${esc(st.nome || nomeT(st.tipo))}</b></div>`;
   const folha = `<section class="bas-sne-sec"><small class="bas-sne-k">Tipo</small>
       <div class="bas-sne-tipos" role="radiogroup" aria-label="Tipo de sonho">${OBJETIVOS.map(([k, nm]) => `<button type="button" class="bas-sne-tp${k === st.tipo ? ' on' : ''}" data-act="bas-sne-tipo" data-v="${k}" role="radio" aria-checked="${k === st.tipo}">${basSnArte({ tipo: k }, 0, 'ri')}<span>${esc(nm)}</span></button>`).join('')}</div></section>
+    ${(typeof O3_VARIA !== 'undefined' && (O3_VARIA[st.tipo] || []).length > 1) ? `<section class="bas-sne-sec"><small class="bas-sne-k">Modelo</small><div class="bas-sne-mods" role="radiogroup" aria-label="Modelo do sonho">${O3_VARIA[st.tipo].map(([k, nm], i) => { const on = (st.modelo || O3_VARIA[st.tipo][0][0]) === k; return `<button type="button" class="bas-sne-tp${on ? ' on' : ''}" data-act="bas-sne-mod" data-v="${k}" role="radio" aria-checked="${on}"><span class="bas-sn2-arte ri" aria-hidden="true"><img class="o3p" alt="" src="assets/img/o3/${k}.png" decoding="async"></span><span>${esc(nm)}</span></button>`; }).join('')}</div></section>` : ''}
     <section class="card bas-sne-cx">
       <label class="bas-sne-l"><small>Nome</small><input data-sn2="nome" value="${esc(st.nome)}" placeholder="${esc(nomeT(st.tipo))}" maxlength="40" aria-label="Nome do sonho"></label>
       <label class="bas-sne-l"><small>Quanto custa</small><span class="bas-sne-rs"><em>R$</em><input data-sn2="valor" value="${esc(st.valor)}" inputmode="decimal" placeholder="0" aria-label="Quanto custa, em reais"></span></label>
@@ -2449,7 +2450,7 @@ function basVozLigar() {
 function basSn2Criar() {
   const st = S.basSn2; const L = objLista();
   if (st.ed) { const g = L.find((x) => x.id === st.ed); const v = parseReais(st.valor); if (!g) return; if (!(v > 0)) { toast('Informe quanto o sonho custa.'); return; }
-    Object.assign(g, { tipo: st.tipo, nome: (st.nome || '').trim(), valor: E.r2(v), ano: st.ano || null }); objSalvar(); basSom('ok'); basRetorno('ok'); basFechar(); toast('Sonho atualizado.'); return; }
+    Object.assign(g, { tipo: st.tipo, nome: (st.nome || '').trim(), valor: E.r2(v), ano: st.ano || null }, st.modelo != null ? { modelo: st.modelo || '' } : {}); objSalvar(); basSom('ok'); basRetorno('ok'); basFechar(); toast('Sonho atualizado.'); return; }
   if (L.length >= 12) { toast('Você chegou ao limite de 12 sonhos.'); return; }
   const v = parseReais(st.valor); if (!(v > 0)) { toast('Informe quanto o sonho custa.'); const i = document.querySelector('[data-sn2="valor"]'); if (i) i.focus(); return; }
   const alvo = Object.assign({ id: uid() }, L.length ? { modo: 'marco', pct: 0 } : { modo: 'fatia', pct: 100 }, { tipo: st.tipo, nome: (st.nome || '').trim(), valor: E.r2(v), ano: st.ano || null });
@@ -2458,6 +2459,7 @@ function basSn2Criar() {
 // ligações: miniaturas 3D, a roda curva (cada item sobe numa curva e cresce no meio), campos sem redesenhar e o tempo da animação de criação
 function basSn2Ligar() {
   if (document.querySelector('img[data-o3][hidden]') && typeof objMiniLigar === 'function') objMiniLigar();
+  document.querySelectorAll('img.o3p:not([data-ok])').forEach((im) => { im.dataset.ok = '1'; const tira = () => { im.hidden = true; }; if (im.complete && !im.naturalWidth) tira(); else im.addEventListener('error', tira, { once: true }); });
   document.querySelectorAll('[data-sn2]').forEach((e) => { if (e.dataset.lig) return; e.dataset.lig = '1'; e.addEventListener('input', () => { if (S.basSn2) S.basSn2[e.dataset.sn2] = e.value; }); });
   { const tp = document.querySelector('.bas-sne-tp.on'); const fi = tp && tp.parentElement; if (fi && !fi.dataset.vis) { fi.dataset.vis = '1'; fi.scrollLeft = tp.offsetLeft - fi.clientWidth / 2 + tp.offsetWidth / 2; } } // o tipo escolhido aparece no meio da fileira
   const roda = document.querySelector('.bas-sn2-roda');
@@ -3237,7 +3239,8 @@ function basAcao(act, ds, el) {
       if (b) b.textContent = st.ano || 'Sem prazo'; if (sm) sm.textContent = st.ano ? `daqui a ${n} ${n === 1 ? 'ano' : 'anos'}` : 'você pode definir depois';
       document.querySelector('.bas-sn2-semp')?.classList.toggle('on', !st.ano); basSom('toque'); basVibra(6); return true; }
     case 'bas-sn2-criar': basSn2Criar(); return true;
-    case 'bas-sne-tipo': { const st = S.basSn2; if (!st || !OBJETIVOS.some((x) => x[0] === ds.v)) return true; st.tipo = ds.v; basSom('toque'); basVibra(6); render(); return true; }
+    case 'bas-sne-tipo': { const st = S.basSn2; if (!st || !OBJETIVOS.some((x) => x[0] === ds.v)) return true; st.tipo = ds.v; st.modelo = ''; basSom('toque'); basVibra(6); render(); return true; }
+    case 'bas-sne-mod': { const st = S.basSn2; if (!st || typeof O3_VARIA === 'undefined' || !(O3_VARIA[st.tipo] || []).some((x) => x[0] === ds.v)) return true; st.modelo = ds.v; basSom('toque'); basVibra(6); render(); return true; }
     case 'bas-sn2-del': { const st = S.basSn2; if (!st || !st.ed) return true; if (!el.dataset.ok) { el.dataset.ok = '1'; el.textContent = 'Toque de novo para excluir'; return true; }
       const pr = S.profile; pr.objetivos = objLista().filter((x) => x.id !== st.ed); if (pr.objetivoFoco === st.ed) pr.objetivoFoco = pr.objetivos[0] ? pr.objetivos[0].id : null; objSalvar();
       const pl = basPilha(); const ant = pl[pl.length - 2]; if (ant && ant.t === 'sonho-det') pl.splice(pl.length - 2, 1); basRetorno('apaga'); basFechar(); toast('Sonho excluído.'); return true; }
