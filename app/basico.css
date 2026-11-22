@@ -4711,3 +4711,9 @@ html[data-topo="tema"][data-theme="light"] .bas-gt-bg .bas-gg-svg { filter: brig
 .bas-iax-av { width: 52px; height: 52px; --cif-size: 42px; margin-left: -4px; } .bas-iax-av .cifrao { width: 42px; height: 42px; }
 .bas-iax-log .ia-m.ia { margin-left: 58px; max-width: calc(100% - 60px); }
 .bas-iax-av { margin-left: 0; --cif-body: #fff; --cif-eyes: #06122A; } .bas-iax-av .cifrao > svg { display: block; width: 100% !important; height: 100% !important; overflow: visible; fill: initial; stroke: none; filter: drop-shadow(0 3px 6px rgba(0, 20, 90, .45)); }
+/* bolhas voltam ao tamanho anterior; só o Cifrão fica maior */
+.bas-iax-log { gap: 8px; }
+.bas-iax-log .ia-m { font-size: inherit; line-height: inherit; letter-spacing: normal; }
+.bas-iax-log .ia-m.ia { padding: 10px 12px !important; border-radius: 6px 16px 16px 16px !important; }
+.bas-iax-log .ia-m.eu { padding: 9px 13px !important; border-radius: 16px 16px 6px 16px !important; font-weight: inherit; }
+.bas-iax-log .ia-m .btn { margin-top: 6px; }
