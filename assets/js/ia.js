@@ -400,6 +400,9 @@ function iaEnviar(q) {
     const qn = q.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
     const complexa = /relatorio|pdf|planilha|tabela|grafico|analis|compar|media|mediana|tendenc|evolu|historic|desde|ultimos?|anterior|passad|por ?que|explica|previs|projec|cada mes|ranking|janeiro|fevereiro|marco|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro|20\d\d|semestre|trimestre|no ano|ano todo|quanto (eu )?gastei com|em que (eu )?mais/.test(qn) || qn.split(/\s+/).length > 14;
     const simples = !complexa && (id !== 'nao_entendi' || (typeof iaxLocal === 'function' && iaxLocal(q)));
+    // relatório, PDF ou planilha: o app monta na hora com os números exatos; a IA, se der tempo, só acrescenta a análise
+    const rel = typeof iarPedido === 'function' && iarPedido(qn) ? iaRelLocal(qn) : null;
+    if (rel) { fim({ de: 'ia', r, ai: rel.fala, rel }); iaRelAnalise(rel); return; }
     if (!iaNuvemOk() || simples) { local(); return; }
     st.pendTxt = 'Só um segundo, estou pensando…'; iaRefresh();
     { const dc = document.querySelector('.bas-voz[data-est="pensando"] [data-voz-dica]'); if (dc) dc.textContent = st.pendTxt; }

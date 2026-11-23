@@ -67,6 +67,8 @@ const CONSULTAS = [
       grafico: GRAF } } },
     referencias: { type: 'array', description: 'De onde vieram os números', items: { type: 'object', properties: { rotulo: T('Ex.: Gastos › Mercado, out/2026'), tela: { type: 'string', enum: TELAS } } } } } } },
 ];
+const ANALISE = `
+TAREFA AGORA: o RESUMO traz um relatório já calculado pelo app ("relatorio"). Escreva a análise dele em 3 a 5 frases: o que mudou, o que chama atenção e um próximo passo prático. Use só esses números, sem repetir a lista inteira. Não chame funções.`;
 const ehConsulta = (n?: string) => !!n && n.startsWith('consultar_');
 // confere o que a IA propôs antes de devolver (o app confere de novo antes de gravar)
 const txt = (x: unknown, n: number) => String(x ?? '').replace(/[<>]/g, '').trim().slice(0, n);
@@ -148,6 +150,7 @@ Deno.serve(async (req) => {
           : !r0 ? { erro: 'Sem resultado.' } : s.length > 9000 ? { erro: 'Resultado grande demais. Peça um período ou limite menor.' } : { resultado: r0.resultado };
         return { functionResponse: { name: fc.name, response, ...(fc.id ? { id: fc.id } : {}) } }; }) }];
     } else contents = [...historico, { role: 'user', parts: [{ text: pergunta }] }];
+    const rapido = p?.rapido === true; const analise = p?.analise === true && !p?.contexto;
     const rodadas = contents.filter((c) => c.parts.some((x) => x.functionResponse)).length;
 
     // modelo reserva: se o nome configurado sair do ar (404), tenta o "latest"
@@ -156,15 +159,17 @@ Deno.serve(async (req) => {
       method: 'POST', signal: AbortSignal.timeout(17000),
       headers: { 'content-type': 'application/json', 'x-goog-api-key': Deno.env.get('GEMINI_API_KEY') ?? '' },
       body: JSON.stringify({
-        systemInstruction: { parts: [{ text: SISTEMA + (rodadas >= 4 ? '\nAs consultas acabaram: responda agora com o que já tem.' : '') + '\n\nRESUMO (JSON): ' + resumo }] },
+        systemInstruction: { parts: [{ text: SISTEMA + (analise ? ANALISE : '') + (rodadas >= 4 ? '\nAs consultas acabaram: responda agora com o que já tem.' : '') + '\n\nRESUMO (JSON): ' + resumo }] },
         contents,
-        tools: [{ functionDeclarations: [...FUNCOES, ...CONSULTAS] }], toolConfig: { functionCallingConfig: { mode: 'AUTO' } },
+        // análise do relatório pronto: uma rodada só, sem funções (os números já vêm calculados pelo app)
+        ...(analise ? {} : { tools: [{ functionDeclarations: [...FUNCOES, ...CONSULTAS] }], toolConfig: { functionCallingConfig: { mode: 'AUTO' } } }),
         // no 2.5 o pensamento conta dentro de maxOutputTokens: 2048 de pensamento + ~2500 de resposta
-        generationConfig: { temperature: 0.2, maxOutputTokens: 4600, ...(/2\.5/.test(modelo) ? { thinkingConfig: { thinkingBudget: 2048 } } : /-3/.test(modelo) ? { thinkingConfig: { thinkingLevel: 'low' } } : {}) },
+        generationConfig: { temperature: 0.2, maxOutputTokens: 4600, ...(/2\.5/.test(modelo) ? { thinkingConfig: { thinkingBudget: 2048 } } : /-3/.test(modelo) ? { thinkingConfig: { thinkingLevel: /lite/.test(modelo) ? 'minimal' : 'low' } } : {}) },
       }),
     });
     // modelo sobrecarregado (503), sem cota (429) ou fora do ar (404): tenta o próximo da lista
-    const MODELOS = [MODELO, 'gemini-3.5-flash-lite', 'gemini-flash-latest'].filter((m, i, a) => a.indexOf(m) === i);
+    // rapido: o lite (mais rápido e barato) vem primeiro
+    const MODELOS = (rapido ? ['gemini-3.5-flash-lite', MODELO] : [MODELO, 'gemini-3.5-flash-lite']).concat('gemini-flash-latest').filter((m, i, a) => a.indexOf(m) === i);
     const tenta = (m: string) => chama(m).catch(() => new Response('tempo esgotado', { status: 504 }));
     let r = await tenta(MODELOS[0]);
     for (const m of MODELOS.slice(1)) { if (r.ok || ![400, 404, 429, 500, 503, 504].includes(r.status)) break; console.error('gemini', r.status, (await r.text()).slice(0, 200), 'tentando', m); r = await tenta(m); }
