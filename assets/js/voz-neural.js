@@ -114,6 +114,7 @@ const vozVAnel = (f, cor) => { const r = 34; const L = 2 * Math.PI * r; return `
 function vozVisualHtml(m) {
   if (m.rel && typeof iaRelHtml === 'function') return `<div class="vzv vzv-rel">${iaRelHtml(m, VOZV.i, true)}</div>`; // relatório da IA: o cartão grande
   if (m.acoes && m.acoes.length && typeof iaxCartoesHtml === 'function') return `<div class="vzv vzv-acao">${iaxCartoesHtml(m, VOZV.i)}</div>`;
+  if (m.vis && typeof iaVisHtml === 'function') return `<div class="vzv vzv-vis">${iaVisHtml(m, VOZV.i, true)}</div>`; // visual que a IA montou
   const tipo = VOZV_TIPO[m.r && m.r.id]; if (!tipo || !S.C) return '';
   const C = S.C; const mm = S.year === NOW_Y ? NOW_M : S.mes;
   try {
@@ -148,8 +149,14 @@ const VOZV = { i: -1 };
 function vozVisual(w, m, i) {
   const c = w.querySelector('.bas-voz-c'); if (!c) return; VOZV.i = i; let v = c.querySelector('[data-voz-vis]');
   if (!v) { v = document.createElement('div'); v.className = 'vzv-box'; v.dataset.vozVis = ''; const t = c.querySelector('[data-voz-t]'); t.after(v); }
-  v.innerHTML = vozVisualHtml(m) || (m.ai && typeof iaVozChipsHtml === 'function' ? iaVozChipsHtml(m) : ''); // resposta comum: os valores viram fichas
+  const loc = !m.ai && typeof iaVisHtml === 'function' ? iaVisHtml(m, i, true) : ''; // resposta local: kpis com os números dela
+  v.innerHTML = vozVisualHtml(m) || (loc ? `<div class="vzv vzv-vis">${loc}</div>` : m.ai && typeof iaVozChipsHtml === 'function' ? iaVozChipsHtml(m) : ''); // nuvem sem visual: os valores viram fichas
   if (typeof iaRelConta === 'function') iaRelConta(v);
+  // o cartão do trecho falado acende: segue as palavras que a fala marca como lidas (voz neural ou do aparelho)
+  if (VOZV.obs) VOZV.obs.disconnect(); const tx = c.querySelector('[data-voz-t]');
+  if (tx && typeof iaVisAcende === 'function' && v.querySelector('.iav[data-c0]') && typeof MutationObserver === 'function') { let pend = 0;
+    VOZV.obs = new MutationObserver(() => { if (pend) return; pend = requestAnimationFrame(() => { pend = 0; const ls = tx.querySelectorAll('.lido'); const u = ls[ls.length - 1]; if (u) iaVisAcende(v, +u.dataset.c || 0); }); });
+    VOZV.obs.observe(tx, { subtree: true, attributes: true, attributeFilter: ['class'] }); }
   const h = w.querySelector('.bas-voz-orb .cifrao'); if (!h || !window.Cifrao) return;
   const fm = VOZV_FORMA[(m.acoes && m.acoes[0] && m.acoes[0].tipo) || VOZV_TIPO[m.r && m.r.id]];
   if (fm) { window.Cifrao.forma(h, fm); setTimeout(() => { if (h.isConnected) window.Cifrao.forma(h, 'cifrao'); }, 4200); }

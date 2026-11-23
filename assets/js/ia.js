@@ -401,7 +401,7 @@ function iaEnviar(q) {
     // a IA escreve o texto e pode pedir consultas exatas ao app (ia-consultas.js); o botão de atalho (cta) e os avisos continuam vindo da resposta local
     const aviso = () => { st.pendTxt = 'Consultando seus dados…'; iaRefresh(); const dc = document.querySelector('.bas-voz[data-est="pensando"] [data-voz-dica]'); if (dc) dc.textContent = st.pendTxt; };
     const limite = new Promise((_, falha) => setTimeout(() => falha(new Error('demorou')), 55000));
-    Promise.race([iaNuvemPerguntar({ pergunta: q, resumo: iaBase(dd), historico: hist }, aviso), limite]).then((o) => { const ac = typeof iaxValidar === 'function' ? iaxValidar(o.acoes) : []; fim(Object.assign({ de: 'ia', r, ai: o.texto }, ac.length ? { acoes: ac } : {}, o.relatorio ? { rel: o.relatorio } : {})); }).catch(local);
+    Promise.race([iaNuvemPerguntar({ pergunta: q, resumo: iaBase(dd), historico: hist }, aviso), limite]).then((o) => { const ac = typeof iaxValidar === 'function' ? iaxValidar(o.acoes) : []; fim(Object.assign({ de: 'ia', r, ai: o.texto }, ac.length ? { acoes: ac } : {}, o.relatorio ? { rel: o.relatorio } : {}, o.visual ? { vis: o.visual } : {})); }).catch(local);
   }, iaRapido() ? 0 : 480 + Math.min(500, q.length * 8));
 }
 function iaCta(c, i) {
@@ -416,7 +416,7 @@ function iaMsgHtml(m, i) {
   if (m.guia) return `<div class="ia-m ia"><p><b>${esc(m.t)}</b><br>Eu mostro o caminho na tela, passo a passo.</p><button class="btn sm" data-act="bas-guia" data-id="${esc(m.guia)}">Me mostre</button></div>`;
   const r = m.r; const avs = (r.avisos || []).map((id) => (S.notifs || []).find((n) => n.id === id)).filter(Boolean);
   const vs = [r.chave, r.chave + '_2', r.chave + '_3'].filter((k) => VOZ[tomAtual()][k] != null); const ch = vs.length ? vs[Math.floor((r.v || 0) * vs.length)] : r.chave;
-  return `<div class="ia-m ia${m.ai ? ' nuvem' : ''}"><p>${iaRealca(esc(m.ai ? iaTxtIa(m.ai) : voz(ch, iaVars(r.vars))))}</p>${m.rel ? iaRelHtml(m, i) : ''}${avs.length ? `<ul class="ia-av">${avs.map((n) => `<li class="${n.nivel}"><b>${esc(n.titulo)}</b><span>${esc(n.texto)}</span></li>`).join('')}</ul>` : ''}${m.acoes && typeof iaxCartoesHtml === 'function' ? iaxCartoesHtml(m, i) : iaCta(r.cta, i)}</div>`;
+  return `<div class="ia-m ia${m.ai ? ' nuvem' : ''}"><p>${iaRealca(esc(m.ai ? iaTxtIa(m.ai) : voz(ch, iaVars(r.vars))))}</p>${typeof iaVisHtml === 'function' ? iaVisHtml(m, i) : ''}${m.rel ? iaRelHtml(m, i) : ''}${avs.length ? `<ul class="ia-av">${avs.map((n) => `<li class="${n.nivel}"><b>${esc(n.titulo)}</b><span>${esc(n.texto)}</span></li>`).join('')}</ul>` : ''}${m.acoes && typeof iaxCartoesHtml === 'function' ? iaxCartoesHtml(m, i) : iaCta(r.cta, i)}</div>`;
 }
 // boas-vindas: só a saudação curta (pedido do Nathan)
 const iaBoasHtml = () => `<div class="ia-m ia"><p>${esc(voz('ia_oi', iaVars({})))}</p></div>`;
@@ -541,7 +541,7 @@ function iaAcao(act, ds) {
       if (c.acao === 'nav') { if (typeof closeAdmin === 'function') closeAdmin(); S.view = c.view; render(); }
       return true;
     }
-    default: return (typeof iaxAcao === 'function' && iaxAcao(act, ds)) || (typeof iaRelAcao === 'function' && iaRelAcao(act, ds));
+    default: return (typeof iaxAcao === 'function' && iaxAcao(act, ds)) || (typeof iaRelAcao === 'function' && (iaRelAcao(act, ds) || iaVisAcao(act, ds)));
   }
 }
 function iaSubmit(f) { const inp = f.elements.q; const q = inp.value; inp.value = ''; iaEnviar(q); }

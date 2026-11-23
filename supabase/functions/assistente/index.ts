@@ -25,6 +25,7 @@ Ações: quando a pessoa pedir para anotar, registrar, lançar, mudar ou abrir a
 Você só PROPÕE a ação: o app mostra um cartão e a pessoa confirma. Junto da função, escreva uma frase curta como "Posso anotar isso para você, é só confirmar." e nunca diga que já anotou.
 Categoria de gasto: use uma das categorias do resumo; se nenhuma servir, use "Outros". Dia: formato AAAA-MM-DD; sem dia dito, use o dia de hoje do resumo.
 Relatório: quando a pessoa pedir relatório, planilha, PDF, tabela ou gráfico, consulte os dados primeiro e depois chame criar_relatorio com os números das consultas (números sem formatação, ex.: 1234.56; percentuais como 12.5). Junto, escreva 1 ou 2 frases. O app mostra os botões PDF e Planilha. O relatório segue as mesmas regras fixas.
+Visual: em quase toda resposta com números, junto do texto final, chame também mostrar_visual com 1 a 3 cartões: kpis para os números principais (com variacao em % quando comparar), comparacao para A contra B, progresso para meta ou limite, grafico para evolução no tempo, ranking para as maiores categorias, linha_tempo para lançamentos. Em cada cartão, "frase" copia o trecho do seu texto que fala dele. Em referencias, diga de onde veio cada número (ex.: "Gastos › Mercado, out/2026") e a tela do app. Números do visual só do RESUMO ou das consultas. Com criar_relatorio, não precisa de mostrar_visual.
 Formato: perguntas simples em até 4 frases curtas; análises em até 8. Sem markdown, sem listas, sem emojis. Escreva valores como "R$ 1.234". Termine com um próximo passo prático quando fizer sentido.`;
 
 const TELAS = ['inicio', 'gastos', 'entradas', 'investimentos', 'sonhos', 'cartoes', 'limites', 'planejamento', 'carteira', 'proventos', 'avisos', 'resumo', 'saude'];
@@ -40,6 +41,9 @@ const FUNCOES = [
 // consultas exatas que o app executa (assets/js/ia-consultas.js, iaConsultar); o nome sem "consultar_" vai para o app
 const METRICAS = ['entradas', 'gastos', 'orcamento', 'investido', 'sobra', 'patrimonio', 'dividendos', 'metaInvestir'];
 const MET = { type: 'string', enum: METRICAS }; const MES = (d: string) => T(`${d}, AAAA-MM (ou AAAA para o ano todo)`);
+const UNI = { type: 'string', enum: ['reais', 'pct', 'numero'] };
+const GRAF = { type: 'object', properties: { tipo: { type: 'string', enum: ['barras', 'linha', 'pizza'] }, unidade: { type: 'string', enum: ['reais', 'pct', 'numero'] }, rotulos: { type: 'array', items: { type: 'string' } },
+  series: { type: 'array', items: { type: 'object', properties: { nome: T('Nome da série'), valores: { type: 'array', items: { type: 'number' } } } } } } };
 const CONSULTAS = [
   { name: 'consultar_serie', description: 'Valores mês a mês de uma métrica num período.', parameters: { type: 'object', properties: { metrica: MET, de: MES('Início'), ate: MES('Fim') }, required: ['metrica'] } },
   { name: 'consultar_por_categoria', description: 'Gastos por categoria num período, do maior para o menor, com total e %.', parameters: { type: 'object', properties: { de: MES('Início'), ate: MES('Fim'), top: N('Quantas categorias, até 30') } } },
@@ -54,8 +58,14 @@ const CONSULTAS = [
     secoes: { type: 'array', items: { type: 'object', properties: { titulo: T('Título'), texto: T('Texto') } } },
     tabela: { type: 'object', properties: { colunas: { type: 'array', items: { type: 'string' } }, tipos: { type: 'array', items: { type: 'string', enum: ['texto', 'reais', 'pct', 'numero'] }, description: 'Tipo de cada coluna' },
       linhas: { type: 'array', items: { type: 'array', items: { type: 'string' } }, description: 'Células como texto; números sem formatação, ex.: 1234.56' } } },
-    grafico: { type: 'object', properties: { tipo: { type: 'string', enum: ['barras', 'linha', 'pizza'] }, unidade: { type: 'string', enum: ['reais', 'pct', 'numero'] }, rotulos: { type: 'array', items: { type: 'string' } },
-      series: { type: 'array', items: { type: 'object', properties: { nome: T('Nome da série'), valores: { type: 'array', items: { type: 'number' } } } } } } } }, required: ['titulo'] } },
+    grafico: GRAF }, required: ['titulo'] } },
+  { name: 'mostrar_visual', description: 'Mostra na tela, junto da resposta, cartões com os números de que você fala e de onde eles vieram.', parameters: { type: 'object', properties: {
+    componentes: { type: 'array', description: '1 a 3 cartões', items: { type: 'object', properties: {
+      tipo: { type: 'string', enum: ['kpis', 'comparacao', 'progresso', 'grafico', 'ranking', 'linha_tempo'] }, titulo: T('Título curto'), frase: T('Trecho exato do seu texto que fala deste cartão'),
+      unidade: UNI, rotulo: T('progresso: o que está sendo medido'), atual: N('progresso: valor atual'), alvo: N('progresso: meta ou limite'),
+      itens: { type: 'array', items: { type: 'object', properties: { rotulo: T('Nome'), valor: N('Número sem formatação'), unidade: UNI, variacao: N('kpis: variação em %, ex.: -12.5'), data: T('linha_tempo: data DD/MM') } } },
+      grafico: GRAF } } },
+    referencias: { type: 'array', description: 'De onde vieram os números', items: { type: 'object', properties: { rotulo: T('Ex.: Gastos › Mercado, out/2026'), tela: { type: 'string', enum: TELAS } } } } } } },
 ];
 const ehConsulta = (n?: string) => !!n && n.startsWith('consultar_');
 // confere o que a IA propôs antes de devolver (o app confere de novo antes de gravar)
@@ -74,7 +84,7 @@ function limpaAcao(c: { name?: string; args?: Record<string, unknown> }) {
 }
 
 // relatório: só texto curto e números finitos, com tamanhos limitados (o app confere de novo)
-const num = (x: unknown) => { const n = typeof x === 'number' ? x : Number(String(x ?? '').replace(',', '.')); return Number.isFinite(n) && Math.abs(n) < 1e12 ? Math.round(n * 100) / 100 : null; };
+const num = (x: unknown) => { if (x == null || x === '') return null; const n = typeof x === 'number' ? x : Number(String(x ?? '').replace(',', '.')); return Number.isFinite(n) && Math.abs(n) < 1e12 ? Math.round(n * 100) / 100 : null; };
 const arr = (x: unknown, n: number): unknown[] => (Array.isArray(x) ? x.slice(0, n) : []);
 type Obj = Record<string, unknown>;
 function limpaRelatorio(a: Obj) {
@@ -87,6 +97,20 @@ function limpaRelatorio(a: Obj) {
   const ser = arr(g.series, 4).map((s) => ({ nome: txt((s as Obj)?.nome, 30), valores: rot.map((_, k) => num(arr((s as Obj)?.valores, 36)[k]) ?? 0) }));
   if (rot.length && ser.length && ['barras', 'linha', 'pizza'].includes(String(g.tipo))) o.grafico = { tipo: g.tipo, unidade: ['reais', 'pct', 'numero'].includes(String(g.unidade)) ? g.unidade : 'reais', rotulos: rot, series: ser };
   return o;
+}
+// visual: até 4 cartões e 4 referências, só números finitos e telas conhecidas
+const UNIS = ['reais', 'pct', 'numero']; const uni = (x: unknown) => (UNIS.includes(String(x)) ? String(x) : 'reais');
+function limpaVisual(a: Obj) {
+  const comps = arr(a.componentes, 4).map((c0) => { const c = (c0 ?? {}) as Obj; const tipo = String(c.tipo);
+    if (!['kpis', 'comparacao', 'progresso', 'grafico', 'ranking', 'linha_tempo'].includes(tipo)) return null;
+    const b = { tipo, titulo: txt(c.titulo, 60), frase: txt(c.frase, 120), unidade: uni(c.unidade) };
+    if (tipo === 'progresso') { const at = num(c.atual); const al = num(c.alvo); return at == null || !al ? null : { ...b, rotulo: txt(c.rotulo, 40), atual: at, alvo: al }; }
+    if (tipo === 'grafico') { const g = limpaRelatorio({ grafico: c.grafico }).grafico; return g ? { ...b, grafico: g } : null; }
+    const itens = arr(c.itens, tipo === 'linha_tempo' ? 8 : 6).map((i0) => { const i = (i0 ?? {}) as Obj; return { rotulo: txt(i.rotulo, 40), valor: num(i.valor), variacao: num(i.variacao), data: txt(i.data, 20), unidade: i.unidade ? uni(i.unidade) : '' }; })
+      .filter((i) => i.rotulo && (i.valor != null || tipo === 'linha_tempo'));
+    return itens.length ? { ...b, itens } : null; }).filter(Boolean);
+  const referencias = arr(a.referencias, 4).map((r0) => { const r = (r0 ?? {}) as Obj; return { rotulo: txt(r.rotulo, 50), tela: TELAS.includes(String(r.tela)) ? String(r.tela) : '' }; }).filter((r) => r.rotulo);
+  return comps.length || referencias.length ? { componentes: comps, referencias } : null;
 }
 type Part = { text?: string; thought?: boolean; functionCall?: { name?: string; args?: Obj; id?: string }; functionResponse?: unknown };
 type Content = { role: string; parts: Part[] };
@@ -145,9 +169,10 @@ Deno.serve(async (req) => {
     const acoes = parts.map((x) => x.functionCall && limpaAcao(x.functionCall)).filter(Boolean).slice(0, 3);
     const rel = parts.find((x) => x.functionCall?.name === 'criar_relatorio'); const relatorio = rel ? limpaRelatorio(rel.functionCall!.args ?? {}) : null;
     let texto = parts.filter((x) => !x.thought).map((x) => x.text ?? '').join(' ').replace(/[*#`_]/g, '').replace(/\s+/g, ' ').trim().slice(0, 3000);
+    const vis = parts.find((x) => x.functionCall?.name === 'mostrar_visual'); const visual = vis ? limpaVisual(vis.functionCall!.args ?? {}) : null;
     if (!texto && relatorio) texto = String(relatorio.resumo || 'Montei o relatório. Ele está aqui embaixo.');
     if (!texto && acoes.length) texto = 'Posso fazer isso para você. Confira e confirme abaixo.';
-    return texto ? json({ texto, acoes, relatorio }) : json({ erro: 'Resposta vazia.' }, 502);
+    return texto ? json({ texto, acoes, relatorio, visual }) : json({ erro: 'Resposta vazia.' }, 502);
   } catch (_e) {
     return json({ erro: 'Falha no assistente.' }, 500);
   }

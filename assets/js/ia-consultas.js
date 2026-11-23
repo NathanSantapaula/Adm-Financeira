@@ -110,6 +110,7 @@ async function iaNuvemPerguntar(body, aviso) {
     o = await Store.assistente(Object.assign({}, body, { contexto: o.contexto, resultados }));
   }
   if (!o.texto) throw new Error('A IA não terminou a resposta.');
+  o.visual = iaVisLimpa(o.visual);
   if (o.relatorio) { o.relatorio = iaRelLimpa(o.relatorio); if (o.relatorio && lanc.length) o.relatorio.lanc = lanc.slice(0, 300); }
   return o;
 }
@@ -117,7 +118,7 @@ async function iaNuvemPerguntar(body, aviso) {
 /* ---------- relatório: conferência, cartão, PDF e planilha ---------- */
 const IAR_TIPOS = ['texto', 'reais', 'pct', 'numero'];
 const iarTxt = (x, n) => String(x == null ? '' : x).replace(/\s+/g, ' ').trim().slice(0, n);
-const iarNum = (x) => { const n = typeof x === 'number' ? x : Number(String(x == null ? '' : x).replace(',', '.')); return Number.isFinite(n) && Math.abs(n) < 1e12 ? n : null; };
+const iarNum = (x) => { if (x == null || x === '') return null; const n = typeof x === 'number' ? x : Number(String(x == null ? '' : x).replace(',', '.')); return Number.isFinite(n) && Math.abs(n) < 1e12 ? n : null; };
 const iarArr = (x, n) => (Array.isArray(x) ? x.slice(0, n) : []);
 // o servidor já confere; aqui confere de novo porque vira HTML e arquivo
 function iaRelLimpa(r) {
@@ -289,3 +290,59 @@ function iaRelAcao(act, ds) {
     .finally(() => bts.forEach((b) => { b.disabled = false; b.textContent = b.dataset.rot; }));
   return true;
 }
+
+/* ---------- visual da resposta (mostrar_visual): kpis, comparação, progresso, gráfico, ranking, linha do tempo e referências ---------- */
+const IAV_TIPOS = ['kpis', 'comparacao', 'progresso', 'grafico', 'ranking', 'linha_tempo'];
+const iavUni = (u) => (['reais', 'pct', 'numero'].includes(u) ? u : 'reais');
+function iaVisLimpa(v) {
+  if (!v || typeof v !== 'object') return null;
+  const comps = iarArr(v.componentes, 4).map((c) => { if (!c || !IAV_TIPOS.includes(c.tipo)) return null;
+    const b = { tipo: c.tipo, titulo: iarTxt(c.titulo, 60), frase: iarTxt(c.frase, 120), unidade: iavUni(c.unidade) };
+    if (c.tipo === 'progresso') { const at = iarNum(c.atual); const al = iarNum(c.alvo); return at == null || !al ? null : Object.assign(b, { rotulo: iarTxt(c.rotulo, 40), atual: at, alvo: al }); }
+    if (c.tipo === 'grafico') { const g = (iaRelLimpa({ grafico: c.grafico }) || {}).grafico; return g ? Object.assign(b, { grafico: g }) : null; }
+    const itens = iarArr(c.itens, c.tipo === 'linha_tempo' ? 8 : 6).map((x) => ({ rotulo: iarTxt(x && x.rotulo, 40), valor: iarNum(x && x.valor), variacao: iarNum(x && x.variacao), data: iarTxt(x && x.data, 20), unidade: x && x.unidade ? iavUni(x.unidade) : '' }))
+      .filter((x) => x.rotulo && (x.valor != null || c.tipo === 'linha_tempo'));
+    return itens.length ? Object.assign(b, { itens }) : null; }).filter(Boolean);
+  const refs = iarArr(v.referencias, 4).map((r) => ({ rotulo: iarTxt(r && r.rotulo, 50), tela: typeof IAX_TELAS !== 'undefined' && IAX_TELAS[r && r.tela] ? r.tela : '' })).filter((r) => r.rotulo);
+  return comps.length || refs.length ? { componentes: comps, referencias: refs } : null;
+}
+// resposta local (sem nuvem): os números da resposta viram kpis
+const IAV_ROT = { receita: 'Entradas', gasto: 'Gastos', sobra: 'Sobra', restante: 'Ainda pode gastar', porDia: 'Por dia', aportado: 'Investido', meta: 'Meta', falta: 'Falta', areaValor: 'Na categoria', noAno: 'No ano', alvo: 'Alvo', media: 'Média', extra: 'Extra', aporte: 'Aporte', livre: 'Livre', restaria: 'Restaria', excesso: 'Passou', parcela: 'Parcela', projecao: 'Previsão', valor: 'Valor', ate: 'Até', pct: 'Percentual', pctArea: 'Das entradas' };
+function iaVisLocal(r) {
+  const v = (r && r.vars) || {}; const itens = Object.keys(v).filter((k) => IAV_ROT[k] && Number.isFinite(+v[k]) && v[k] !== '' && v[k] != null).slice(0, 4)
+    .map((k) => ({ rotulo: IAV_ROT[k], valor: IA_PCT.includes(k) ? +v[k] * 100 : +v[k], unidade: IA_PCT.includes(k) ? 'pct' : 'reais' }));
+  return itens.length ? { componentes: [{ tipo: 'kpis', titulo: '', frase: '', unidade: 'reais', itens }], referencias: [] } : null;
+}
+const iavB = (x, u) => `<b data-conta="${iaqR(x)}" data-f="${u}">${esc(iarFmt(x, u))}</b>`;
+const iavBarras = (itens, u, num) => { const mx = Math.max(1e-9, ...itens.map((x) => Math.abs(x.valor || 0)));
+  return `<ul class="iav-bar">${itens.map((x, k) => `<li style="--k:${k};--f:${(Math.abs(x.valor || 0) / mx).toFixed(3)}">${num ? `<em>${k + 1}</em>` : ''}<span>${esc(x.rotulo)}</span>${iavB(x.valor, x.unidade || u)}<i></i></li>`).join('')}</ul>`; };
+function iavCompHtml(c) {
+  const u = c.unidade;
+  if (c.tipo === 'kpis') return `<div class="iav-kpi">${c.itens.map((x, k) => `<div style="--k:${k}"><small>${esc(x.rotulo)}</small>${iavB(x.valor, x.unidade || u)}${x.variacao != null ? `<span class="iav-var ${x.variacao >= 0 ? 'sobe' : 'desce'}">${x.variacao >= 0 ? '▲' : '▼'} ${esc(fmtPct(Math.abs(x.variacao)))}</span>` : ''}</div>`).join('')}</div>`;
+  if (c.tipo === 'comparacao' || c.tipo === 'ranking') return iavBarras(c.itens, u, c.tipo === 'ranking');
+  if (c.tipo === 'progresso') { const f = c.atual / c.alvo;
+    return `<div class="iav-prog${f > 1 ? ' passou' : f > 0.8 ? ' perto' : ''}" style="--f:${Math.min(1, Math.max(0, f)).toFixed(3)}"><div class="iav-prog-n">${iavB(f * 100, 'pct')}<span>${esc(c.rotulo)}</span></div><div class="iav-prog-b"><i></i></div><p>${esc(iarFmt(c.atual, u))} de ${esc(iarFmt(c.alvo, u))}</p></div>`; }
+  if (c.tipo === 'grafico') return iarSvg(c.grafico);
+  if (c.tipo === 'linha_tempo') return `<ol class="iav-tl">${c.itens.map((x, k) => `<li style="--k:${k}"><small>${esc(x.data)}</small><span>${esc(x.rotulo)}</span>${x.valor != null ? iavB(x.valor, x.unidade || u) : ''}</li>`).join('')}</ol>`;
+  return '';
+}
+// posição (no texto falado) de cada cartão: o trecho "frase" ou o primeiro número dele que aparece no texto
+function iavPos(c, txt) {
+  const t = iaSemAcento(txt); const f = iaSemAcento(c.frase); let p = f ? t.indexOf(f.slice(0, 40)) : -1;
+  if (p < 0 && c.itens) c.itens.some((x) => { const k = t.indexOf(iaSemAcento(x.rotulo)); if (k >= 0) p = k; return k >= 0; });
+  return p;
+}
+function iaVisHtml(m, i, voz) {
+  const v = m.vis || (!m.ai && m.r ? iaVisLocal(m.r) : null); if (!v) return '';
+  const txt = String(m.ai ? iaTxtIa(m.ai) : '').replace(/\s+/g, ' ').trim();
+  const cs = v.componentes.map((c, k) => `<div class="iav" style="--k:${k}" data-c0="${iavPos(c, txt)}">${c.titulo ? `<small class="iav-t">${esc(c.titulo)}</small>` : ''}${iavCompHtml(c)}</div>`).join('');
+  const refs = v.referencias.length ? `<div class="iav-refs">${v.referencias.map((r) => (r.tela ? `<button type="button" class="iav-ref" data-act="iav-ref" data-tela="${esc(r.tela)}">${esc(r.rotulo)}<span aria-hidden="true">›</span></button>` : `<span class="iav-ref">${esc(r.rotulo)}</span>`)).join('')}</div>` : '';
+  return `<div class="iav-l${voz ? ' voz' : ''}">${cs}${refs}</div>`;
+}
+// destaque sincronizado com a fala: acende o cartão do trecho que está sendo falado (pos = caractere do texto)
+function iaVisAcende(root, pos) {
+  const cs = [...root.querySelectorAll('.iav[data-c0]')]; if (!cs.length) return; let on = null;
+  cs.forEach((c) => { const p = +c.dataset.c0; if (p >= 0 && p <= pos && (!on || p >= +on.dataset.c0)) on = c; });
+  cs.forEach((c) => c.classList.toggle('on', c === on));
+}
+function iaVisAcao(act, ds) { if (act !== 'iav-ref') return false; if (typeof iaxIr === 'function') iaxIr(ds.tela); return true; }

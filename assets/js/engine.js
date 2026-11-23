@@ -570,7 +570,7 @@
   /* ---------- Múltiplos objetivos ----------
      Cada objetivo: { id, tipo, nome, valor, ano (limite), pct }. pct é a fatia (0 a 100) do patrimônio e do aporte mensal
      reservada para ele; a soma fica em até 100% e o que sobra aparece como "sem destino". */
-  const OBJ_TIPOS = [['independencia', 'Independência financeira'], ['aposentadoria', 'Aposentadoria'], ['imovel', 'Imóvel'], ['carro', 'Carro'], ['viagem', 'Viagem'],
+  const OBJ_TIPOS = [['independencia', 'Independência financeira'], ['aposentadoria', 'Aposentadoria'], ['imovel', 'Imóvel'], ['carro', 'Veículo'], ['viagem', 'Viagem'],
     ['filhos', 'Filhos'], ['educacao', 'Educação'], ['reserva', 'Reserva de emergência'], ['casamento', 'Casamento'], ['negocio', 'Negócio próprio'], ['outro', 'Outro objetivo']];
   const tipoObjValido = (t) => OBJ_TIPOS.some((x) => x[0] === t);
   // reparte 100 (ou o total pedido) em inteiros proporcionais aos pesos, sem perder unidades (maiores restos)

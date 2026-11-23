@@ -103,3 +103,50 @@
 @keyframes iar-traca { from { stroke-dashoffset: 1; } }
 @keyframes iar-abre { from { stroke-dasharray: 0 999; } }
 @media (prefers-reduced-motion: reduce) { .iar, .iar-g rect, .iar-g polyline, .iar-g.pizza circle, .iar-k > div, .iar-chips > div { animation: none; } }
+
+/* visual da resposta (mostrar_visual / kpis locais): cartões de vidro azul, números que contam, barras que crescem; .on = trecho sendo falado */
+.iav-l { display: grid; gap: 8px; margin-top: 10px; }
+.iav { position: relative; padding: 12px 14px; border-radius: 18px; color: #fff; overflow: hidden; isolation: isolate;
+  background: linear-gradient(150deg, rgba(91, 140, 255, .96) 0%, #1428F5 55%, #0A1268 110%); box-shadow: 0 12px 30px -16px rgba(20, 40, 245, .7), inset 0 1px 0 rgba(255, 255, 255, .26), inset 0 0 0 .5px rgba(255, 255, 255, .18);
+  animation: iax-entra .5s calc(var(--k, 0) * 90ms) cubic-bezier(.2, .9, .3, 1.2) both; transition: transform .35s cubic-bezier(.2, .9, .3, 1.2), box-shadow .35s; }
+.iav::before { content: ''; position: absolute; z-index: -1; inset: -60% -30% auto auto; width: 180px; height: 180px; border-radius: 50%; background: radial-gradient(circle, rgba(255, 255, 255, .26), transparent 65%); pointer-events: none; }
+.iav.on { transform: scale(1.015); box-shadow: 0 0 0 2px rgba(255, 255, 255, .7), 0 18px 44px -14px rgba(91, 140, 255, .95), inset 0 1px 0 rgba(255, 255, 255, .3); }
+.iav-t { display: block; margin-bottom: 8px; font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase; opacity: .78; }
+.iav b { font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.iav-kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; }
+.iav-kpi > div { padding: 10px 12px; border-radius: 14px; background: rgba(255, 255, 255, .12); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .18); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  animation: iax-entra .5s calc(var(--k) * 100ms + .1s) cubic-bezier(.2, .9, .3, 1.2) both; }
+.iav-kpi small { display: block; font-size: 12px; opacity: .8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.iav-kpi b { display: block; font-size: 20px; font-weight: 700; }
+.iav-var { display: inline-block; margin-top: 4px; padding: 2px 7px; border-radius: 99px; font-size: 11.5px; font-weight: 600; background: rgba(255, 255, 255, .16); }
+.iav-var.sobe { color: #C9F7DF; } .iav-var.desce { color: #FFD5DC; }
+.iav-bar { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
+.iav-bar li { display: grid; grid-template-columns: auto 1fr auto; align-items: center; column-gap: 8px; row-gap: 5px; font-size: 13.5px; }
+.iav-bar li:not(:has(em)) { grid-template-columns: 1fr auto; }
+.iav-bar em { font-style: normal; width: 20px; height: 20px; border-radius: 7px; display: grid; place-items: center; font-size: 11px; font-weight: 700; background: rgba(255, 255, 255, .18); }
+.iav-bar span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.iav-bar b { font-size: 14px; font-weight: 700; }
+.iav-bar i { grid-column: 1 / -1; height: 8px; border-radius: 8px; background: linear-gradient(90deg, #fff, #8FB0FF); transform-origin: left; transform: scaleX(var(--f)); animation: vzv-cresce .85s calc(var(--k) * 90ms + .15s) cubic-bezier(.2, .8, .2, 1) both; box-shadow: 0 0 12px rgba(143, 176, 255, .6); }
+.iav-prog-n { display: flex; align-items: baseline; gap: 8px; } .iav-prog-n b { font-size: 26px; font-weight: 700; } .iav-prog-n span { font-size: 13px; opacity: .85; }
+.iav-prog-b { position: relative; height: 12px; margin-top: 8px; border-radius: 12px; background: rgba(255, 255, 255, .16); overflow: hidden; }
+.iav-prog-b i { position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(90deg, #8FB0FF, #fff); transform-origin: left; transform: scaleX(var(--f)); animation: vzv-cresce 1s .15s cubic-bezier(.2, .8, .2, 1) both; }
+.iav-prog.perto .iav-prog-b i { background: linear-gradient(90deg, #F5A623, #FFD27A); } .iav-prog.passou .iav-prog-b i { background: linear-gradient(90deg, #FF5A6E, #FF9AA6); }
+.iav .iav-prog p { margin: 6px 0 0; font-size: 12.5px; opacity: .85; }
+.iav .iar-g { margin-top: 0; }
+.iav-tl { list-style: none; margin: 0; padding: 0 0 0 14px; display: grid; gap: 8px; border-left: 2px solid rgba(255, 255, 255, .3); }
+.iav-tl li { position: relative; display: grid; grid-template-columns: 1fr auto; column-gap: 8px; font-size: 13.5px; animation: iax-entra .45s calc(var(--k) * 80ms + .1s) both; }
+.iav-tl li::before { content: ''; position: absolute; left: -20px; top: 5px; width: 10px; height: 10px; border-radius: 50%; background: #fff; box-shadow: 0 0 10px #8FB0FF; }
+.iav-tl small { grid-column: 1 / -1; font-size: 11.5px; opacity: .75; }
+.iav-refs { display: flex; flex-wrap: wrap; gap: 6px; }
+.iav-ref { display: inline-flex; align-items: center; gap: 4px; padding: 6px 11px; border: 0; border-radius: 99px; font: inherit; font-size: 12.5px; font-weight: 600; color: var(--accent, #1428F5);
+  background: color-mix(in srgb, var(--accent, #1428F5) 12%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent, #1428F5) 30%, transparent); }
+button.iav-ref { cursor: pointer; } button.iav-ref:active { transform: scale(.96); }
+/* conversa por voz (fundo escuro): cartões maiores, vidro translúcido */
+.vzv.vzv-vis { padding: 0; background: none; border: 0; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; animation: none; }
+.vzv-vis .iav-l { max-height: 50vh; overflow-y: auto; gap: 10px; margin: 0; }
+.iav-l.voz .iav { padding: 16px 18px; border-radius: 24px; background: linear-gradient(155deg, rgba(91, 140, 255, .44) 0%, rgba(20, 40, 245, .3) 50%, rgba(3, 6, 31, .5) 100%);
+  backdrop-filter: blur(22px) saturate(1.4); -webkit-backdrop-filter: blur(22px) saturate(1.4); box-shadow: 0 22px 54px -24px rgba(20, 40, 245, .85), inset 0 1px 0 rgba(255, 255, 255, .3), inset 0 0 0 .5px rgba(255, 255, 255, .22); }
+.iav-l.voz .iav.on { box-shadow: 0 0 0 2px rgba(143, 176, 255, .9), 0 0 40px -6px rgba(91, 140, 255, .9), inset 0 1px 0 rgba(255, 255, 255, .35); }
+.iav-l.voz .iav-kpi b { font-size: 24px; }
+.iav-l.voz .iav-ref, .bas-iax-log .iav-ref { color: #fff; background: rgba(255, 255, 255, .12); box-shadow: inset 0 0 0 .5px rgba(255, 255, 255, .25); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+@media (prefers-reduced-motion: reduce) { .iav, .iav-kpi > div, .iav-bar i, .iav-prog-b i, .iav-tl li { animation: none; transition: none; } .iav.on { transform: none; } }

@@ -110,6 +110,18 @@ function o3Brilhos(g, mat, lista) { return lista.map(([x, y, z, s]) => { const b
 // os brilhos piscam: acendem no fim da entrada e depois cintilam devagar
 function o3Cintila(bs, e, t, a) { const f = o3Faixa(e, a, 1); bs.forEach((b, i) => { o3Repouso(b); const k = Math.sin(f * Math.PI) * 1.3 + o3Faixa(e, 0.9, 1) * (0.55 + 0.45 * Math.sin(t * 2.6 + i * 2.1)); b.scale.multiplyScalar(Math.max(0.001, k)); b.material.rotation = t * 0.4; }); }
 
+// toro parcial com as pontas fechadas por esferas (o tubo aberto mostrava um buraco ao girar)
+function o3Arco(R, r, arco, mat, seg) { const T = THREE; const g = new T.Group(); g.add(new T.Mesh(new T.TorusGeometry(R, r, 12, seg || 40, arco), mat));
+  [0, arco].forEach((a) => { const p = new T.Mesh(new T.SphereGeometry(r, 12, 8), mat); p.position.set(Math.cos(a) * R, Math.sin(a) * R, 0); g.add(p); }); return g; }
+// tubo por uma curva, com as pontas fechadas
+function o3Tubo(curva, seg, r, mat, rs) { const T = THREE; const g = new T.Group(); g.add(new T.Mesh(new T.TubeGeometry(curva, seg, r, rs || 10), mat));
+  [0, 1].forEach((u) => { const p = new T.Mesh(new T.SphereGeometry(r, rs || 10, 8), mat); p.position.copy(curva.getPointAt(u)); g.add(p); }); return g; }
+// barra reta de a até b com juntas redondas (quadros de moto e bicicleta, garfos, guidões)
+function o3Vara(pai, a, b, r, mat) {
+  const T = THREE; const A = new T.Vector3(...a), B = new T.Vector3(...b); const d = B.clone().sub(A); const m = new T.Mesh(new T.CylinderGeometry(r, r, d.length(), 14), mat);
+  m.position.copy(A).add(B).multiplyScalar(0.5); m.quaternion.setFromUnitVectors(new T.Vector3(0, 1, 0), d.normalize()); pai.add(m);
+  [A, B].forEach((p) => { const j = new T.Mesh(new T.SphereGeometry(r, 14, 10), mat); j.position.copy(p); pai.add(j); }); return m;
+}
 /* ---------- objetos ---------- */
 // moeda: corpo com aro em relevo, borda serrilhada e cifrão em relevo; o kit é compartilhado por todas as moedas da cena
 function o3MoedaKit(M) {
@@ -139,7 +151,7 @@ function o3Tambor(r, h, b, mat, seg) {
 // roda: pneu, aro, raios e cubo; eixo em y local (para fora em +y)
 function o3Roda(M, s, aro) {
   const T = THREE; const r = new T.Group();
-  r.add(new T.Mesh(new T.LatheGeometry([V2(0.12, -0.1), V2(0.19, -0.1), V2(0.215, -0.085), V2(0.228, -0.04), V2(0.23, 0), V2(0.228, 0.04), V2(0.215, 0.085), V2(0.19, 0.1), V2(0.12, 0.1)], 48), M.borracha), new T.Mesh(new T.CylinderGeometry(0.14, 0.14, 0.17, 32), aro || M.grafite));
+  r.add(new T.Mesh(new T.LatheGeometry([V2(0.12, -0.1), V2(0.19, -0.1), V2(0.215, -0.085), V2(0.228, -0.04), V2(0.23, 0), V2(0.228, 0.04), V2(0.215, 0.085), V2(0.19, 0.1), V2(0.12, 0.1), V2(0.12, -0.1)], 48), M.borracha), new T.Mesh(new T.CylinderGeometry(0.14, 0.14, 0.17, 32), aro || M.grafite));
   const raioG = new T.BoxGeometry(0.035, 0.02, 0.25); for (let i = 0; i < 5; i++) { const k = new T.Mesh(raioG, M.cromo); k.position.y = 0.088; k.rotation.y = (i / 5) * Math.PI; r.add(k); }
   const c = new T.Mesh(new T.CylinderGeometry(0.045, 0.045, 0.03, 20), M.cromo); c.position.y = 0.095; r.add(c); r.scale.setScalar(s || 1); return r;
 }
@@ -147,7 +159,7 @@ function o3Roda(M, s, aro) {
 function o3Coqueiro(M, alt, dx) {
   const T = THREE; const g = new T.Group(); const V = (x, y, z) => new T.Vector3(x, y, z);
   const curva = new T.CatmullRomCurve3([V(0, 0, 0), V(dx * 0.15, alt * 0.35, 0.02), V(dx * 0.5, alt * 0.7, 0.03), V(dx, alt, 0.03)]);
-  g.add(new T.Mesh(new T.TubeGeometry(curva, 32, 0.05, 12), M.tronco));
+  g.add(o3Tubo(curva, 32, 0.05, M.tronco, 12));
   const aneis = new T.InstancedMesh(new T.TorusGeometry(0.053, 0.011, 8, 20), M.troncoEsc, 9); const q = new T.Quaternion(); const mx = new T.Matrix4();
   for (let i = 1; i < 10; i++) { const t = i / 10; q.setFromUnitVectors(V(0, 0, 1), curva.getTangentAt(t)); mx.compose(curva.getPointAt(t), q, V(1, 1, 1)); aneis.setMatrixAt(i - 1, mx); } g.add(aneis);
   const topo = curva.getPointAt(1); const fs = new T.Shape(); fs.moveTo(0, 0); fs.quadraticCurveTo(0.2, 0.17, 0.62, -0.02); fs.quadraticCurveTo(0.2, -0.12, 0, 0);
@@ -171,7 +183,7 @@ const O3_OBJ = {
     const perfil = []; for (let i = 0; i <= 40; i++) { const a = (i / 40) * Math.PI * 2; const c = Math.cos(a), s = Math.sin(a); perfil.push(V2(0.6 + 0.07 * Math.sign(c) * Math.pow(Math.abs(c), 0.55), 0.12 * Math.sign(s) * Math.pow(Math.abs(s), 0.55))); }
     const aroG = new T.LatheGeometry(perfil, 128); aroG.rotateX(Math.PI / 2); // aro de seção arredondada, eixo em z
     const a1 = new T.Group(); a1.add(new T.Mesh(aroG, M.ouro));
-    const cesto = new T.Mesh(new T.LatheGeometry([V2(0.05, 0), V2(0.1, 0.04), V2(0.14, 0.12), V2(0.12, 0.135), V2(0, 0.1)], 32), M.ouro); cesto.position.y = 0.63; a1.add(cesto);
+    const cesto = new T.Mesh(new T.LatheGeometry([V2(0, 0), V2(0.05, 0), V2(0.1, 0.04), V2(0.14, 0.12), V2(0.12, 0.135), V2(0, 0.1)], 32), M.ouro); cesto.position.y = 0.63; a1.add(cesto);
     const gema = new T.Mesh(new T.LatheGeometry([V2(0, -0.2), V2(0.24, 0), V2(0.24, 0.03), V2(0.15, 0.12), V2(0, 0.12)], 10), M.diamante); gema.position.y = 0.83; a1.add(gema);
     for (let i = 0; i < 4; i++) { const ang = (i / 4) * Math.PI * 2 + Math.PI / 4; const p = new T.Mesh(new T.CylinderGeometry(0.02, 0.024, 0.24, 10), M.ouro); p.position.set(Math.cos(ang) * 0.19, 0.8, Math.sin(ang) * 0.19); p.rotation.z = -Math.cos(ang) * 0.3; p.rotation.x = Math.sin(ang) * 0.3; a1.add(p); }
     // elo de corrente: a 2ª aliança fica no plano que contém a reta entre os centros (a), girado alfa em torno dela; cada uma atravessa o disco da outra
@@ -181,7 +193,7 @@ const O3_OBJ = {
     par.add(a1, a2); o3Pose(par);
     const bs = o3Brilhos(g, o3BrilhoMat(), [[0.12, 1.0, 0.3, 0.42], [-0.32, 0.9, 0.2, 0.22], [0.75, 0.1, 0.4, 0.2]]);
     g.rotation.set(0.15, -0.35, 0); g.userData.dur = 1.9;
-    g.userData.entra = (e, t) => { const f = o3Faixa(e, 0, 0.75); o3Repouso(par); par.rotation.y += (1 - o3Saida(f)) * Math.PI * 4; par.scale.setScalar(Math.max(0.001, o3Mola(f))); par.rotation.z += Math.sin(t * 0.7) * 0.04 * e; o3Cintila(bs, e, t, 0.62); };
+    g.userData.entra = (e, t) => { const f = o3Faixa(e, 0, 0.75); o3Repouso(par); par.rotation.y += (1 - o3Saida(f)) * Math.PI * 2; par.scale.setScalar(Math.max(0.001, o3Mola(f))); par.rotation.z += Math.sin(t * 0.7) * 0.04 * e; o3Cintila(bs, e, t, 0.62); };
     return g;
   },
   // pilha de moedas, uma segunda pilha atrás, uma moeda encostada de frente e outra no ar; as moedas caem e empilham
@@ -195,8 +207,8 @@ const O3_OBJ = {
     g.rotation.set(0.28, -0.38, 0); g.userData.dur = 2.1;
     g.userData.entra = (e, t) => {
       pilha.forEach(([m, a]) => { const f = o3Faixa(e, a, a + 0.22); o3Repouso(m); m.position.y += (1 - o3Quique(f)) * 3; m.visible = f > 0; });
-      const h = o3Faixa(e, 0.5, 0.78); o3Repouso(heroi); heroi.scale.setScalar(Math.max(0.001, o3Mola(h))); heroi.rotation.z += (1 - o3Saida(h)) * Math.PI * 3;
-      const v = o3Faixa(e, 0.62, 1); o3Repouso(voa); voa.position.y += (1 - o3Saida(v)) * 2.2 + Math.sin(t * 1.6) * 0.05 * e; voa.rotation.x += (1 - o3Saida(v)) * 9; voa.rotation.y += Math.sin(t * 1.1) * 0.3 * e; voa.visible = v > 0;
+      const h = o3Faixa(e, 0.5, 0.78); o3Repouso(heroi); heroi.scale.setScalar(Math.max(0.001, o3Mola(h))); heroi.rotation.z += (1 - o3Saida(h)) * Math.PI * 2;
+      const v = o3Faixa(e, 0.62, 1); o3Repouso(voa); voa.position.y += (1 - o3Saida(v)) * 2.2 + Math.sin(t * 1.6) * 0.05 * e; voa.rotation.x += (1 - o3Saida(v)) * Math.PI * 2; voa.rotation.y += Math.sin(t * 1.1) * 0.3 * e; voa.visible = v > 0;
       o3Cintila(bs, e, t, 0.75);
     };
     return g;
@@ -219,7 +231,7 @@ const O3_OBJ = {
     g.rotation.set(0.32, -0.6, 0); g.userData.dur = 1.9;
     g.userData.entra = (e, t) => {
       macos.forEach((m, i) => { const f = o3Saida(o3Faixa(e, i * 0.09, i * 0.09 + 0.3)); o3Repouso(m); m.position.x += (i % 2 ? 1 : -1) * (1 - f) * 2.6; m.position.y += (1 - f) * 0.35; m.rotation.y += (1 - f) * (i % 2 ? 1.4 : -1.4); m.visible = f > 0; });
-      const s = o3Faixa(e, 0.58, 1); o3Repouso(solto); solto.position.y += (1 - o3Saida(s)) * 1.8 + Math.sin(t * 1.4) * 0.04 * e; solto.rotation.x += (1 - o3Saida(s)) * Math.PI * 2; solto.rotation.z += Math.sin(t * 0.9) * 0.06 * e; solto.visible = s > 0;
+      const s = o3Faixa(e, 0.58, 1); o3Repouso(solto); solto.position.y += (1 - o3Saida(s)) * 1.8 + Math.sin(t * 1.4) * 0.04 * e; solto.rotation.x += (1 - o3Saida(s)) * Math.PI; solto.rotation.z += Math.sin(t * 0.9) * 0.06 * e; solto.visible = s > 0;
     };
     return g;
   },
@@ -239,7 +251,7 @@ const O3_OBJ = {
     peca(o3Bloco(0.05, 0.08, 0.44, 0.03, M.grafite), 1.11, 0.1, 0); // grade
     [1, -1].forEach((d) => { const f = new T.Mesh(new T.CylinderGeometry(0.075, 0.075, 0.05, 24), M.farol); f.rotation.z = Math.PI / 2; peca(f, 1.1, 0.24, d * 0.3);
       peca(o3Bloco(0.05, 0.09, 0.2, 0.03, M.lanterna), -1.1, 0.27, d * 0.3); peca(o3Bloco(0.1, 0.07, 0.08, 0.03, tinta), 0.22, 0.5, d * 0.47); });
-    const pneuG = new T.LatheGeometry([V2(0.12, -0.1), V2(0.19, -0.1), V2(0.215, -0.085), V2(0.228, -0.04), V2(0.23, 0), V2(0.228, 0.04), V2(0.215, 0.085), V2(0.19, 0.1), V2(0.12, 0.1)], 48);
+    const pneuG = new T.LatheGeometry([V2(0.12, -0.1), V2(0.19, -0.1), V2(0.215, -0.085), V2(0.228, -0.04), V2(0.23, 0), V2(0.228, 0.04), V2(0.215, 0.085), V2(0.19, 0.1), V2(0.12, 0.1), V2(0.12, -0.1)], 48);
     const aroG = new T.CylinderGeometry(0.14, 0.14, 0.17, 32); const raioG = new T.BoxGeometry(0.035, 0.02, 0.25); const cuboG = new T.CylinderGeometry(0.045, 0.045, 0.03, 20); const rodas = [];
     [[-0.58, 1], [0.58, 1], [-0.58, -1], [0.58, -1]].forEach(([x, d]) => { const r = new T.Group(); r.position.set(x, -0.06, d * 0.44); r.rotation.x = (d * Math.PI) / 2; // y local = eixo, para fora
       r.add(new T.Mesh(pneuG, M.borracha), new T.Mesh(aroG, M.grafite)); for (let i = 0; i < 5; i++) { const k = new T.Mesh(raioG, M.cromo); k.position.y = 0.088; k.rotation.y = (i / 5) * Math.PI; r.add(k); }
@@ -277,7 +289,7 @@ const O3_OBJ = {
       const f = o3Faixa(e, 0.05, 0.55); o3Repouso(casa); casa.scale.set(1 + (1 - f) * 0.15, Math.max(0.001, o3Mola(f)), 1 + (1 - f) * 0.15); casa.visible = f > 0;
       o3Repouso(agua); agua.scale.set(Math.max(0.001, o3Saida(o3Faixa(e, 0.2, 0.5))), 1, 1);
       arvores.forEach((a, i) => { const k = o3Faixa(e, 0.35 + i * 0.1, 0.6 + i * 0.1); o3Repouso(a); a.scale.multiplyScalar(Math.max(0.001, o3Mola(k))); });
-      const c = o3Faixa(e, 0.6, 1); o3Repouso(chave); chave.position.y += (1 - o3Quique(c)) * 1.6 + Math.sin(t * 1.5) * 0.04 * e; chave.rotation.y += (1 - c) * 6 + Math.sin(t * 0.8) * 0.3 * e; chave.visible = c > 0;
+      const c = o3Faixa(e, 0.6, 1); o3Repouso(chave); chave.position.y += (1 - o3Quique(c)) * 1.6 + Math.sin(t * 1.5) * 0.04 * e; chave.rotation.y += (1 - o3Saida(c)) * Math.PI * 2 + Math.sin(t * 0.8) * 0.3 * e; chave.visible = c > 0;
     };
     return g;
   },
@@ -295,7 +307,7 @@ const O3_OBJ = {
     const asaG = new T.ExtrudeGeometry(asa, { depth: 0.04, bevelEnabled: true, bevelThickness: 0.03, bevelSize: 0.03, bevelSegments: 4, curveSegments: 12 }); asaG.rotateX(-Math.PI / 2); asaG.translate(0, -0.02, 0);
     const est = new T.Shape(); est.moveTo(-1.02, 0); est.lineTo(-0.76, 0); est.quadraticCurveTo(-0.86, 0.2, -0.95, 0.36); est.quadraticCurveTo(-1.0, 0.41, -1.06, 0.36); est.lineTo(-1.02, 0);
     const estG = new T.ExtrudeGeometry(est, { depth: 0.02, bevelEnabled: true, bevelThickness: 0.02, bevelSize: 0.02, bevelSegments: 3, curveSegments: 10 }); estG.rotateX(-Math.PI / 2);
-    const nac = new T.LatheGeometry([V2(0.07, -0.18), V2(0.09, -0.15), V2(0.105, -0.05), V2(0.105, 0.1), V2(0.097, 0.17), V2(0.08, 0.19), V2(0.068, 0.17)], 32);
+    const nac = new T.LatheGeometry([V2(0, -0.17), V2(0.07, -0.18), V2(0.09, -0.15), V2(0.105, -0.05), V2(0.105, 0.1), V2(0.097, 0.17), V2(0.08, 0.19), V2(0.068, 0.17)], 32);
     [1, -1].forEach((d) => { const a = new T.Mesh(asaG, M.branco); a.position.y = -0.12; a.scale.z = d; av.add(a);
       const e2 = new T.Mesh(estG, M.branco); e2.position.y = 0.04; e2.scale.z = d; av.add(e2);
       const wl = o3Bloco(0.2, 0.22, 0.04, 0.02, M.azul); wl.position.set(-0.24, -0.02, -d * 1.0); wl.rotation.z = 0.35; av.add(wl);
@@ -335,7 +347,7 @@ const O3_OBJ = {
     g.rotation.set(0.25, -0.5, 0); g.userData.dur = 1.9;
     g.userData.entra = (e, t) => {
       livros.forEach((l, i) => { const f = o3Faixa(e, i * 0.12, i * 0.12 + 0.3); o3Repouso(l); l.position.y += (1 - o3Quique(f)) * 2.6; l.rotation.z += (1 - f) * 0.4 * (i % 2 ? 1 : -1); l.visible = f > 0; });
-      const c = o3Faixa(e, 0.45, 1); o3Repouso(chapeu); chapeu.position.y += (1 - o3Quique(c)) * 2.2; chapeu.rotation.y += (1 - o3Saida(c)) * 7 + Math.sin(t * 0.9) * 0.12 * e; chapeu.rotation.x += Math.sin(c * Math.PI) * 0.6; chapeu.visible = c > 0;
+      const c = o3Faixa(e, 0.45, 1); o3Repouso(chapeu); chapeu.position.y += (1 - o3Quique(c)) * 2.2; chapeu.rotation.y += (1 - o3Saida(c)) * Math.PI * 2 + Math.sin(t * 0.9) * 0.12 * e; chapeu.rotation.x += Math.sin(c * Math.PI) * 0.6; chapeu.visible = c > 0;
     };
     return g;
   },
@@ -374,7 +386,7 @@ const O3_OBJ = {
     // coqueiro: tronco curvo com anéis, folhas caídas em leque e três cocos (num grupo com a base na areia, para crescer dali)
     const pe = new T.Vector3(-0.25, -0.62, 0); const palma = new T.Group(); palma.position.copy(pe); g.add(o3Pose(palma)); const P = (x, y, z) => new T.Vector3(x, y, z).sub(pe);
     const curva = new T.CatmullRomCurve3([P(-0.25, -0.62, 0), P(-0.2, -0.2, 0.02), P(-0.05, 0.22, 0.04), P(0.12, 0.58, 0.05)]);
-    palma.add(new T.Mesh(new T.TubeGeometry(curva, 40, 0.055, 14), M.tronco));
+    palma.add(o3Tubo(curva, 40, 0.055, M.tronco, 14));
     for (let i = 1; i < 10; i++) { const t = i / 10; const p = curva.getPointAt(t); const tg = curva.getTangentAt(t); const anel = new T.Mesh(new T.TorusGeometry(0.058, 0.012, 8, 20), M.troncoEsc);
       anel.position.copy(p); anel.quaternion.setFromUnitVectors(new T.Vector3(0, 0, 1), tg); palma.add(anel); }
     const topo = curva.getPointAt(1); const folhaS = new T.Shape(); folhaS.moveTo(0, 0); folhaS.quadraticCurveTo(0.2, 0.17, 0.72, -0.02); folhaS.quadraticCurveTo(0.2, -0.13, 0, 0);
@@ -429,7 +441,7 @@ const O3_OBJ = {
       o3Repouso(toldo); toldo.rotation.x -= (1 - o3Mola(o3Faixa(e, 0.32, 0.7))) * 1.4;
       const p = o3Faixa(e, 0.5, 0.8); o3Repouso(placa); placa.scale.setScalar(Math.max(0.001, o3Mola(p))); placa.rotation.z += Math.sin(t * 1.3) * 0.02 * e;
       vasos.forEach((v, i) => { const k = o3Faixa(e, 0.58 + i * 0.08, 0.82 + i * 0.08); o3Repouso(v); v.scale.multiplyScalar(Math.max(0.001, o3Mola(k))); });
-      const m = o3Faixa(e, 0.65, 1); o3Repouso(moeda); moeda.position.y += (1 - o3Saida(m)) * 1.5 + Math.sin(t * 1.6) * 0.04 * e; moeda.rotation.z += (1 - o3Saida(m)) * 10 + Math.sin(t * 1.1) * 0.3 * e; moeda.visible = m > 0;
+      const m = o3Faixa(e, 0.65, 1); o3Repouso(moeda); moeda.position.y += (1 - o3Saida(m)) * 1.5 + Math.sin(t * 1.6) * 0.04 * e; moeda.rotation.z += (1 - o3Saida(m)) * Math.PI * 2 + Math.sin(t * 1.1) * 0.3 * e; moeda.visible = m > 0;
     };
     return g;
   },
@@ -450,12 +462,14 @@ const O3_OBJ = {
     const chip = o3Bloco(0.22, 0.17, 0.012, 0.03, M.ouro); chip.position.set(-0.52, 0.02, 0.028); g.add(chip);
     g.rotation.set(-0.3, 0.45, 0.08); g.userData.zoom = 0.78; return g; // largo: um pouco menor para não cobrir o título do card
   },
+  // taça de troféu: bojo arredondado com borda, haste com anel, alças fechadas e base em dois degraus
   trofeu(M) {
     const T = THREE; const g = new T.Group();
-    g.add(new T.Mesh(new T.LatheGeometry([V2(0, 0.05), V2(0.5, 0.95), V2(0.56, 1.05), V2(0.52, 1.07), V2(0.44, 0.97), V2(0, 0.2)].map((v) => V2(v.x, v.y - 0.3)), 64), M.ouro));
-    [-1, 1].forEach((d) => { const a = new T.Mesh(new T.TorusGeometry(0.2, 0.04, 16, 40, Math.PI * 1.2), M.ouro); a.position.set(d * 0.5, 0.42, 0); a.rotation.z = d > 0 ? -0.6 : Math.PI + 0.6; g.add(a); });
-    const haste = new T.Mesh(new T.CylinderGeometry(0.06, 0.09, 0.4, 24), M.ouro); haste.position.y = -0.45; g.add(haste);
-    const base = o3Bloco(0.62, 0.18, 0.62, 0.05, M.marinho); base.position.y = -0.72; g.add(base);
+    g.add(new T.Mesh(new T.LatheGeometry([V2(0, -0.1), V2(0.12, -0.08), V2(0.3, 0.04), V2(0.42, 0.22), V2(0.48, 0.44), V2(0.5, 0.6), V2(0.52, 0.64), V2(0.49, 0.66), V2(0.45, 0.6), V2(0.43, 0.46), V2(0.37, 0.27), V2(0.24, 0.12), V2(0, 0.07)], 72), M.ouro));
+    g.add(new T.Mesh(new T.LatheGeometry([V2(0, -0.56), V2(0.17, -0.56), V2(0.17, -0.52), V2(0.07, -0.48), V2(0.045, -0.36), V2(0.09, -0.31), V2(0.045, -0.26), V2(0.06, -0.12), V2(0.1, -0.08), V2(0, -0.06)], 48), M.ouro));
+    [-1, 1].forEach((d) => { const a = o3Arco(0.16, 0.035, Math.PI * 1.3, M.ouro); a.position.set(d * 0.5, 0.33, 0); a.rotation.z = d > 0 ? -Math.PI * 0.65 : Math.PI * 0.35; g.add(a); }); // alças: as duas pontas encostam no bojo
+    const b1 = o3Bloco(0.62, 0.12, 0.62, 0.04, M.marinho); b1.position.y = -0.68; g.add(b1); const b2 = o3Bloco(0.46, 0.08, 0.46, 0.03, M.marinho); b2.position.y = -0.58; g.add(b2);
+    const pl = o3Bloco(0.3, 0.06, 0.012, 0.008, M.ouro); pl.position.set(0, -0.68, 0.312); g.add(pl);
     g.rotation.set(0.15, -0.3, 0); return g;
   },
   presente(M) {
@@ -480,7 +494,7 @@ const O3_OBJ = {
     const pedras = [[0.95, 0.7, 0.2, 0.12], [-0.9, 0.55, -0.2, 0.09], [0.75, -0.75, 0.3, 0.07]].map(([x, y, z, r]) => { const b = new T.Mesh(new T.OctahedronGeometry(r, 0), M.diamante); b.position.set(x, y, z); g.add(b); return o3Pose(b); });
     const bs = o3Brilhos(g, o3BrilhoMat(), [[0.32, 0.58, 0.35, 0.36], [-0.7, -0.5, 0.3, 0.24]]);
     g.rotation.set(-0.42, -0.35, 0); g.userData.dur = 1.7; // inclinada para trás: a face reflete o softbox de cima e o ouro acende
-    g.userData.entra = (e, t) => { const f = o3Faixa(e, 0, 0.7); o3Repouso(estrela); estrela.rotation.y += (1 - o3Saida(f)) * Math.PI * 4; estrela.scale.setScalar(Math.max(0.001, o3Mola(f)));
+    g.userData.entra = (e, t) => { const f = o3Faixa(e, 0, 0.7); o3Repouso(estrela); estrela.rotation.y += (1 - o3Saida(f)) * Math.PI * 2; estrela.scale.setScalar(Math.max(0.001, o3Mola(f)));
       pedras.forEach((b, i) => { const k = o3Faixa(e, 0.45 + i * 0.1, 0.7 + i * 0.1); o3Repouso(b); b.scale.setScalar(Math.max(0.001, o3Mola(k))); b.rotation.y += t * 0.8 + i; b.position.y += Math.sin(t * 1.4 + i * 2) * 0.04 * e; });
       o3Cintila(bs, e, t, 0.6); };
     return g;
@@ -505,7 +519,7 @@ const O3_OBJ = {
     g.rotation.set(0.22, -0.3, 0); g.userData.dur = 2.0;
     g.userData.entra = (e, t) => {
       andares.forEach((a, i) => { const f = o3Faixa(e, i * 0.14, i * 0.14 + 0.32); o3Repouso(a); a.position.y += (1 - o3Quique(f)) * 2.4; const s = 1 - 0.08 * Math.sin(o3Faixa(f, 0.75, 1) * Math.PI); a.scale.set(1 / Math.sqrt(s), s, 1 / Math.sqrt(s)); a.visible = f > 0; });
-      const c = o3Faixa(e, 0.5, 0.95); o3Repouso(topo); topo.scale.setScalar(Math.max(0.001, o3Mola(c))); topo.rotation.y += (1 - o3Saida(c)) * Math.PI * 3 + Math.sin(t * 0.9) * 0.25 * e; topo.visible = c > 0;
+      const c = o3Faixa(e, 0.5, 0.95); o3Repouso(topo); topo.scale.setScalar(Math.max(0.001, o3Mola(c))); topo.rotation.y += (1 - o3Saida(c)) * Math.PI * 2 + Math.sin(t * 0.9) * 0.25 * e; topo.visible = c > 0;
       o3Cintila(bs, e, t, 0.75);
     };
     return g;
@@ -554,40 +568,172 @@ const O3_OBJ = {
     };
     return g;
   },
-  // lambreta retrô verde-menta: traseira arredondada, escudo frontal, banco de couro, farol aceso, retrovisores e rodas com raios; chega andando, empina e assenta
+  // moto naked neo-retrô: tanque vermelho envernizado, banco de couro, motor com aletas, quadro e balança grafite, garfo cromado, farol redondo aceso, escape cromado e rodas raiadas; chega andando, empina e assenta
   'carro-moto'(M) {
-    const T = THREE; const g = new T.Group(); const moto = new T.Group(); g.add(moto); const corpo = new T.Group(); moto.add(corpo); const tinta = o3Cor(0x4FC7AA, { metalness: 0.25, roughness: 0.25, clearcoat: 1, clearcoatRoughness: 0.04 }); const creme = o3Cor(0xF7F1E3, { roughness: 0.3 });
-    const peca = (m, x, y, z, pai = corpo) => { m.position.set(x, y, z); pai.add(m); return m; };
-    const S = new T.SphereGeometry(1, 40, 24); const tras = peca(new T.Mesh(S, tinta), -0.36, 0.42, 0); tras.scale.set(0.42, 0.24, 0.22);
-    peca(o3Bloco(0.62, 0.06, 0.26, 0.03, creme), 0.04, 0.26, 0); // assoalho
-    peca(o3Bloco(0.48, 0.1, 0.22, 0.05, M.couroEsc), -0.36, 0.69, 0); // banco
-    const esc = peca(o3Bloco(0.09, 0.62, 0.32, 0.045, tinta), 0.34, 0.54, 0); esc.rotation.z = 0.22; // escudo frontal
-    const coluna = peca(new T.Mesh(new T.CylinderGeometry(0.03, 0.03, 0.4, 12), M.cromo), 0.47, 0.82, 0); coluna.rotation.z = 0.22;
-    const guid = peca(new T.Mesh(new T.CylinderGeometry(0.022, 0.022, 0.56, 12), M.cromo), 0.43, 1.0, 0); guid.rotation.x = Math.PI / 2;
-    [1, -1].forEach((d) => { const m = peca(new T.Mesh(new T.CylinderGeometry(0.03, 0.03, 0.12, 12), M.borracha), 0.43, 1.0, d * 0.26); m.rotation.x = Math.PI / 2;
-      const h = peca(new T.Mesh(new T.CylinderGeometry(0.008, 0.008, 0.16, 8), M.cromo), 0.41, 1.08, d * 0.18); h.rotation.x = d * 0.3; const esp = peca(new T.Mesh(S, M.cromo), 0.41, 1.16, d * 0.21); esp.scale.set(0.02, 0.045, 0.06); });
-    const cab = peca(o3Tambor(0.1, 0.08, 0.03, tinta), 0.5, 1.0, 0); cab.rotation.z = -Math.PI / 2; const far = peca(new T.Mesh(new T.CircleGeometry(0.075, 24), M.farol), 0.545, 1.0, 0); far.rotation.y = Math.PI / 2;
-    const para = peca(new T.Mesh(new T.TorusGeometry(0.21, 0.05, 12, 32, Math.PI * 0.75), tinta), 0.5, 0.17, 0); para.rotation.z = Math.PI * 0.12; para.scale.z = 1.6;
-    peca(o3Bloco(0.05, 0.06, 0.12, 0.02, M.lanterna), -0.77, 0.45, 0);
-    const rodas = [[-0.48, 0.17], [0.5, 0.17]].map(([x, y]) => { const r = o3Roda(M, 0.74, creme); r.position.set(x, y, 0); r.rotation.x = Math.PI / 2; moto.add(r); return r; });
-    g.rotation.set(0.15, -0.6, 0); g.userData.dur = 1.8;
-    g.userData.entra = (e, t) => { const f = o3Saida(o3Faixa(e, 0, 0.55)); const dx = -(1 - f) * 4; moto.position.x = dx; rodas.forEach((r) => { r.rotation.y = -dx / 0.17; });
-      const w = o3Faixa(e, 0.45, 0.95); moto.rotation.z = Math.sin(w * Math.PI) * 0.28 * (1 - w * 0.3); moto.position.y = 0; // empina na roda de trás e assenta
-      corpo.position.y = -Math.sin(o3Faixa(e, 0.85, 1) * Math.PI) * 0.025 + Math.sin(t * 2.2) * 0.004 * e; };
+    const T = THREE; const g = new T.Group(); const moto = new T.Group(); g.add(moto); const corpo = new T.Group(); moto.add(corpo);
+    const tinta = o3Cor(0xC9302C, { metalness: 0.3, roughness: 0.22, clearcoat: 1, clearcoatRoughness: 0.04 }); const fosco = o3Cor(0x23272F, { metalness: 0.5, roughness: 0.45, clearcoat: 0.3 });
+    const peca = (m, x, y, z, pai = corpo) => { m.position.set(x, y, z); pai.add(m); return m; }; const S = new T.SphereGeometry(1, 40, 24);
+    // rodas: pneu (toro fechado), aro cromado, 12 raios instanciados, cubo e disco de freio; eixo em z
+    const raioG = new T.CylinderGeometry(0.005, 0.005, 0.2, 6); raioG.translate(0, 0.1, 0); const mx = new T.Matrix4();
+    const roda = (x, freio) => { const r = new T.Group(); r.position.set(x, 0.3, 0);
+      r.add(new T.Mesh(new T.TorusGeometry(0.245, 0.058, 20, 56), M.borracha), new T.Mesh(new T.TorusGeometry(0.205, 0.016, 10, 56), M.cromo));
+      const rs = new T.InstancedMesh(raioG, M.cromo, 12); for (let i = 0; i < 12; i++) { mx.makeRotationZ((i / 12) * Math.PI * 2).multiply(new T.Matrix4().makeRotationX((i % 2 ? 1 : -1) * 0.12)); rs.setMatrixAt(i, mx); } r.add(rs);
+      const cubo = o3Tambor(0.035, 0.12, 0.012, M.cromo, 20); cubo.rotation.x = Math.PI / 2; r.add(cubo);
+      if (freio) { const d = o3Tambor(0.1, 0.012, 0.004, M.cinza, 32); d.rotation.x = Math.PI / 2; d.position.z = 0.05; r.add(d); }
+      moto.add(r); return r; };
+    const rodas = [roda(-0.64, false), roda(0.66, true)];
+    // tanque, banco e rabeta
+    const tq = peca(new T.Mesh(S, tinta), 0.1, 0.8, 0); tq.scale.set(0.3, 0.14, 0.17); tq.rotation.z = -0.12;
+    const tqb = peca(new T.Mesh(S, tinta), 0.08, 0.74, 0); tqb.scale.set(0.26, 0.1, 0.15);
+    const tampa = peca(o3Tambor(0.035, 0.02, 0.008, M.cromo, 20), 0.16, 0.94, 0); tampa.rotation.z = -0.12;
+    peca(o3Bloco(0.46, 0.07, 0.24, 0.034, M.couroEsc), -0.33, 0.75, 0).rotation.z = 0.06;
+    peca(o3Bloco(0.42, 0.1, 0.17, 0.045, fosco), -0.36, 0.67, 0).rotation.z = 0.1;
+    const rab = peca(new T.Mesh(S, tinta), -0.6, 0.79, 0); rab.scale.set(0.12, 0.06, 0.1);
+    peca(o3Bloco(0.03, 0.035, 0.1, 0.012, M.lanterna), -0.71, 0.79, 0);
+    // motor: bloco, cilindro inclinado com aletas e tampas cromadas
+    peca(o3Bloco(0.34, 0.26, 0.24, 0.05, fosco), 0.02, 0.45, 0);
+    const cil = new T.Group(); peca(cil, 0.17, 0.62, 0); cil.rotation.z = -0.35; cil.add(o3Bloco(0.15, 0.2, 0.2, 0.03, M.cinza));
+    for (let i = 0; i < 4; i++) { const a = o3Bloco(0.2, 0.014, 0.25, 0.006, M.cromo); a.position.y = -0.07 + i * 0.045; cil.add(a); }
+    [1, -1].forEach((d) => { const c = peca(o3Tambor(0.085, 0.03, 0.01, M.cromo, 32), -0.02, 0.44, d * 0.13); c.rotation.x = Math.PI / 2; });
+    // quadro, balança, amortecedor e garfo
+    [1, -1].forEach((d) => { const z = d * 0.07;
+      o3Vara(corpo, [0.44, 0.88, z], [0.2, 0.7, z], 0.022, fosco); o3Vara(corpo, [0.2, 0.7, z], [-0.16, 0.6, z], 0.022, fosco); o3Vara(corpo, [0.44, 0.86, z], [0.22, 0.4, z], 0.022, fosco);
+      o3Vara(corpo, [-0.14, 0.42, d * 0.1], [-0.64, 0.3, d * 0.1], 0.024, fosco); o3Vara(corpo, [-0.36, 0.38, d * 0.11], [-0.44, 0.66, d * 0.11], 0.026, M.lanterna);
+      o3Vara(corpo, [0.46, 0.94, d * 0.09], [0.55, 0.62, d * 0.09], 0.032, fosco); o3Vara(corpo, [0.55, 0.62, d * 0.09], [0.66, 0.3, d * 0.09], 0.024, M.cromo); });
+    // farol redondo, guidão e manoplas
+    const far = peca(o3Tambor(0.1, 0.09, 0.03, fosco, 40), 0.58, 0.9, 0); far.rotation.z = -Math.PI / 2;
+    const lente = peca(o3Tambor(0.082, 0.02, 0.008, M.farol, 40), 0.63, 0.9, 0); lente.rotation.z = -Math.PI / 2;
+    o3Vara(corpo, [0.44, 1.03, -0.28], [0.44, 1.03, 0.28], 0.016, M.cromo); [1, -1].forEach((d) => { o3Vara(corpo, [0.47, 0.94, d * 0.06], [0.44, 1.03, d * 0.06], 0.016, M.cromo); o3Vara(corpo, [0.44, 1.03, d * 0.22], [0.44, 1.03, d * 0.31], 0.024, M.borracha); });
+    // para-lama dianteiro e escape
+    const pl = o3Arco(0.31, 0.03, Math.PI * 0.42, tinta); pl.position.set(0.66, 0.3, 0); pl.rotation.z = 0.5; pl.scale.z = 2.6; corpo.add(pl);
+    o3Vara(corpo, [0.18, 0.4, 0.12], [-0.12, 0.3, 0.17], 0.03, M.cromo); o3Vara(corpo, [-0.12, 0.31, 0.17], [-0.6, 0.45, 0.17], 0.048, M.cromo);
+    g.rotation.set(0.12, -0.5, 0); g.userData.dur = 1.8;
+    g.userData.entra = (e, t) => { const f = o3Saida(o3Faixa(e, 0, 0.55)); const dx = -(1 - f) * 4; moto.position.x = dx; rodas.forEach((r) => { r.rotation.z = -dx / 0.3; });
+      const w = o3Faixa(e, 0.45, 0.95); moto.rotation.z = Math.sin(w * Math.PI) * 0.24 * (1 - w * 0.3); // empina na roda de trás e assenta
+      corpo.position.y = -Math.sin(o3Faixa(e, 0.85, 1) * Math.PI) * 0.02 + Math.sin(t * 2.2) * 0.003 * e; };
     return g;
   },
-  // SUV elétrico: a carroceria do carro, mais alta, verde-petróleo, rodas maiores, barras de teto e um raio de carga dourado que acende no ar
+  // sedã elétrico moderno: carroceria lisa sem grade, teto inteiro de vidro escuro, faróis finos, lanterna em faixa contínua e rodas aerodinâmicas; entra andando em silêncio e freia
   'carro-suv'(M) {
-    const T = THREE; const g = O3_OBJ.carro(M, o3Cor(0x1E8F86, { metalness: 0.35, roughness: 0.26, clearcoat: 1, clearcoatRoughness: 0.04 })); const chassi = g.children[0]; const lata = chassi.children[0];
-    lata.scale.set(1.04, 1.16, 1.06); chassi.children.slice(1).forEach((r) => { r.scale.setScalar(1.08); r.position.y = -0.075; });
-    [1, -1].forEach((d) => { const b = o3Bloco(0.66, 0.035, 0.04, 0.015, M.grafite); b.position.set(-0.3, 0.86, d * 0.36); lata.add(b); });
-    const rs = new T.Shape(); [[0.06, 0.5], [-0.2, 0.02], [-0.02, 0.02], [-0.1, -0.5], [0.2, 0.06], [0.02, 0.06]].forEach(([x, y], i) => (i ? rs.lineTo(x, y) : rs.moveTo(x, y))); rs.closePath();
-    const rg = new T.ExtrudeGeometry(rs, { depth: 0.06, bevelEnabled: true, bevelThickness: 0.04, bevelSize: 0.03, bevelSegments: 4 }); rg.center();
-    const raio = new T.Mesh(rg, o3Cor(0xFFD43B, { emissive: 0xFFA600, emissiveIntensity: 0.55, metalness: 0.3, roughness: 0.25 })); raio.position.set(0.15, 1.35, 0); raio.rotation.y = 0.62; g.add(o3Pose(raio));
-    const bs = o3Brilhos(g, o3BrilhoMat(), [[0.42, 1.62, 0.2, 0.3], [-0.12, 1.15, 0.2, 0.2]]);
-    g.userData.dur = 2.0; const anda = g.userData.entra;
-    g.userData.entra = (e, t) => { anda(Math.min(1, e * 1.12), t); const k = o3Faixa(e, 0.62, 0.92); o3Repouso(raio); raio.position.y += (1 - o3Quique(k)) * 1.2 + Math.sin(t * 1.5) * 0.04 * e; raio.rotation.y += (1 - o3Saida(k)) * 6 + Math.sin(t * 0.9) * 0.3 * e; raio.visible = k > 0;
-      raio.material.emissiveIntensity = 0.55 + Math.sin(o3Faixa(e, 0.85, 1) * Math.PI) * 1.2 + Math.sin(t * 3) * 0.12 * e; o3Cintila(bs, e, t, 0.8); };
+    const T = THREE; const g = new T.Group(); const chassi = new T.Group(); const lata = new T.Group(); g.add(chassi); chassi.add(lata);
+    const tinta = o3Cor(0x26487F, { metalness: 0.55, roughness: 0.22, clearcoat: 1, clearcoatRoughness: 0.03 }); const preto = o3Cor(0x14171C, { roughness: 0.35, clearcoat: 0.6 });
+    const s = new T.Shape(); s.moveTo(-1.16, -0.02); s.lineTo(-1.12, -0.02); s.absarc(-0.74, -0.02, 0.38, Math.PI, 0, true); s.lineTo(0.36, -0.02); s.absarc(0.74, -0.02, 0.38, Math.PI, 0, true);
+    s.lineTo(1.14, -0.02); s.quadraticCurveTo(1.25, 0.0, 1.25, 0.1); s.quadraticCurveTo(1.18, 0.22, 0.5, 0.29); s.lineTo(-0.8, 0.33); s.quadraticCurveTo(-1.12, 0.34, -1.19, 0.26); s.lineTo(-1.2, 0.08); s.quadraticCurveTo(-1.2, -0.02, -1.16, -0.02);
+    const corpo = new T.ExtrudeGeometry(s, { depth: 0.82, bevelEnabled: true, bevelThickness: 0.1, bevelSize: 0.08, bevelSegments: 8, curveSegments: 28 }); corpo.translate(0, 0, -0.41); lata.add(new T.Mesh(corpo, tinta));
+    // estufa: para-brisa, teto e vigia num vidro escuro só (fastback)
+    const c = new T.Shape(); c.moveTo(0.52, 0.3); c.quadraticCurveTo(0.16, 0.6, -0.12, 0.64); c.quadraticCurveTo(-0.5, 0.66, -0.76, 0.5); c.quadraticCurveTo(-0.92, 0.41, -1.0, 0.34); c.lineTo(0.52, 0.3);
+    const cab = new T.ExtrudeGeometry(c, { depth: 0.66, bevelEnabled: true, bevelThickness: 0.1, bevelSize: 0.07, bevelSegments: 8, curveSegments: 24 }); cab.translate(0, 0, -0.33);
+    { const p = cab.attributes.position; for (let i = 0; i < p.count; i++) p.setZ(i, p.getZ(i) * (1 - Math.max(0, p.getY(i) - 0.3) * 0.75)); cab.computeVertexNormals(); } lata.add(new T.Mesh(cab, M.vidro)); // laterais do vidro caem para dentro (tumblehome)
+    const peca = (m, x, y, z, pai = lata) => { m.position.set(x, y, z); pai.add(m); return m; };
+    [1, -1].forEach((d) => {
+      const fa = peca(o3Bloco(0.04, 0.03, 0.26, 0.012, M.farol), 1.27, 0.17, d * 0.31); fa.rotation.set(0, d * 0.42, -0.75); // farol fino, dobrando a quina
+      const la = peca(o3Bloco(0.04, 0.035, 0.2, 0.014, M.lanterna), -1.24, 0.27, d * 0.4); la.rotation.y = -d * 0.5;
+      peca(o3Bloco(0.1, 0.05, 0.05, 0.02, preto), 0.42, 0.38, d * 0.52); // retrovisor
+      peca(o3Bloco(0.16, 0.012, 0.012, 0.005, preto), 0.02, 0.26, d * 0.515); peca(o3Bloco(0.16, 0.012, 0.012, 0.005, preto), -0.52, 0.27, d * 0.515); }); // maçanetas embutidas
+    peca(o3Bloco(0.03, 0.03, 0.62, 0.012, M.lanterna), -1.28, 0.27, 0); // faixa traseira contínua
+    peca(o3Bloco(0.05, 0.05, 0.6, 0.02, preto), 1.28, 0.02, 0); peca(o3Bloco(0.1, 0.07, 0.8, 0.03, preto), -1.24, -0.04, 0); // entrada de ar baixa e difusor
+    const aro = o3Cor(0x7C8592, { metalness: 0.75, roughness: 0.3, clearcoat: 0.5 }); const rodas = [];
+    [[-0.74, 1], [0.74, 1], [-0.74, -1], [0.74, -1]].forEach(([x, d]) => { const r = o3Roda(M, 1.2, aro); r.position.set(x, -0.03, d * 0.43); r.rotation.x = (d * Math.PI) / 2; // y local = eixo, para fora
+      const capa = o3Tambor(0.13, 0.02, 0.008, aro, 32); capa.position.y = 0.09; r.add(capa); chassi.add(r); rodas.push([r, d]); }); // calota aerodinâmica
+    const bs = o3Brilhos(g, o3BrilhoMat(), [[0.3, 0.95, 0.3, 0.26], [-0.9, 0.7, 0.3, 0.16]]);
+    g.rotation.set(0.2, -0.62, 0); g.userData.dur = 1.8;
+    g.userData.entra = (e, t) => { const f = o3Saida(o3Faixa(e, 0, 0.62)); const dx = -(1 - f) * 4.2; chassi.position.x = dx; rodas.forEach(([r, d]) => { r.rotation.y = (-d * dx) / 0.26; });
+      const b = o3Faixa(e, 0.5, 1); lata.rotation.z = -Math.sin(b * Math.PI * 2) * (1 - b) * 0.05; o3Cintila(bs, e, t, 0.8); };
+    return g;
+  },
+  // bicicleta urbana: quadro clássico verde-água, garfo e guidão cromados, selim de couro, coroa e pedais, rodas finas com raios; chega pedalando e dá um pulinho
+  'carro-bike'(M) {
+    const T = THREE; const g = new T.Group(); const bk = new T.Group(); g.add(bk); const q = new T.Group(); bk.add(q);
+    const cor = o3Cor(0x1FA39A, { metalness: 0.35, roughness: 0.25, clearcoat: 1, clearcoatRoughness: 0.05 });
+    const raioG = new T.CylinderGeometry(0.003, 0.003, 0.3, 4); raioG.translate(0, 0.15, 0); const mx = new T.Matrix4();
+    const roda = (x) => { const r = new T.Group(); r.position.set(x, 0.35, 0);
+      r.add(new T.Mesh(new T.TorusGeometry(0.33, 0.028, 14, 64), M.borracha), new T.Mesh(new T.TorusGeometry(0.3, 0.012, 8, 64), M.cromo));
+      const rs = new T.InstancedMesh(raioG, M.cromo, 18); for (let i = 0; i < 18; i++) { mx.makeRotationZ((i / 18) * Math.PI * 2).multiply(new T.Matrix4().makeRotationX((i % 2 ? 1 : -1) * 0.06)); rs.setMatrixAt(i, mx); } r.add(rs);
+      const cubo = o3Tambor(0.025, 0.09, 0.008, M.cromo, 16); cubo.rotation.x = Math.PI / 2; r.add(cubo); bk.add(r); return r; };
+    const rodas = [roda(-0.56), roda(0.6)];
+    const BB = [0, 0.3, 0], ST = [-0.13, 0.84, 0], H1 = [0.43, 0.86, 0], H2 = [0.47, 0.72, 0];
+    o3Vara(q, ST, H1, 0.024, cor); o3Vara(q, BB, H2, 0.028, cor); o3Vara(q, BB, ST, 0.026, cor); o3Vara(q, H1, H2, 0.032, cor);
+    [1, -1].forEach((d) => { o3Vara(q, [0, 0.3, d * 0.04], [-0.56, 0.35, d * 0.06], 0.016, cor); o3Vara(q, [-0.12, 0.8, d * 0.03], [-0.56, 0.35, d * 0.06], 0.014, cor);
+      o3Vara(q, [0.47, 0.72, d * 0.04], [0.6, 0.35, d * 0.05], 0.016, M.cromo); });
+    o3Vara(q, ST, [-0.15, 0.95, 0], 0.016, M.cromo); const selim = new T.Mesh(new T.SphereGeometry(1, 28, 16), M.couroEsc); selim.scale.set(0.13, 0.03, 0.065); selim.position.set(-0.13, 0.98, 0); q.add(selim);
+    o3Vara(q, H1, [0.45, 0.96, 0], 0.016, M.cromo); o3Vara(q, [0.45, 0.96, 0], [0.54, 0.98, 0], 0.016, M.cromo); o3Vara(q, [0.54, 0.98, -0.24], [0.54, 0.98, 0.24], 0.014, M.cromo);
+    [1, -1].forEach((d) => o3Vara(q, [0.52, 0.98, d * 0.2], [0.5, 0.98, d * 0.27], 0.022, M.couroEsc));
+    // transmissão: coroa, pedivelas e pedais (giram ao pedalar)
+    const coroa = o3Tambor(0.09, 0.012, 0.005, M.cromo, 40); coroa.rotation.x = Math.PI / 2; coroa.position.set(0, 0.3, 0.06); q.add(coroa);
+    const ped = new T.Group(); ped.position.set(0, 0.3, 0); q.add(ped);
+    [1, -1].forEach((d) => { o3Vara(ped, [0, 0, d * 0.075], [d * 0.13, 0, d * 0.075], 0.013, M.cinza); const p = o3Bloco(0.08, 0.02, 0.06, 0.008, M.grafite); p.position.set(d * 0.13, 0, d * 0.11); ped.add(p); });
+    g.rotation.set(0.14, -0.45, 0); g.userData.dur = 1.8;
+    g.userData.entra = (e, t) => { const f = o3Saida(o3Faixa(e, 0, 0.6)); const dx = -(1 - f) * 3.8; bk.position.x = dx; rodas.forEach((r) => { r.rotation.z = -dx / 0.35; }); ped.rotation.z = -dx / 0.7;
+      const h = o3Faixa(e, 0.58, 0.85); bk.position.y = Math.sin(h * Math.PI) * 0.12; bk.rotation.z = Math.sin(h * Math.PI) * 0.08 + Math.sin(t * 1.3) * 0.01 * e; };
+    return g;
+  },
+  // lancha esportiva no mar: casco branco com faixa marinho, deque de madeira, para-brisa de vidro curvo, bancos de couro claro, volante e motor de popa; o mar abre e a lancha chega deslizando
+  'carro-lancha'(M) {
+    const T = THREE; const g = new T.Group(); const mar = new T.Mesh(new T.CylinderGeometry(1.12, 1.15, 0.08, 72), M.agua); mar.position.y = -0.04; g.add(o3Pose(mar));
+    const bt = new T.Group(); g.add(bt); const casco = new T.Group(); bt.add(casco);
+    const sh = new T.Shape(); sh.moveTo(-0.95, -0.3); sh.lineTo(0.15, -0.31); sh.quadraticCurveTo(0.82, -0.28, 1.08, 0); sh.quadraticCurveTo(0.82, 0.28, 0.15, 0.31); sh.lineTo(-0.95, 0.3); sh.quadraticCurveTo(-0.99, 0, -0.95, -0.3);
+    // casco: planta extrudada para cima e afinada embaixo (V); a cor vem por vértice: marinho embaixo, branco em cima
+    const cg = new T.ExtrudeGeometry(sh, { depth: 0.24, bevelEnabled: true, bevelThickness: 0.05, bevelSize: 0.05, bevelSegments: 5, curveSegments: 24 }); cg.rotateX(-Math.PI / 2);
+    const pa = cg.attributes.position; const cs = []; const cA = new T.Color(0x18244A).convertSRGBToLinear(), cB = new T.Color(0xF6F8FB).convertSRGBToLinear();
+    for (let i = 0; i < pa.count; i++) { const x = pa.getX(i), y = pa.getY(i); const k = Math.min(1, Math.max(0, (y + 0.05) / 0.34)); pa.setZ(i, pa.getZ(i) * (0.35 + 0.65 * Math.sqrt(k)));
+      pa.setY(i, y + (1 - k) * Math.max(0, x - 0.3) * 0.22); const c = y < 0.1 ? cA : cB; cs.push(c.r, c.g, c.b); }
+    cg.setAttribute('color', new T.Float32BufferAttribute(cs, 3)); cg.computeVertexNormals();
+    const cascoM = new T.MeshPhysicalMaterial({ vertexColors: true, roughness: 0.25, clearcoat: 1, clearcoatRoughness: 0.05 }); cascoM.userData.lin = true; // cores já em linear
+    casco.add(new T.Mesh(cg, cascoM)); casco.position.y = -0.02;
+    const peca = (m, x, y, z) => { m.position.set(x, y, z); bt.add(m); return m; };
+    const dq = new T.ExtrudeGeometry(sh, { depth: 0.012, bevelEnabled: false, curveSegments: 24 }); dq.rotateX(-Math.PI / 2); dq.scale(0.9, 1, 0.86); peca(new T.Mesh(dq, M.madeiraClara), 0.02, 0.272, 0);
+    const creme = o3Cor(0xF3E9D8, { roughness: 0.5, clearcoat: 0.3 });
+    peca(o3Bloco(0.26, 0.12, 0.42, 0.05, creme), -0.62, 0.34, 0); peca(o3Bloco(0.06, 0.18, 0.42, 0.03, creme), -0.76, 0.41, 0); // banco de trás
+    [1, -1].forEach((d) => { peca(o3Bloco(0.18, 0.1, 0.17, 0.045, creme), -0.12, 0.33, d * 0.12); peca(o3Bloco(0.05, 0.18, 0.17, 0.025, creme), -0.22, 0.4, d * 0.12); });
+    peca(o3Bloco(0.2, 0.16, 0.5, 0.05, M.branco), 0.14, 0.35, 0); // console
+    const vol = peca(new T.Mesh(new T.TorusGeometry(0.06, 0.012, 10, 32), M.grafite), 0.06, 0.47, 0.1); vol.rotation.y = Math.PI / 2; vol.rotation.x = 0.5;
+    const vid = new T.Mesh(new T.CylinderGeometry(0.34, 0.36, 0.16, 32, 1, true, Math.PI * 0.2, Math.PI * 0.6), o3Cor(0x9CCBEA, { roughness: 0.05, clearcoat: 1, transparent: true, opacity: 0.55, side: T.DoubleSide }));
+    vid.scale.set(0.7, 1, 1.05); peca(vid, 0.0, 0.5, 0); vid.rotation.x = 0; // para-brisa curvo
+    [1, -1].forEach((d) => { o3Vara(bt, [0.85, 0.32, d * 0.11], [0.35, 0.32, d * 0.27], 0.01, M.cromo); o3Vara(bt, [0.6, 0.28, d * 0.2], [0.6, 0.32, d * 0.2], 0.008, M.cromo); });
+    const mot = new T.Group(); peca(mot, -1.04, 0.3, 0); mot.add(o3Bloco(0.18, 0.22, 0.16, 0.06, M.grafite)); const pe = o3Bloco(0.06, 0.3, 0.05, 0.02, M.cinza); pe.position.set(-0.02, -0.24, 0); mot.add(pe);
+    const espuma = new T.InstancedMesh(new T.SphereGeometry(1, 16, 10), M.nuvem, 9); const mx = new T.Matrix4(); const rnd = o3Sorte(11);
+    for (let i = 0; i < 9; i++) { const a = -0.6 + i * 0.15; mx.compose(new T.Vector3(-1.08 - rnd() * 0.12, 0.0, a * 0.5), new T.Quaternion(), new T.Vector3(0.07 + rnd() * 0.04, 0.025, 0.06)); espuma.setMatrixAt(i, mx); } peca(espuma, 0, 0.01, 0);
+    bt.position.set(0.05, 0.04, 0); bt.rotation.y = 0.05; o3Pose(bt);
+    g.rotation.set(0.3, -0.5, 0); g.userData.zoom = 1.2; g.userData.dur = 1.9;
+    g.userData.entra = (e, t) => { o3Repouso(mar); mar.scale.multiplyScalar(Math.max(0.001, o3Saida(o3Faixa(e, 0, 0.3))));
+      const f = o3Saida(o3Faixa(e, 0.1, 0.7)); o3Repouso(bt); bt.position.x -= (1 - f) * 3.6; bt.rotation.z += Math.sin(f * Math.PI) * 0.12 * (1 - f * 0.5) + Math.sin(t * 1.5) * 0.015 * e;
+      bt.position.y += Math.sin(t * 1.5 + 1) * 0.012 * e; bt.visible = f > 0; espuma.visible = f > 0.9; };
+    return g;
+  },
+  // casinha de cachorro: paredes de madeira vermelha com acabamento branco, porta em arco escura, telhado de duas águas, plaquinha com osso, pote de ração e bolinha na grama; a casinha brota, o telhado assenta e a bolinha quica
+  'pet-casinha'(M) {
+    const T = THREE; const g = new T.Group(); const base = o3Tambor(1.05, 0.08, 0.035, M.grama, 72); base.position.y = -0.04; g.add(base);
+    const cs = new T.Group(); g.add(o3Pose(cs)); const verm = o3Cor(0xC9423A, { roughness: 0.42, clearcoat: 0.7 }); const branco = M.branco; const azul = o3Cor(0x2F5DA8, { roughness: 0.35, clearcoat: 0.8 });
+    // frente/fundo em pentágono com a porta em arco vazada; extrudado: paredes fechadas (com a espessura da porta)
+    const W = 0.46, H = 0.5, P = 0.78; const fr = new T.Shape(); fr.moveTo(-W, 0); fr.lineTo(W, 0); fr.lineTo(W, H); fr.lineTo(0, H + 0.36); fr.lineTo(-W, H); fr.lineTo(-W, 0);
+    const porta = new T.Path(); porta.moveTo(-0.17, 0.0); porta.lineTo(0.17, 0.0); porta.lineTo(0.17, 0.3); porta.absarc(0, 0.3, 0.17, 0, Math.PI, false); porta.lineTo(-0.17, 0.0); fr.holes.push(porta);
+    const frG = new T.ExtrudeGeometry(fr, { depth: 0.05, bevelEnabled: true, bevelThickness: 0.015, bevelSize: 0.015, bevelSegments: 3, curveSegments: 20 });
+    const frente = new T.Mesh(frG, verm); frente.position.z = P / 2 - 0.05; cs.add(frente); const fundoS = new T.Shape(fr.getPoints()); const fundo = new T.Mesh(new T.ExtrudeGeometry(fundoS, { depth: 0.05, bevelEnabled: true, bevelThickness: 0.015, bevelSize: 0.015, bevelSegments: 3 }), verm); fundo.position.z = -P / 2; cs.add(fundo);
+    [1, -1].forEach((d) => { const l = o3Bloco(0.05, H, P - 0.04, 0.015, verm); l.position.set(d * (W - 0.01), H / 2, 0); cs.add(l); });
+    const chao = o3Bloco(2 * W, 0.04, P, 0.015, verm); chao.position.y = 0.02; cs.add(chao);
+    const dentro = new T.Mesh(new T.ShapeGeometry(new T.Shape(porta.getPoints()), 12), o3Cor(0x2A1A14, { roughness: 0.9 })); dentro.position.z = P / 2 - 0.08; cs.add(dentro); // fundo escuro atrás da porta
+    const moldura = o3Arco(0.19, 0.025, Math.PI, branco, 32); moldura.position.set(0, 0.3, P / 2 + 0.02); cs.add(moldura);
+    [1, -1].forEach((d) => { const b = o3Bloco(0.05, 0.3, 0.05, 0.02, branco); b.position.set(d * 0.19, 0.15, P / 2 + 0.02); cs.add(b); });
+    // telhado de duas águas
+    const tel = new T.Group(); tel.position.y = H + 0.36; cs.add(o3Pose(tel)); const ang = Math.atan2(0.36, W); const L = Math.hypot(W, 0.36) + 0.12;
+    [1, -1].forEach((d) => { const a = o3Bloco(L, 0.06, P + 0.18, 0.025, azul); a.rotation.z = -d * ang; a.position.set(d * (L / 2 - 0.06) * Math.cos(ang), -(L / 2 - 0.06) * Math.sin(ang) + 0.03, 0); tel.add(a); });
+    const cume = new T.Mesh(new T.CylinderGeometry(0.035, 0.035, P + 0.2, 16), branco); cume.rotation.x = Math.PI / 2; cume.position.y = 0.05; tel.add(cume);
+    // plaquinha com osso
+    const pl = o3Bloco(0.26, 0.11, 0.025, 0.02, branco); pl.position.set(0, 0.68, P / 2 + 0.03); cs.add(pl);
+    const marfim = o3Cor(0xF6EEDF, { roughness: 0.35 }); const osso = new T.Group(); const oc = new T.Mesh(new T.CylinderGeometry(0.014, 0.014, 0.12, 12), o3Cor(0xD9A441, { roughness: 0.4 })); oc.rotation.z = Math.PI / 2; osso.add(oc);
+    [[-0.06, 0.012], [-0.06, -0.012], [0.06, 0.012], [0.06, -0.012]].forEach(([x, y]) => { const b = new T.Mesh(new T.SphereGeometry(0.02, 12, 8), oc.material); b.position.set(x, y, 0); osso.add(b); }); osso.position.set(0, 0.68, P / 2 + 0.05); cs.add(osso);
+    // pote de ração e bolinha
+    const pote = new T.Group(); pote.add(new T.Mesh(new T.LatheGeometry([V2(0, 0), V2(0.13, 0), V2(0.16, 0.08), V2(0.15, 0.09), V2(0.12, 0.03), V2(0, 0.03)], 40), azul));
+    const racao = new T.InstancedMesh(new T.SphereGeometry(0.022, 8, 6), o3Cor(0x9A5F33, { roughness: 0.7 }), 14); const mx = new T.Matrix4(); const rnd = o3Sorte(5);
+    for (let i = 0; i < 14; i++) { const a = rnd() * Math.PI * 2, r = rnd() * 0.1; mx.makeTranslation(Math.cos(a) * r, 0.05 + rnd() * 0.02, Math.sin(a) * r); racao.setMatrixAt(i, mx); } pote.add(racao);
+    pote.position.set(0.62, 0, 0.42); g.add(o3Pose(pote));
+    const bola = new T.Mesh(new T.SphereGeometry(0.1, 32, 20), o3Cor(0xD8E84A, { roughness: 0.8, sheen: new T.Color(0xFFFFFF) })); bola.position.set(-0.6, 0.1, 0.5); g.add(o3Pose(bola));
+    g.rotation.set(0.22, -0.5, 0); g.userData.dur = 1.9;
+    g.userData.entra = (e, t) => {
+      const f = o3Faixa(e, 0, 0.45); o3Repouso(cs); cs.scale.set(1 + (1 - f) * 0.12, Math.max(0.001, o3Mola(f)), 1 + (1 - f) * 0.12); cs.visible = f > 0;
+      const r = o3Faixa(e, 0.3, 0.65); o3Repouso(tel); tel.position.y += (1 - o3Quique(r)) * 0.8; tel.visible = r > 0;
+      const p = o3Faixa(e, 0.5, 0.8); o3Repouso(pote); pote.scale.setScalar(Math.max(0.001, o3Mola(p)));
+      const b = o3Faixa(e, 0.6, 1); o3Repouso(bola); bola.position.y += (1 - o3Quique(b)) * 1.2; bola.position.x -= (1 - b) * 0.5; bola.rotation.z += (1 - b) * 4; bola.visible = b > 0; };
     return g;
   },
   // mala de viagem de casco rígido: frisos, rodinhas, alça telescópica cromada e adesivos de viagem; chega rolando inclinada, fica de pé, a alça sobe e os adesivos colam
@@ -597,7 +743,7 @@ const O3_OBJ = {
     peca(o3Bloco(0.86, 1.12, 0.42, 0.1, casco), 0, 0.7, 0); [-0.24, 0.24].forEach((x) => peca(o3Bloco(0.07, 1.02, 0.45, 0.035, casco), x, 0.7, 0)); // casco e frisos
     peca(o3Bloco(0.9, 0.05, 0.44, 0.022, M.grafite), 0, 0.7, 0); // zíper
     const alca = new T.Group(); peca(alca, 0, 1.2, -0.12); [-0.17, 0.17].forEach((x) => peca(new T.Mesh(new T.CylinderGeometry(0.022, 0.022, 0.5, 12), M.cromo), x, 0.16, 0, alca)); peca(o3Bloco(0.44, 0.07, 0.08, 0.035, M.grafite), 0, 0.42, 0, alca); o3Pose(alca);
-    const al2 = peca(new T.Mesh(new T.TorusGeometry(0.1, 0.025, 12, 32, Math.PI), M.grafite), 0, 1.27, 0.08); al2.scale.y = 0.6;
+    const al2 = peca(o3Arco(0.1, 0.025, Math.PI, M.grafite, 32), 0, 1.27, 0.08); al2.scale.y = 0.6;
     [[-0.33, -0.12], [0.33, -0.12], [-0.33, 0.12], [0.33, 0.12]].forEach(([x, z]) => { const r = peca(o3Tambor(0.055, 0.04, 0.015, M.borracha, 24), x, 0.07, z); r.rotation.x = Math.PI / 2; peca(o3Bloco(0.05, 0.06, 0.06, 0.015, M.grafite), x, 0.13, z); });
     const adesivo = (desenha, w, h, x, y, rz) => { const tx = o3Textura(desenha, 256, Math.round((256 * h) / w)); const m = new T.Mesh(new T.PlaneGeometry(w, h), new T.MeshStandardMaterial({ map: tx, transparent: true, roughness: 0.45, polygonOffset: true, polygonOffsetFactor: -2 })); m.position.set(x, y, 0.212); m.rotation.z = rz; mala.add(m); return o3Pose(m); };
     const texto = (x, s, cor, w, h, f) => { x.fillStyle = cor; x.font = `800 ${f}px Arial, sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(s, w / 2, h / 2 + f * 0.05); };
@@ -626,21 +772,22 @@ const O3_OBJ = {
       x.fillStyle = '#F4F8FC'; x.fillRect(0, h * 0.93, w, h * 0.07); }, 1024, 512);
     const globo = new T.Group(); globo.position.y = 0.2; globo.rotation.z = -0.41; g.add(globo); // eixo inclinado como o da Terra
     const terra = new T.Mesh(new T.SphereGeometry(0.62, 64, 40), new T.MeshPhysicalMaterial({ map: mapa, roughness: 0.35, clearcoat: 0.8, clearcoatRoughness: 0.1 })); terra.rotation.y = -0.6; globo.add(o3Pose(terra));
-    const arco = new T.Mesh(new T.TorusGeometry(0.69, 0.022, 12, 80, Math.PI * 1.15), M.ouro); arco.rotation.z = Math.PI / 2 - 0.08; globo.add(arco);
+    const arco = o3Arco(0.69, 0.022, Math.PI * 1.15, M.ouro, 80); arco.rotation.z = Math.PI / 2 - 0.08; globo.add(arco);
     [0.7, -0.7].forEach((y) => { const p = new T.Mesh(new T.SphereGeometry(0.035, 16, 12), M.ouro); p.position.y = y; globo.add(p); });
-    const haste = new T.Mesh(new T.CylinderGeometry(0.035, 0.05, 0.36, 16), M.ouro); haste.position.y = -0.6; g.add(haste);
-    const base = o3Tambor(0.36, 0.1, 0.04, M.madeira); base.position.y = -0.8; g.add(base);
+    const pe = new T.Vector3(0, -0.72, 0).applyAxisAngle(new T.Vector3(0, 0, 1), -0.41); pe.y += 0.2; // pé do meridiano
+    const haste = new T.Mesh(new T.CylinderGeometry(0.035, 0.05, pe.y + 0.76, 16), M.ouro); haste.position.set(pe.x, (pe.y - 0.76) / 2, 0); g.add(haste);
+    const base = o3Tambor(0.36, 0.1, 0.04, M.madeira); base.position.set(pe.x, -0.8, 0); g.add(base);
     // órbita: grupo inclinado; o avião e o rastro giram juntos em torno do globo
     const orb = new T.Group(); orb.position.y = 0.2; orb.rotation.set(0.35, 0, 0.22); g.add(orb); const voo = new T.Group(); orb.add(o3Pose(voo)); const R = 0.92;
     const av = new T.Group(); const S = new T.SphereGeometry(1, 24, 16); const fu = new T.Mesh(S, M.branco); fu.scale.set(0.045, 0.045, 0.17); av.add(fu);
     const asa = o3Bloco(0.34, 0.016, 0.08, 0.008, M.branco); asa.position.z = 0.01; av.add(asa); const cau = o3Bloco(0.012, 0.07, 0.05, 0.006, M.azul); cau.position.set(0, 0.045, -0.13); av.add(cau);
-    const est = o3Bloco(0.13, 0.012, 0.04, 0.006, M.branco); est.position.z = -0.13; av.add(est); av.position.set(R, 0, 0); av.rotation.z = -0.25; voo.add(av); // nariz em +z: tangente à órbita
+    const est = o3Bloco(0.13, 0.012, 0.04, 0.006, M.branco); est.position.z = -0.13; av.add(est); av.position.set(R, 0, 0); av.rotation.set(0, Math.PI, 0.25); voo.add(av); // nariz em +z: tangente à órbita
     const pts = new T.InstancedMesh(new T.SphereGeometry(0.013, 8, 6), M.nuvem, 14); const mx = new T.Matrix4(); for (let i = 0; i < 14; i++) { const a = -0.22 - i * 0.12; mx.makeTranslation(Math.cos(a) * R, 0, -Math.sin(a) * R); pts.setMatrixAt(i, mx); } voo.add(pts);
     voo.rotation.y = 0.55; o3Pose(voo);
     g.rotation.set(0.12, 0, 0); g.userData.dur = 2.1;
     g.userData.entra = (e, t) => {
-      const f = o3Faixa(e, 0, 0.7); o3Repouso(terra); terra.rotation.y -= (1 - o3Saida(f)) * Math.PI * 4 + t * 0.15 * e; globo.scale.setScalar(Math.max(0.001, o3Mola(o3Faixa(e, 0, 0.4))));
-      const v = o3Faixa(e, 0.3, 1); o3Repouso(voo); voo.rotation.y -= (1 - o3Saida(v)) * Math.PI * 2.5 - t * 0.5 * e; voo.scale.setScalar(Math.max(0.001, o3Saida(o3Faixa(e, 0.3, 0.5)))); voo.visible = v > 0;
+      const f = o3Faixa(e, 0, 0.7); o3Repouso(terra); terra.rotation.y += -(1 - o3Saida(f)) * Math.PI * 2 + t * 0.12 * e; globo.scale.setScalar(Math.max(0.001, o3Mola(o3Faixa(e, 0, 0.4))));
+      const v = o3Faixa(e, 0.3, 1); o3Repouso(voo); voo.rotation.y += -(1 - o3Saida(v)) * Math.PI * 2 + t * 0.35 * e; voo.scale.setScalar(Math.max(0.001, o3Saida(o3Faixa(e, 0.3, 0.5)))); voo.visible = v > 0;
     };
     return g;
   },
@@ -669,7 +816,7 @@ const O3_OBJ = {
     g.userData.entra = (e, t) => {
       const a = o3Faixa(e, 0.05, 0.55); o3Repouso(tampa); tampa.rotation.x += (1 - o3Mola(a)) * 1.33; telaM.emissiveIntensity = o3Faixa(e, 0.35, 0.65);
       const c = o3Faixa(e, 0.55, 1); o3Repouso(cap); cap.position.y += (1 - o3Quique(c)) * 1.8; cap.rotation.y += (1 - o3Saida(c)) * 6 + Math.sin(t * 0.9) * 0.1 * e; cap.visible = c > 0;
-      const d = o3Saida(o3Faixa(e, 0.4, 0.8)); o3Repouso(dip); dip.position.x += (1 - d) * 1.6; dip.rotation.x = (1 - d) * -10; dip.visible = d > 0;
+      const d = o3Saida(o3Faixa(e, 0.4, 0.8)); o3Repouso(dip); dip.position.x += (1 - d) * 1.6; dip.rotation.x = (1 - d) * -Math.PI * 2; dip.visible = d > 0;
     };
     return g;
   },
@@ -680,9 +827,9 @@ const O3_OBJ = {
     const bojo = new T.Mesh(new T.SphereGeometry(0.5, 48, 20, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), azul); bojo.scale.set(1.15, 0.8, 0.82); cesto.add(bojo);
     const borda = new T.Mesh(new T.TorusGeometry(0.5, 0.035, 12, 64), creme); borda.rotation.x = Math.PI / 2; borda.scale.set(1.15, 0.82, 1); cesto.add(borda);
     const capota = new T.Group(); capota.position.x = 0.02; cesto.add(capota); const cp = new T.Mesh(new T.SphereGeometry(0.52, 40, 16, -Math.PI / 2, Math.PI, 0, Math.PI / 2), capM); cp.scale.set(1.12, 0.95, 0.84); capota.add(cp);
-    const fr = new T.Mesh(new T.TorusGeometry(0.52, 0.03, 10, 48, Math.PI), creme); fr.rotation.y = Math.PI / 2; cp.add(fr); // friso na beira da capota
+    const fr = o3Arco(0.52, 0.03, Math.PI, creme, 48); fr.rotation.y = Math.PI / 2; cp.add(fr); // friso na beira da capota
     o3Pose(capota); cesto.position.y = 0.78;
-    const tubo = (pts, r, mat) => { const c = new T.CatmullRomCurve3(pts.map(([x, y, z]) => new T.Vector3(x, y, z))); const m = new T.Mesh(new T.TubeGeometry(c, 32, r, 10), mat); car.add(m); return m; };
+    const tubo = (pts, r, mat) => { const c = new T.CatmullRomCurve3(pts.map(([x, y, z]) => new T.Vector3(x, y, z))); const m = o3Tubo(c, 32, r, mat); car.add(m); return m; };
     tubo([[0.5, 0.86, 0.36], [0.68, 1.02, 0.36], [0.84, 1.3, 0.36]], 0.022, M.cromo); tubo([[0.5, 0.86, -0.36], [0.68, 1.02, -0.36], [0.84, 1.3, -0.36]], 0.022, M.cromo);
     const pega = new T.Mesh(new T.CylinderGeometry(0.04, 0.04, 0.8, 16), M.borracha); pega.rotation.x = Math.PI / 2; pega.position.set(0.84, 1.3, 0); car.add(pega);
     [1, -1].forEach((d) => { tubo([[-0.42, 0.22, d * 0.38], [-0.1, 0.5, d * 0.34], [0.2, 0.62, d * 0.32]], 0.018, M.cromo); tubo([[0.42, 0.22, d * 0.38], [0.1, 0.5, d * 0.34], [-0.2, 0.62, d * 0.32]], 0.018, M.cromo); });
@@ -710,7 +857,7 @@ const O3_OBJ = {
     g.rotation.set(0.2, -0.5, 0); g.userData.dur = 2.0;
     g.userData.entra = (e, t) => {
       const f = o3Faixa(e, 0, 0.4); o3Repouso(cf); cf.position.y += (1 - o3Quique(f)) * 2.6; const s = 1 - 0.12 * Math.sin(o3Faixa(f, 0.7, 1) * Math.PI); cf.scale.set(1 / Math.sqrt(s), s, 1 / Math.sqrt(s)); cf.visible = f > 0;
-      o3Repouso(vol); vol.rotation.z += (1 - o3Saida(o3Faixa(e, 0.4, 0.85))) * Math.PI * 2; o3Repouso(seg); seg.rotation.z -= (1 - o3Saida(o3Faixa(e, 0.45, 0.9))) * 9 + Math.sin(t * 0.7) * 0.2 * e;
+      o3Repouso(vol); vol.rotation.z += (1 - o3Saida(o3Faixa(e, 0.4, 0.85))) * Math.PI * 2; o3Repouso(seg); seg.rotation.z -= (1 - o3Saida(o3Faixa(e, 0.45, 0.9))) * Math.PI * 2 + Math.sin(t * 0.7) * 0.2 * e;
       moedas.forEach((m, i) => { const k = o3Faixa(e, 0.55 + i * 0.08, 0.8 + i * 0.08); o3Repouso(m); m.position.y += (1 - o3Quique(k)) * 1.2; m.visible = k > 0; });
     };
     return g;
@@ -726,14 +873,14 @@ const O3_OBJ = {
       [0.3, -0.3].forEach((x) => b(rosa, x, 0.12, d * 0.24, 1, 1, 1, new T.CylinderGeometry(0.085, 0.075, 0.2, 24))); });
     const tampa = (y) => { const m = new T.Mesh(new T.CircleGeometry(0.16, 40), rosa); m.rotation.y = Math.PI / 2; m.position.set(y, 0.6, 0); pq.add(m); }; tampa(0.661);
     const hel = []; for (let i = 0; i <= 30; i++) { const a = (i / 30) * Math.PI * 3.2; const r = 0.05 + i * 0.0006; hel.push(new T.Vector3(-0.6 - i * 0.004, 0.66 + Math.sin(a) * r, Math.cos(a) * r)); }
-    pq.add(new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(hel), 48, 0.014, 8), rosaEsc));
+    pq.add(o3Tubo(new T.CatmullRomCurve3(hel), 48, 0.014, rosaEsc, 8));
     const fenda = o3Bloco(0.05, 0.04, 0.24, 0.018, M.nariz); fenda.position.set(-0.02, 1.085, 0); pq.add(fenda);
     const moeda = o3Moeda(M, null, true); moeda.scale.setScalar(0.4); moeda.rotation.set(0, 0, Math.PI / 2); moeda.position.set(-0.02, 1.2, 0); g.add(o3Pose(moeda));
     const bs = o3Brilhos(g, o3BrilhoMat(), [[0.25, 1.45, 0.2, 0.24], [-0.4, 1.3, 0.2, 0.16]]);
     g.rotation.set(0.15, -0.75, 0); g.userData.dur = 2.0;
     g.userData.entra = (e, t) => {
       const f = o3Faixa(e, 0, 0.45); o3Repouso(pq); pq.scale.setScalar(Math.max(0.001, o3Mola(f))); pq.rotation.y += (1 - o3Saida(f)) * 1.5;
-      const c = o3Faixa(e, 0.45, 0.8); o3Repouso(moeda); moeda.position.y += (1 - c * c) * 1.6; moeda.rotation.x += (1 - c) * 8; moeda.visible = c > 0;
+      const c = o3Faixa(e, 0.45, 0.8); o3Repouso(moeda); moeda.position.y += (1 - c * c) * 1.6; moeda.rotation.x += (1 - c) * Math.PI * 2; moeda.visible = c > 0;
       const q = o3Faixa(e, 0.8, 1); const s = 1 - 0.07 * Math.sin(q * Math.PI); pq.scale.y *= s; pq.scale.x /= Math.sqrt(s); pq.scale.z /= Math.sqrt(s); pq.rotation.z += Math.sin(t * 1.2) * 0.03 * e;
       o3Cintila(bs, e, t, 0.78);
     };
@@ -788,7 +935,7 @@ const O3_OBJ = {
     [[-1, 1], [1, 1], [-1, -1], [1, -1]].forEach(([sx, sy]) => [1, -1].forEach((sz) => { const c = peca(new T.Mesh(new T.SphereGeometry(0.06, 16, 12), M.ouro), sx * 0.64, 0.45 + sy * 0.42, sz * 0.18); c.scale.set(1, 1, 0.8); }));
     const fechos = [-0.4, 0.4].map((x) => { const f = new T.Group(); peca(f, x, 0.66, 0.215); f.add(o3Bloco(0.15, 0.12, 0.04, 0.015, M.ouro)); const fu = new T.Mesh(new T.CylinderGeometry(0.012, 0.012, 0.02, 12), M.couroEsc); fu.rotation.x = Math.PI / 2; fu.position.z = 0.022; f.add(fu); return o3Pose(f); });
     peca(o3Bloco(0.26, 0.08, 0.02, 0.01, M.ouro), 0, 0.36, 0.215);
-    const al = peca(new T.Mesh(new T.TorusGeometry(0.17, 0.042, 16, 40, Math.PI), M.couroEsc), 0, 0.92, 0); al.scale.y = 0.75;
+    const al = peca(o3Arco(0.17, 0.042, Math.PI, M.couroEsc), 0, 0.92, 0); al.scale.y = 0.75;
     [-0.17, 0.17].forEach((x) => peca(o3Bloco(0.08, 0.06, 0.1, 0.02, M.ouro), x, 0.92, 0));
     g.rotation.set(0.22, -0.45, 0); g.userData.dur = 1.8;
     g.userData.entra = (e, t) => {
@@ -837,7 +984,7 @@ const O3_OBJ = {
     g.rotation.set(0.12, -0.3, 0); g.userData.dur = 1.8;
     g.userData.entra = (e, t) => {
       const f = o3Faixa(e, 0, 0.45); o3Repouso(pata); pata.position.z += (1 - o3Saida(f)) * 2.5; pata.rotation.x += (1 - o3Saida(f)) * -0.8; const s = 1 - 0.1 * Math.sin(o3Faixa(e, 0.4, 0.6) * Math.PI); pata.scale.set(1 / s, 1 / s, s); pata.visible = f > 0; pata.rotation.z += Math.sin(t * 1.1) * 0.04 * e;
-      const k = o3Faixa(e, 0.45, 0.9); o3Repouso(osso); osso.scale.setScalar(Math.max(0.001, o3Mola(k))); osso.rotation.z += (1 - o3Saida(k)) * Math.PI * 3; osso.visible = k > 0; o3Cintila(bs, e, t, 0.7);
+      const k = o3Faixa(e, 0.45, 0.9); o3Repouso(osso); osso.scale.setScalar(Math.max(0.001, o3Mola(k))); osso.rotation.z += (1 - o3Saida(k)) * Math.PI * 2; osso.visible = k > 0; o3Cintila(bs, e, t, 0.7);
     };
     return g;
   },
@@ -858,7 +1005,7 @@ const O3_OBJ = {
     [[0.41, 0.38, 0.16], [-0.41, 0.42, 0.1], [-0.41, 0.25, 0.14]].forEach(([x, y, h]) => { const bt = o3Bloco(0.02, h, 0.035, 0.009, tit); bt.position.set(x, y, 0); cel.add(bt); });
     const bs = o3Brilhos(g, o3BrilhoMat(), [[0.48, 0.85, 0.2, 0.26], [-0.55, -0.55, 0.2, 0.18]]);
     g.rotation.set(0.05, -0.35, 0.08); g.userData.dur = 1.8;
-    g.userData.entra = (e, t) => { const f = o3Faixa(e, 0, 0.65); o3Repouso(cel); cel.rotation.y += (1 - o3Saida(f)) * Math.PI * 4; cel.scale.setScalar(Math.max(0.001, o3Mola(f))); telaM.emissiveIntensity = 0.15 + 0.85 * o3Faixa(e, 0.55, 0.85); o3Cintila(bs, e, t, 0.7); };
+    g.userData.entra = (e, t) => { const f = o3Faixa(e, 0, 0.65); o3Repouso(cel); cel.rotation.y += (1 - o3Saida(f)) * Math.PI * 2; cel.scale.setScalar(Math.max(0.001, o3Mola(f))); telaM.emissiveIntensity = 0.15 + 0.85 * o3Faixa(e, 0.55, 0.85); o3Cintila(bs, e, t, 0.7); };
     return g;
   },
   // coração vermelho fofinho com a cruz branca de saúde; entra saltando e bate duas vezes (e segue batendo de leve)
@@ -904,7 +1051,7 @@ const O3_OBJ = {
 const O3_VARIA = {
   casamento: [['casamento', 'Alianças'], ['casamento-bolo', 'Bolo']],
   imovel: [['imovel', 'Casa'], ['imovel-ap', 'Apartamento'], ['imovel-praia', 'Casa de praia']],
-  carro: [['carro', 'Carro'], ['carro-suv', 'SUV elétrico'], ['carro-moto', 'Moto']],
+  carro: [['carro', 'Carro'], ['carro-suv', 'Elétrico'], ['carro-moto', 'Moto'], ['carro-bike', 'Bicicleta'], ['carro-lancha', 'Lancha']],
   viagem: [['viagem', 'Avião'], ['viagem-mala', 'Mala'], ['viagem-globo', 'Globo']],
   educacao: [['educacao', 'Livros'], ['educacao-notebook', 'Notebook']],
   filhos: [['filhos', 'Ursinhos'], ['filhos-carrinho', 'Carrinho']],
@@ -912,7 +1059,7 @@ const O3_VARIA = {
   independencia: [['independencia', 'Dinheiro'], ['independencia-grafico', 'Gráfico']],
   aposentadoria: [['aposentadoria', 'Ilha'], ['aposentadoria-rede', 'Rede']],
   negocio: [['negocio', 'Loja'], ['negocio-maleta', 'Maleta'], ['negocio-foodtruck', 'Food truck']],
-  outro: [['outro', 'Estrela'], ['pet', 'Pet'], ['tecnologia', 'Tecnologia'], ['saude', 'Saúde'], ['festa', 'Festa'], ['cartao', 'Cartão Legacy XP'], ['trofeu', 'Troféu'], ['presente', 'Presente'], ['diamante', 'Diamante']],
+  outro: [['outro', 'Estrela'], ['pet', 'Pet'], ['pet-casinha', 'Casinha pet'], ['tecnologia', 'Tecnologia'], ['saude', 'Saúde'], ['festa', 'Festa'], ['cartao', 'Cartão Legacy XP'], ['trofeu', 'Troféu'], ['presente', 'Presente'], ['diamante', 'Diamante']],
 };
 
 /* ---------- estúdio ---------- */

@@ -83,7 +83,7 @@ function objTitulo(g) {
 const OBJ_3D_TIPOS = ['casamento', 'carro', 'imovel', 'viagem', 'filhos', 'educacao', 'reserva', 'independencia', 'aposentadoria', 'negocio', 'outro', 'cartao', 'trofeu', 'presente', 'diamante'];
 // coletânea do objetivo "Outro": o cliente escolhe o objeto 3D (os novos e os dos outros tipos)
 const OBJ_3D_ESCOLHA = [['outro', 'Estrela'], ['cartao', 'Cartão Legacy XP'], ['trofeu', 'Troféu'], ['presente', 'Presente'], ['diamante', 'Diamante'], ['reserva', 'Moedas'], ['casamento', 'Alianças'],
-  ['imovel', 'Casa'], ['carro', 'Carro'], ['viagem', 'Viagem'], ['educacao', 'Educação'], ['filhos', 'Filhos'], ['negocio', 'Negócio'], ['independencia', 'Liberdade'], ['aposentadoria', 'Aposentadoria']];
+  ['imovel', 'Casa'], ['carro', 'Veículo'], ['viagem', 'Viagem'], ['educacao', 'Educação'], ['filhos', 'Filhos'], ['negocio', 'Negócio'], ['independencia', 'Liberdade'], ['aposentadoria', 'Aposentadoria']];
 // escolha do objeto 3D com a miniatura de cada um (desenhadas uma vez pelo obj3d.js; sem WebGL, só o nome)
 function objEscolha3d(g) {
   const at = g.icone || 'outro'; if (typeof o3Miniaturas === 'function') setTimeout(objMiniLigar, 0);
@@ -94,7 +94,7 @@ function objEscolha3d(g) {
 }
 function objMiniLigar() { o3Miniaturas(OBJ_3D_ESCOLHA.map(([v]) => v)).then((M) => document.querySelectorAll('img[data-o3]').forEach((im) => { const s = M.get(im.dataset.o3); if (s) { im.src = s; im.hidden = false; } })); }
 const obj3dDe = (g) => (g.modelo && typeof O3_VARIA !== 'undefined' && (O3_VARIA[g.tipo] || []).some((x) => x[0] === g.modelo) ? g.modelo : g.tipo === 'outro' && g.icone ? g.icone : g.tipo);
-const obj3dHtml = (tipo) => `<div class="ob3d" aria-hidden="true" data-tipo="${OBJ_3D_TIPOS.includes(tipo) ? tipo : 'outro'}"><div class="ob3d-gl"></div></div>`;
+const obj3dHtml = (tipo) => `<div class="ob3d" aria-hidden="true" data-tipo="${OBJ_3D_TIPOS.includes(tipo) || (typeof O3_OBJ !== 'undefined' && O3_OBJ[tipo]) ? tipo : 'outro'}"><div class="ob3d-gl"></div></div>`;
 function obj3dLigar() {
   const card = document.getElementById('obj-card'); const o = card && card.querySelector('.ob3d'); if (!o) return;
   const falhou = () => card.classList.add('sem-3d');
