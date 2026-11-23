@@ -17,7 +17,7 @@ function trocarIdioma(cod) {
   const cod = idiomaAtual(); const h = document.documentElement;
   h.lang = cod === 'pt' ? 'pt-BR' : cod; if (cod === 'ar') h.dir = 'rtl';
   if (cod === 'pt') return;
-  const V = '20261204a';
+  const V = '20261206t1';
   const MES = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
   const re = new RegExp('R\\$\\s?[\\d.,]+(?:\\s?(?:mil|mi))?|[+−-]?\\d[\\d.,]*%?|(?<![\\p{L}])(' + MES.join('|') + ')(?![\\p{L}])', 'giu');
   const fmtMes = new Intl.DateTimeFormat(cod, { month: 'long' });
