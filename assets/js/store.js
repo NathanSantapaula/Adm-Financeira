@@ -145,7 +145,7 @@ const Store = (() => {
     },
     async assistente(body) {
       const r = await sb.functions.invoke((CFG.assistente && CFG.assistente.funcao) || 'assistente', { body });
-      if (r.error || !r.data || !r.data.texto) throw erro('O assistente não respondeu.'); return r.data.texto;
+      if (r.error || !r.data || !r.data.texto) throw erro('O assistente não respondeu.'); return { texto: String(r.data.texto), acoes: Array.isArray(r.data.acoes) ? r.data.acoes : [] };
     },
     async ingestIA(payload) {
       const r = await sb.functions.invoke((CFG.ingestao && CFG.ingestao.funcao) || 'ingest-statement', { body: payload });

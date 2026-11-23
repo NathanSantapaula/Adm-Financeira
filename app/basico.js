@@ -299,7 +299,7 @@ function basPeriodoCorpo() {
 
 /* ---- blocos que o cliente organiza (ordem e quais aparecem), salvos no perfil ---- */
 const BAS_SECS = {
-  inicio: [['sonho', 'Meu sonho'], ['disp', 'Dá para investir'], ['historico', 'Patrimônio ano a ano'], ['aviso', 'O que o assistente notou'], ['resumo', 'Resumo do mês'], ['calendario', 'Mês dia a dia', 0], ['semana', 'Dia que mais gasta', 0], ['maior', 'Maior gasto', 0], ['globo', 'Seu universo', 0], ['saude', 'Saúde financeira', 0], ['contas', 'Contas do mês', 0], ['limite', 'Limite do mês', 0], ['meta', 'Meta de investimento', 0], ['cartoes', 'Seus cartões', 0], ['proventos', 'Proventos', 0]],
+  inicio: [['sonho', 'Meu sonho'], ['disp', 'Dá para investir'], ['calendario', 'Mês dia a dia'], ['resumo', 'Resumo do mês'], ['saude', 'Saúde financeira', 0], ['historico', 'Patrimônio ano a ano', 0], ['aviso', 'O que o assistente notou', 0], ['semana', 'Dia que mais gasta', 0], ['maior', 'Maior gasto', 0], ['globo', 'Seu universo', 0], ['contas', 'Contas do mês', 0], ['limite', 'Limite do mês', 0], ['meta', 'Meta de investimento', 0], ['cartoes', 'Seus cartões', 0], ['proventos', 'Proventos', 0]],
   gastos: [['onde', 'Para onde foi o dinheiro'], ['ultimos', 'Últimos gastos']],
   investir: [['patr', 'Evolução do patrimônio'], ['meta', 'Meta e disponível'], ['comp', 'Como está dividido'], ['feitos', 'Investido no período']],
 };
@@ -1707,8 +1707,19 @@ function basFesta(tipo, titulo, msg, valor) {
   el.querySelector('.bas-ok-bt').addEventListener('click', fecha); document.body.appendChild(el); // só fecha no OK
   const fim = () => el.classList.add('fim'); const depois = () => setTimeout(fim, 350); // o OK só aparece depois que o Cifrão saiu da tela
   if (!menos) requestAnimationFrame(() => requestAnimationFrame(() => { const h = el.querySelector('.cifrao'), w = el.querySelector('.bas-ok-cif'); if (!window.Cifrao || !h.cifrao || !w.animate) { fim(); return; }
-    window.Cifrao.expressao(h, inv ? 'celebraInv' : 'celebraGasto');
-    if (!inv) {
+    if (tipo !== 'ent') window.Cifrao.expressao(h, inv ? 'celebraInv' : 'celebraGasto');
+    if (tipo === 'ent') {
+      // entrada de renda: o Cifrão cai do alto, quica, vira "+" com uma chuva de maisinhos e encolhe para dentro do OK
+      const t = (y, s) => `translate(${W / 2 - 75}px, ${y}px) scale(${s})`, cy = H * .4 - 75;
+      window.Cifrao.expressao(h, 'animado');
+      const voo = w.animate([{ transform: t(-220, 1), easing: 'cubic-bezier(.5, 0, .9, .5)' }, { transform: t(cy + 18, 1), offset: .34, easing: 'ease-out' }, { transform: t(cy - 40, 1), offset: .46, easing: 'ease-in' },
+        { transform: t(cy, 1), offset: .56 }, { transform: t(cy, 1.08), offset: .66 }, { transform: t(cy, 1), offset: .76, easing: 'cubic-bezier(.6, 0, .9, .4)' }, { transform: t(cy + 40, 0) }], { duration: 2700, fill: 'forwards' });
+      setTimeout(() => { window.Cifrao.forma(h, 'mais'); window.Cifrao.expressao(h, 'festa');
+        const ch = document.createElement('span'); ch.className = 'bas-ok-mais'; ch.setAttribute('aria-hidden', 'true'); ch.style.top = `${cy + 75}px`;
+        ch.innerHTML = Array.from({ length: 14 }, (_, k) => `<i style="--a:${(k * 360) / 14}deg;--d:${70 + (k % 3) * 34}px;--k:${(k % 4) * 40}ms">+</i>`).join(''); el.appendChild(ch); }, 980);
+      setTimeout(() => { try { h.cifrao.tForma = 0; window.Cifrao.forma(h, 'mais'); } catch (e) { /* ignora */ } }, 1700);
+      voo.finished.then(() => { w.style.visibility = 'hidden'; el.querySelector('.bas-ok-mais')?.remove(); depois(); }, fim);
+    } else if (!inv) {
       const t = (y) => `translate(${W / 2 - 75}px, ${y}px)`, cy = H * .42 - 75;
       setTimeout(() => window.Cifrao.forma(h, 'moeda'), 1070); // troca de costas, no meio do giro
       const voo = w.animate([{ transform: t(H + 20), easing: 'cubic-bezier(.15, .75, .3, 1)' }, { transform: t(cy - 10), offset: .32, easing: 'cubic-bezier(.45, 0, .55, 1)' },
@@ -1841,7 +1852,7 @@ function basExtrasInicio(secs) {
   const C = S.C; const j = basJan(); const D = E.disponivelAporte({ C, mes: j.de, ate: j.ate, metaMes: C.metaAporteMes });
   if (typeof aberturaPode === 'function' && aberturaPode()) secs.globo = `<button class="card bas-w-globo" data-act="bas-globo"><span class="bas-w-orb" aria-hidden="true"></span>${basNome('Seu universo financeiro', 'O seu patrimônio como um globo vivo')}${I.chev}</button>`;
   const H = basSaude(j.ate); const cls = H.nota == null ? '' : H.nota >= 80 ? 'ok' : H.nota >= 60 ? 'atencao' : 'baixo';
-  secs.saude = `<button class="card bas-w-saude" data-act="bas-aba" data-v="perfil">${basAnel(H.nota == null ? 0 : H.nota / 100, 72, `<b>${H.nota == null ? '–' : H.nota}</b>`, cls)}${basNome('Saúde financeira', H.nota == null ? voz('bas_vazio') : voz(H.nota >= 80 ? 'bas_saude_bom' : H.nota >= 60 ? 'bas_saude_med' : 'bas_saude_baixo'))}${I.chev}</button>`;
+  secs.saude = typeof basWidgetSaude === 'function' ? basWidgetSaude() : `<button class="card bas-w-saude" ${basIr('saude')}>${basAnel(H.nota == null ? 0 : H.nota / 100, 72, `<b>${H.nota == null ? '–' : H.nota}</b>`, cls)}${basNome('Saúde financeira', H.nota == null ? voz('bas_vazio') : voz(H.nota >= 80 ? 'bas_saude_bom' : H.nota >= 60 ? 'bas_saude_med' : 'bas_saude_baixo'))}${I.chev}</button>`;
   const K = basContas(j.ate); const pend = K.itens.slice(0, 3);
   secs.contas = basSecao(`Contas de ${MES_LONGO[j.ate]}`, `<button class="lnk strong" data-act="bas-aba" data-v="gastos">Todas</button>`, pend.length ? `<ul class="bas-ativ">${pend.map(basContaLinha).join('')}</ul>` : basCard(basVazio(K.itens.length ? 'Tudo pago neste mês.' : 'Nenhuma conta do mês anotada.')));
   const orc = basSomaJ(C.orcamento); const sai = basSomaJ(C.despesas);
@@ -1956,9 +1967,10 @@ function basConstelacao(n) {
 }
 // marcos da sequência, como conquistas que acendem
 const BAS_SEQ_MARCOS = [[3, 'Lua crescente', '3 meses seguidos', 'bronze'], [6, 'Lua cheia', '6 meses seguidos', 'prata'], [12, 'Planeta de anéis', '12 meses seguidos', 'ouro'], [24, 'Supernova', '24 meses seguidos', 'platina'], [36, 'Buraco negro', '36 meses seguidos', 'diamante']];
-// Retrospectiva do mês, refeita do zero: telas em story, cada uma com cena própria (céu e nome do mês, chuva de moedas, bolhas de vidro,
-// calendário do mês, pódio, cofre em anel, escada do investido, gráfico do patrimônio, o sonho em 3D, confete no fim). O Cifrão é um ator só:
-// anda aos pulinhos de uma cena para a outra (a tela nova abre em círculo a partir dele), estoura bolhas, pega moeda, sobe a escada, vira cadeado.
+// Retrospectiva do mês, refeita do zero: telas em story, cada uma com cena própria (céu e nome do mês, rios de moedas das fontes de renda,
+// bolhas de vidro por categoria, calendário do mês, pódio, cofre em anel, barras do investido, gráfico do patrimônio, o sonho em 3D, o fim).
+// O Cifrão é um ator só: anda aos pulinhos de uma cena para a outra (a tela nova abre em círculo a partir dele) e reage ao que o mês foi,
+// inclusive quando foi ruim (faltou dinheiro, resgate, patrimônio caindo): mostra a realidade com uma dica gentil.
 const BAS_RT_EMO = [[/aliment|restaur|ifood|lanche|comida|padaria|caf[eé]/, '🍔'], [/mercad|supermerc|feira/, '🛒'], [/casa|aluguel|condom|moradia|reforma/, '🏠'],
   [/luz|energia|[aá]gua|internet|g[aá]s|telefone|celular/, '💡'], [/transp|uber|99|combust|gasolina|carro|estacion|[oô]nibus|metr[oô]/, '🚗'], [/sa[uú]de|farm|m[eé]dic|rem[eé]d|academia|plano/, '💊'],
   [/lazer|cinema|show|bar|festa|jogo|game/, '🎉'], [/educa|curso|escola|faculd|livro/, '📚'], [/viagem|hotel|passag|turismo/, '✈️'], [/pet|cachorro|gato|ra[cç][aã]o/, '🐶'],
@@ -1967,56 +1979,73 @@ const BAS_RT_EMO = [[/aliment|restaur|ifood|lanche|comida|padaria|caf[eé]/, '�
 const basRtEmo = (t) => { const s = String(t || '').toLowerCase(); const h = BAS_RT_EMO.find(([r]) => r.test(s)); return h ? h[1] : '💸'; };
 // título em palavras que sobem de dentro de uma máscara, uma de cada vez (texto já escapado)
 const basRtKt = (t) => String(t).split(' ').map((p, k) => `<span class="rt-w"><span style="--k:${k}">${p}</span></span>`).join(' ');
+// a retrospectiva só existe para mês já fechado: o mês corrente (ou futuro) vira o último fechado; -1 = nenhum
+const basRtMes = (m) => (S.year > NOW_Y ? -1 : S.year === NOW_Y && m >= NOW_M ? NOW_M - 1 : m);
 function basTelaRetro(o) {
-  const m = o.id != null ? +o.id : NOW_M - 1; if (!(m >= 0) || !S.C) return basSumiu(); const C = S.C; const carry = E.carryItems(S.plans, S.year);
+  const m = basRtMes(o.id != null ? +o.id : NOW_M - 1); if (!(m >= 0) || !S.C) return basSumiu(); const C = S.C; const carry = E.carryItems(S.plans, S.year);
   const Mes = cap(MES_LONGO[m]); const ent = +C.receita[m] || 0; const sai = +C.despesas[m] || 0; const sob = +C.investAlocado[m] || 0;
-  const D = E.disponivelAporte({ C, mes: m, metaMes: C.metaAporteMes }); const n = basSeqDados().Q.atual; const pAnt = m > 0 ? C.patrimonio[m - 1] : C.patrimonioBase; const dp = C.patrimonio[m] - pAnt;
+  const aporte = (k) => E.disponivelAporte({ C, mes: k, metaMes: C.metaAporteMes }).aportado || 0;
+  const apM = aporte(m); const n = basSeqDados().Q.atual; const pAnt = m > 0 ? C.patrimonio[m - 1] : C.patrimonioBase; const dp = C.patrimonio[m] - pAnt;
+  // o mês foi ruim? (cada tela decide o próprio tom)
+  const falta = sob < -0.5, resg = apM < -0.5, caiu = dp <= -1, estourou = ent > 0 && sai > ent + 0.5; const ruim = falta || estourou || resg || (caiu && apM <= 0.5);
   const ar = E.gastosAreaMes(S.plan, carry, m); const top = Object.keys(ar).map((k) => [k, ar[k]]).filter((x) => x[1] > 0).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  const dica = top[0] ? `${esc(top[0][0])} foi o maior gasto: cortar 10% dele já devolve ${brl0(top[0][1] * 0.1)} no mês.` : 'anote os gastos para achar onde dá para cortar.';
   const pg = entradasMes(m).filter((e) => +e.valor > 0); const nPg = pg.length;
-  const bol = pg.slice().sort((a, b) => b.valor - a.valor).slice(0, 36).map((e) => [basRtEmo(`${e.area} ${e.sub} ${e.nome}`), +e.valor]);
-  const fontes = (S.plan.rendas || []).filter((r) => (+((r.valores || [])[m]) || 0) > 0).length;
+  // gastos agrupados por categoria: [emoji, nome, total, nº de pagamentos]
+  const bol = pg.slice().sort((a, b) => b.valor - a.valor).slice(0, 28).map((e) => [basRtEmo(`${e.area} ${e.sub} ${e.nome}`), +e.valor]); // até 28 bolhas no ar (desempenho)
+  // de onde veio o dinheiro: cada renda do mês e os proventos (até 4; o resto vira "Outras")
+  let fts = (S.plan.rendas || []).map((r) => [r.nome || r.fonte || 'Renda', +((r.valores || [])[m]) || 0]).filter((x) => x[1] > 0); if ((+(C.faturamento || [])[m] || 0) > 0) fts.push(['Proventos', +C.faturamento[m]]);
+  fts.sort((a, b) => b[1] - a[1]); if (fts.length > 4) fts = fts.slice(0, 3).concat([['Outras', fts.slice(3).reduce((s, x) => s + x[1], 0)]]); if (ent > 0 && !fts.length) fts = [['Entradas do mês', ent]];
+  const totF = fts.reduce((s, x) => s + x[1], 0) || 1;
   const guardP = ent > 0 ? Math.max(0, Math.min(1, sob / ent)) : 0; const g = objFoco(objAnalise());
   // o mês dia a dia (só lançamentos reais têm dia)
   const nd = new Date(S.year, m + 1, 0).getDate(); const ini = new Date(S.year, m, 1).getDay(); const porDia = Array(nd + 1).fill(0); const qDia = Array(nd + 1).fill(0);
   pg.forEach((e) => { if (e.tipo === 'real' && e.dia > 0 && e.dia <= nd) { porDia[e.dia] += +e.valor; qDia[e.dia]++; } });
   let dTop = 0; for (let d = 1; d <= nd; d++) if (porDia[d] > porDia[dTop]) dTop = d;
-  const ate = m === NOW_M ? Math.min(nd, new Date().getDate()) : nd; const semGasto = porDia.slice(1, ate + 1).filter((v) => !v).length;
+  const semGasto = porDia.slice(1).filter((v) => !v).length;
   const maior = pg.reduce((a, e) => (!a || +e.valor > +a.valor ? e : a), null);
+  // investido: os aportes reais dos últimos meses (negativo = resgate), com a linha do zero
+  const apS = []; for (let k = Math.max(0, m - 5); k <= m; k++) apS.push([cap(MES[k]), k === m ? apM : aporte(k)]);
+  const mxP = Math.max(0, ...apS.map((x) => x[1])), mxN = Math.max(0, ...apS.map((x) => -x[1])); const totA = mxP + mxN || 1; const zeroY = mxN ? (190 * mxP) / totA : 190;
   // patrimônio: últimos 6 meses
   const serie = [], rot = []; for (let k = Math.max(0, m - 5); k <= m; k++) { serie.push(+C.patrimonio[k] || 0); rot.push(cap(MES[k])); } if (m < 5) { serie.unshift(+C.patrimonioBase || 0); rot.unshift('Início'); }
   const mn = Math.min(...serie), mx = Math.max(...serie), rg = mx - mn || 1; const pts = serie.map((v, k) => [10 + (k * 280) / Math.max(1, serie.length - 1), 140 - ((v - mn) / rg) * 104]);
   const lin = basCurva(pts); const ult = pts[pts.length - 1];
   const cont = (v, fmt) => (oculto() ? `<b class="bas-rt-n">${basCent(v)}</b>` : `<b class="bas-rt-n" style="--len:${(fmt === 'pct' ? pct(v) : brl(v)).length}" data-cont="${(+v || 0).toFixed(2)}" data-fmt="${fmt || 'brl'}">${fmt === 'pct' ? '0%' : brl(0)}</b>`);
   const ordem = [1, 0, 2].filter((k) => top[k]); const fim = top.length ? top[0][1] : 1;
+  const anel = (p, neg) => `<div class="rt-anel${neg ? ' neg' : ''}" style="--p:${p.toFixed(3)}"><div class="rt-ag"><svg viewBox="0 0 200 200"><defs><linearGradient id="rtG${neg ? 'n' : ''}" x1="0" y1="0" x2="1" y2="1">${neg ? '<stop offset="0" stop-color="#FFE1D6"/><stop offset=".5" stop-color="#FF8A7A"/><stop offset="1" stop-color="#F0476A"/>' : '<stop offset="0" stop-color="#E6FFF1"/><stop offset=".5" stop-color="#7CF5B2"/><stop offset="1" stop-color="#21C38A"/>'}</linearGradient></defs><circle class="tk" cx="100" cy="100" r="78" pathLength="60"/><circle class="tr" cx="100" cy="100" r="92"/><circle class="ar" cx="100" cy="100" r="92" pathLength="1"/></svg></div><i class="rt-flash"></i></div>`;
   // [chave, fundo, cenário (atrás), conteúdo]
   const sl = [
     ['abre', 'noite', `<i class="rt-ceu"></i><div class="rt-eco"><span>${Array(4).fill(Mes).join(' · ')} · </span><span>${Array(4).fill(Mes).join(' · ')} · </span></div><i class="rt-palco"></i>`,
       `<small class="rt-pill">Sua retrospectiva · ${S.year}</small><h2 class="rt-mes">${basRtKt(Mes)}</h2><p class="rt-big">${basRtKt('acabou. Vamos ver como foi?')}</p><span class="rt-dica">Toque para avançar</span>`],
-    ['entrou', 'azul', `<div class="rt-chuva">${Array.from({ length: 12 }, (_, k) => `<i class="rt-moeda" style="--x:${(k * 37 + 5) % 92}%;--d:${((k * 0.47) % 3).toFixed(2)}s;--t:${(3.2 + (k % 4) * 0.6).toFixed(1)}s;--z:${(0.45 + ((k * 7) % 6) / 10).toFixed(2)}"></i>`).join('')}</div><i class="rt-ouro"></i><img class="rt-pilha" src="assets/img/o3/reserva.png?v=2" alt=""><i class="rt-moeda rt-heroi"></i>`,
-      `<small>Entrou no mês</small>${cont(ent)}<p>${fontes > 1 ? `Vindo de <em>${fontes} fontes</em>. Cada uma conta.` : ent > 0 ? 'Cada real conta a história do mês.' : 'Anote suas entradas para ver aqui.'}</p>`],
-    ['bolhas', 'fundo', `<div class="bas-rt-bolhas rt-bolhas" data-b="${esc(JSON.stringify(bol))}"></div>`,
-      `<p class="bas-rt-lead">Você gastou ${oculto() ? basCent(sai) : `<b>${brl0(sai)}</b>`} em ${MES_LONGO[m]}.</p><p class="bas-rt-sub">${nPg ? `${nPg} ${nPg === 1 ? 'pagamento' : 'pagamentos'}, uma bolha cada.` : 'Nenhum gasto anotado.'}</p>`],
+    ['entrou', 'azul', `<svg class="rt-rios"></svg>`,
+      `<small>Entrou no mês</small>${cont(ent)}<p>${!ent ? 'Nenhuma entrada anotada neste mês. Anote salário e extras para ver o dinheiro chegando aqui.' : estourou ? `Mas saíram ${brl0(sai)}: <em class="neg">${brl0(sai - ent)} a mais</em> do que entrou.` : fts.length > 1 ? `Vindo de <em>${fts.length} fontes</em>, direto para você.` : 'Tudo o que chegou no mês, direto para você.'}</p>
+      <div class="rt-fontes">${fts.map(([nm, v], k) => `<span style="--k:${k}"><b>${esc(nm)}</b><em>${brl0(v)}</em><i style="--p:${(v / totF).toFixed(3)}"></i></span>`).join('')}</div>`],
+    ['bolhas', 'fundo', `<div class="rt-bolhas" data-b="${esc(JSON.stringify(bol))}"></div><i class="rt-carona"><span><b>${bol[0] ? bol[0][0] : '💸'}</b></span></i>`,
+      `<p class="bas-rt-lead">Você gastou ${oculto() ? basCent(sai) : `<b>${brl0(sai)}</b>`} em ${MES_LONGO[m]}.</p><p class="bas-rt-sub">${nPg ? `<b class="rt-conta" data-n="${nPg}">${nPg}</b> ${nPg === 1 ? 'pagamento' : 'pagamentos'}, uma bolha cada.` : 'Nenhum gasto anotado.'}</p>${estourou ? `<p class="rt-alerta">${brl0(sai - ent)} a mais do que entrou</p>` : ''}`],
     ...(dTop ? [['dias', 'tinta', '', `<small>Seu mês, dia a dia</small><h3 class="rt-h">${basRtKt(`Dia ${dTop} foi o mais pesado.`)}</h3><p>${brl0(porDia[dTop])} em ${qDia[dTop]} ${qDia[dTop] === 1 ? 'compra' : 'compras'}.</p>
       <div class="rt-cal"><b>D</b><b>S</b><b>T</b><b>Q</b><b>Q</b><b>S</b><b>S</b>${'<i class="v"></i>'.repeat(ini)}${Array.from({ length: nd }, (_, k) => k + 1).map((d) => `<i class="${d === dTop ? 'top' : porDia[d] ? '' : 'zero'}" style="--a:${(porDia[d] / porDia[dTop]).toFixed(2)};--k:${d}" data-d="${d}">${d}</i>`).join('')}</div>
       <div class="rt-chips"><span><small>Maior compra</small><b>${esc(maior.nome || maior.area)}</b><em>${brl0(maior.valor)}</em></span><span class="rt-sem"><small>Dias sem gastar</small><b class="rt-big2">${semGasto}</b></span></div>`]] : []),
     ['pod', 'roxo', '', `<small>Para onde foi</small><h3 class="rt-h">${top.length ? basRtKt(`${esc(top[0][0])} levou a maior parte.`) : 'Nenhum gasto anotado.'}</h3>
       <div class="rt-pod">${ordem.map((k, o) => `<div class="rt-pc" data-r="${k + 1}" style="--o:${o}"><div class="rt-pcol" style="--h:${(84 + (150 * top[k][1]) / fim).toFixed(0)}px"><span class="rt-pe">${basRtEmo(top[k][0])}</span><b class="rt-pr">${k + 1}</b></div><span class="rt-pl"><b>${esc(top[k][0])}</b><small>${brl0(top[k][1])} · ${pct(top[k][1] / Math.max(1, sai))}</small></span></div>`).join('')}</div>`],
-    ['guarda', 'verde', '', `<small>Ficou com você</small><div class="rt-anel" style="--p:${guardP.toFixed(3)}"><div class="rt-ag"><svg viewBox="0 0 200 200"><defs><linearGradient id="rtG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E6FFF1"/><stop offset=".5" stop-color="#7CF5B2"/><stop offset="1" stop-color="#21C38A"/></linearGradient></defs><circle class="tk" cx="100" cy="100" r="78" pathLength="60"/><circle class="tr" cx="100" cy="100" r="92"/><circle class="ar" cx="100" cy="100" r="92" pathLength="1"/></svg></div><i class="rt-flash"></i></div>${cont(guardP, 'pct')}<p>${ent > 0 ? `Sobraram <em>${brl0(sob)}</em> do que entrou.` : 'Anote as entradas para ver quanto guardou.'}</p>`],
-    ['invest', 'azul', '', `<small>Investido</small>${cont(D.aportado)}<p>${n > 0 ? `Sua sequência está em <em>${n} ${n === 1 ? 'mês' : 'meses'}</em> seguidos.` : 'Um aporte por mês começa uma sequência.'}</p>
-      <div class="rt-esc">${Array.from({ length: 6 }, (_, k) => `<i class="${k >= 6 - Math.min(n, 6) ? 'on' : ''}" style="--k:${k};--h:${40 + k * 30}px"><span>${cap(MES[(m - 5 + k + 12) % 12])}</span></i>`).join('')}</div>`],
-    ['patri', 'noite', '', `<small>Seu patrimônio</small>${cont(C.patrimonio[m])}<span class="rt-delta ${dp >= 0 ? 'up' : 'dn'}">${Math.abs(dp) >= 1 ? `${dp > 0 ? '▲' : '▼'} ${brl0(Math.abs(dp))} no mês` : 'Estável no mês'}</span>
-      <div class="rt-gw" data-p="${esc(JSON.stringify(pts.map((p) => [+p[0].toFixed(1), +p[1].toFixed(1)])))}"><svg class="rt-graf" viewBox="0 0 300 160"><defs><linearGradient id="rtA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8FB0FF" stop-opacity=".55"/><stop offset="1" stop-color="#8FB0FF" stop-opacity="0"/></linearGradient></defs>
+    falta ? ['guarda', 'alerta', '', `<small>Faltou no mês</small>${anel(Math.min(1, -sob / Math.max(1, ent || -sob)), true)}${cont(-sob)}<p>Você gastou mais do que entrou. Faltaram <em>${brl0(-sob)}</em>.</p><p class="rt-dica2">Dica: ${dica}</p>`]
+      : ['guarda', 'verde', '', `<small>Ficou com você</small>${anel(guardP)}${cont(guardP, 'pct')}<p>${ent > 0 ? `Sobraram <em>${brl0(sob)}</em> do que entrou.` : 'Anote as entradas para ver quanto guardou.'}</p>`],
+    ['invest', resg ? 'alerta' : 'azul', '', `<small>${resg ? 'Resgatado no mês' : 'Investido'}</small>${cont(Math.abs(apM))}<p>${resg ? `Você tirou <em>${brl0(-apM)}</em> dos investimentos.` : apM > 0.5 ? (n > 0 ? `Sua sequência está em <em>${n} ${n === 1 ? 'mês' : 'meses'}</em> seguidos.` : 'Um aporte por mês começa uma sequência.') : 'Nenhum aporte neste mês.'}</p>
+      ${resg || apM <= 0.5 ? `<p class="rt-dica2">${resg ? 'Se foi planejado, tudo certo. Se não, tente repor aos poucos nos próximos meses.' : 'Dica: um aporte pequeno, todo mês, já começa uma sequência.'}</p>` : ''}
+      <div class="rt-esc" style="--z:${zeroY.toFixed(0)}px">${mxN ? '<u></u>' : ''}${apS.map(([r, v], k) => { const hh = Math.max(4, (190 * Math.abs(v)) / totA); return `<div class="rt-col"><i class="${v > 0.5 ? 'on' : v < -0.5 ? 'neg' : 'nada'}${k === apS.length - 1 ? ' atual' : ''}" style="--k:${k};top:${(v >= 0 ? zeroY - hh : zeroY).toFixed(0)}px;height:${hh.toFixed(0)}px"></i><span>${r}</span></div>`; }).join('')}</div>`],
+    ['patri', 'noite', '', `<small>Seu patrimônio</small>${cont(C.patrimonio[m])}<span class="rt-delta ${dp >= 0 ? 'up' : 'dn'}">${Math.abs(dp) >= 1 ? `${dp > 0 ? '▲' : '▼'} ${brl0(Math.abs(dp))} no mês` : 'Estável no mês'}</span>${caiu ? '<p class="rt-dica2">Oscilações fazem parte. O que conta é a tendência dos próximos meses.</p>' : ''}
+      <div class="rt-gw${caiu ? ' dn' : ''}" data-p="${esc(JSON.stringify(pts.map((p) => [+p[0].toFixed(1), +p[1].toFixed(1)])))}"><svg class="rt-graf" viewBox="0 0 300 160"><defs><linearGradient id="rtA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${caiu ? '#FF8A9A' : '#8FB0FF'}" stop-opacity=".5"/><stop offset="1" stop-color="${caiu ? '#FF8A9A' : '#8FB0FF'}" stop-opacity="0"/></linearGradient></defs>
       ${[36, 72, 108, 144].map((y) => `<line x1="0" x2="300" y1="${y}" y2="${y}"/>`).join('')}<path class="ar" d="${lin} L${ult[0].toFixed(1)} 160 L${pts[0][0].toFixed(1)} 160 Z"/><path class="ln" pathLength="1" d="${lin}"/><circle class="pt" cx="${ult[0].toFixed(1)}" cy="${ult[1].toFixed(1)}" r="7"/></svg>
       <div class="rt-gm">${rot.map((r) => `<span>${r}</span>`).join('')}</div></div>`],
-    ...(g ? [['sonho', 'azul', '', `<div class="rt-sonho"><i class="rt-orb"></i><i class="rt-halo"></i>${Array.from({ length: 5 }, (_, k) => `<i class="rt-est" style="--k:${k}"></i>`).join('')}<img src="assets/img/o3/${esc(obj3dDe(g))}.png?v=2" alt=""><span class="bas-rt-si">${objIcone(g, 0)}</span></div>
+    ...(g ? [['sonho', 'azul', '', `<div class="rt-sonho o3" data-tipo="${esc(obj3dDe(g))}"><i class="rt-orb"></i><i class="rt-halo"></i>${Array.from({ length: 5 }, (_, k) => `<i class="rt-est" style="--k:${k}"></i>`).join('')}<div class="rt-o3">${obj3dHtml(obj3dDe(g))}</div><img src="assets/img/o3/${esc(obj3dDe(g))}.png?v=2" alt=""><span class="bas-rt-si">${objIcone(g, 0)}</span></div>
       <small>Seu sonho</small><h3 class="rt-h">${basRtKt(esc(objNomeDe(g)))}</h3><div class="bas-rt-sb"><i style="--p:${Math.min(1, g.progresso || 0).toFixed(3)}"></i></div><p><em>${pct(g.progresso || 0)}</em> do caminho${g.falta > 0 ? ` · faltam ${brl0(g.falta)}` : ' · chegou lá!'}</p>`]] : []),
-    ['fim', 'fim', `<div class="rt-confete">${Array.from({ length: 26 }, (_, k) => `<i style="--x:${(k * 29 + 3) % 98}%;--d:${((k * 0.17) % 1.6).toFixed(2)}s;--r:${(k % 2 ? 1 : -1) * (360 + (k % 5) * 140)}deg;--c:${['#FFFFFF', '#FFD66B', '#8CF7B8', '#A9C2FF', '#FF9EC2'][k % 5]}"></i>`).join('')}</div>`,
-      `<small>Esse foi o seu ${MES_LONGO[m]}</small><h2 class="rt-h">${basRtKt('Mês fechado. Bonito de ver.')}</h2><div class="bas-rt-res"><span><small>Entrou</small><b>${brl0(ent)}</b></span><span><small>Saiu</small><b>${brl0(sai)}</b></span><span><small>Guardou</small><b>${pct(guardP)}</b></span><span><small>Investiu</small><b>${brl0(D.aportado)}</b></span></div>
+    ['fim', 'fim', ruim ? '' : `<div class="rt-confete">${Array.from({ length: 26 }, (_, k) => `<i style="--x:${(k * 29 + 3) % 98}%;--d:${((k * 0.17) % 1.6).toFixed(2)}s;--r:${(k % 2 ? 1 : -1) * (360 + (k % 5) * 140)}deg;--c:${['#FFFFFF', '#FFD66B', '#8CF7B8', '#A9C2FF', '#FF9EC2'][k % 5]}"></i>`).join('')}</div>`,
+      `<small>Esse foi o seu ${MES_LONGO[m]}</small><h2 class="rt-h">${basRtKt(ruim ? 'Mês fechado. Bora ajustar a rota.' : 'Mês fechado. Bonito de ver.')}</h2><div class="bas-rt-res"><span><small>Entrou</small><b>${brl0(ent)}</b></span><span><small>Saiu</small><b${estourou ? ' class="neg"' : ''}>${brl0(sai)}</b></span>${falta ? `<span><small>Faltou</small><b class="neg">${brl0(-sob)}</b></span>` : `<span><small>Guardou</small><b>${pct(guardP)}</b></span>`}${resg ? `<span><small>Resgatou</small><b class="neg">${brl0(-apM)}</b></span>` : `<span><small>Investiu</small><b>${brl0(apM)}</b></span>`}</div>
       <div class="bas-rt-bts"><button class="btn primary lg" data-act="bas-retro-share" data-m="${m}">${I_PARTILHA}Compartilhar o mês</button><button class="bas-rt-de" data-act="bas-wr-de">Ver de novo</button></div>`],
   ];
-  return `<section class="bas-wr rt" data-n="${sl.length}" style="--n:${sl.length}"><div class="bas-wr-bar">${sl.map((_, i) => `<span><i style="--i:${i}"></i></span>`).join('')}</div>
+  return `<section class="bas-wr rt${ruim ? ' ruim' : ''}" data-n="${sl.length}" style="--n:${sl.length}"><div class="bas-wr-bar">${sl.map((_, i) => `<span><i style="--i:${i}"></i></span>`).join('')}</div>
     <button class="bas-wr-x" data-act="bas-voltar" aria-label="Fechar">${I.x}</button>${sl.map(([k, bg, cen, h], i) => `<div class="bas-wr-s bas-rt-s${i === sl.length - 1 ? ' fim' : ''}${i ? '' : ' on'}" data-s="${i}" data-k="${k}" data-bg="${bg}"><div class="rt-cen" aria-hidden="true"><i class="rt-luz"></i>${cen}</div><div class="rt-c">${h}</div></div>`).join('')}
-    <span class="bas-rt-cif" aria-hidden="true"><i class="rt-sombra"></i><span class="rt-cb"><span class="cifrao" data-sem-giro></span></span></span>
+    <span class="bas-rt-cif" aria-hidden="true"><span class="rt-cb"><span class="cifrao" data-sem-giro></span></span></span>
     <button class="bas-wr-z e" data-act="bas-wr" data-d="-1" aria-label="Anterior"></button><button class="bas-wr-z d" data-act="bas-wr" data-d="1" aria-label="Próxima"></button></section>`;
 }
 // --- o Cifrão como ator: posição = centro dele em px dentro da retrospectiva, mais a escala (1 = 120px)
@@ -2033,12 +2062,13 @@ function basRtVai(w, pts, dur, o = {}) {
   const ci = w.querySelector('.bas-rt-cif'); if (!ci || !pts.length) return; const cb = ci.querySelector('.rt-cb'); const de = basRtAgora(ci); const fim = pts[pts.length - 1];
   ci.getAnimations().forEach((a) => a.cancel()); ci.style.transform = basRtTf(fim);
   if (basRtQuieto() || !dur) return;
-  ci.animate([de, ...pts].map((p) => ({ transform: basRtTf(p) })), { duration: dur, easing: o.ease || 'cubic-bezier(.45,0,.25,1)' });
+  const an = ci.animate([de, ...pts].map((p) => ({ transform: basRtTf(p) })), { duration: dur, easing: o.ease || 'cubic-bezier(.45,0,.25,1)' });
   const n = o.passos ?? Math.max(1, Math.round(Math.hypot(fim[0] - de[0], fim[1] - de[1]) / 80)); const lado = fim[0] >= de[0] ? 1 : -1;
   cb.getAnimations().forEach((a) => a.cancel());
   if (n) cb.animate([{ transform: 'none', easing: 'cubic-bezier(.2,.7,.4,1)' }, { transform: `translateY(${-(o.alto || 24)}px) rotate(${lado * 7}deg) scale(.96,1.05)`, offset: 0.45, easing: 'cubic-bezier(.6,0,.8,.3)' }, { transform: 'scale(1.1,.88)', offset: 0.88 }, { transform: 'none' }], { duration: dur / n, iterations: n });
   else basRtPouso(w, dur);
   basRtOlha(w, fim[0] + lado * 80, fim[1]);
+  return an;
 }
 // aterrissa amassando um pouco
 function basRtPouso(w, atraso = 0) { if (basRtQuieto()) return; const cb = w.querySelector('.rt-cb'); cb && cb.animate([{ transform: 'none' }, { transform: 'scale(1.16,.82) translateY(6px)', offset: 0.35 }, { transform: 'scale(.96,1.05)', offset: 0.7 }, { transform: 'none' }], { duration: 420, delay: atraso }); }
@@ -2047,12 +2077,13 @@ const basRtOlhaEl = (w, el) => { if (!el) return; const c = basRtCaixa(w, el); b
 function basRtExp(w, nome) { const h = w.querySelector('.bas-rt-cif .cifrao'); try { if (window.Cifrao && h) window.Cifrao.expressao(h, nome); } catch (e) { /* ignora */ } }
 // troca de forma e segura nela (o Cifrão volta sozinho para 'cifrao' depois de ~1,8 s; o intervalo em basRtEntra zera esse relógio)
 function basRtForma(w, nome) { w._fm = nome; const h = w.querySelector('.bas-rt-cif .cifrao'); const a = h && h.cifrao; if (!a || !window.Cifrao) return; a.pedido = ''; window.Cifrao.forma(h, nome); a.tForma = 0; }
-// faísca/onda num ponto (estouro de bolha, moeda pega, cadeado trancando)
+// faísca/onda num ponto (moeda que chega, bolha pisada, cadeado trancando)
 function basRtFaisca(w, x, y, cor) { if (basRtQuieto()) return; const f = document.createElement('i'); f.className = 'rt-faisca'; f.style.left = `${x}px`; f.style.top = `${y}px`; if (cor) f.style.setProperty('--c', cor); w.appendChild(f); setTimeout(() => f.remove(), 700); }
 // o roteiro de cada tela: em(ms, fn) agenda um passo (cancelado se a tela mudar)
 function basRtAto(w, s, em) {
   const W = w.clientWidth, H = w.clientHeight; const k = s.dataset.k; const q = (sel) => s.querySelector(sel); const cx = (el) => { const c = basRtCaixa(w, el); return [c[0] + c[2] / 2, c[1] + c[3] / 2, c]; };
-  const h = w.querySelector('.bas-rt-cif .cifrao'); if (h) h.toggleAttribute('data-sem-giro', !(k === 'abre' || k === 'fim')); // cambalhota só na abertura e no fim
+  const ruim = w.classList.contains('ruim'); const eu = () => basRtAgora(w.querySelector('.bas-rt-cif'));
+  const h = w.querySelector('.bas-rt-cif .cifrao'); if (h) h.toggleAttribute('data-sem-giro', !(k === 'abre' || (k === 'fim' && !ruim))); // cambalhota só na abertura e no fim (se o mês foi bom)
   basRtForma(w, 'cifrao');
   const vai = (pts, dur, o) => basRtVai(w, pts, dur, o);
   if (k === 'abre') {
@@ -2061,95 +2092,123 @@ function basRtAto(w, s, em) {
     em(600, () => vai([[W * 0.35, H * 0.36, 1.2], [W * 0.5, H * 0.3, 1.35]], 1100, { passos: 3, alto: 36 }));
     em(1800, () => basRtExp(w, 'festa')); em(3000, () => basRtOlhaEl(w, t)); em(3700, () => basRtExp(w, 'cambalhota')); em(5600, () => basRtExp(w, 'piscadela'));
   } else if (k === 'entrou') {
-    const y = H * 0.78, x0 = W * 0.3; const he = q('.rt-heroi'); const pi = q('.rt-pilha');
-    vai([[W * 0.1, y, 0.85]], 600, { passos: 2 });
-    em(650, () => vai([[x0, y, 0.85]], 800, { passos: 3 }));
-    em(1300, () => { basRtOlha(w, x0, 0); basRtExp(w, 'surpreso'); if (he && !basRtQuieto()) he.animate([{ transform: `translate3d(${x0 - 28}px, -80px, 0) rotateY(0)`, opacity: 1 }, { transform: `translate3d(${x0 - 28}px, ${y - 110}px, 0) rotateY(900deg)`, opacity: 1 }], { duration: 650, easing: 'cubic-bezier(.5,0,.9,.6)' }); });
-    em(1950, () => { basRtForma(w, 'moeda'); basRtExp(w, 'plim'); basRtPouso(w); basRtFaisca(w, x0, y - 40, '#FFD66B'); });
-    em(3000, () => { const c = pi ? cx(pi) : [W * 0.7]; vai([[Math.min(W - 70, c[0] - 70), y + 6, 0.85]], 900, { passos: 3 }); });
-    em(4100, () => { basRtExp(w, 'orgulho'); if (pi) basRtOlhaEl(w, pi); });
-    em(5100, () => { basRtForma(w, 'cifrao'); basRtOlhaEl(w, q('.bas-rt-n')); }); em(5700, () => basRtExp(w, 'sim'));
+    // rios de moedas: de cada fonte de renda sai um rio de luz que desce até o Cifrão; ele vira moeda e cresce a cada rio que chega
+    const ch = [...s.querySelectorAll('.rt-fontes > span')]; const sv = q('.rt-rios'); const lb = ch.length ? basRtCaixa(w, ch[ch.length - 1]) : null;
+    const alvo = lb ? [W * 0.8, Math.min(H - 90, lb[1] + lb[3] + 120)] : [W * 0.5, H * 0.66];
+    if (sv) { sv.setAttribute('viewBox', `0 0 ${W} ${H}`); sv.innerHTML = ch.map((c, j) => { const b = basRtCaixa(w, c); const x0 = b[0] + b[2] - 6, y0 = b[1] + b[3] / 2; const d = `M${x0.toFixed(0)} ${y0.toFixed(0)} C${(x0 + 60).toFixed(0)} ${y0.toFixed(0)} ${alvo[0].toFixed(0)} ${(y0 + 20).toFixed(0)} ${alvo[0].toFixed(0)} ${(alvo[1] - 46).toFixed(0)}`; return `<path class="g" pathLength="1" style="--k:${j}" d="${d}"/><path class="f" style="--k:${j}" d="${d}"/>`; }).join('') + (ch.length ? `<circle class="poca" cx="${alvo[0].toFixed(0)}" cy="${(alvo[1] + 54).toFixed(0)}" r="46"/>` : ''); }
+    vai([[W * 0.12, H * 0.86, 0.55]], 600, { passos: 2 });
+    em(650, () => vai([alvo.concat(0.55)], 900, { passos: 4 }));
+    if (!ch.length) { em(1700, () => { basRtExp(w, 'confuso'); basRtOlhaEl(w, q('.rt-c p')); }); em(3800, () => basRtExp(w, 'pensando')); return; }
+    em(1600, () => { basRtForma(w, 'moeda'); basRtOlha(w, alvo[0] - 60, alvo[1] - 120); });
+    ch.forEach((c, j) => em(1800 + j * 650, () => { const e = 0.6 + (j + 1) * (0.3 / ch.length); vai([[alvo[0], alvo[1], e]], 260, { passos: 0 }); basRtExp(w, 'plim'); basRtFaisca(w, alvo[0], alvo[1] - 40, '#FFD66B'); c.classList.add('chegou'); }));
+    const t = 1800 + ch.length * 650;
+    em(t + 300, () => basRtExp(w, ruim ? 'pensando' : 'orgulho'));
+    em(t + 1600, () => { basRtForma(w, 'cifrao'); basRtOlhaEl(w, q('.bas-rt-n')); }); em(t + 2300, () => basRtExp(w, ruim ? 'confuso' : 'sim'));
   } else if (k === 'bolhas') {
-    vai([[W * 0.5, H * 0.86, 0.8]], 700, { passos: 2 });
-    let vez = 0; const estoura = () => {
-      const ci = w.querySelector('.bas-rt-cif'); const eu = basRtAgora(ci); const b = w.getBoundingClientRect();
-      const cand = [...s.querySelectorAll('.rt-bolhas > i:not(.pop)')].map((el) => { const r = el.getBoundingClientRect(); return [el, r.left - b.left + r.width / 2, r.top - b.top + r.height / 2, r.width]; })
-        .filter((c) => c[2] > H * 0.4 && c[2] < H * 0.8 && c[1] > 40 && c[1] < W - 40).sort((a, c) => Math.hypot(a[1] - eu[0], a[2] - eu[1]) - Math.hypot(c[1] - eu[0], c[2] - eu[1]));
-      const c = cand[0]; if (!c) return; const t = parseFloat(c[0].style.getPropertyValue('--t')) || 6; const sobe = (0.92 * H * 0.65) / t; // a bolha sobe enquanto ele pula
-      const alvo = [c[1], c[2] - sobe, 0.7]; vai(basRtArco(eu, alvo, 70), 650, { passos: 0, ease: 'cubic-bezier(.3,0,.4,1)' });
-      setTimeout(() => { if (!w.isConnected || s !== w.querySelectorAll('.bas-wr-s')[+w.dataset.i]) return; c[0].classList.add('pop'); basRtFaisca(w, alvo[0], alvo[1]); basRtExp(w, ['susto', 'animado', 'gelatina'][vez++ % 3]); }, basRtQuieto() ? 0 : 640);
-    };
-    em(900, estoura); em(2200, estoura); em(3500, estoura);
-    em(4900, () => { vai(basRtArco(basRtAgora(w.querySelector('.bas-rt-cif')), [W * 0.8, H * 0.36, 0.65], 60), 800, { passos: 0 }); });
-    em(5800, () => { basRtOlhaEl(w, q('.bas-rt-lead')); basRtExp(w, 'espiada'); });
+    // calmo: ele fica embaixo vendo as bolhas subirem (os olhos seguem uma por uma) e conta os pagamentos;
+    // depois a bolha do maior gasto sobe até ele, ele pula em cima e pega carona até o alto, olhando o total
+    const ca = q('.rt-carona'); const cn = q('.rt-conta'); const R = 56;
+    const pe = (p) => [p[0], p[1] - R - 22, 0.5]; const tfB = (p) => `translate3d(${(p[0] - R).toFixed(1)}px, ${(p[1] - R).toFixed(1)}px, 0)`;
+    const voaB = (pts, dur, ease) => { if (!ca) return; const de = ca._p || [W * 0.5, H + 90]; ca._p = pts[pts.length - 1]; ca.getAnimations().forEach((x) => x.cancel()); ca.style.transform = tfB(ca._p); if (!basRtQuieto() && dur) ca.animate([de, ...pts].map((p) => ({ transform: tfB(p) })), { duration: dur, easing: ease }); };
+    if (ca) { ca._p = null; ca.getAnimations().forEach((x) => x.cancel()); ca.style.transform = tfB([W * 0.5, H + 90]); }
+    vai([[W * 0.3, H * 0.9, 0.55]], 700, { passos: 2 });
+    const segue = () => { const b = w.getBoundingClientRect(); const v = [...s.querySelectorAll('.rt-bolhas > i')].map((el) => el.getBoundingClientRect()).filter((r) => r.top - b.top > H * 0.3 && r.top - b.top < H * 0.75 && r.width); if (v.length) { const r = v[(Math.random() * v.length) | 0]; basRtOlha(w, r.left - b.left + r.width / 2, r.top - b.top + r.height / 2); } };
+    for (let t = 900; t < 3000; t += 420) em(t, segue);
+    em(1000, () => { basRtExp(w, 'calculando'); if (!cn) return; const alvo = +cn.dataset.n; if (basRtQuieto()) { cn.textContent = alvo; return; } const t0 = performance.now(); const passo = (t) => { const k = Math.min(1, (t - t0) / 1800); cn.textContent = Math.round(alvo * k); if (k < 1 && cn.isConnected) requestAnimationFrame(passo); }; requestAnimationFrame(passo); });
+    em(2900, () => { voaB([[W * 0.62, H * 0.8]], 1000, 'cubic-bezier(.2,.8,.3,1)'); basRtOlha(w, W * 0.62, H * 0.8); basRtExp(w, 'surpreso'); });
+    em(3950, () => vai(basRtArco(eu(), pe([W * 0.62, H * 0.8]), 70), 520, { passos: 0 }));
+    em(4500, () => { const P = [[W * 0.7, H * 0.7], [W * 0.66, H * 0.61], [W * 0.72, H * 0.53]]; voaB(P, 2400, 'cubic-bezier(.45,0,.4,1)'); vai(P.map(pe), 2400, { passos: 0, ease: 'cubic-bezier(.45,0,.4,1)' }); basRtExp(w, 'carinho'); });
+    em(6000, () => { basRtOlhaEl(w, q('.bas-rt-lead')); basRtExp(w, ruim ? 'susto' : 'piscadela'); });
   } else if (k === 'dias') {
     const cel = (d) => q(`.rt-cal i[data-d="${d}"]`); const top = q('.rt-cal i.top'); if (!top) return; const sobre = (el) => { const c = cx(el); return [c[0], c[2][1] - 18, 0.45]; };
     const dTop = +top.dataset.d; const via = [1, 8, 15, 22].filter((d) => d < dTop - 3).slice(-2).map((d) => sobre(cel(d)));
     vai([[sobre(cel(1))[0] - 40, sobre(cel(1))[1], 0.45]], 650, { passos: 2 });
-    em(1100, () => { let a = basRtAgora(w.querySelector('.bas-rt-cif')); const p = []; [...via, sobre(top)].forEach((b) => { p.push(...basRtArco(a, b, 50)); a = b; }); vai(p, 520 * (via.length + 1), { passos: 0, ease: 'linear' }); });
+    em(1100, () => { let a = eu(); const p = []; [...via, sobre(top)].forEach((b) => { p.push(...basRtArco(a, b, 50)); a = b; }); vai(p, 520 * (via.length + 1), { passos: 0, ease: 'linear' }); });
     em(1100 + 520 * (via.length + 1), () => { basRtPouso(w); top.classList.add('pisa'); basRtExp(w, 'susto'); });
     em(3600, () => { basRtOlhaEl(w, q('.rt-h')); basRtExp(w, 'pensando'); });
-    em(4800, () => { const c = cx(q('.rt-sem')); vai(basRtArco(basRtAgora(w.querySelector('.bas-rt-cif')), [c[0] + c[2][2] * 0.3, c[2][1] - 22, 0.45], 70), 700, { passos: 0 }); });
+    em(4800, () => { const c = cx(q('.rt-sem')); vai(basRtArco(eu(), [c[0] + c[2][2] * 0.3, c[2][1] - 22, 0.45], 70), 700, { passos: 0 }); });
     em(5700, () => basRtExp(w, 'sim'));
   } else if (k === 'pod') {
     const col = (r) => q(`.rt-pc[data-r="${r}"] .rt-pcol`); const sobre = (el) => { const c = cx(el); return [c[0], c[2][1] - 30, 0.6]; };
     const c2 = col(2), c1 = col(1), c3 = col(3); const chao = c1 ? cx(c1)[2][1] + cx(c1)[2][3] - 34 : H * 0.8;
     vai([[18, chao, 0.6]], 650, { passos: 2 });
-    let t = 1300; const pula = (el, alto) => { if (!el) return; const at = t; em(at, () => { vai(basRtArco(basRtAgora(w.querySelector('.bas-rt-cif')), sobre(el), alto), 620, { passos: 0 }); }); t += 900; };
+    let t = 1300; const pula = (el, alto) => { if (!el) return; em(t, () => { vai(basRtArco(eu(), sobre(el), alto), 620, { passos: 0 }); }); t += 900; };
     pula(c2, 90); pula(c1, 110);
     em(t, () => basRtExp(w, 'surpreso')); em(t + 1200, () => { if (c3) basRtOlhaEl(w, c3); basRtExp(w, 'pensando'); });
     em(t + 2400, () => basRtOlhaEl(w, q('.rt-h')));
   } else if (k === 'guarda') {
-    const an = q('.rt-anel'); if (!an) return; const c = cx(an); const r = c[2][2] / 2;
+    const an = q('.rt-anel'); if (!an) return; const c = cx(an); const r = c[2][2] / 2; const neg = an.classList.contains('neg');
     vai([[W * 0.12, c[1] + r + 40, 0.65]], 650, { passos: 2 });
     em(700, () => vai([[c[0] - r * 0.6, c[1] + r + 30, 0.65]], 700, { passos: 2 }));
-    em(1500, () => { vai(basRtArco(basRtAgora(w.querySelector('.bas-rt-cif')), [c[0], c[1], 0.9], 110), 650, { passos: 0 }); });
-    em(2150, () => { basRtForma(w, 'cadeado'); basRtExp(w, 'sim'); an.classList.add('tranca'); basRtFaisca(w, c[0], c[1], '#8CF7B8'); });
-    em(3800, () => basRtExp(w, 'orgulho')); em(5200, () => basRtOlhaEl(w, q('.bas-rt-n')));
+    em(1500, () => { const a = vai(basRtArco(eu(), [c[0], c[1], 0.9], 110), 650, { passos: 0 });
+      const chegou = () => em(0, () => { // só depois que ele chega no centro: vira cadeado...
+        basRtForma(w, 'cadeado'); basRtExp(w, neg ? 'frio' : 'sim'); basRtFaisca(w, c[0], c[1], neg ? '#FF8A7A' : '#8CF7B8');
+        em(560, () => { an.classList.add('tranca'); s.classList.add('conta'); const b = q('.bas-rt-n'); if (b && b.dataset.cont) basRtConta(b); }); // ...depois o anel enche e o número conta...
+        em(1900, () => { s.classList.add('mostra'); basRtOlhaEl(w, q('.bas-rt-n')); }); // ...e por fim o texto e a dica
+        if (neg) { em(2900, () => { basRtForma(w, 'cifrao'); basRtExp(w, 'timido'); }); em(4000, () => { basRtOlhaEl(w, q('.rt-dica2')); basRtExp(w, 'sim'); }); } else em(2500, () => basRtExp(w, 'orgulho'));
+      });
+      if (a) a.finished.then(chegou, () => {}); else chegou(); });
   } else if (k === 'invest') {
-    const bs = [...s.querySelectorAll('.rt-esc i')]; if (!bs.length) return; const sobre = (el) => { const c = cx(el); return [c[0], c[2][1] - 26, 0.5]; }; const b0 = cx(bs[0]);
-    vai([[Math.max(24, b0[2][0] - 18), b0[2][1] + b0[2][3] - 30, 0.5]], 650, { passos: 2 });
-    em(1200, () => { let a = basRtAgora(w.querySelector('.bas-rt-cif')); const p = []; bs.forEach((b) => { const d = sobre(b); p.push(...basRtArco(a, d, 34)); a = d; }); vai(p, 330 * bs.length, { passos: 0, ease: 'linear' }); });
-    const t = 1200 + 330 * bs.length;
-    em(t, () => { basRtForma(w, 'seta'); basRtExp(w, 'animado'); const d = sobre(bs[bs.length - 1]); basRtFaisca(w, d[0], d[1]); });
-    em(t + 500, () => { const d = sobre(bs[bs.length - 1]); vai([[d[0] - 10, d[1] - 70, 0.7]], 1200, { passos: 0, ease: 'cubic-bezier(.2,.8,.3,1)' }); });
-    em(t + 2200, () => { basRtForma(w, 'cifrao'); basRtOlhaEl(w, q('.bas-rt-n')); basRtExp(w, 'confiante'); });
+    const es = q('.rt-esc'); const bs = [...s.querySelectorAll('.rt-esc i')]; if (!es || !bs.length) return; const e0 = basRtCaixa(w, es); const zero = e0[1] + parseFloat(es.style.getPropertyValue('--z'));
+    const topo = (b) => { const c = cx(b); return [c[0], (b.classList.contains('on') ? c[2][1] : zero) - 24, 0.45]; }; const ult = bs[bs.length - 1];
+    vai([[Math.max(24, e0[0] - 4), zero - 24, 0.45]], 650, { passos: 2 });
+    if (ult.classList.contains('on')) { // sobe pelas barras até o mês atual e vira seta
+      em(1200, () => { let a = eu(); const p = []; bs.forEach((b) => { const d = topo(b); p.push(...basRtArco(a, d, 34)); a = d; }); vai(p, 330 * bs.length, { passos: 0, ease: 'linear' }); });
+      const t = 1200 + 330 * bs.length;
+      em(t, () => { basRtForma(w, 'seta'); basRtExp(w, 'animado'); const d = topo(ult); basRtFaisca(w, d[0], d[1]); });
+      em(t + 500, () => { const d = topo(ult); vai([[d[0] - 10, d[1] - 60, 0.6]], 1200, { passos: 0, ease: 'cubic-bezier(.2,.8,.3,1)' }); });
+      em(t + 2200, () => { basRtForma(w, 'cifrao'); basRtOlhaEl(w, q('.bas-rt-n')); basRtExp(w, 'confiante'); });
+    } else { // resgate ou nada: anda pela linha do zero até o mês, olha a barra que desceu e se preocupa
+      em(1200, () => vai([topo(ult)], 1300, { passos: 5 }));
+      em(2600, () => { basRtOlhaEl(w, ult); basRtExp(w, ult.classList.contains('neg') ? 'susto' : 'pensando'); });
+      em(3800, () => basRtExp(w, 'frio'));
+      em(5000, () => { basRtOlhaEl(w, q('.rt-dica2')); basRtExp(w, 'sim'); });
+    }
   } else if (k === 'patri') {
     const gw = q('.rt-gw'); if (!gw) return; const c = basRtCaixa(w, gw); const sv = gw.querySelector('svg'); const sx = sv.clientWidth / 300, sy = sv.clientHeight / 160;
-    const P = JSON.parse(gw.dataset.p || '[]').map((p) => [c[0] + p[0] * sx, c[1] + p[1] * sy - 26, 0.45]); if (!P.length) return; const sobe = q('.rt-delta.up');
+    const P = JSON.parse(gw.dataset.p || '[]').map((p) => [c[0] + p[0] * sx, c[1] + p[1] * sy - 26, 0.45]); if (!P.length) return; const sobe = !gw.classList.contains('dn');
     vai([[P[0][0], P[0][1] - 140, 0.45]], 600, { passos: 2 });
     em(650, () => { vai([P[0]], 350, { passos: 0, ease: 'cubic-bezier(.5,0,.9,.6)' }); });
     em(1000, () => vai(P.slice(1), 1700, { passos: Math.max(1, P.length - 1), alto: 10, ease: 'linear' }));
-    em(2750, () => { basRtForma(w, sobe ? 'mais' : 'cifrao'); basRtExp(w, sobe ? 'confiante' : 'frio'); const e = P[P.length - 1]; basRtFaisca(w, e[0], e[1] + 26); });
-    em(4300, () => { basRtOlhaEl(w, q('.bas-rt-n')); }); em(5300, () => basRtExp(w, sobe ? 'piscadela' : 'pensando'));
+    em(2750, () => { basRtForma(w, sobe ? 'mais' : 'cifrao'); basRtExp(w, sobe ? 'confiante' : 'frio'); const e = P[P.length - 1]; basRtFaisca(w, e[0], e[1] + 26, sobe ? null : '#FF8A9A'); });
+    em(4300, () => { basRtOlhaEl(w, q(sobe ? '.bas-rt-n' : '.rt-dica2')); }); em(5300, () => basRtExp(w, sobe ? 'piscadela' : 'sim'));
   } else if (k === 'sonho') {
     const so = q('.rt-sonho'); if (!so) return; const c = cx(so); const bx = c[2];
     vai([[W - 40, bx[1] + bx[3] * 0.8, 0.6]], 650, { passos: 2 });
     em(700, () => vai([[bx[0] + bx[2] * 0.86, bx[1] + bx[3] * 0.8, 0.6]], 800, { passos: 3 }));
     em(1600, () => { basRtOlha(w, c[0], bx[1]); basRtExp(w, 'surpreso'); });
     em(2700, () => basRtExp(w, 'carinho'));
-    em(3700, () => vai(basRtArco(basRtAgora(w.querySelector('.bas-rt-cif')), [bx[0] + bx[2] * 0.14, bx[1] + bx[3] * 0.8, 0.6], 120), 900, { passos: 0 }));
+    em(3700, () => vai(basRtArco(eu(), [bx[0] + bx[2] * 0.14, bx[1] + bx[3] * 0.8, 0.6], 120), 900, { passos: 0 }));
     em(4700, () => { basRtOlha(w, c[0], c[1]); basRtExp(w, 'brilha'); });
   } else if (k === 'fim') {
     vai([[W * 0.5, H * 0.16, 1.05]], 800, { passos: 0, ease: 'cubic-bezier(.3,1.35,.5,1)' });
+    if (ruim) { em(900, () => basRtExp(w, 'carinho')); em(2600, () => basRtExp(w, 'sim')); em(4600, () => basRtOlhaEl(w, q('.bas-rt-res'))); em(6200, () => basRtExp(w, 'piscadela')); em(9000, () => basRtExp(w, 'confiante')); return; }
     em(900, () => basRtExp(w, 'comemorando')); em(2800, () => basRtExp(w, 'cambalhota')); em(5000, () => basRtExp(w, 'danca'));
     em(7200, () => basRtOlhaEl(w, q('.bas-rt-bts'))); em(8200, () => basRtExp(w, 'piscadela')); em(11000, () => basRtExp(w, 'festa'));
   }
 }
-// ao entrar numa tela: reinicia a cena, os números contam, as bolhas sobem e o Cifrão segue o roteiro
+// bolhas da tela de gastos: uma por pagamento (as maiores primeiro), subindo devagar como na referência
+function basRtBolhas(w, s, bx) {
+  const B = JSON.parse(bx.dataset.b || '[]'); const mxv = Math.max(1, ...B.map((x) => x[1]));
+  bx.innerHTML = B.map(([e, v], k) => { const tam = 44 + Math.sqrt(v / mxv) * 58; return `<i style="--s:${tam.toFixed(0)}px;--x:${(9 + ((k * 37) % 82))}%;--d:${((k * 0.31) % 3.2).toFixed(2)}s;--y:${((k % 6) / 6 + (k % 7) * 0.02).toFixed(2)};--t:${(5.5 + (k % 5) * 0.7).toFixed(1)}s;--o:${(k % 2 ? 1 : -1) * (6 + (k % 4) * 4)}px"><span><b>${e}</b></span></i>`; }).join('');
+}
+// número contando até o valor final
+function basRtConta(b, atraso = 0) { const alvo = +b.dataset.cont; const pc = b.dataset.fmt === 'pct'; const f = (v) => (pc ? pct(v) : brl(v));
+  if (basRtQuieto()) { b.textContent = f(alvo); return; } const t0 = performance.now() + atraso; const passo = (t) => { const k = Math.max(0, Math.min(1, (t - t0) / 1500)); b.textContent = f(alvo * (1 - Math.pow(1 - k, 4))); if (k < 1 && b.isConnected) requestAnimationFrame(passo); }; requestAnimationFrame(passo); }
+// ao entrar numa tela: reinicia a cena, os números contam, e o Cifrão segue o roteiro
 function basRtEntra(w, i) {
   if (!w.classList.contains('rt')) return; const s = w.querySelectorAll('.bas-wr-s')[i]; if (!s) return;
   const quieto = basRtQuieto();
   (w._tt || []).forEach(clearTimeout); w._tt = [];
   const em = (ms, f) => w._tt.push(setTimeout(() => { if (w.isConnected && +w.dataset.i === i) try { f(); } catch (e) { /* ignora */ } }, quieto ? 0 : ms));
   if (!w._hold) w._hold = setInterval(() => { if (!w.isConnected) { clearInterval(w._hold); return; } const a = w.querySelector('.bas-rt-cif .cifrao')?.cifrao; if (a && w._fm && w._fm !== 'cifrao') a.tForma = 0; }, 400);
-  s.querySelectorAll('[data-cont]').forEach((b) => { const alvo = +b.dataset.cont; const pc = b.dataset.fmt === 'pct'; const f = (v) => (pc ? pct(v) : brl(v));
-    if (quieto) { b.textContent = f(alvo); return; } const t0 = performance.now() + 250; const passo = (t) => { const k = Math.max(0, Math.min(1, (t - t0) / 1500)); b.textContent = f(alvo * (1 - Math.pow(1 - k, 4))); if (k < 1 && b.isConnected) requestAnimationFrame(passo); }; requestAnimationFrame(passo); });
-  const bx = s.querySelector('.rt-bolhas'); if (bx && !bx.childElementCount) { const B = JSON.parse(bx.dataset.b || '[]'); const mxv = Math.max(1, ...B.map((x) => x[1]));
-    bx.innerHTML = B.map(([e, v], k) => { const tam = 44 + Math.sqrt(v / mxv) * 62; return `<i style="--s:${tam.toFixed(0)}px;--x:${(9 + ((k * 37) % 82))}%;--d:${((k * 0.31) % 3.2).toFixed(2)}s;--y:${((k % 6) / 6 + (k % 7) * 0.02).toFixed(2)};--t:${(5.5 + (k % 5) * 0.7).toFixed(1)}s;--o:${(k % 2 ? 1 : -1) * (6 + (k % 4) * 4)}px"><span><b>${e}</b></span></i>`; }).join(''); }
-  if (bx) bx.querySelectorAll('.pop').forEach((b) => b.classList.remove('pop'));
-  s.querySelectorAll('.tranca, .pisa').forEach((x) => x.classList.remove('tranca', 'pisa'));
-  s.querySelectorAll('.rt-sonho img').forEach((im) => { if (im.complete && !im.naturalWidth) im.remove(); else im.addEventListener('error', () => im.remove(), { once: true }); }); // sem a imagem 3D, fica o ícone
+  if (s.dataset.k !== 'guarda') s.querySelectorAll('[data-cont]').forEach((b) => basRtConta(b, 250));
+  const bx = s.querySelector('.rt-bolhas'); if (bx && !bx.childElementCount) basRtBolhas(w, s, bx);
+  s.querySelectorAll('.tranca, .pisa, .chegou').forEach((x) => x.classList.remove('tranca', 'pisa', 'chegou')); s.classList.remove('conta', 'mostra');
+  s.querySelectorAll('.rt-sonho img').forEach((im) => { if (im.complete && !im.naturalWidth) im.remove(); else im.addEventListener('error', () => im.remove(), { once: true }); }); // sem a imagem, fica o ícone
+  // o sonho em 3D de verdade, com a entrada dele; o renderizador é um só (O3): ao fechar, o render da tela de baixo religa o dela. Sem 3D, fica a imagem.
+  const so = s.querySelector('.rt-sonho.o3'); if (so) { const falhou = () => so.classList.remove('o3');
+    if (typeof o3Ligar !== 'function') falhou(); else { try { if (typeof O3 !== 'undefined' && O3) O3.tipo = ''; o3Ligar(so, so.dataset.tipo, falhou); } catch (e) { falhou(); } setTimeout(() => { if (!so.querySelector('.gl-ok')) falhou(); }, 4000); } }
   s.classList.remove('vai'); void s.offsetWidth; s.classList.add('vai');
   basRtAto(w, s, em);
 }
@@ -2399,8 +2458,8 @@ function basWidgetsInicio(secs) {
     <span class="bas-ph-x" aria-hidden="true">${PH.map((q, k) => `<span class="${k === PH.length - 1 ? 'on' : ''}" style="left:${xH(q)}%">${ptsH[k].k}</span>`).join('')}</span></button>`;
   // Seu ano: a sobra de cada mês numa fileira de 12 cápsulas de luz (verde quando sobra, vermelho quando falta; os meses que vêm, apagados)
   // Resumo do mês: um story em miniatura, inclinado e brilhando, pronto para compartilhar
-  const mR = S.mes; const Dr = E.disponivelAporte({ C, mes: mR, metaMes: C.metaAporteMes }); const topR = Math.max(1, C.receita[mR], C.despesas[mR], Dr.aportado); const Cr = C;
-  secs.resumo = `<div class="card bas-w-res"><div class="bas-w-res-t"><small>Retrospectiva de ${MES_LONGO[mR]}</small><b>Seu mês num story</b><span>Reveja como foi o mês e, no final, compartilhe a imagem.</span>
+  const mR = basRtMes(S.mes); const Dr = mR < 0 ? { aportado: 0 } : E.disponivelAporte({ C, mes: mR, metaMes: C.metaAporteMes }); const topR = Math.max(1, C.receita[mR], C.despesas[mR], Dr.aportado); const Cr = C;
+  secs.resumo = mR < 0 ? '' : `<div class="card bas-w-res"><div class="bas-w-res-t"><small>Retrospectiva de ${MES_LONGO[mR]}</small><b>Seu mês num story</b><span>Reveja como foi o mês e, no final, compartilhe a imagem.</span>
       <span class="bas-w-res-bts"><button class="bas-sn-bt prim" ${basIr('retro', { id: mR })}>${I_PLAY}Ver retrospectiva</button></span></div>
     <button class="bas-w-res-s" ${basIr('retro', { id: mR })} aria-label="Ver a retrospectiva de ${MES_LONGO[mR]}"><img class="bas-w-res-m" src="assets/img/icon-preto-192.png" alt="" aria-hidden="true"><small>${cap(MES_LONGO[mR])}</small><b>${Cr.receita[mR] > 0 ? pct(Math.max(0, Cr.investAlocado[mR] / Cr.receita[mR])) : brl0(Cr.investAlocado[mR])}</b><em>${Cr.receita[mR] > 0 ? 'ficou com você' : 'sobraram'}</em>
       <span class="bas-w-res-l" aria-hidden="true">${[['pos', C.receita[mR]], ['', C.despesas[mR]], ['acc', Dr.aportado]].map(([c, v]) => `<i class="${c}" style="--w:${Math.max(6, (v / topR) * 100).toFixed(0)}%"></i>`).join('')}</span></button></div>`;
@@ -2538,17 +2597,17 @@ function basTelaVoz() {
       <button class="bas-voz-lado" data-voz-pausa aria-label="Parar a fala" disabled>${I_PAUSA}</button></div></div>`;
 }
 let basVozAtivo = null; // reconhecimento em andamento (para parar ao sair da tela)
-function basVozParar() { try { if (basVozAtivo) basVozAtivo.abort(); } catch (e) { /* já parado */ } basVozAtivo = null; try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) { /* sem voz */ } }
+function basVozParar() { if (typeof vozNeuralParar === 'function') vozNeuralParar(); try { if (basVozAtivo) basVozAtivo.abort(); } catch (e) { /* já parado */ } basVozAtivo = null; try { if (window.speechSynthesis) speechSynthesis.cancel(); } catch (e) { /* sem voz */ } }
 function basVozVozes() { try { return (window.speechSynthesis ? speechSynthesis.getVoices() : []).filter((v) => /^pt[-_]BR/i.test(v.lang)); } catch (e) { return []; } }
 function basVozEscolhida() { const vs = basVozVozes(); const pref = S.profile.prefs && S.profile.prefs.vozCifrao;
-  return vs.find((v) => pref && v.name === pref) || vs.find((v) => /luciana/i.test(v.name)) || vs.find((v) => /felipe/i.test(v.name)) || vs.find((v) => /google/i.test(v.name)) || vs[0] || null; }
+  return vs.find((v) => pref && v.name === pref) || vs.find((v) => /premium|enhanced|aprimorad|natural|neural/i.test(v.name)) || vs.find((v) => /luciana/i.test(v.name)) || vs.find((v) => /felipe/i.test(v.name)) || vs.find((v) => /google/i.test(v.name)) || vs[0] || null; }
 function basVozLigar() {
   const w = document.querySelector('.bas-voz'); if (!w) { if (basVozAtivo) basVozParar(); return; } if (w.dataset.lig) return; w.dataset.lig = '1';
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition; const fala = window.speechSynthesis;
   const q$ = (x) => w.querySelector(x); const t = q$('[data-voz-t]'); const dica = q$('[data-voz-dica]'); const num = q$('[data-voz-num]'); const cta = q$('[data-voz-cta]'); const orb = q$('[data-voz-orb]'); const pausa = q$('[data-voz-pausa]');
   const cif = (g) => { const h = orb.querySelector('.cifrao'); if (h && h.cifrao && g) h.cifrao.tocar(g); };
   const est = (e, d) => { w.dataset.est = e; if (d != null) dica.textContent = d; };
-  let ouvindo = false; let fim = '';
+  let ouvindo = false; let fim = ''; if (typeof vozNeuralPreparar === 'function') vozNeuralPreparar(w);
   // a resposta em palavras (que acendem enquanto ele fala); dinheiro e porcentagem viram fichas; o primeiro valor em destaque, contando
   const mostra = (txt) => { let pos = 0; let html = '';
     txt.split(/(R\$\s?[\d.]+(?:,\d{1,2})?|-?\d+(?:,\d+)?\s?%)/).forEach((p, k) => { if (!p) return;
@@ -2562,6 +2621,7 @@ function basVozLigar() {
       const passo = (n) => { const k = Math.min(1, (n - t0) / 900); pinta(alvo * (1 - Math.pow(1 - k, 3))); if (k < 1 && b.isConnected) requestAnimationFrame(passo); }; requestAnimationFrame(passo); } };
   const falar = (txt) => {
     const ws = [...t.querySelectorAll('.w')]; const acende = (c) => ws.forEach((x) => x.classList.toggle('lido', +x.dataset.c <= c));
+    if (typeof vozNeuralFalar === 'function' && vozNeuralFalar(oculto() ? txt.replace(/R\$\s?•+/g, 'um valor escondido') : txt, { acende, est, pausa, cif, w })) return;
     if (!fala) { acende(1e9); est('parado', 'Toque no Cifrão para continuar'); return; }
     fala.cancel(); const u = new SpeechSynthesisUtterance(oculto() ? txt.replace(/R\$\s?•+/g, 'um valor escondido') : txt); const v = basVozEscolhida(); if (v) u.voice = v; u.lang = 'pt-BR'; u.rate = 1.03; u.pitch = 1.12;
     let viuLimite = false; let tm = 0; let n = 0;
@@ -2575,12 +2635,13 @@ function basVozLigar() {
     const st = iaEstado(); if (st.pend) { est('parado', 'Ainda pensando na anterior. Tente de novo.'); return; } iaEnviar(q); const t0 = Date.now();
     const espera = () => { if (!w.isConnected) return; if (st.pend && Date.now() - t0 < 20000) { setTimeout(espera, 120); return; }
       const i = st.msgs.length - 1; const m = st.msgs[i]; if (!m || m.de !== 'ia') { est('parado', 'Não consegui responder. Tente de novo.'); return; }
-      const tmp = document.createElement('div'); tmp.innerHTML = iaMsgHtml(m, i); const txt = (tmp.querySelector('p') ? tmp.querySelector('p').textContent : '').replace(/\s+/g, ' ').trim(); const bt = tmp.querySelector('button');
-      mostra(txt); cta.innerHTML = bt ? bt.outerHTML : ''; cif('animado'); falar(txt); };
+      const tmp = document.createElement('div'); tmp.innerHTML = iaMsgHtml(m, i); const txt = (tmp.querySelector('p') ? tmp.querySelector('p').textContent : '').replace(/\s+/g, ' ').trim(); const bt = m.acoes ? null : tmp.querySelector('button');
+      mostra(txt); cta.innerHTML = bt ? bt.outerHTML : ''; if (typeof vozVisual === 'function') vozVisual(w, m, i); cif('animado'); falar(txt); };
     espera(); };
   const ouvir = () => {
     if (!SR) { est('parado', 'Este aparelho não liberou a fala no navegador. Use o teclado para escrever.'); return; }
     if (fala) { try { fala.cancel(); fala.speak(new SpeechSynthesisUtterance('')); } catch (e) { /* sem voz */ } } // no iPhone a voz precisa de um toque para ser liberada
+    if (typeof vozNeuralDestravar === 'function') { vozNeuralParar(); vozNeuralDestravar(); }
     const rec = new SR(); basVozAtivo = rec; rec.lang = 'pt-BR'; rec.interimResults = true; rec.continuous = false; fim = '';
     rec.onstart = () => { ouvindo = true; est('ouvindo', 'Estou ouvindo…'); t.innerHTML = '<span class="cm">Pode falar</span>'; num.hidden = true; cta.innerHTML = ''; cif('curioso'); basVibra(12); };
     rec.onresult = (e) => { let fin = ''; let tmp = ''; for (const r of e.results) { if (r.isFinal) fin += r[0].transcript; else tmp += r[0].transcript; } fim = (fin || tmp).trim();
@@ -2589,11 +2650,11 @@ function basVozLigar() {
     rec.onend = () => { ouvindo = false; basVozAtivo = null; if (fim) pergunta(fim); else if (w.dataset.est === 'ouvindo') est('parado', 'Não ouvi nada. Toque e fale de novo.'); };
     try { rec.start(); } catch (e) { est('parado', 'Não consegui abrir o microfone.'); } };
   orb.addEventListener('click', () => { if (ouvindo && basVozAtivo) { basVozAtivo.stop(); return; } if (w.dataset.est === 'pensando') return; if (fala) fala.cancel(); ouvir(); });
-  pausa.addEventListener('click', () => { if (fala) fala.cancel(); });
+  pausa.addEventListener('click', () => { if (fala) fala.cancel(); if (typeof vozNeuralParar === 'function') vozNeuralParar(); });
   // trocar a voz: passa pelas vozes em português do aparelho e diz uma frase de exemplo
-  q$('[data-voz-troca]').addEventListener('click', () => { const vs = basVozVozes(); if (!vs.length) { est(w.dataset.est, 'Este aparelho só tem uma voz em português.'); return; }
-    const at = basVozEscolhida(); const nv = vs[(vs.indexOf(at) + 1) % vs.length]; S.profile.prefs = Object.assign({}, S.profile.prefs, { vozCifrao: nv.name }); touch('profile');
-    est('parado', `Voz: ${nv.name.replace(/\s*\(.*\)/, '')}`); mostra('Oi! Eu sou o Cifrão. Posso ajudar com o seu dinheiro?'); falar('Oi! Eu sou o Cifrão. Posso ajudar com o seu dinheiro?'); });
+  q$('[data-voz-troca]').addEventListener('click', () => { const vs = ['neural'].concat(basVozVozes().map((v) => v.name)); const pref = (S.profile.prefs && S.profile.prefs.vozCifrao) || 'neural';
+    const nv = vs[(vs.indexOf(pref) + 1) % vs.length]; S.profile.prefs = Object.assign({}, S.profile.prefs, { vozCifrao: nv }); touch('profile'); if (typeof vozNeuralParar === 'function') { vozNeuralParar(); vozNeuralPreparar(w); }
+    est('parado', nv === 'neural' ? 'Voz: natural do Cifrão' : `Voz: ${nv.replace(/\s*\(.*\)/, '')}`); mostra('Oi! Eu sou o Cifrão. Posso ajudar com o seu dinheiro?'); falar('Oi! Eu sou o Cifrão. Posso ajudar com o seu dinheiro?'); });
 }
 function basSn2Criar() {
   const st = S.basSn2; const L = objLista();
@@ -3079,7 +3140,7 @@ function basTelaSaude() {
   const nomes = { reserva: 'Reserva', poupanca: 'Sobra do ano', fixos: 'Contas fixas', sonho: 'Sonho principal' }; const val = { reserva: (x) => `${x.valor.toLocaleString('pt-BR', { maximumFractionDigits: 1 })} meses`, poupanca: (x) => pct(x.valor), fixos: (x) => pct(x.valor), sonho: (x) => pct(x.valor) };
   const ir = { reserva: 'data-act="bas-aba" data-v="investir"', poupanca: 'data-act="bas-aba" data-v="gastos"', fixos: 'data-act="bas-aba" data-v="gastos"', sonho: basIr('sonhos') };
   const metaF = { reserva: (x) => Math.min(1, (x.valor || 0) / 6), poupanca: (x) => Math.min(1, Math.max(0, (x.valor || 0) / 0.3)), fixos: (x) => Math.min(1, Math.max(0, 1 - (x.valor || 0))), sonho: (x) => Math.min(1, x.valor || 0) };
-  return basDet('Saúde financeira', `<section class="bas-sdx"><div class="bas-sdx-scan">${basRosto(H.nota, 132)}<span class="bas-sdx-luz" aria-hidden="true"></span></div>
+  return basDet('Saúde financeira', `<section class="bas-sdx"><div class="bas-sdx-scan bas-sdx-le" data-nota="${H.nota == null ? '' : H.nota}"><span class="bas-sdx-cif" aria-hidden="true"><span class="cifrao"></span></span><span class="bas-sdx-pap" aria-hidden="true"><i></i><i></i><i></i><i></i><b></b></span><span class="bas-sdx-luz" aria-hidden="true"></span></div>
       <ol class="bas-sdx-p">${passos.map((t, i) => `<li style="--i:${i}"><i aria-hidden="true">${I.check}</i>${t}</li>`).join('')}</ol>
       <div class="bas-sdx-n" style="--i:${passos.length}"><b>${H.nota == null ? '–' : H.nota}</b><small>de 100</small><p>${H.nota == null ? voz('bas_vazio') : voz(H.nota >= 80 ? 'bas_saude_bom' : H.nota >= 60 ? 'bas_saude_med' : 'bas_saude_baixo')}</p></div></section>
     ${H.itens.map((x, i) => `<button class="card bas-sdx-i ${x.sit}" ${ir[x.id]} style="--i:${passos.length + 1 + i}"><span class="bas-sdx-ih"><b>${nomes[x.id]}</b><em>${BAS_SIT[x.sit]}</em></span>
@@ -3234,9 +3295,9 @@ function basSalvar(f) {
   { const ar = (d.areaNova || '').trim(); if (d.areaIc && ar) basCatIcGrava(ar, d.areaIc); } // ícone só para categoria nova
   const ok = (msg) => { basRetorno(t.t === 'aporte' || t.t === 'provento' ? 'pago' : 'ok'); touch(['perfil', 'objetivo', 'alvos'].includes(t.t) ? 'profile' : 'plan'); basFechar();
     // gasto ou investimento novo ganha a tela de sucesso; edições e o resto seguem no aviso
-    const festa = ['gasto', 'conta', 'conta-f'].includes(t.t) && msg && !/atualizado/.test(msg) ? 'gasto' : t.t === 'aporte' && /^Aporte registrado em/.test(msg || '') ? 'inv' : '';
+    const festa = ['gasto', 'conta', 'conta-f'].includes(t.t) && msg && !/atualizado/.test(msg) ? 'gasto' : t.t === 'aporte' && /^Aporte registrado em/.test(msg || '') ? 'inv' : t.t === 'entrada' && msg === 'Entrada anotada.' ? 'ent' : '';
     if (festa) { const v = val(t.t === 'conta-f' && d.modo === 'parc' ? 'total' : 'valor'); const onde = (d.desc || d.nome || d.area || '').trim();
-      basFesta(festa, festa === 'inv' ? 'Investimento registrado' : onde ? `Gasto anotado em ${onde}` : 'Gasto anotado', festa === 'inv' || msg !== 'Gasto anotado.' ? msg : '', v > 0 ? v : 0); } else if (msg) toast(msg); };
+      basFesta(festa, festa === 'inv' ? 'Investimento registrado' : festa === 'ent' ? (onde ? `Entrada anotada: ${onde}` : 'Entrada anotada') : onde ? `Gasto anotado em ${onde}` : 'Gasto anotado', festa === 'inv' || (festa !== 'ent' && msg !== 'Gasto anotado.') ? msg : festa === 'ent' ? 'Mais dinheiro no seu mês.' : '', v > 0 ? v : 0); } else if (msg) toast(msg); };
   switch (t.t) {
     case 'gasto': case 'conta': return basSalvarGasto(f, d, t, ok);
     case 'ativo-ed': return basSalvarAtivoEd(f, d, t, ok);

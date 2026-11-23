@@ -1,0 +1,81 @@
+/* Organizar como no iPhone: blocos tremendo, "−" no canto, barra com Adicionar e OK, bloco pego flutuando */
+html.bas-edita .bas-sec[data-sec] { position: relative; animation: bas-ed-treme 300ms ease-in-out infinite alternate; animation-delay: calc(var(--k, 0) * -75ms); -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+html.bas-edita .bas-sec[data-sec] * { pointer-events: none; }
+html.bas-edita .bas-sec[data-sec] .bas-ed-x { pointer-events: auto; }
+@keyframes bas-ed-treme { from { transform: rotate(-.45deg); } to { transform: rotate(.45deg); } }
+.bas-sec[data-sec] { -webkit-touch-callout: none; }
+.bas-ed-x { position: absolute; z-index: 5; top: -8px; left: -6px; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; cursor: pointer;
+  background: rgba(120, 120, 128, .82); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow: 0 2px 8px rgba(0, 0, 0, .25), inset 0 0 0 .5px rgba(255, 255, 255, .35); animation: bas-ed-pop 260ms cubic-bezier(.3, 1.6, .5, 1) both; }
+.bas-ed-x::before { content: ""; position: absolute; left: 8px; right: 8px; top: 13px; height: 2.5px; border-radius: 2px; background: #fff; }
+@keyframes bas-ed-pop { from { transform: scale(0); } }
+.bas-sec.bas-ed-pega { z-index: 20; animation: none !important; transform: scale(1.04); filter: drop-shadow(0 22px 30px rgba(10, 20, 60, .35)); transition: transform 180ms cubic-bezier(.3, 1.4, .5, 1); opacity: .96; }
+.bas-sec.bas-ed-cai { transition: translate 280ms cubic-bezier(.2, .9, .25, 1), transform 280ms ease; }
+.bas-ed-bar { position: fixed; z-index: 70; left: 12px; right: 12px; top: calc(8px + env(safe-area-inset-top, 0px)); display: flex; align-items: center; gap: 8px; padding: 8px;
+  border-radius: 999px; background: rgba(255, 255, 255, .62); -webkit-backdrop-filter: blur(18px) saturate(180%); backdrop-filter: blur(18px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .8), 0 10px 30px -10px rgba(0, 0, 40, .35); animation: bas-ed-desce 340ms cubic-bezier(.2, .9, .25, 1) both; }
+@keyframes bas-ed-desce { from { transform: translateY(-120%); opacity: 0; } }
+.bas-ed-bar button { height: 38px; padding: 0 16px; border: 0; border-radius: 999px; font: inherit; font-size: 15px; font-weight: 650; cursor: pointer; }
+.bas-ed-add { display: inline-flex; align-items: center; gap: 6px; color: #1428F5; background: rgba(20, 40, 245, .1); } .bas-ed-add span { font-size: 20px; line-height: 1; } .bas-ed-add:disabled { opacity: .4; }
+.bas-ed-ok { margin-left: auto; color: #fff; background: #1F45FF; }
+.bas-ed-dica { flex: 1; text-align: center; font-size: 13px; color: rgba(20, 25, 50, .6); }
+:root[data-theme="dark"] .bas-ed-bar, :root[data-theme="oled"] .bas-ed-bar { background: rgba(40, 42, 56, .7); } :root[data-theme="dark"] .bas-ed-dica, :root[data-theme="oled"] .bas-ed-dica { color: rgba(255, 255, 255, .6); }
+:root[data-theme="dark"] .bas-ed-add, :root[data-theme="oled"] .bas-ed-add { color: #9DB4FF; background: rgba(157, 180, 255, .14); }
+.bas-ed-folha { position: fixed; inset: 0; z-index: 80; }
+.bas-ed-fundo { position: absolute; inset: 0; background: rgba(0, 0, 20, .35); animation: bas-ed-surge 220ms ease both; } @keyframes bas-ed-surge { from { opacity: 0; } }
+.bas-ed-cx { position: absolute; left: 0; right: 0; bottom: 0; max-height: 70vh; overflow-y: auto; padding: 10px 18px calc(24px + env(safe-area-inset-bottom, 0px)); border-radius: 28px 28px 0 0; background: var(--surface, #fff); color: var(--ink); box-shadow: 0 -12px 40px -12px rgba(0, 0, 30, .35); animation: bas-ed-sobe 360ms cubic-bezier(.2, .9, .25, 1) both; }
+@keyframes bas-ed-sobe { from { transform: translateY(100%); } }
+.bas-ed-alca { display: block; width: 40px; height: 5px; margin: 0 auto 12px; border-radius: 3px; background: rgba(120, 120, 128, .35); }
+.bas-ed-cx h3 { margin: 0 0 10px; font-size: 20px; font-weight: 750; }
+.bas-ed-cx ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.bas-ed-cx li { display: flex; align-items: center; justify-content: space-between; padding: 12px 12px 12px 16px; border-radius: 18px; background: var(--surface-2, rgba(120, 120, 140, .1)); font-weight: 600; }
+.bas-ed-mais { width: 34px; height: 34px; border: 0; border-radius: 50%; font-size: 22px; line-height: 1; color: #fff; background: #1F45FF; cursor: pointer; }
+@media (prefers-reduced-motion: reduce) { html.bas-edita .bas-sec[data-sec] { animation: none; outline: 2px dashed rgba(31, 69, 255, .35); outline-offset: 4px; border-radius: 22px; } }
+
+/* Saúde financeira: o Cifrão no lugar do rosto, lendo uma ficha */
+.bas-sdx-le { position: relative; display: grid; place-items: center; width: 200px; height: 190px; margin: 0 auto; }
+.bas-sdx-le .bas-rosto { display: none; }
+.bas-sdx-cif { position: absolute; left: 50%; top: 0; width: 124px; height: 124px; margin-left: -62px; --cif-body: #fff; --cif-eyes: #06122A; transition: transform 600ms cubic-bezier(.3, 1.4, .5, 1); filter: drop-shadow(0 14px 22px rgba(20, 40, 200, .35)); }
+.bas-sdx-cif .cifrao { display: block; width: 100%; height: 100%; } .bas-sdx-cif .cifrao > svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.bas-sdx-pap { position: absolute; left: 50%; bottom: 4px; width: 128px; height: 84px; margin-left: -64px; padding: 14px 14px 0; border-radius: 14px; display: grid; gap: 9px; align-content: start;
+  background: linear-gradient(180deg, #fff, #EEF2FF); box-shadow: 0 14px 30px -12px rgba(10, 20, 80, .45), inset 0 0 0 1px rgba(20, 40, 245, .08); transform: rotate(-4deg); transform-origin: 50% 100%;
+  animation: bas-sdx-pap 520ms cubic-bezier(.3, 1.4, .5, 1) both; transition: transform 520ms cubic-bezier(.4, 0, .2, 1), opacity 420ms ease; }
+@keyframes bas-sdx-pap { from { transform: translateY(40px) rotate(8deg); opacity: 0; } }
+.bas-sdx-pap i { display: block; height: 6px; border-radius: 3px; background: rgba(20, 40, 120, .16); }
+.bas-sdx-pap i:nth-child(2) { width: 80%; } .bas-sdx-pap i:nth-child(3) { width: 92%; } .bas-sdx-pap i:nth-child(4) { width: 64%; }
+.bas-sdx-pap b { position: absolute; left: 10px; right: 10px; top: calc(11px + var(--l, 0) * 15px); height: 12px; border-radius: 6px; background: rgba(31, 69, 255, .18); transition: top 300ms ease; }
+.bas-sdx-le .bas-sdx-cif { animation: bas-sdx-respira 2.6s ease-in-out infinite; } @keyframes bas-sdx-respira { 50% { transform: translateY(-4px); } }
+.bas-sdx-le.lido .bas-sdx-pap { transform: translateY(30px) rotate(-14deg) scale(.85); opacity: 0; }
+.bas-sdx-le.lido .bas-sdx-cif { transform: translateY(26px) scale(1.12); animation: none; }
+@media (prefers-reduced-motion: reduce) { .bas-sdx-pap, .bas-sdx-le .bas-sdx-cif { animation: none; } }
+
+/* entrada de renda: maisinhos que estouram em volta do Cifrão quando ele vira "+" */
+.bas-ok-mais { position: absolute; left: 50%; width: 0; height: 0; pointer-events: none; z-index: 2; }
+.bas-ok-mais i { position: absolute; left: -9px; top: -14px; font-style: normal; font-size: 26px; font-weight: 800; color: #8CF7B8; text-shadow: 0 0 12px rgba(140, 247, 184, .7); opacity: 0;
+  animation: bas-ok-mais 900ms cubic-bezier(.2, .8, .3, 1) var(--k) forwards; }
+@keyframes bas-ok-mais { 0% { opacity: 0; transform: rotate(var(--a)) translateY(0) scale(.4); } 25% { opacity: 1; } 100% { opacity: 0; transform: rotate(var(--a)) translateY(calc(var(--d) * -1)) scale(1.1); } }
+
+/* Cartão: setinhas de vidro nas bordas do cartão, com um empurrãozinho para o lado */
+.bas-ct2-card { position: relative; }
+.bas-ct2-seta { position: absolute; z-index: 4; top: 34%; width: 38px; height: 38px; padding: 0; border: 0; border-radius: 50%; display: grid; place-items: center; cursor: pointer; color: #fff;
+  background: rgba(255, 255, 255, .22); -webkit-backdrop-filter: blur(14px) saturate(180%); backdrop-filter: blur(14px) saturate(180%); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .6), inset 0 0 0 .5px rgba(255, 255, 255, .35), 0 8px 18px -8px rgba(0, 0, 40, .45); }
+.bas-ct2-seta svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .3)); }
+.bas-ct2-seta.d { right: 6px; animation: bas-ct2-cutuca 2.4s ease-in-out infinite; } .bas-ct2-seta.e { left: calc(50% - 150px); opacity: .7; }
+@keyframes bas-ct2-cutuca { 0%, 60%, 100% { transform: translateX(0); } 70% { transform: translateX(5px); } 80% { transform: translateX(0); } 88% { transform: translateX(3px); } }
+@media (prefers-reduced-motion: reduce) { .bas-ct2-seta.d { animation: none; } }
+
+/* Liquid Glass em todos os botões de configuração do cartão e no olho do topo das páginas */
+body[data-ui="basico"] :is(.bas-ct2-lado .bas-circ, .bas-ct2-b, .bas-nav .olho, .bas-pg .olho) {
+  color: var(--ink) !important; border: 0 !important; background: rgba(255, 255, 255, .5) !important; -webkit-backdrop-filter: blur(16px) saturate(190%); backdrop-filter: blur(16px) saturate(190%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), inset 0 -1px 0 rgba(255, 255, 255, .3), inset 0 0 0 .5px rgba(20, 30, 80, .08), 0 1px 1.5px rgba(0, 0, 0, .06), 0 10px 24px -12px rgba(20, 30, 80, .35) !important;
+  transition: transform 260ms cubic-bezier(.3, 1.6, .5, 1), background-color 160ms ease; }
+body[data-ui="basico"] :is(.bas-ct2-lado .bas-circ, .bas-ct2-b, .bas-nav .olho, .bas-pg .olho):active { transform: scale(1.06); background: rgba(255, 255, 255, .7) !important; }
+body[data-ui="basico"] .bas-ct2-lado :is(.bas-circ, .bas-ct2-b):first-child { color: #fff !important; background: color-mix(in srgb, var(--accent) 88%, transparent) !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45), inset 0 -1px 0 rgba(0, 0, 0, .12), 0 10px 24px -10px color-mix(in srgb, var(--accent) 70%, transparent) !important; }
+:root[data-theme="dark"] body[data-ui="basico"] :is(.bas-ct2-lado .bas-circ, .bas-ct2-b, .bas-nav .olho), :root[data-theme="oled"] body[data-ui="basico"] :is(.bas-ct2-lado .bas-circ, .bas-ct2-b, .bas-nav .olho) { background: rgba(255, 255, 255, .1) !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), inset 0 0 0 .5px rgba(255, 255, 255, .1), 0 10px 24px -12px rgba(0, 0, 0, .6) !important; }
+.bas-ct2-seta.e { display: none; }
+/* setinha: pequena e discreta, no canto de baixo à direita do cartão */
+.bas-ct2-seta.d { top: auto; bottom: 12px; right: 12px; width: 24px; height: 24px; animation: bas-ct2-cutuca 3s ease-in-out infinite; background: rgba(255, 255, 255, .16); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .4), inset 0 0 0 .5px rgba(255, 255, 255, .25); }
+.bas-ct2-seta.d svg { width: 13px; height: 13px; stroke-width: 2.6; opacity: .9; }
+/* todos os botões do lado do cartão no mesmo vidro neutro, o "+" também */
+body[data-ui="basico"] .bas-ct2-lado :is(.bas-circ, .bas-ct2-b, button, a):first-child, body[data-ui="basico"] .bas-ct2-lado :is(button, a) {
+  color: var(--ink) !important; border: 0 !important; background: rgba(255, 255, 255, .5) !important; -webkit-backdrop-filter: blur(16px) saturate(190%); backdrop-filter: blur(16px) saturate(190%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .9), inset 0 -1px 0 rgba(255, 255, 255, .3), inset 0 0 0 .5px rgba(20, 30, 80, .08), 0 1px 1.5px rgba(0, 0, 0, .06), 0 10px 24px -12px rgba(20, 30, 80, .35) !important; }
+:root[data-theme="dark"] body[data-ui="basico"] .bas-ct2-lado :is(button, a), :root[data-theme="oled"] body[data-ui="basico"] .bas-ct2-lado :is(button, a) { color: #fff !important; background: rgba(255, 255, 255, .1) !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), inset 0 0 0 .5px rgba(255, 255, 255, .1), 0 10px 24px -12px rgba(0, 0, 0, .6) !important; }

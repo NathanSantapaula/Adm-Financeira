@@ -364,7 +364,7 @@ function iaDados() {
   return d;
 }
 
-/* ---------- IA na nuvem (Groq pela Edge Function "assistente") ---------- */
+/* ---------- IA na nuvem (Gemini pela Edge Function "assistente") ---------- */
 // vai só um resumo em números (sem nome, e-mail, telefone ou ativos); se falhar, a resposta é a local
 const iaNuvemOk = () => Store.mode === 'cloud' && !!(CFG.assistente && CFG.assistente.iaAtiva) && typeof Store.assistente === 'function';
 function iaResumoNuvem(d) {
@@ -376,7 +376,7 @@ function iaResumoNuvem(d) {
     mes: { entradas: v(C.receita, m), gastos: v(C.despesas, m), orcamento: v(C.orcamento, m), sobra: v(C.investAlocado, m), investido: v(C.aplicado, m), metaInvestir: v(C.metaAporteMes, m), disponivelParaInvestir: Math.round((d.disp && d.disp.disponivel) || 0) },
     mesAnterior: m > 0 ? { entradas: v(C.receita, m - 1), gastos: v(C.despesas, m - 1), sobra: v(C.investAlocado, m - 1) } : null,
     anoAteAgora: { entradas: soma(C.receita), gastos: soma(C.despesas), investido: soma(C.aplicado), dividendos: soma(C.dividendos) },
-    patrimonio: v(C.patrimonio, m), gastosDoMesPorArea: areas, objetivos, perfilInvestidor: d.perfil || null, avisosNaoLidos: d.avisos };
+    patrimonio: v(C.patrimonio, m), gastosDoMesPorArea: areas, categorias: typeof iaxAreas === 'function' ? iaxAreas() : [], objetivos, perfilInvestidor: d.perfil || null, avisosNaoLidos: d.avisos };
 }
 // texto da IA: valores em reais somem com o olho fechado
 const iaTxtIa = (t) => (oculto() ? String(t).replace(/R\$\s?-?[\d.,]+(\s?(mil|milhões|milhão|k))?/gi, brl(0)) : String(t));
@@ -394,10 +394,12 @@ function iaEnviar(q) {
     const dd = iaDados(); const id = E.iaIntencao(q); const r = E.iaResponder(id, Object.assign(dd, { texto: q })); r.v = Math.random();
     if (id === 'avisos') r.avisos = (S.notifs || []).filter((n) => !n.lida).slice(0, 3).map((n) => n.id);
     const fim = (m) => { st.pend = false; st.msgs.push(m); if (st.msgs.length > 40) st.msgs.splice(0, st.msgs.length - 40); iaRefresh(); };
-    if (!iaNuvemOk()) { fim({ de: 'ia', r }); return; }
+    // sem nuvem (ou se ela falhar), um pedido simples como "gastei 45 no mercado" vira uma ação para confirmar (assets/js/ia-acoes.js)
+    const local = () => { const ac = typeof iaxLocal === 'function' ? iaxLocal(q) : null; fim(ac ? { de: 'ia', r, ai: ac.texto, acoes: [ac.acao] } : { de: 'ia', r }); };
+    if (!iaNuvemOk()) { local(); return; }
     const hist = st.msgs.slice(0, -1).slice(-6).map((m) => ({ de: m.de, txt: m.de === 'eu' ? m.txt : m.ai || (m.r ? voz(m.r.chave, iaVars(m.r.vars)) : '') }));
     // a IA escreve o texto; o botão de atalho (cta) e os avisos continuam vindo da resposta local
-    Store.assistente({ pergunta: q, resumo: iaResumoNuvem(dd), historico: hist }).then((t) => fim({ de: 'ia', r, ai: t })).catch(() => fim({ de: 'ia', r }));
+    Store.assistente({ pergunta: q, resumo: iaResumoNuvem(dd), historico: hist }).then((o) => { const ac = typeof iaxValidar === 'function' ? iaxValidar(o.acoes) : []; fim(Object.assign({ de: 'ia', r, ai: o.texto }, ac.length ? { acoes: ac } : {})); }).catch(local);
   }, iaRapido() ? 0 : 480 + Math.min(500, q.length * 8));
 }
 function iaCta(c, i) {
@@ -412,7 +414,7 @@ function iaMsgHtml(m, i) {
   if (m.guia) return `<div class="ia-m ia"><p><b>${esc(m.t)}</b><br>Eu mostro o caminho na tela, passo a passo.</p><button class="btn sm" data-act="bas-guia" data-id="${esc(m.guia)}">Me mostre</button></div>`;
   const r = m.r; const avs = (r.avisos || []).map((id) => (S.notifs || []).find((n) => n.id === id)).filter(Boolean);
   const vs = [r.chave, r.chave + '_2', r.chave + '_3'].filter((k) => VOZ[tomAtual()][k] != null); const ch = vs.length ? vs[Math.floor((r.v || 0) * vs.length)] : r.chave;
-  return `<div class="ia-m ia${m.ai ? ' nuvem' : ''}"><p>${iaRealca(esc(m.ai ? iaTxtIa(m.ai) : voz(ch, iaVars(r.vars))))}</p>${avs.length ? `<ul class="ia-av">${avs.map((n) => `<li class="${n.nivel}"><b>${esc(n.titulo)}</b><span>${esc(n.texto)}</span></li>`).join('')}</ul>` : ''}${iaCta(r.cta, i)}</div>`;
+  return `<div class="ia-m ia${m.ai ? ' nuvem' : ''}"><p>${iaRealca(esc(m.ai ? iaTxtIa(m.ai) : voz(ch, iaVars(r.vars))))}</p>${avs.length ? `<ul class="ia-av">${avs.map((n) => `<li class="${n.nivel}"><b>${esc(n.titulo)}</b><span>${esc(n.texto)}</span></li>`).join('')}</ul>` : ''}${m.acoes && typeof iaxCartoesHtml === 'function' ? iaxCartoesHtml(m, i) : iaCta(r.cta, i)}</div>`;
 }
 // boas-vindas: só a saudação curta (pedido do Nathan)
 const iaBoasHtml = () => `<div class="ia-m ia"><p>${esc(voz('ia_oi', iaVars({})))}</p></div>`;
@@ -537,7 +539,7 @@ function iaAcao(act, ds) {
       if (c.acao === 'nav') { if (typeof closeAdmin === 'function') closeAdmin(); S.view = c.view; render(); }
       return true;
     }
-    default: return false;
+    default: return typeof iaxAcao === 'function' && iaxAcao(act, ds);
   }
 }
 function iaSubmit(f) { const inp = f.elements.q; const q = inp.value; inp.value = ''; iaEnviar(q); }
