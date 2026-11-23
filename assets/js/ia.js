@@ -396,7 +396,13 @@ function iaEnviar(q) {
     const fim = (m) => { st.pend = false; st.pendTxt = ''; st.msgs.push(m); if (st.msgs.length > 40) st.msgs.splice(0, st.msgs.length - 40); iaRefresh(); };
     // sem nuvem (ou se ela falhar), um pedido simples como "gastei 45 no mercado" vira uma ação para confirmar (assets/js/ia-acoes.js)
     const local = () => { const ac = typeof iaxLocal === 'function' ? iaxLocal(q) : null; fim(ac ? { de: 'ia', r, ai: ac.texto, acoes: [ac.acao] } : { de: 'ia', r }); };
-    if (!iaNuvemOk()) { local(); return; }
+    // pergunta que o app já sabe responder fica local (instantânea); a complexa (período, comparação, relatório...) vai para a IA
+    const qn = q.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+    const complexa = /relatorio|pdf|planilha|tabela|grafico|analis|compar|media|mediana|tendenc|evolu|historic|desde|ultimos?|anterior|passad|por ?que|explica|previs|projec|cada mes|ranking|janeiro|fevereiro|marco|abril|maio|junho|julho|agosto|setembro|outubro|novembro|dezembro|20\d\d|semestre|trimestre|no ano|ano todo|quanto (eu )?gastei com|em que (eu )?mais/.test(qn) || qn.split(/\s+/).length > 14;
+    const simples = !complexa && (id !== 'nao_entendi' || (typeof iaxLocal === 'function' && iaxLocal(q)));
+    if (!iaNuvemOk() || simples) { local(); return; }
+    st.pendTxt = 'Só um segundo, estou pensando…'; iaRefresh();
+    { const dc = document.querySelector('.bas-voz[data-est="pensando"] [data-voz-dica]'); if (dc) dc.textContent = st.pendTxt; }
     const hist = st.msgs.slice(0, -1).slice(-6).map((m) => ({ de: m.de, txt: m.de === 'eu' ? m.txt : m.ai || (m.r ? voz(m.r.chave, iaVars(m.r.vars)) : '') }));
     // a IA escreve o texto e pode pedir consultas exatas ao app (ia-consultas.js); o botão de atalho (cta) e os avisos continuam vindo da resposta local
     const aviso = () => { st.pendTxt = 'Consultando seus dados…'; iaRefresh(); const dc = document.querySelector('.bas-voz[data-est="pensando"] [data-voz-dica]'); if (dc) dc.textContent = st.pendTxt; };
