@@ -1087,6 +1087,11 @@ function o3Criar() {
   scene.add(key, rim, new T.HemisphereLight(0xD6E8FF, 0x0B1630, 0.5));
   const pivo = new T.Group(); scene.add(pivo); const sombra = o3Sombra(); sombra.visible = false; scene.add(sombra); // sem sombra projetada embaixo (pedido do dono)
   renderer.domElement.className = 'ob3d-canvas';
+  // sem recorte: o canvas é O3_FOLGA vezes o palco, centrado nele e sem toque (os gestos ficam no card); a câmera afasta na mesma proporção, então o objeto
+  // fica do mesmo tamanho e, ao girar, ampliar ou entrar, só a borda da tela o corta. Vale para todo palco 3D (detalhe, editar, cards, retrospectiva).
+  if (!document.getElementById('o3-folga')) { const st = document.createElement('style'); st.id = 'o3-folga';
+    st.textContent = `.ob3d, .ob3d-gl, .card.goal-card.sonho.v-3d:not(.sem-3d) { overflow: visible !important; } .ob3d .ob3d-gl > canvas.ob3d-canvas { position: absolute !important; left: 50% !important; top: 50% !important; width: ${O3_FOLGA * 100}% !important; height: ${O3_FOLGA * 100}% !important; max-width: none !important; max-height: none !important; translate: -50% -50% !important; transform: none !important; pointer-events: none !important; }`;
+    document.head.appendChild(st); }
   O3 = { renderer, scene, camera, pivo, sombra, obj: null, tipo: null, M: o3Mat(), gesto: { x: 0, y: 0, z: 1, vx: 0, vy: 0, ativo: false, tz: 0 }, t0: 0, entrada: 0, raf: 0, visivel: true, host: null };
   document.addEventListener('visibilitychange', o3Rodar);
   O3.io = new IntersectionObserver((es) => { O3.visivel = es.some((e) => e.isIntersecting); o3Rodar(); });
@@ -1124,7 +1129,8 @@ function o3Miniaturas(tipos, px) {
     r.dispose(); r.forceContextLoss(); return O3_MINI;
   }).catch(() => O3_MINI);
 }
-function o3Tamanho() { if (!O3 || !O3.host) return; const w = O3.host.clientWidth; const h = O3.host.clientHeight; if (!w || !h) return; O3.renderer.setSize(w, h, false); O3.camera.aspect = w / h; O3.camera.updateProjectionMatrix(); o3Quadro(performance.now()); }
+const O3_FOLGA = 2.4;
+function o3Tamanho() { if (!O3 || !O3.host) return; const w = O3.host.clientWidth; const h = O3.host.clientHeight; if (!w || !h) return; O3.renderer.setSize(Math.round(w * O3_FOLGA), Math.round(h * O3_FOLGA), false); O3.camera.aspect = w / h; O3.camera.zoom = 1 / O3_FOLGA; O3.camera.updateProjectionMatrix(); o3Quadro(performance.now()); }
 function o3Quadro(agora) {
   if (!O3 || !O3.obj) return; const calmo = o3Calmo(); const t = (agora - O3.t0) / 1000; const ud = O3.obj.userData; const G = O3.gesto;
   if (!G.ativo) { // solto: segue girando com a inércia, depois volta devagar ao repouso (pelo caminho mais curto)
