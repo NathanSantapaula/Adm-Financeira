@@ -772,17 +772,17 @@ const O3_OBJ = {
       x.fillStyle = '#F4F8FC'; x.fillRect(0, h * 0.93, w, h * 0.07); }, 1024, 512);
     const globo = new T.Group(); globo.position.y = 0.2; globo.rotation.z = -0.41; g.add(globo); // eixo inclinado como o da Terra
     const terra = new T.Mesh(new T.SphereGeometry(0.62, 64, 40), new T.MeshPhysicalMaterial({ map: mapa, roughness: 0.35, clearcoat: 0.8, clearcoatRoughness: 0.1 })); terra.rotation.y = -0.6; globo.add(o3Pose(terra));
-    const arco = o3Arco(0.69, 0.022, Math.PI * 1.15, M.ouro, 80); arco.rotation.z = Math.PI / 2 - 0.08; globo.add(arco);
-    [0.7, -0.7].forEach((y) => { const p = new T.Mesh(new T.SphereGeometry(0.035, 16, 12), M.ouro); p.position.y = y; globo.add(p); });
-    const pe = new T.Vector3(0, -0.72, 0).applyAxisAngle(new T.Vector3(0, 0, 1), -0.41); pe.y += 0.2; // pé do meridiano
-    const haste = new T.Mesh(new T.CylinderGeometry(0.035, 0.05, pe.y + 0.76, 16), M.ouro); haste.position.set(pe.x, (pe.y - 0.76) / 2, 0); g.add(haste);
-    const base = o3Tambor(0.36, 0.1, 0.04, M.madeira); base.position.set(pe.x, -0.8, 0); g.add(base);
-    // órbita: grupo inclinado; o avião e o rastro giram juntos em torno do globo
+    // meridiano: anel concêntrico ao globo, no plano do eixo; sai do polo norte, passa pelo polo sul e termina no ponto mais baixo, onde a haste reta encaixa
+    const inc = 0.41, Rm = 0.69, aN = Math.PI / 2 - inc; const arco = o3Arco(Rm, 0.022, Math.PI * 1.5 - aN, M.ouro, 80); arco.rotation.z = aN; arco.position.y = 0.2; g.add(arco);
+    [1, -1].forEach((k) => { const eixo = new T.Mesh(new T.CylinderGeometry(0.016, 0.016, 0.12, 12), M.ouro); eixo.position.y = k * 0.65; globo.add(eixo); const p = new T.Mesh(new T.SphereGeometry(0.035, 16, 12), M.ouro); p.position.y = k * Rm; globo.add(p); }); // pinos nos polos
+    const haste = new T.Mesh(new T.CylinderGeometry(0.035, 0.05, 0.26, 16), M.ouro); haste.position.y = 0.2 - Rm - 0.13; g.add(haste);
+    const base = o3Tambor(0.36, 0.1, 0.04, M.madeira); base.position.y = -0.8; g.add(base);
+    // órbita: grupo inclinado; o avião e o rastro giram juntos em torno do globo (rastro curto: some junto com o avião atrás do globo)
     const orb = new T.Group(); orb.position.y = 0.2; orb.rotation.set(0.35, 0, 0.22); g.add(orb); const voo = new T.Group(); orb.add(o3Pose(voo)); const R = 0.92;
     const av = new T.Group(); const S = new T.SphereGeometry(1, 24, 16); const fu = new T.Mesh(S, M.branco); fu.scale.set(0.045, 0.045, 0.17); av.add(fu);
     const asa = o3Bloco(0.34, 0.016, 0.08, 0.008, M.branco); asa.position.z = 0.01; av.add(asa); const cau = o3Bloco(0.012, 0.07, 0.05, 0.006, M.azul); cau.position.set(0, 0.045, -0.13); av.add(cau);
-    const est = o3Bloco(0.13, 0.012, 0.04, 0.006, M.branco); est.position.z = -0.13; av.add(est); av.position.set(R, 0, 0); av.rotation.set(0, Math.PI, 0.25); voo.add(av); // nariz em +z: tangente à órbita
-    const pts = new T.InstancedMesh(new T.SphereGeometry(0.013, 8, 6), M.nuvem, 14); const mx = new T.Matrix4(); for (let i = 0; i < 14; i++) { const a = -0.22 - i * 0.12; mx.makeTranslation(Math.cos(a) * R, 0, -Math.sin(a) * R); pts.setMatrixAt(i, mx); } voo.add(pts);
+    const est = o3Bloco(0.13, 0.012, 0.04, 0.006, M.branco); est.position.z = -0.13; av.add(est); av.position.set(R, 0, 0); av.rotation.set(0, Math.PI, 0.25); av.scale.setScalar(1.25); voo.add(av); // nariz em +z: tangente à órbita
+    const pts = new T.InstancedMesh(new T.SphereGeometry(0.013, 8, 6), M.nuvem, 8); const mx = new T.Matrix4(); for (let i = 0; i < 8; i++) { const a = -0.2 - i * 0.1; mx.makeTranslation(Math.cos(a) * R, 0, -Math.sin(a) * R); pts.setMatrixAt(i, mx); } voo.add(pts);
     voo.rotation.y = 0.55; o3Pose(voo);
     g.rotation.set(0.12, 0, 0); g.userData.dur = 2.1;
     g.userData.entra = (e, t) => {
@@ -820,23 +820,30 @@ const O3_OBJ = {
     };
     return g;
   },
-  // carrinho de bebê: cesto e capota azul-bebê com frisos, alça, armação cromada e quatro rodas; chega rodando, balança e a capota abre
+  // carrinho de bebê: cesto e capota azul-bebê com frisos, armação cromada inteira (eixos, arcos sob o cesto, montantes até a borda e alça), rodas de trás maiores; chega rodando, balança e a capota abre
   'filhos-carrinho'(M) {
     const T = THREE; const g = new T.Group(); const car = new T.Group(); g.add(car); const cesto = new T.Group(); car.add(cesto); const DS = T.DoubleSide;
     const azul = o3Cor(0x8CC4F0, { roughness: 0.4, side: DS }); const capM = o3Cor(0x3C77C9, { roughness: 0.42, side: DS }); const creme = o3Cor(0xFFF6E6, { roughness: 0.45 });
     const bojo = new T.Mesh(new T.SphereGeometry(0.5, 48, 20, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), azul); bojo.scale.set(1.15, 0.8, 0.82); cesto.add(bojo);
     const borda = new T.Mesh(new T.TorusGeometry(0.5, 0.035, 12, 64), creme); borda.rotation.x = Math.PI / 2; borda.scale.set(1.15, 0.82, 1); cesto.add(borda);
-    const capota = new T.Group(); capota.position.x = 0.02; cesto.add(capota); const cp = new T.Mesh(new T.SphereGeometry(0.52, 40, 16, -Math.PI / 2, Math.PI, 0, Math.PI / 2), capM); cp.scale.set(1.12, 0.95, 0.84); capota.add(cp);
+    // capota do lado da alça (+x), sobre a cabeça do bebê
+    const capota = new T.Group(); cesto.add(capota); const cp = new T.Mesh(new T.SphereGeometry(0.52, 40, 16, Math.PI / 2, Math.PI, 0, Math.PI / 2), capM); cp.scale.set(1.08, 0.95, 0.8); capota.add(cp);
     const fr = o3Arco(0.52, 0.03, Math.PI, creme, 48); fr.rotation.y = Math.PI / 2; cp.add(fr); // friso na beira da capota
     o3Pose(capota); cesto.position.y = 0.78;
-    const tubo = (pts, r, mat) => { const c = new T.CatmullRomCurve3(pts.map(([x, y, z]) => new T.Vector3(x, y, z))); const m = o3Tubo(c, 32, r, mat); car.add(m); return m; };
-    tubo([[0.5, 0.86, 0.36], [0.68, 1.02, 0.36], [0.84, 1.3, 0.36]], 0.022, M.cromo); tubo([[0.5, 0.86, -0.36], [0.68, 1.02, -0.36], [0.84, 1.3, -0.36]], 0.022, M.cromo);
-    const pega = new T.Mesh(new T.CylinderGeometry(0.04, 0.04, 0.8, 16), M.borracha); pega.rotation.x = Math.PI / 2; pega.position.set(0.84, 1.3, 0); car.add(pega);
-    [1, -1].forEach((d) => { tubo([[-0.42, 0.22, d * 0.38], [-0.1, 0.5, d * 0.34], [0.2, 0.62, d * 0.32]], 0.018, M.cromo); tubo([[0.42, 0.22, d * 0.38], [0.1, 0.5, d * 0.34], [-0.2, 0.62, d * 0.32]], 0.018, M.cromo); });
-    const rodas = [[-0.42, 1], [0.42, 1], [-0.42, -1], [0.42, -1]].map(([x, d]) => { const r = o3Roda(M, 0.92, M.azul); r.position.set(x, 0.21, d * 0.42); r.rotation.x = (d * Math.PI) / 2; car.add(r); return [r, d]; });
+    // rodas (as de trás, do lado da alça, maiores) e eixos de lado a lado
+    const W = [[0.44, 1.0], [-0.42, 0.8]]; const rodas = [];
+    W.forEach(([x, s]) => { [1, -1].forEach((d) => { const r = o3Roda(M, s, M.azul); r.position.set(x, 0.23 * s, d * 0.47); r.rotation.x = (d * Math.PI) / 2; car.add(r); rodas.push([r, d, 0.23 * s]); });
+      o3Vara(car, [x, 0.23 * s, -0.47], [x, 0.23 * s, 0.47], 0.016, M.cromo); });
+    // armação de cada lado: arco sob o cesto (encosta no fundo), escoras, montantes dos eixos até a borda e a alça
+    [1, -1].forEach((d) => { const z = d * 0.35;
+      car.add(o3Tubo(new T.CatmullRomCurve3([[-0.42, 0.184, z], [-0.22, 0.4, z * 0.86], [0, 0.47, z * 0.8], [0.22, 0.4, z * 0.86], [0.44, 0.23, z]].map((p) => new T.Vector3(...p))), 40, 0.018, M.cromo));
+      [-0.2, 0.2].forEach((x) => o3Vara(car, [x, 0.41, z * 0.86], [x, 0.51, d * 0.26], 0.014, M.cromo));
+      o3Vara(car, [0.44, 0.23, z], [0.39, 0.78, d * 0.3], 0.018, M.cromo); o3Vara(car, [-0.42, 0.184, z], [-0.39, 0.78, d * 0.3], 0.018, M.cromo);
+      o3Vara(car, [0.39, 0.78, d * 0.3], [0.78, 1.24, d * 0.3], 0.02, M.cromo); });
+    const pega = new T.Mesh(new T.CylinderGeometry(0.036, 0.036, 0.72, 20), M.borracha); pega.rotation.x = Math.PI / 2; pega.position.set(0.78, 1.24, 0); car.add(pega);
     g.rotation.set(0.18, -0.5, 0); g.userData.dur = 2.0;
-    g.userData.entra = (e, t) => { const f = o3Saida(o3Faixa(e, 0, 0.55)); const dx = -(1 - f) * 3.6; car.position.x = dx; rodas.forEach(([r, d]) => { r.rotation.y = (-d * dx) / 0.21; });
-      const b = o3Faixa(e, 0.45, 1); cesto.rotation.z = -Math.sin(b * Math.PI * 3) * (1 - b) * 0.12 + Math.sin(t * 1.4) * 0.02 * e;
+    g.userData.entra = (e, t) => { const f = o3Saida(o3Faixa(e, 0, 0.55)); const dx = -(1 - f) * 3.6; car.position.x = dx; rodas.forEach(([r, d, R]) => { r.rotation.y = (-d * dx) / R; });
+      const b = o3Faixa(e, 0.45, 1); car.rotation.z = -Math.sin(b * Math.PI * 3) * (1 - b) * 0.05 + Math.sin(t * 1.4) * 0.008 * e; // balança inteiro, sem soltar a armação
       o3Repouso(capota); capota.rotation.z -= (1 - o3Mola(o3Faixa(e, 0.5, 0.85))) * 1.2; };
     return g;
   },

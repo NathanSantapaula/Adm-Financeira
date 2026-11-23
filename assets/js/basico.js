@@ -2040,7 +2040,7 @@ function basTelaRetro(o) {
       <div class="rt-gw${caiu ? ' dn' : ''}" data-p="${esc(JSON.stringify(pts.map((p) => [+p[0].toFixed(1), +p[1].toFixed(1)])))}"><svg class="rt-graf" viewBox="0 0 300 ${GH}"><defs><linearGradient id="rtA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${caiu ? '#FF8A9A' : '#8FB0FF'}" stop-opacity=".5"/><stop offset="1" stop-color="${caiu ? '#FF8A9A' : '#8FB0FF'}" stop-opacity="0"/></linearGradient></defs>
       ${[.22, .45, .68, .9].map((f) => Math.round(f * GH)).map((y) => `<line x1="0" x2="300" y1="${y}" y2="${y}"/>`).join('')}<path class="ar" d="${lin} L${ult[0].toFixed(1)} ${GH} L${pts[0][0].toFixed(1)} ${GH} Z"/><path class="ln" pathLength="1" d="${lin}"/><circle class="pt" cx="${ult[0].toFixed(1)}" cy="${ult[1].toFixed(1)}" r="7"/></svg>
       <div class="rt-gm">${rot.map((r) => `<span>${r}</span>`).join('')}</div></div>`],
-    ...(g ? [['sonho', 'azul', '', `<div class="rt-sonho o3" data-tipo="${esc(obj3dDe(g))}"><i class="rt-orb"></i><i class="rt-halo"></i>${Array.from({ length: 5 }, (_, k) => `<i class="rt-est" style="--k:${k}"></i>`).join('')}<div class="rt-o3">${obj3dHtml(obj3dDe(g))}</div><img src="assets/img/o3/${esc(obj3dDe(g))}.png?v=3" alt=""><span class="bas-rt-si">${objIcone(g, 0)}</span></div>
+    ...(g ? [['sonho', 'azul', '', `<div class="rt-sonho o3" data-tipo="${esc(obj3dDe(g))}"><i class="rt-orb"></i><i class="rt-halo"></i>${Array.from({ length: 5 }, (_, k) => `<i class="rt-est" style="--k:${k}"></i>`).join('')}<div class="rt-o3">${obj3dHtml(obj3dDe(g))}</div><img src="assets/img/o3/${esc(obj3dDe(g))}.png?v=4" alt=""><span class="bas-rt-si">${objIcone(g, 0)}</span></div>
       <small>Seu sonho</small><h3 class="rt-h">${basRtKt(esc(objNomeDe(g)))}</h3><div class="bas-rt-sb"><i style="--p:${Math.min(1, g.progresso || 0).toFixed(3)}"></i></div><p><em>${pct(g.progresso || 0)}</em> do caminho${g.falta > 0 ? ` · faltam ${brl0(g.falta)}` : ' · chegou lá!'}</p>`]] : []),
     ['fim', 'fim', ruim ? '' : `<div class="rt-confete">${Array.from({ length: 26 }, (_, k) => `<i style="--x:${(k * 29 + 3) % 98}%;--d:${((k * 0.17) % 1.6).toFixed(2)}s;--r:${(k % 2 ? 1 : -1) * (360 + (k % 5) * 140)}deg;--c:${['#FFFFFF', '#FFD66B', '#8CF7B8', '#A9C2FF', '#FF9EC2'][k % 5]}"></i>`).join('')}</div>`,
       `<small>Esse foi o seu ${MES_LONGO[m]}</small><h2 class="rt-h">${basRtKt(ruim ? 'Mês fechado. Bora ajustar a rota.' : 'Mês fechado. Bonito de ver.')}</h2><div class="bas-rt-res"><span><small>Entrou</small><b>${brl0(ent)}</b></span><span><small>Saiu</small><b${estourou ? ' class="neg"' : ''}>${brl0(sai)}</b></span>${falta ? `<span><small>Faltou</small><b class="neg">${brl0(-sob)}</b></span>` : `<span><small>Guardou</small><b>${pct(guardP)}</b></span>`}${resg ? `<span><small>Resgatou</small><b class="neg">${brl0(-apM)}</b></span>` : `<span><small>Investiu</small><b>${brl0(apM)}</b></span>`}</div>
@@ -2496,7 +2496,7 @@ const r2Bas = (v) => Math.round((+v || 0) * 100) / 100;
 // ===== Sonhos, refeitos (pedido do Nathan, referências de apps de bolsos e do fluxo de criação do Believe) =====
 // arte do sonho: a miniatura do objeto 3D (desenhada uma vez, objMiniLigar) sobre um degradê; sem WebGL fica o ícone
 const basSnPct = (g) => (Math.max(0, Math.min(1, +g.progresso || 0)) * 100).toFixed(1);
-const basSnArte = (g, i, cls) => `<span class="bas-sn2-arte${cls ? ' ' + cls : ''}" aria-hidden="true"><span class="bas-sn2-ic">${objIcone(g, i || 0)}</span><img class="o3p" alt="" src="assets/img/o3/${esc(obj3dDe(g))}.png?v=3" decoding="async"></span>`;
+const basSnArte = (g, i, cls) => `<span class="bas-sn2-arte${cls ? ' ' + cls : ''}" aria-hidden="true"><span class="bas-sn2-ic">${objIcone(g, i || 0)}</span><img class="o3p" alt="" src="assets/img/o3/${esc(obj3dDe(g))}.png?v=4" decoding="async"></span>`;
 function basTelaSonhos() {
   const A = objAnalise(); const g = objFoco(A); const L = A.itens;
   const topo = g ? `<div class="bas-sn2-hero"><span class="bas-sn2-flut">${basSnArte(g, 0, 'hero')}</span>
@@ -2539,7 +2539,7 @@ function basTelaSonhoEd(o) {
   const topo = `<div class="bas-sn2-hero bas-sne-hero"><span class="bas-sn2-flut">${basSnArte({ tipo: st.tipo, modelo: st.modelo }, 0, 'hero')}</span><small class="bas-pv2-k">Editando</small><b class="bas-sn2-hn">${esc(st.nome || nomeT(st.tipo))}</b></div>`;
   const folha = `<section class="bas-sne-sec"><small class="bas-sne-k">Tipo</small>
       <div class="bas-sne-tipos" role="radiogroup" aria-label="Tipo de sonho">${OBJETIVOS.map(([k, nm]) => `<button type="button" class="bas-sne-tp${k === st.tipo ? ' on' : ''}" data-act="bas-sne-tipo" data-v="${k}" role="radio" aria-checked="${k === st.tipo}">${basSnArte({ tipo: k }, 0, 'ri')}<span>${esc(nm)}</span></button>`).join('')}</div></section>
-    ${(typeof O3_VARIA !== 'undefined' && (O3_VARIA[st.tipo] || []).length > 1) ? `<section class="bas-sne-sec"><small class="bas-sne-k">Modelo</small><div class="bas-sne-mods" role="radiogroup" aria-label="Modelo do sonho">${O3_VARIA[st.tipo].map(([k, nm], i) => { const on = (st.modelo || O3_VARIA[st.tipo][0][0]) === k; return `<button type="button" class="bas-sne-tp${on ? ' on' : ''}" data-act="bas-sne-mod" data-v="${k}" role="radio" aria-checked="${on}"><span class="bas-sn2-arte ri" aria-hidden="true"><img class="o3p" alt="" src="assets/img/o3/${k}.png?v=3" decoding="async"></span><span>${esc(nm)}</span></button>`; }).join('')}</div></section>` : ''}
+    ${(typeof O3_VARIA !== 'undefined' && (O3_VARIA[st.tipo] || []).length > 1) ? `<section class="bas-sne-sec"><small class="bas-sne-k">Modelo</small><div class="bas-sne-mods" role="radiogroup" aria-label="Modelo do sonho">${O3_VARIA[st.tipo].map(([k, nm], i) => { const on = (st.modelo || O3_VARIA[st.tipo][0][0]) === k; return `<button type="button" class="bas-sne-tp${on ? ' on' : ''}" data-act="bas-sne-mod" data-v="${k}" role="radio" aria-checked="${on}"><span class="bas-sn2-arte ri" aria-hidden="true"><img class="o3p" alt="" src="assets/img/o3/${k}.png?v=4" decoding="async"></span><span>${esc(nm)}</span></button>`; }).join('')}</div></section>` : ''}
     <section class="card bas-sne-cx">
       <label class="bas-sne-l"><small>Nome</small><input data-sn2="nome" value="${esc(st.nome)}" placeholder="${esc(nomeT(st.tipo))}" maxlength="40" aria-label="Nome do sonho"></label>
       <label class="bas-sne-l"><small>Quanto custa</small><span class="bas-sne-rs"><em>R$</em><input data-sn2="valor" value="${esc(st.valor)}" inputmode="decimal" placeholder="0" aria-label="Quanto custa, em reais"></span></label>
@@ -2547,7 +2547,7 @@ function basTelaSonhoEd(o) {
         <button type="button" class="bas-sn2-semp bas-sne-semp${st.ano ? '' : ' on'}" data-act="bas-sn2-ano" data-v="0">Sem prazo</button></div></section>
     <section class="card bas-sne-cx">${principal ? `<div class="bas-sne-pri on"><span class="bas-sne-pi" aria-hidden="true">★</span><span><b>Seu sonho principal</b><small>Ele aparece em destaque no Início</small></span></div>`
       : `<button type="button" class="bas-sne-pri" data-act="bas-foco" data-id="${esc(g.id)}"><span class="bas-sne-pi" aria-hidden="true">☆</span><span><b>Tornar o principal</b><small>Ele passa a aparecer em destaque no Início</small></span>${I.chev}</button>`}</section>
-    <button class="btn primary lg bas-cta bas-sne-ok" data-act="bas-sn2-criar">Salvar alterações</button>
+    <div class="bas-salvar bas-sne-salvar"><button class="btn primary lg bas-cta bas-sne-ok" data-act="bas-sn2-criar">Salvar alterações</button></div>
     <button type="button" class="bas-sne-del" data-act="bas-sn2-del">Excluir sonho</button>`;
   return basPgAzul('bas-pg-sne', 'Editar sonho', topo, folha);
 }
@@ -2662,7 +2662,10 @@ function basVozLigar() {
 function basSn2Criar() {
   const st = S.basSn2; const L = objLista();
   if (st.ed) { const g = L.find((x) => x.id === st.ed); const v = parseReais(st.valor); if (!g) return; if (!(v > 0)) { toast('Informe quanto o sonho custa.'); return; }
-    Object.assign(g, { tipo: st.tipo, nome: (st.nome || '').trim(), valor: E.r2(v), ano: st.ano || null }, st.modelo != null ? { modelo: st.modelo || '' } : {}); objSalvar(); basSom('ok'); basRetorno('ok'); basFechar(); toast('Sonho atualizado.'); return; }
+    Object.assign(g, { tipo: st.tipo, nome: (st.nome || '').trim(), valor: E.r2(v), ano: st.ano || null }, st.modelo != null ? { modelo: st.modelo || '' } : {}); objSalvar(); basSom('ok'); basRetorno('ok'); if (typeof O3 !== 'undefined' && O3) O3.tipo = ''; // a entrada 3D roda de novo
+    const pi = basPilha(); const ant = pi[pi.length - 2]; if (ant && ant.t === 'sonho-det' && ant.id === g.id) basFechar(); // veio do detalhe: volta para ele
+    else { pi[pi.length - 1] = { t: 'sonho-det', id: g.id, volta: pi[pi.length - 1].volta }; basTransicao('vai', () => { render(); window.scrollTo(0, 0); }); } // senão, o detalhe toma o lugar da edição
+    toast('Sonho atualizado.'); return; }
   if (L.length >= 12) { toast('Você chegou ao limite de 12 sonhos.'); return; }
   const v = parseReais(st.valor); if (!(v > 0)) { toast('Informe quanto o sonho custa.'); const i = document.querySelector('[data-sn2="valor"]'); if (i) i.focus(); return; }
   const alvo = Object.assign({ id: uid() }, L.length ? { modo: 'marco', pct: 0 } : { modo: 'fatia', pct: 100 }, { tipo: st.tipo, nome: (st.nome || '').trim(), valor: E.r2(v), ano: st.ano || null });
