@@ -4,12 +4,12 @@
 // o app calcula (iaConsultar) e chama de novo com { ...o mesmo corpo, contexto, resultados: [{ id, nome, resultado }] }. Até 4 rodadas (o app conta).
 // acoes são PROPOSTAS (anotar gasto, mudar meta...): esta função nunca grava nada; o app mostra um cartão e só grava se a pessoa confirmar.
 // O resumo só tem números do planejamento e nomes de categorias (sem nome, e-mail, telefone ou ativos). Se der erro, o app responde com o assistente local.
-// Segredos (supabase secrets set ...): GEMINI_API_KEY e, opcionalmente, GEMINI_MODEL (padrão gemini-2.5-flash).
+// Segredos (supabase secrets set ...): GEMINI_API_KEY e, opcionalmente, GEMINI_MODEL (padrão gemini-3.5-flash; o 2.5 saiu do ar para contas novas).
 // Publicar: supabase functions deploy assistente
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const CORS = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type' };
-const MODELO = Deno.env.get('GEMINI_MODEL') ?? 'gemini-2.5-flash';
+const MODELO = Deno.env.get('GEMINI_MODEL') ?? 'gemini-3.5-flash';
 const json = (o: unknown, status = 200) => new Response(JSON.stringify(o), { status, headers: { ...CORS, 'content-type': 'application/json' } });
 
 const SISTEMA = `Você é o Cifrão, o assistente financeiro do app Cifrão, de um assessor de investimentos. Fale em português do Brasil, com calma e clareza, para um público leigo.
@@ -151,21 +151,23 @@ Deno.serve(async (req) => {
     const rodadas = contents.filter((c) => c.parts.some((x) => x.functionResponse)).length;
 
     // modelo reserva: se o nome configurado sair do ar (404), tenta o "latest"
+    // cada tentativa tem 17 s, para as 3 caberem na espera do app (55 s)
     const chama = (modelo: string) => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelo)}:generateContent`, {
-      method: 'POST',
+      method: 'POST', signal: AbortSignal.timeout(17000),
       headers: { 'content-type': 'application/json', 'x-goog-api-key': Deno.env.get('GEMINI_API_KEY') ?? '' },
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: SISTEMA + (rodadas >= 4 ? '\nAs consultas acabaram: responda agora com o que já tem.' : '') + '\n\nRESUMO (JSON): ' + resumo }] },
         contents,
         tools: [{ functionDeclarations: [...FUNCOES, ...CONSULTAS] }], toolConfig: { functionCallingConfig: { mode: 'AUTO' } },
         // no 2.5 o pensamento conta dentro de maxOutputTokens: 2048 de pensamento + ~2500 de resposta
-        generationConfig: { temperature: 0.2, maxOutputTokens: 4600, ...(/2\.5/.test(modelo) ? { thinkingConfig: { thinkingBudget: 2048 } } : {}) },
+        generationConfig: { temperature: 0.2, maxOutputTokens: 4600, ...(/2\.5/.test(modelo) ? { thinkingConfig: { thinkingBudget: 2048 } } : /-3/.test(modelo) ? { thinkingConfig: { thinkingLevel: 'low' } } : {}) },
       }),
     });
     // modelo sobrecarregado (503), sem cota (429) ou fora do ar (404): tenta o próximo da lista
-    const MODELOS = [MODELO, 'gemini-flash-latest', 'gemini-2.5-flash-lite'].filter((m, i, a) => a.indexOf(m) === i);
-    let r = await chama(MODELOS[0]);
-    for (const m of MODELOS.slice(1)) { if (r.ok || ![404, 429, 500, 503].includes(r.status)) break; console.error('gemini', r.status, 'tentando', m); r = await chama(m); }
+    const MODELOS = [MODELO, 'gemini-3.5-flash-lite', 'gemini-flash-latest'].filter((m, i, a) => a.indexOf(m) === i);
+    const tenta = (m: string) => chama(m).catch(() => new Response('tempo esgotado', { status: 504 }));
+    let r = await tenta(MODELOS[0]);
+    for (const m of MODELOS.slice(1)) { if (r.ok || ![400, 404, 429, 500, 503, 504].includes(r.status)) break; console.error('gemini', r.status, (await r.text()).slice(0, 200), 'tentando', m); r = await tenta(m); }
     if (!r.ok) { const det = (await r.text()).slice(0, 400); console.error('gemini', r.status, det); return json({ erro: 'A IA não respondeu.', status: r.status }, 502); }
     const conteudo = (await r.json())?.candidates?.[0]?.content; const parts: Part[] = conteudo?.parts ?? [];
     const consultas = parts.filter((x) => x.functionCall).map((x, k) => ({ id: k, fc: x.functionCall! })).filter((c) => ehConsulta(c.fc.name));
