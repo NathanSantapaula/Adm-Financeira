@@ -265,12 +265,13 @@ function abFxSorteio() {
   let nome = null; let ult = null; try { nome = localStorage.getItem('fp:abFx'); ult = localStorage.getItem('fp:abFxUlt'); } catch (e) { /* ignora */ } // fp:abFx força um efeito (para conferir)
   const cr = String((S.profile && S.profile.criadoEm) || ''); const m = abMesDe(S.plan.year); const P = S.C.patrimonio;
   const niver = /^\d{4}-\d{2}-\d{2}/.test(cr) && +cr.slice(0, 4) < hoje.getFullYear() && +cr.slice(5, 7) - 1 === hoje.getMonth() && +cr.slice(8, 10) === hoje.getDate();
-  if (!nome) nome = md >= 1124 || md <= 6 ? 'fogos' : niver ? 'niver' : null; // fim de ano (24/12 a 6/1) e aniversário de uso têm o seu
-  if (!nome) { if (Math.random() < 0.3) return null; // 30%: nenhum
-    const pool = ['estrela', 'cometa', 'aurora', 'moedas', 'constelacao', 'cifrao'].concat(m > 0 && P[m] > P[m - 1] ? ['pulso', 'pulso'] : []); // patrimônio subiu no mês: o anel bate
-    nome = pool[Math.floor(Math.random() * pool.length)]; if (nome === ult) nome = pool[Math.floor(Math.random() * pool.length)]; }
+  // fim de ano (24/12 a 6/1) e aniversário de uso têm o seu, alternando com os outros para não repetir
+  if (!nome) { const esp = md >= 1124 || md <= 6 ? 'fogos' : niver ? 'niver' : null; if (esp && esp !== ult) nome = esp; }
+  // sempre um efeito, nunca o mesmo da abertura anterior
+  if (!nome) { const pool = ['estrela', 'cometa', 'aurora', 'moedas', 'constelacao', 'cifrao'].concat(m > 0 && P[m] > P[m - 1] ? ['pulso'] : []).filter((x) => x !== ult); // patrimônio subiu no mês: o anel bate
+    nome = pool[Math.floor(Math.random() * pool.length)]; }
   if (!AB_FX_DUR[nome]) return null; try { localStorage.setItem('fp:abFxUlt', nome); } catch (e) { /* ignora */ }
-  const r = Math.random; return { nome, ini: 1600 + r() * 1400, dur: AB_FX_DUR[nome], a: r(), b: r(), c: r(), p: Array.from({ length: 26 }, () => [r(), r(), r(), r()]) };
+  const r = Math.random; return { nome, ini: 7000, dur: AB_FX_DUR[nome], a: r(), b: r(), c: r(), p: Array.from({ length: 26 }, () => [r(), r(), r(), r()]) };
 }
 function abFxFim() { const A = AB; if (A && A.fx) { if (A.fx.h) A.fx.h.remove(); A.fx = null; } }
 // "$" em estrelas (caixa de -0,5 a 0,5): o S e as duas pontas da barra
