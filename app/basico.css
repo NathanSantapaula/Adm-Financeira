@@ -1705,6 +1705,10 @@ body[data-ui="basico"][data-screen="app"] .tabbar { left: 50%; right: auto; widt
 
 /* fundo azul de ponta a ponta no alto de Gastos; a folha de baixo sobe por cima dele e cobre a base dos cartões */
 body:is([data-ui="basico"], [data-ui="completo"]) { --bas-azul: #0A84FF; --bas-azul-1: #3b6cff; --bas-azul-2: #1428f5; --bas-azul-3: #03061f; }
+/* cor da marca nos gráficos: o azul do Cifrão no lugar do roxo de --c2/--accent-2 (barras, legendas, brilhos), com tom próprio no claro e no escuro */
+body:is([data-ui="basico"], [data-ui="completo"]) { --bas-marca: #1E3BD8; --c2: #1E3BD8; --accent-2: #1E3BD8; }
+:root[data-theme="oled"] body:is([data-ui="basico"], [data-ui="completo"]) { --bas-marca: #3B6CFF; --c2: #2A4BFF; --accent-2: #2A4BFF; }
+#bas-tinta feFlood { flood-color: var(--bas-marca, #1E3BD8); }
 .bas-gt-bg { position: relative; overflow: hidden; margin: -16px -16px 0; padding: 16px 16px 0; color: #fff;
   background: linear-gradient(180deg, var(--bas-azul-1) 0%, var(--bas-azul-2) 42%, var(--bas-azul-3) 100%); }
 .bas-gt-bg > .bas-topo .bas-eu-t small { color: rgba(255, 255, 255, .75); }
@@ -2479,9 +2483,9 @@ body[data-bas-ia="1"] .bas-ia-fab { display: none !important; }
 .bas-dp-nota { margin: -6px 2px 0; font-size: 13px; color: var(--ink-3); }
 .bas-dp-pf-n { align-self: flex-start; display: inline-block; padding: 6px 14px; border-radius: 999px; font-weight: 700; font-size: 15px; color: #fff; background: linear-gradient(155deg, color-mix(in srgb, var(--accent) 80%, #fff), var(--accent)); }
 .bas-dp-pf { display: flex; flex-direction: column; gap: 10px; } .bas-dp-pf p { margin: 0; font-size: 15px; line-height: 1.45; color: var(--ink-2); }
-.bas-dp-bar { height: 10px; border-radius: 999px; overflow: hidden; background: color-mix(in srgb, #8B5CF6 70%, var(--accent)); } .bas-dp-bar i { display: block; height: 100%; background: var(--accent); }
+.bas-dp-bar { height: 10px; border-radius: 999px; overflow: hidden; background: color-mix(in srgb, var(--accent) 22%, var(--surface-3)); } .bas-dp-bar i { display: block; height: 100%; background: var(--accent); }
 .bas-dp-leg { display: flex; justify-content: space-between; font-size: 13px; color: var(--ink-3); } .bas-dp-leg span { display: inline-flex; align-items: center; gap: 6px; }
-.bas-dp-leg i { width: 9px; height: 9px; border-radius: 50%; } .bas-dp-leg .rf { background: var(--accent); } .bas-dp-leg .rv { background: color-mix(in srgb, #8B5CF6 70%, var(--accent)); }
+.bas-dp-leg i { width: 9px; height: 9px; border-radius: 50%; } .bas-dp-leg .rf { background: var(--accent); } .bas-dp-leg .rv { background: color-mix(in srgb, var(--accent) 22%, var(--surface-3)); }
 .bas-dp-ref { width: 100%; min-height: 46px; border-radius: 999px; font-weight: 600; }
 .bas-dp-l { list-style: none; margin: 0; padding: 0; } .bas-dp-l li { display: flex; justify-content: space-between; padding: 10px 2px; font-size: 15px; } .bas-dp-l li + li { border-top: .5px solid var(--line); }
 .bas-dp-l span { color: var(--ink-3); }
@@ -2498,7 +2502,7 @@ body[data-bas-ia="1"] .bas-ia-fab { display: none !important; }
 .bas-pi-regua em { font-style: normal; font-size: 12px; opacity: .65; } .bas-pi-regua .eu em { opacity: 1; font-weight: 700; }
 .bas-pi-cmp { gap: 8px !important; } .bas-pi-l { display: flex; justify-content: space-between; align-items: baseline; font-size: 14px; } .bas-pi-l span { color: var(--ink-3); }
 .bas-pi-l ~ .bas-pi-l { margin-top: 8px; }
-.bas-pi-b { display: block; height: 10px; border-radius: 999px; overflow: hidden; background: color-mix(in srgb, #8B5CF6 60%, var(--accent)); } .bas-pi-b i { display: block; height: 100%; background: var(--accent); border-radius: 999px 0 0 999px; }
+.bas-pi-b { display: block; height: 10px; border-radius: 999px; overflow: hidden; background: color-mix(in srgb, var(--accent) 22%, var(--surface-3)); } .bas-pi-b i { display: block; height: 100%; background: var(--accent); border-radius: 999px 0 0 999px; }
 .bas-pi-txt { margin: 8px 0 0; padding: 12px 14px; border-radius: 14px; font-size: 14px; line-height: 1.45; color: var(--ink-2); background: var(--surface-2); }
 .bas-pi-txt.ok { color: var(--pos); background: color-mix(in srgb, var(--pos) 10%, transparent); }
 .bas-pi-ref { margin-top: 18px; } .bas-pi-nota { text-align: center; margin-top: 10px; }
@@ -4620,7 +4624,12 @@ html[data-topo="tema"][data-theme="light"] .bas-gt-bg :is(.bas-hs-c, .bas-ctw-r)
 /* claro + topo na cor do tema: sem luzes de fundo; o que era branco nos gráficos passa a azul-escuro */
 html[data-topo="tema"][data-theme="light"] :is(.bas-gt-bg, .bas-noite) :is(*, *::before, *::after) { text-shadow: none !important; }
 html[data-topo="tema"][data-theme="light"] :is(.bas-gt-bg, .bas-noite) :is(.bas-rl-luz, .bas-gt-luz, .bas-noite-luz) { display: none !important; }
-html[data-topo="tema"][data-theme="light"] :is(.bas-gt-bg, .bas-noite) :is(.bas-ar-svg, .bas-rl-arco, .bas-hs-c > svg, .bas-ctw-r > svg, .bas-ev svg) { filter: brightness(0) invert(17%) sepia(92%) saturate(4200%) hue-rotate(232deg) !important; }
+html[data-topo="tema"][data-theme="light"] :is(.bas-gt-bg, .bas-noite) :is(.bas-ar-svg, .bas-hs-c > svg, .bas-ctw-r > svg, .bas-ev svg) { filter: url(#bas-tinta) !important; }
+html[data-topo="tema"][data-theme="light"] :is(.bas-gt-bg, .bas-noite) .bas-rl-arco { filter: none !important; }
+html[data-topo="tema"][data-theme="light"] :is(.bas-gt-bg, .bas-noite) .bas-rl-arco i { background: color-mix(in srgb, var(--bas-marca) 32%, transparent); }
+html[data-topo="tema"][data-theme="light"] :is(.bas-gt-bg, .bas-noite) .bas-rl-arco i.on { background: var(--bas-marca); }
+/* avatar sem foto no topo claro: a regra de texto escuro deixava a inicial da mesma cor do círculo */
+html[data-topo="tema"][data-theme="light"] :is(.bas-gt-bg, .bas-noite) .bas-eu-m .av.av:not(:has(img)) { color: #fff !important; }
 html[data-topo="tema"][data-theme="light"] .bas-pt-bg > .bas-ev .bas-ev-p { background: #fff !important; border-color: #1E3BD8 !important; box-shadow: 0 4px 10px -4px rgba(20, 30, 90, .5) !important; }
 html[data-topo="tema"][data-theme="light"] .bas-pt-bg > .bas-ev .bas-ev-guia { background: #1E3BD8 !important; box-shadow: none !important; opacity: .35 !important; }
 html[data-topo="tema"][data-theme="light"] :is(.bas-gt-bg, .bas-noite) .bas-rl-arco i { box-shadow: none !important; }
@@ -4679,7 +4688,7 @@ html[data-topo="tema"][data-theme="light"] .bas-ar-s b.up { color: #15803D !impo
 .bas-gg-s b { font-weight: 500; } .bas-gg-s b.up { color: #5FD47A; } .bas-gg-s b.dn { color: #FF6B6B; }
 .bas-gg .bas-ar-bt { pointer-events: auto; }
 .bas-gg-tx { left: 20%; right: 20%; gap: 6px; } .bas-gg-k { font-size: 14px; } .bas-gg-v { font-size: min(32px, 8.4vw); font-weight: 650; letter-spacing: -.015em; } .bas-gg-s { font-size: 13.5px; max-width: 200px; }
-html[data-topo="tema"][data-theme="light"] .bas-gt-bg .bas-gg-svg { filter: brightness(0) invert(17%) sepia(92%) saturate(4200%) hue-rotate(232deg); }
+html[data-topo="tema"][data-theme="light"] .bas-gt-bg .bas-gg-svg { filter: url(#bas-tinta); }
 .bas-gg-sg.apaga { opacity: .45; }
 
 /* Assistente sem conversa: o vazio se divide acima do Cifrão e acima da caixa de pergunta (a caixa fica no pé da tela) */

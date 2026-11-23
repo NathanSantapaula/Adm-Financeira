@@ -208,6 +208,8 @@ const basChips = (nome, ops, sel, rot) => `<fieldset class="bas-fs"><legend>${ro
 const basSw = (nome, rot, desc, on) => `<label class="bas-op bas-sw">${basNome(rot, desc)}<span class="wg-sw"><input type="checkbox" name="${nome}" ${on ? 'checked' : ''}><span></span></span></label>`;
 const basSumiu = () => basDet('Não encontrado', basCard(basVazio('Este item não existe mais.')));
 
+// pinta os gráficos do topo claro com a cor da marca (--bas-marca), exato em qualquer navegador
+document.body.insertAdjacentHTML('beforeend', '<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><filter id="bas-tinta" color-interpolation-filters="sRGB"><feFlood/><feComposite in2="SourceAlpha" operator="in"/></filter></svg>');
 /* ---------- navegação: pilha de telas ligada ao histórico do navegador ---------- */
 function basAbrir(t, o) {
   if (t === 'periodo') { basPeriodoPop(); return; }
@@ -263,7 +265,7 @@ const basCab = () => basTopo();
 // anel de progresso (SVG): f de 0 a 1, tamanho em px, conteúdo no centro
 function basAnel(f, tam, centro, cls) {
   const r = tam / 2 - 9; const c = 2 * Math.PI * r; const v = Math.max(0, Math.min(1, f || 0));
-  return `<div class="bas-anel${cls ? ' ' + cls : ''}" style="--t:${tam}px"><svg viewBox="0 0 ${tam} ${tam}" aria-hidden="true"><circle class="bas-anel-f" cx="${tam / 2}" cy="${tam / 2}" r="${r}"/><circle class="bas-anel-v" cx="${tam / 2}" cy="${tam / 2}" r="${r}" stroke-dasharray="${(c * v).toFixed(1)} ${c.toFixed(1)}" style="--c:${c.toFixed(1)}"/></svg><div class="bas-anel-c">${centro}</div></div>`;
+  return `<div class="bas-anel${cls ? ' ' + cls : ''}" style="--t:${tam}px"><svg viewBox="0 0 ${tam} ${tam}" aria-hidden="true"><circle class="bas-anel-f" cx="${tam / 2}" cy="${tam / 2}" r="${r}"/>${v > 0 ? `<circle class="bas-anel-v" cx="${tam / 2}" cy="${tam / 2}" r="${r}" stroke-dasharray="${(c * v).toFixed(1)} ${c.toFixed(1)}" style="--c:${c.toFixed(1)}"/>` : ''}</svg><div class="bas-anel-c">${centro}</div></div>`;
 }
 
 /* ---- período (como no SaaS): um mês, um intervalo ou o ano todo, e o ano; vale para Início, Gastos e Investir ---- */
@@ -999,7 +1001,7 @@ function basTelaGasto(o, it) {
     <input class="bas-gf-nome" name="desc" value="${esc(l ? l.desc : it ? it.nome : '')}" placeholder="Com o quê? Ex.: Mercado, Aluguel" list="bas-dl-desc" autocomplete="off" aria-label="Com o quê?"><datalist id="bas-dl-desc">${[...mem.values()].map((x) => `<option value="${esc(x.desc)}">`).join('')}</datalist>
     <p class="bas-p bas-lembra" aria-live="polite" hidden></p>
     <div class="bas-gf-seg" role="radiogroup" aria-label="Como é o gasto">${seg}</div>
-    <div class="bas-blk bas-gf-quando" data-blk="data"><button type="button" class="bas-gf-dia${d0 === hoje ? ' on' : ''}" data-gf-dia="${hoje}">Hoje</button><input type="date" name="data" value="${esc(d0)}" min="${S.year}-01-01" max="${S.year}-12-31" aria-label="Data do gasto"></div>
+    <div class="bas-blk bas-gf-quando" data-blk="data"><button type="button" class="bas-gf-dia${d0 === hoje ? ' on' : ''}" data-gf-dia="${hoje}">Hoje</button>${ontem.startsWith(S.year + '-') ? `<button type="button" class="bas-gf-dia${d0 === ontem ? ' on' : ''}" data-gf-dia="${ontem}">Ontem</button>` : ''}<input type="date" name="data" value="${esc(d0)}" min="${S.year}-01-01" max="${S.year}-12-31" aria-label="Data do gasto"></div>
     <p class="bas-blk bas-gf-info" data-blk="mesp">Todo mês, de ${MES_LONGO[S.mes]} até dezembro.</p>
     <div class="bas-blk bas-gf-parc" data-blk="parc"><button type="button" data-gf-n="-1" aria-label="Menos parcelas">−</button><input name="n" inputmode="numeric" maxlength="3" value="${pc ? pc.n : 10}" aria-label="Número de parcelas"><button type="button" data-gf-n="1" aria-label="Mais parcelas">+</button><span class="bas-gf-pt" data-gf-pt></span></div>
     <p class="bas-gf-k">Categoria</p><button type="button" class="card bas-inv-sel bas-gf-sel" data-gf-pick="area" aria-label="Trocar a categoria"></button><div class="bas-gf-cs" role="radiogroup" aria-label="Categoria">${cat}</div>
@@ -1859,7 +1861,7 @@ function basExtrasInicio(secs) {
   secs.limite = orc > 0 ? basCard(`<div class="bas-ch"><h2 class="bas-h2">Limite ${esc(basJanFrase())}</h2><button class="lnk strong" ${basIr('limite')}>Mudar</button></div>${basBarra(sai / orc)}<p class="bas-p">${sai <= orc ? `Ainda cabe <b>${brl(orc - sai)}</b> de ${brl(orc)}.` : `<b class="neg">Passou ${brl(sai - orc)}</b> do limite de ${brl(orc)}.`}</p>`)
     : basCard(`<div class="bas-ch"><h2 class="bas-h2">Limite do mês</h2></div><p class="bas-p bas-p0">Defina quanto gastar no máximo e acompanhe aqui.</p><button class="btn bas-cta bas-add" ${basIr('limite')}>Definir limite</button>`);
   const f = D.meta > 0 ? D.aportado / D.meta : 0;
-  secs.meta = basCard(`<div class="bas-ch"><h2 class="bas-h2">Meta de investimento</h2><button class="lnk strong" ${basIr('meta')}>${D.meta > 0 ? 'Mudar' : 'Definir'}</button></div>${D.meta > 0 ? `<b class="bas-big md">${basCent(D.aportado)} <small>de ${brl(D.meta)}</small></b>${basBarra(f)}<p class="bas-p">${f >= 1 ? voz('bas_meta_ok') : `Faltam <b>${brl(D.faltaMeta)}</b> ${esc(basJanFrase())}.`}</p>` : `<p class="bas-p bas-p0">${voz('bas_meta_sem')}</p>`}`);
+  secs.meta = basCard(`<div class="bas-ch"><h2 class="bas-h2">Meta de investimento</h2><button class="lnk strong" ${basIr('meta')}>${D.meta > 0 ? 'Mudar' : 'Definir'}</button></div>${D.meta > 0 && D.aportado < -0.005 ? `<b class="bas-big md">${basCent(0)} <small>de ${brl(D.meta)}</small></b>${basBarra(0)}<p class="bas-p">Resgate de <b>${brl(-D.aportado)}</b> ${esc(basJanFrase())}. Faltam <b>${brl(D.meta)}</b> para a meta.</p>` : D.meta > 0 ? `<b class="bas-big md">${basCent(D.aportado)} <small>de ${brl(D.meta)}</small></b>${basBarra(f)}<p class="bas-p">${f >= 1 ? voz('bas_meta_ok') : `Faltam <b>${brl(D.faltaMeta)}</b> ${esc(basJanFrase())}.`}</p>` : `<p class="bas-p bas-p0">${voz('bas_meta_sem')}</p>`}`);
   secs.cartoes = basCartoesHtml();
   if (temRecurso('proventos')) secs.proventos = `<ul class="bas-ativ">${basRow(basIr('proventos'), I_PROV, 'Proventos', `${esc(cap(basJanFrase()))} · ${brl(C.T.faturamento)} no ano`, `<b class="pos">${basCent(basSomaJ(C.faturamento))}</b>`)}</ul>`;
 }
@@ -2883,10 +2885,10 @@ function basAtLigar() {
 // meta (Quanto aportei) e disponível (Disponível para aportar), como no SaaS, redesenhados para o celular
 function basMetaDispHtml() {
   const C = S.C; const j = basJan(); const D = E.disponivelAporte({ C, mes: j.de, ate: j.ate, metaMes: C.metaAporteMes });
-  const A = E.analiseInvest({ C, itens: [], meses: j.ate + 1, metaAporte: +S.plan.settings.metaAporte || 0, de: j.de, ate: j.ate }).aporte; const f = D.meta > 0 ? D.aportado / D.meta : 0;
-  const st = D.meta > 0 ? (D.acimaMeta > 0.005 ? `<em class="ok">+${brl(D.acimaMeta)} acima da meta</em>` : D.faltaMeta > 0.005 ? `<em>Faltam ${brl(D.faltaMeta)}</em>` : '<em class="ok">Meta batida</em>') : '<em>Sem meta definida</em>';
+  const A = E.analiseInvest({ C, itens: [], meses: j.ate + 1, metaAporte: +S.plan.settings.metaAporte || 0, de: j.de, ate: j.ate }).aporte; const resg = D.aportado < -0.005; const f = D.meta > 0 ? Math.max(0, D.aportado) / D.meta : 0;
+  const st = resg ? (D.meta > 0 ? `<em>Faltam ${brl(D.meta)}</em>` : '<em>Sem meta definida</em>') : D.meta > 0 ? (D.acimaMeta > 0.005 ? `<em class="ok">+${brl(D.acimaMeta)} acima da meta</em>` : D.faltaMeta > 0.005 ? `<em>Faltam ${brl(D.faltaMeta)}</em>` : '<em class="ok">Meta batida</em>') : '<em>Sem meta definida</em>';
   const meta = `<section class="card bas-qa"><div class="bas-ch"><h2 class="bas-h2">Quanto aportei</h2><button class="lnk strong" ${basIr('meta')}>${D.meta > 0 ? 'Meta' : 'Definir meta'}</button></div>
-    <div class="bas-qa-c">${basAnel(Math.min(1, f), 118, `<b>${D.meta > 0 ? pct(f) : '–'}</b><small>da meta</small>`, f >= 1 ? 'ok' : '')}<span class="bas-qa-t"><small>${esc(cap(basJanFrase()))}</small><b>${basCent(D.aportado)}</b><span>${D.meta > 0 ? `de ${brl(D.meta)}` : ''}</span>${st}</span></div>
+    <div class="bas-qa-c">${basAnel(Math.min(1, f), 118, `<b>${D.meta > 0 ? pct(f) : '–'}</b><small>da meta</small>`, f >= 1 ? 'ok' : '')}<span class="bas-qa-t">${resg ? `<small>Resgate ${esc(basJanFrase())}</small><b>${basCent(-D.aportado)}</b><span>${D.meta > 0 ? `Meta de ${brl(D.meta)}` : ''}</span>` : `<small>${esc(cap(basJanFrase()))}</small><b>${basCent(D.aportado)}</b><span>${D.meta > 0 ? `de ${brl(D.meta)}` : ''}</span>`}${st}</span></div>
     <div class="bas-qa-o"><span><i class="bolso"></i><small>Do seu bolso</small><b>${brl(A.doBolso)}</b></span><span><i class="div"></i><small>De dividendos</small><b>${brl(A.deDividendos)}</b></span></div>
     ${D.aportado > 0 ? `<span class="bas-qa-b" aria-hidden="true"><i class="bolso" style="flex:${Math.max(0, A.doBolso).toFixed(2)}"></i><i class="div" style="flex:${Math.max(0, A.deDividendos).toFixed(2)}"></i></span>` : ''}</section>`;
   const exc = D.excedente > 0.005; const tudo = !exc && D.disponivel < 0.005 && D.sobra > 0.005; const tot = Math.max(D.sobra, D.aportado, 1);

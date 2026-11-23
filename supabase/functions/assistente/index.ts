@@ -150,7 +150,8 @@ Deno.serve(async (req) => {
     } else contents = [...historico, { role: 'user', parts: [{ text: pergunta }] }];
     const rodadas = contents.filter((c) => c.parts.some((x) => x.functionResponse)).length;
 
-    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(MODELO)}:generateContent`, {
+    // modelo reserva: se o nome configurado sair do ar (404), tenta o "latest"
+    const chama = (modelo: string) => fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelo)}:generateContent`, {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'x-goog-api-key': Deno.env.get('GEMINI_API_KEY') ?? '' },
       body: JSON.stringify({
@@ -158,10 +159,14 @@ Deno.serve(async (req) => {
         contents,
         tools: [{ functionDeclarations: [...FUNCOES, ...CONSULTAS] }], toolConfig: { functionCallingConfig: { mode: 'AUTO' } },
         // no 2.5 o pensamento conta dentro de maxOutputTokens: 2048 de pensamento + ~2500 de resposta
-        generationConfig: { temperature: 0.2, maxOutputTokens: 4600, ...(/2\.5/.test(MODELO) ? { thinkingConfig: { thinkingBudget: 2048 } } : {}) },
+        generationConfig: { temperature: 0.2, maxOutputTokens: 4600, ...(/2\.5/.test(modelo) ? { thinkingConfig: { thinkingBudget: 2048 } } : {}) },
       }),
     });
-    if (!r.ok) return json({ erro: 'A IA não respondeu.' }, 502);
+    // modelo sobrecarregado (503), sem cota (429) ou fora do ar (404): tenta o próximo da lista
+    const MODELOS = [MODELO, 'gemini-flash-latest', 'gemini-2.5-flash-lite'].filter((m, i, a) => a.indexOf(m) === i);
+    let r = await chama(MODELOS[0]);
+    for (const m of MODELOS.slice(1)) { if (r.ok || ![404, 429, 500, 503].includes(r.status)) break; console.error('gemini', r.status, 'tentando', m); r = await chama(m); }
+    if (!r.ok) { const det = (await r.text()).slice(0, 400); console.error('gemini', r.status, det); return json({ erro: 'A IA não respondeu.', status: r.status }, 502); }
     const conteudo = (await r.json())?.candidates?.[0]?.content; const parts: Part[] = conteudo?.parts ?? [];
     const consultas = parts.filter((x) => x.functionCall).map((x, k) => ({ id: k, fc: x.functionCall! })).filter((c) => ehConsulta(c.fc.name));
     if (consultas.length) // o turno do modelo vai VERBATIM (com thoughtSignature) para a próxima chamada

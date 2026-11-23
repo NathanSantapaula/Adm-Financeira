@@ -1,0 +1,37 @@
+/* Cifrão: ajustes de digitação e consistência do vidro. Carrega por último. */
+
+/* Salvar sempre visível: acompanha o teclado do iPhone (--kb vem do basico-ux.js) */
+.bas-salvar { bottom: var(--kb, 0px); z-index: 5; }
+.kb-on .bas-salvar { padding-bottom: 10px; }
+.kb-on .bas-salvar .bas-del { display: none; } /* com teclado aberto, só o Salvar */
+
+/* "Ontem" ao lado de "Hoje" */
+.bas-gf-quando .bas-gf-dia { flex: none; }
+
+/* valor grande do Gasto: largura vem do JS (cresce com o número); nunca passa da tela */
+.bas-form .bas-gf-vin input { max-width: calc(100vw - 96px); }
+
+/* ===== Liquid Glass em todos os botões equivalentes (mesmos tokens --lg-* do .bas-circ e do olho),
+   em qualquer tema, cor e topo: voltar/cancelar, fechar, fichas, Hoje/Ontem, bancos, botões secundários ===== */
+body[data-ui="basico"] :is(.bas-voltar, .bas-gp-x, .bas-wr-x, .bas-voz-b, .bas-voz-lado, .bas-rt-de, .bas-gx-bt, .bas-org, .bas-gf-dia:not(.on), .bas-chip > input:not(:checked) + span, .bas-ccn-b:not(.on), .bas .btn:not(.primary)) {
+  background: var(--lg-bg) !important; border: 0 !important;
+  -webkit-backdrop-filter: var(--lg-desfoque); backdrop-filter: var(--lg-desfoque);
+  box-shadow: inset 0 1px 0 var(--lg-aro), inset 0 -1px 0 var(--lg-aro-b), inset 0 0 0 .5px var(--lg-aro-b), var(--lg-sombra) !important; }
+body[data-ui="basico"] :is(.bas-voltar, .bas-gp-x, .bas-wr-x, .bas-voz-b, .bas-voz-lado, .bas-gf-dia:not(.on), .bas-chip > input:not(:checked) + span, .bas-ccn-b:not(.on)) { color: var(--lg-txt); }
+/* selecionado: vidro "prominent" na cor de destaque, como o botão principal */
+body[data-ui="basico"] :is(.bas-gf-dia.on, .bas-chip > input:checked + span, .bas-ccn-b.on) {
+  color: #fff !important; background: color-mix(in srgb, var(--accent) 88%, transparent) !important;
+  -webkit-backdrop-filter: var(--lg-desfoque); backdrop-filter: var(--lg-desfoque);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .45), inset 0 -1px 0 rgba(0, 0, 0, .12), 0 8px 18px -10px color-mix(in srgb, var(--accent) 70%, transparent) !important; }
+/* voltar/cancelar vira cápsula de vidro (antes era só texto azul) */
+body[data-ui="basico"] .bas-voltar { min-height: 40px; padding: 0 16px; margin-left: 0; font-size: 15px; }
+body[data-ui="basico"] .bas-voltar:has(svg) { padding: 0 14px 0 8px; }
+body[data-ui="basico"] :is(.bas-voltar, .bas-gp-x, .bas-wr-x, .bas-voz-b, .bas-gf-dia, .bas-chip > span, .bas-ccn-b, .bas .btn:not(.primary)):active { transform: scale(1.04); }
+@media (prefers-reduced-transparency: reduce) {
+  body[data-ui="basico"] :is(.bas-voltar, .bas-gp-x, .bas-wr-x, .bas-voz-b, .bas-voz-lado, .bas-rt-de, .bas-gx-bt, .bas-org, .bas-gf-dia:not(.on), .bas-chip > input:not(:checked) + span, .bas-ccn-b:not(.on), .bas .btn:not(.primary)) { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--surface) !important; } }
+@media (prefers-contrast: more) { body[data-ui="basico"] :is(.bas-voltar, .bas-gf-dia, .bas-chip > span, .bas-ccn-b) { box-shadow: inset 0 0 0 1.5px currentColor !important; } }
+/* retrospectiva é sempre noturna: vidro claro com ícone branco, em qualquer tema */
+body[data-ui="basico"] :is(.bas-wr-x, .bas-rt-de) { --lg-bg: rgba(255, 255, 255, .14); --lg-bg-on: rgba(255, 255, 255, .26); --lg-aro: rgba(255, 255, 255, .55); --lg-aro-b: rgba(255, 255, 255, .15); --lg-txt: #fff; color: #fff; }
+/* restantes do scan: "Falar com o Nathan" (vidro claro sobre o cartão escuro do plano) e as pílulas tingidas (Fontes, Ajustes, Ver retrospectiva) ganham desfoque e aro */
+body[data-ui="basico"] .bas-pl-bt.sec { background: rgba(255, 255, 255, .14) !important; -webkit-backdrop-filter: var(--lg-desfoque); backdrop-filter: var(--lg-desfoque); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .5), inset 0 0 0 .5px rgba(255, 255, 255, .15) !important; }
+body[data-ui="basico"] :is(.bas-ef-src-b, .bas-ef-aj, .bas-sn-bt.prim) { -webkit-backdrop-filter: var(--lg-desfoque); backdrop-filter: var(--lg-desfoque); box-shadow: inset 0 1px 0 var(--lg-aro), inset 0 0 0 .5px var(--lg-aro-b), var(--lg-sombra); }
