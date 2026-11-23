@@ -4982,9 +4982,9 @@ html[data-topo="tema"][data-theme="light"] .bas-rs :is(b, span, small, p) { colo
 .rt-anel.tranca .rt-flash { animation: rt-flash 900ms ease-out 1300ms; } @keyframes rt-flash { 0% { opacity: 1; transform: scale(.92); } to { opacity: 0; transform: scale(1.3); } }
 .rt-anel.tranca .rt-ag { animation: rt-clack 520ms cubic-bezier(.3, 1.6, .5, 1) 1300ms; } @keyframes rt-clack { 35% { transform: scale(.94); } 70% { transform: scale(1.04); } }
 /* investido: barras dos aportes reais (para cima) e resgates (para baixo da linha do zero); o Cifrão anda por cima delas */
-.rt-esc { position: relative; width: 100%; margin-top: auto; margin-bottom: 26px; height: 190px; flex: none; display: flex; gap: 8px; padding-right: 30px; box-sizing: border-box; }
+.rt-esc { position: relative; width: 100%; margin-top: auto; margin-bottom: 26px; height: var(--hb, 190px); flex: none; display: flex; gap: 8px; padding-right: 30px; box-sizing: border-box; }
 .rt-esc u { position: absolute; left: 0; right: 30px; top: var(--z); height: 1px; background: rgba(255, 255, 255, .45); }
-.rt-col { position: relative; flex: 1; max-width: 46px; height: 100%; }
+.rt-col { position: relative; flex: 1; max-width: 58px; height: 100%; }
 .rt-esc i { position: absolute; left: 0; right: 0; border-radius: 12px; background: rgba(255, 255, 255, .16); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3); }
 .rt-esc i.on { border-radius: 12px 12px 4px 4px; background: linear-gradient(180deg, #fff, #A9C4FF 28%, rgba(90, 130, 255, .35)); box-shadow: inset 0 1px 0 #fff, 0 0 28px rgba(150, 185, 255, .45); }
 .rt-esc i.neg { border-radius: 4px 4px 12px 12px; background: linear-gradient(0deg, #FFD2C8, #FF8A7A 35%, rgba(240, 70, 106, .35)); box-shadow: 0 0 26px rgba(255, 120, 120, .4); }

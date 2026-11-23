@@ -386,20 +386,22 @@ const iaRealca = (h) => h.replace(/R\$\s?(?:-?\d+(?:\.\d{3})*(?:,\d+)?(?:\s?(?:m
 /* ---------- conversa ---------- */
 const iaRapido = () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 function iaEnviar(q) {
-  const st = iaEstado(); q = String(q || '').trim().slice(0, 300); if (!q || st.pend) return;
+  const st = iaEstado(); q = String(q || '').trim().slice(0, 600); if (!q || st.pend) return;
   st.msgs.push({ de: 'eu', txt: q }); st.pend = true; iaRefresh();
   setTimeout(() => {
     const g = modoBasico() && typeof basGuiaAchar === 'function' && basGuiaAchar(q);
     if (g) { st.pend = false; st.msgs.push({ de: 'ia', guia: g.id, t: g.t }); iaRefresh(); return; }
     const dd = iaDados(); const id = E.iaIntencao(q); const r = E.iaResponder(id, Object.assign(dd, { texto: q })); r.v = Math.random();
     if (id === 'avisos') r.avisos = (S.notifs || []).filter((n) => !n.lida).slice(0, 3).map((n) => n.id);
-    const fim = (m) => { st.pend = false; st.msgs.push(m); if (st.msgs.length > 40) st.msgs.splice(0, st.msgs.length - 40); iaRefresh(); };
+    const fim = (m) => { st.pend = false; st.pendTxt = ''; st.msgs.push(m); if (st.msgs.length > 40) st.msgs.splice(0, st.msgs.length - 40); iaRefresh(); };
     // sem nuvem (ou se ela falhar), um pedido simples como "gastei 45 no mercado" vira uma ação para confirmar (assets/js/ia-acoes.js)
     const local = () => { const ac = typeof iaxLocal === 'function' ? iaxLocal(q) : null; fim(ac ? { de: 'ia', r, ai: ac.texto, acoes: [ac.acao] } : { de: 'ia', r }); };
     if (!iaNuvemOk()) { local(); return; }
     const hist = st.msgs.slice(0, -1).slice(-6).map((m) => ({ de: m.de, txt: m.de === 'eu' ? m.txt : m.ai || (m.r ? voz(m.r.chave, iaVars(m.r.vars)) : '') }));
-    // a IA escreve o texto; o botão de atalho (cta) e os avisos continuam vindo da resposta local
-    Store.assistente({ pergunta: q, resumo: iaResumoNuvem(dd), historico: hist }).then((o) => { const ac = typeof iaxValidar === 'function' ? iaxValidar(o.acoes) : []; fim(Object.assign({ de: 'ia', r, ai: o.texto }, ac.length ? { acoes: ac } : {})); }).catch(local);
+    // a IA escreve o texto e pode pedir consultas exatas ao app (ia-consultas.js); o botão de atalho (cta) e os avisos continuam vindo da resposta local
+    const aviso = () => { st.pendTxt = 'Consultando seus dados…'; iaRefresh(); const dc = document.querySelector('.bas-voz[data-est="pensando"] [data-voz-dica]'); if (dc) dc.textContent = st.pendTxt; };
+    const limite = new Promise((_, falha) => setTimeout(() => falha(new Error('demorou')), 55000));
+    Promise.race([iaNuvemPerguntar({ pergunta: q, resumo: iaBase(dd), historico: hist }, aviso), limite]).then((o) => { const ac = typeof iaxValidar === 'function' ? iaxValidar(o.acoes) : []; fim(Object.assign({ de: 'ia', r, ai: o.texto }, ac.length ? { acoes: ac } : {}, o.relatorio ? { rel: o.relatorio } : {})); }).catch(local);
   }, iaRapido() ? 0 : 480 + Math.min(500, q.length * 8));
 }
 function iaCta(c, i) {
@@ -414,14 +416,14 @@ function iaMsgHtml(m, i) {
   if (m.guia) return `<div class="ia-m ia"><p><b>${esc(m.t)}</b><br>Eu mostro o caminho na tela, passo a passo.</p><button class="btn sm" data-act="bas-guia" data-id="${esc(m.guia)}">Me mostre</button></div>`;
   const r = m.r; const avs = (r.avisos || []).map((id) => (S.notifs || []).find((n) => n.id === id)).filter(Boolean);
   const vs = [r.chave, r.chave + '_2', r.chave + '_3'].filter((k) => VOZ[tomAtual()][k] != null); const ch = vs.length ? vs[Math.floor((r.v || 0) * vs.length)] : r.chave;
-  return `<div class="ia-m ia${m.ai ? ' nuvem' : ''}"><p>${iaRealca(esc(m.ai ? iaTxtIa(m.ai) : voz(ch, iaVars(r.vars))))}</p>${avs.length ? `<ul class="ia-av">${avs.map((n) => `<li class="${n.nivel}"><b>${esc(n.titulo)}</b><span>${esc(n.texto)}</span></li>`).join('')}</ul>` : ''}${m.acoes && typeof iaxCartoesHtml === 'function' ? iaxCartoesHtml(m, i) : iaCta(r.cta, i)}</div>`;
+  return `<div class="ia-m ia${m.ai ? ' nuvem' : ''}"><p>${iaRealca(esc(m.ai ? iaTxtIa(m.ai) : voz(ch, iaVars(r.vars))))}</p>${m.rel ? iaRelHtml(m, i) : ''}${avs.length ? `<ul class="ia-av">${avs.map((n) => `<li class="${n.nivel}"><b>${esc(n.titulo)}</b><span>${esc(n.texto)}</span></li>`).join('')}</ul>` : ''}${m.acoes && typeof iaxCartoesHtml === 'function' ? iaxCartoesHtml(m, i) : iaCta(r.cta, i)}</div>`;
 }
 // boas-vindas: só a saudação curta (pedido do Nathan)
 const iaBoasHtml = () => `<div class="ia-m ia"><p>${esc(voz('ia_oi', iaVars({})))}</p></div>`;
 function iaLogHtml(onde) {
   const st = iaEstado(); const lim = onde === 'w' ? 6 : 40; const ini = Math.max(0, st.msgs.length - lim);
   const msgs = st.msgs.slice(ini).map((m, k) => iaMsgHtml(m, ini + k)).join('');
-  return (st.msgs.length <= lim ? iaBoasHtml(onde === 'w') : '') + msgs + (st.pend ? '<div class="ia-m ia dig" aria-label="Digitando"><p><i></i><i></i><i></i></p></div>' : '');
+  return (st.msgs.length <= lim ? iaBoasHtml(onde === 'w') : '') + msgs + (st.pend ? `<div class="ia-m ia dig" aria-label="${esc(st.pendTxt || 'Digitando')}"><p><i></i><i></i><i></i></p>${st.pendTxt ? `<small class="ia-dig-t">${esc(st.pendTxt)}</small>` : ''}</div>` : '');
 }
 function iaFichasHtml() {
   const st = iaEstado(); const ult = st.msgs.slice().reverse().find((m) => m.de === 'ia' && m.r); const rec = { investimentos: temRecurso('investimentos'), carteira: temRecurso('carteira') };
@@ -432,7 +434,7 @@ function iaFichasHtml() {
   const av = !ult && (S.notifs || []).some((n) => !n.lida) ? '<button class="np-chip ia-ficha" data-act="ia-perg" data-q="Tenho avisos?">Tenho avisos?</button>' : ''; // com avisos novos, a primeira sugestão é vê-los
   return av + ids.slice(0, av ? 3 : 4).map(ficha).join('') + '<button class="np-chip ia-ficha ia-mais" data-act="ia-mais" aria-expanded="false">Mais perguntas</button>';
 }
-const iaFormHtml = (onde) => `<form class="ia-f" data-form="ia" autocomplete="off"><input name="q" maxlength="300" placeholder="Pergunte sobre o seu dinheiro" aria-label="Pergunta para o assistente" enterkeyhint="send"><button class="ia-env" aria-label="Enviar pergunta">${IA_ENVIAR}</button></form>`;
+const iaFormHtml = (onde) => `<form class="ia-f" data-form="ia" autocomplete="off"><input name="q" maxlength="600" placeholder="Pergunte sobre o seu dinheiro" aria-label="Pergunta para o assistente" enterkeyhint="send"><button class="ia-env" aria-label="Enviar pergunta">${IA_ENVIAR}</button></form>`;
 const iaConversaHtml = (onde) => `<div class="ia-log" data-ia-log="${onde}" role="log" aria-live="polite">${iaLogHtml(onde)}</div><div class="ia-fichas" data-ia-fichas role="group" aria-label="Sugestões de perguntas">${iaFichasHtml()}</div>${iaFormHtml(onde)}`;
 
 // widget da Visão geral (mesmo id "destaques" do antigo "O que o painel está vendo", para quem já personalizou)
@@ -539,7 +541,7 @@ function iaAcao(act, ds) {
       if (c.acao === 'nav') { if (typeof closeAdmin === 'function') closeAdmin(); S.view = c.view; render(); }
       return true;
     }
-    default: return typeof iaxAcao === 'function' && iaxAcao(act, ds);
+    default: return (typeof iaxAcao === 'function' && iaxAcao(act, ds)) || (typeof iaRelAcao === 'function' && iaRelAcao(act, ds));
   }
 }
 function iaSubmit(f) { const inp = f.elements.q; const q = inp.value; inp.value = ''; iaEnviar(q); }

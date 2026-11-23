@@ -145,7 +145,10 @@ const Store = (() => {
     },
     async assistente(body) {
       const r = await sb.functions.invoke((CFG.assistente && CFG.assistente.funcao) || 'assistente', { body });
-      if (r.error || !r.data || !r.data.texto) throw erro('O assistente não respondeu.'); return { texto: String(r.data.texto), acoes: Array.isArray(r.data.acoes) ? r.data.acoes : [] };
+      const d = r.data; if (r.error || !d || !(d.texto || (Array.isArray(d.consultas) && d.consultas.length))) throw erro('O assistente não respondeu.');
+      // a IA pode pedir consultas ao app antes de responder (ia-consultas.js devolve os resultados com o mesmo contexto)
+      if (Array.isArray(d.consultas) && d.consultas.length) return { consultas: d.consultas, contexto: d.contexto };
+      return { texto: String(d.texto), acoes: Array.isArray(d.acoes) ? d.acoes : [], relatorio: d.relatorio && typeof d.relatorio === 'object' ? d.relatorio : null };
     },
     async ingestIA(payload) {
       const r = await sb.functions.invoke((CFG.ingestao && CFG.ingestao.funcao) || 'ingest-statement', { body: payload });

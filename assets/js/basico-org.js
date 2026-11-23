@@ -79,7 +79,7 @@
   // ao colocar um widget pela folha, a folha fecha
   document.addEventListener('click', (e) => { if (e.target.closest('.bas-ed-mais')) setTimeout(fechaFolha, 0); });
   // trocou de aba ou de tela: sai do modo
-  let pend = 0; new MutationObserver(() => { if (pend) return; pend = setTimeout(() => { pend = 0; if (S.basEdita && S.basEdita !== aba()) sai(); else if (S.basEdita && document.querySelector('.bas-ed-folha')) { decora(); abreFolha(); } else decora(); }, 30); }).observe(document.body, { childList: true, subtree: true });
+  let pend = 0; new MutationObserver(() => { if (pend) return; pend = setTimeout(() => { pend = 0; if (S.basEdita && S.basEdita !== aba()) sai(); else decora(); }, 30); }).observe(document.body, { childList: true, subtree: true });
 })();
 
 // Saúde financeira: o Cifrão lê a "ficha" das suas finanças (os olhos correm as linhas), termina e reage à nota

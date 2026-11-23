@@ -35,10 +35,30 @@ function vozNeuralDestravar() {
     if (VOZN.ctx.state === 'suspended') VOZN.ctx.resume(); } catch (e) { VOZN.ctx = null; }
 }
 // texto para falar: números e símbolos do jeito que se diz (R$ 1.234,56 → 1234 reais e 56 centavos)
+// números por extenso: as vozes liam "R$ 1.000" como "um real" ou dígito a dígito
+const VZ_U = ['zero', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 'dez', 'onze', 'doze', 'treze', 'catorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove'];
+const VZ_D = ['', '', 'vinte', 'trinta', 'quarenta', 'cinquenta', 'sessenta', 'setenta', 'oitenta', 'noventa'];
+const VZ_C = ['', 'cento', 'duzentos', 'trezentos', 'quatrocentos', 'quinhentos', 'seiscentos', 'setecentos', 'oitocentos', 'novecentos'];
+function vozAte999(n) {
+  if (n === 100) return 'cem'; const c = Math.floor(n / 100), r = n % 100, p = [];
+  if (c) p.push(VZ_C[c]); if (r) p.push(r < 20 ? VZ_U[r] : VZ_D[Math.floor(r / 10)] + (r % 10 ? ' e ' + VZ_U[r % 10] : ''));
+  return p.join(' e ');
+}
+function vozExtenso(n) {
+  n = Math.floor(Math.abs(n)); if (!n) return 'zero'; if (n >= 1e12) return String(n);
+  const NOMES = [null, ['mil', 'mil'], ['milhão', 'milhões'], ['bilhão', 'bilhões']]; const g = []; for (let x = n; x > 0; x = Math.floor(x / 1000)) g.push(x % 1000);
+  const partes = []; for (let k = g.length - 1; k >= 0; k--) { const v = g[k]; if (!v) continue; partes.push(k === 1 && v === 1 ? 'mil' : vozAte999(v) + (k ? ' ' + NOMES[k][v === 1 ? 0 : 1] : '')); }
+  const ult = g[0]; return partes.length > 1 && ult && (ult < 100 || ult % 100 === 0) ? partes.slice(0, -1).join(' ') + ' e ' + partes[partes.length - 1] : partes.join(' ');
+}
+const vozReais = (n, cc) => { const redondo = n >= 1e6 && n % 1e6 === 0; return `${n ? `${vozExtenso(n)}${redondo ? ' de' : ''} ${n === 1 ? 'real' : 'reais'}` : ''}${n && cc ? ' e ' : ''}${cc ? `${vozExtenso(cc)} ${cc === 1 ? 'centavo' : 'centavos'}` : ''}` || 'zero reais'; };
+const vozDec = (b) => (b[0] === '0' ? [...b].map((d) => VZ_U[+d]).join(' ') : vozExtenso(+b));
 function vozNDizer(t) {
-  return String(t).replace(/R\$\s?(\d{1,3}(?:\.\d{3})+|\d+)(?:,(\d{1,2}))?/g, (_, r, c) => { const n = +r.replace(/\./g, ''); const cc = c ? +c.padEnd(2, '0') : 0;
-    return `${n} ${n === 1 ? 'real' : 'reais'}${cc ? ` e ${cc} centavos` : ''}`; })
-    .replace(/(\d+),(\d+)\s?%/g, '$1 vírgula $2 por cento').replace(/(\d)\s?%/g, '$1 por cento').replace(/p\.p\./g, 'pontos percentuais').replace(/(\d)\.(\d{3})\b/g, '$1$2').replace(/R\$\s?•+/g, 'um valor escondido');
+  return String(t).replace(/R\$\s?•+/g, 'um valor escondido').replace(/(-)\s?R\$/g, 'menos R$')
+    .replace(/R\$\s?(\d+)(?:,(\d+))?\s?(mil|milhões|milhão|bilhões|bilhão)\b/g, (_, a, b, u) => `${vozExtenso(+a)}${b ? ` vírgula ${vozDec(b)}` : ''} ${u} ${/mil$/.test(u) ? '' : 'de '}reais`)
+    .replace(/R\$\s?(\d{1,3}(?:\.\d{3})+|\d+)(?:,(\d{1,2}))?/g, (_, r, c) => vozReais(+r.replace(/\./g, ''), c ? +c.padEnd(2, '0') : 0))
+    .replace(/(\d+),(\d+)\s?%/g, (_, a, b) => `${vozExtenso(+a)} vírgula ${vozDec(b)} por cento`).replace(/(\d+)\s?%/g, (_, a) => `${vozExtenso(+a)} por cento`)
+    .replace(/p\.p\./g, 'pontos percentuais').replace(/\b(\d{1,3}(?:\.\d{3})+)\b/g, (m) => m.replace(/\./g, ''))
+    .replace(/(\d+),(\d+)/g, (_, a, b) => `${vozExtenso(+a)} vírgula ${vozDec(b)}`).replace(/\d+/g, (m) => vozExtenso(+m));
 }
 // frases com a posição no texto (para acender as palavras de cada uma enquanto ela toca)
 function vozNFrases(txt) {
@@ -92,6 +112,7 @@ const VOZV_TIPO = { gastos: 'areas', fixos: 'areas', dicas: 'areas', orcamento: 
 const VOZV_FORMA = { meta: 'seta', mes: 'moeda', sonho: 'moeda', anotar_entrada: 'mais', anotar_aporte: 'seta', anotar_gasto: 'moeda' };
 const vozVAnel = (f, cor) => { const r = 34; const L = 2 * Math.PI * r; return `<svg class="vzv-anel" viewBox="0 0 80 80" aria-hidden="true"><circle cx="40" cy="40" r="${r}" class="f"/><circle cx="40" cy="40" r="${r}" class="v" style="--L:${L.toFixed(1)};--o:${(L * (1 - Math.max(0, Math.min(1, f)))).toFixed(1)};${cor ? `stroke:${cor}` : ''}"/></svg><b class="vzv-anel-p">${pct(Math.max(0, f))}</b>`; };
 function vozVisualHtml(m) {
+  if (m.rel && typeof iaRelHtml === 'function') return `<div class="vzv vzv-rel">${iaRelHtml(m, VOZV.i, true)}</div>`; // relatório da IA: o cartão grande
   if (m.acoes && m.acoes.length && typeof iaxCartoesHtml === 'function') return `<div class="vzv vzv-acao">${iaxCartoesHtml(m, VOZV.i)}</div>`;
   const tipo = VOZV_TIPO[m.r && m.r.id]; if (!tipo || !S.C) return '';
   const C = S.C; const mm = S.year === NOW_Y ? NOW_M : S.mes;
@@ -127,7 +148,8 @@ const VOZV = { i: -1 };
 function vozVisual(w, m, i) {
   const c = w.querySelector('.bas-voz-c'); if (!c) return; VOZV.i = i; let v = c.querySelector('[data-voz-vis]');
   if (!v) { v = document.createElement('div'); v.className = 'vzv-box'; v.dataset.vozVis = ''; const t = c.querySelector('[data-voz-t]'); t.after(v); }
-  v.innerHTML = vozVisualHtml(m);
+  v.innerHTML = vozVisualHtml(m) || (m.ai && typeof iaVozChipsHtml === 'function' ? iaVozChipsHtml(m) : ''); // resposta comum: os valores viram fichas
+  if (typeof iaRelConta === 'function') iaRelConta(v);
   const h = w.querySelector('.bas-voz-orb .cifrao'); if (!h || !window.Cifrao) return;
   const fm = VOZV_FORMA[(m.acoes && m.acoes[0] && m.acoes[0].tipo) || VOZV_TIPO[m.r && m.r.id]];
   if (fm) { window.Cifrao.forma(h, fm); setTimeout(() => { if (h.isConnected) window.Cifrao.forma(h, 'cifrao'); }, 4200); }

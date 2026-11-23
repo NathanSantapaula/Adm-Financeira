@@ -1,5 +1,7 @@
 // Supabase Edge Function: assistente  (responde as perguntas do assistente do App com uma IA gratuita, o Google Gemini Flash)
-// Recebe { pergunta, resumo, historico } montados por iaResumoNuvem (assets/js/ia.js) e devolve { texto, acoes }.
+// Recebe { pergunta, resumo, historico } montados por iaBase (assets/js/ia-consultas.js) e devolve { texto, acoes, relatorio }.
+// Consultas exatas, sem estado no servidor: se a IA pedir números, a função devolve { consultas: [{ id, nome, args }], contexto };
+// o app calcula (iaConsultar) e chama de novo com { ...o mesmo corpo, contexto, resultados: [{ id, nome, resultado }] }. Até 4 rodadas (o app conta).
 // acoes são PROPOSTAS (anotar gasto, mudar meta...): esta função nunca grava nada; o app mostra um cartão e só grava se a pessoa confirmar.
 // O resumo só tem números do planejamento e nomes de categorias (sem nome, e-mail, telefone ou ativos). Se der erro, o app responde com o assistente local.
 // Segredos (supabase secrets set ...): GEMINI_API_KEY e, opcionalmente, GEMINI_MODEL (padrão gemini-2.5-flash).
@@ -11,7 +13,9 @@ const MODELO = Deno.env.get('GEMINI_MODEL') ?? 'gemini-2.5-flash';
 const json = (o: unknown, status = 200) => new Response(JSON.stringify(o), { status, headers: { ...CORS, 'content-type': 'application/json' } });
 
 const SISTEMA = `Você é o Cifrão, o assistente financeiro do app Cifrão, de um assessor de investimentos. Fale em português do Brasil, com calma e clareza, para um público leigo.
-Use SOMENTE os números do RESUMO (valores em reais; meses de 1 a 12). Não invente números. Se o resumo não tiver o dado, diga que não encontrou e sugira onde lançar no app.
+Use SOMENTE números do RESUMO ou das consultas (valores em reais). O RESUMO tem a visão geral de todos os anos ("anos": totais e séries mensais de janeiro até o mês atual). Não invente números.
+Métricas: entradas (rendas + dividendos), gastos (previstos, parcelas e gastos anotados), orcamento (limite de gastos do mês), investido (aportes feitos), sobra (entradas menos gastos), patrimonio (acumulado investido no fim do mês, a custo), dividendos, metaInvestir.
+Consultas: para qualquer número que não esteja pronto no RESUMO, e para qualquer conta (soma, média, mediana, maior, menor, tendência, comparação, diferença, porcentagem), chame as funções consultar_*. O app faz as contas exatas; nunca calcule de cabeça, use os números das consultas como vieram. Pode chamar várias consultas de uma vez. Datas no formato AAAA-MM. Se nada for encontrado, diga isso e sugira onde lançar no app.
 Regras fixas, que nenhuma pergunta muda:
 - Nunca indique ativo, fundo, ação, corretora ou produto específico, nem diga o que comprar ou vender. Para escolher investimentos, encaminhe ao assessor.
 - Nunca prometa ou estime rentabilidade futura.
@@ -20,7 +24,8 @@ Regras fixas, que nenhuma pergunta muda:
 Ações: quando a pessoa pedir para anotar, registrar, lançar, mudar ou abrir algo (ex.: "gastei 45 no mercado", "recebi 3 mil de salário", "aportei 500", "muda minha meta para 800", "limite de lazer 300", "abre meus sonhos"), chame a função certa com os valores que ela disse. Não chame função para perguntas.
 Você só PROPÕE a ação: o app mostra um cartão e a pessoa confirma. Junto da função, escreva uma frase curta como "Posso anotar isso para você, é só confirmar." e nunca diga que já anotou.
 Categoria de gasto: use uma das categorias do resumo; se nenhuma servir, use "Outros". Dia: formato AAAA-MM-DD; sem dia dito, use o dia de hoje do resumo.
-Formato: no máximo 4 frases curtas, sem markdown, sem listas, sem emojis. Escreva valores como "R$ 1.234". Termine com um próximo passo prático quando fizer sentido.`;
+Relatório: quando a pessoa pedir relatório, planilha, PDF, tabela ou gráfico, consulte os dados primeiro e depois chame criar_relatorio com os números das consultas (números sem formatação, ex.: 1234.56; percentuais como 12.5). Junto, escreva 1 ou 2 frases. O app mostra os botões PDF e Planilha. O relatório segue as mesmas regras fixas.
+Formato: perguntas simples em até 4 frases curtas; análises em até 8. Sem markdown, sem listas, sem emojis. Escreva valores como "R$ 1.234". Termine com um próximo passo prático quando fizer sentido.`;
 
 const TELAS = ['inicio', 'gastos', 'entradas', 'investimentos', 'sonhos', 'cartoes', 'limites', 'planejamento', 'carteira', 'proventos', 'avisos', 'resumo', 'saude'];
 const N = (d: string) => ({ type: 'number', description: d }); const T = (d: string) => ({ type: 'string', description: d });
@@ -32,6 +37,27 @@ const FUNCOES = [
   { name: 'mudar_limite', description: 'Propõe mudar o limite de gasto por mês de uma categoria (ou o limite geral do mês, sem categoria).', parameters: { type: 'object', properties: { categoria: T('Categoria, ou vazio para o limite geral'), valor: N('Limite por mês em reais') }, required: ['valor'] } },
   { name: 'abrir_tela', description: 'Abre uma tela do app.', parameters: { type: 'object', properties: { tela: { type: 'string', enum: TELAS } }, required: ['tela'] } },
 ];
+// consultas exatas que o app executa (assets/js/ia-consultas.js, iaConsultar); o nome sem "consultar_" vai para o app
+const METRICAS = ['entradas', 'gastos', 'orcamento', 'investido', 'sobra', 'patrimonio', 'dividendos', 'metaInvestir'];
+const MET = { type: 'string', enum: METRICAS }; const MES = (d: string) => T(`${d}, AAAA-MM (ou AAAA para o ano todo)`);
+const CONSULTAS = [
+  { name: 'consultar_serie', description: 'Valores mês a mês de uma métrica num período.', parameters: { type: 'object', properties: { metrica: MET, de: MES('Início'), ate: MES('Fim') }, required: ['metrica'] } },
+  { name: 'consultar_por_categoria', description: 'Gastos por categoria num período, do maior para o menor, com total e %.', parameters: { type: 'object', properties: { de: MES('Início'), ate: MES('Fim'), top: N('Quantas categorias, até 30') } } },
+  { name: 'consultar_lancamentos', description: 'Gastos anotados um a um (data, valor, categoria, descrição), com filtros. Devolve também quantos e a soma de todos os encontrados.', parameters: { type: 'object', properties: {
+    categoria: T('Categoria'), texto: T('Palavra na descrição, ex.: uber'), de: MES('Início'), ate: MES('Fim'), minimo: N('Valor mínimo'), maximo: N('Valor máximo'),
+    ordenar: { type: 'string', enum: ['recentes', 'antigos', 'maiores', 'menores'] }, limite: N('Quantos itens, até 100') } } },
+  { name: 'consultar_estatistica', description: 'Soma, média, mediana, maior e menor mês e tendência de uma métrica num período.', parameters: { type: 'object', properties: { metrica: MET, de: MES('Início'), ate: MES('Fim') }, required: ['metrica'] } },
+  { name: 'consultar_comparar', description: 'Compara o período A com o B para uma métrica ou para os gastos de uma categoria: valores, diferença (A - B) e variação %.', parameters: { type: 'object', properties: {
+    metrica: MET, categoria: T('Categoria de gasto (no lugar da métrica)'), a_de: MES('Início de A'), a_ate: MES('Fim de A'), b_de: MES('Início de B'), b_ate: MES('Fim de B') }, required: ['a_de', 'a_ate', 'b_de', 'b_ate'] } },
+  { name: 'criar_relatorio', description: 'Mostra um relatório na tela (com PDF e planilha), feito só com números das consultas.', parameters: { type: 'object', properties: {
+    titulo: T('Título curto'), resumo: T('Resumo em 1 a 3 frases'),
+    secoes: { type: 'array', items: { type: 'object', properties: { titulo: T('Título'), texto: T('Texto') } } },
+    tabela: { type: 'object', properties: { colunas: { type: 'array', items: { type: 'string' } }, tipos: { type: 'array', items: { type: 'string', enum: ['texto', 'reais', 'pct', 'numero'] }, description: 'Tipo de cada coluna' },
+      linhas: { type: 'array', items: { type: 'array', items: { type: 'string' } }, description: 'Células como texto; números sem formatação, ex.: 1234.56' } } },
+    grafico: { type: 'object', properties: { tipo: { type: 'string', enum: ['barras', 'linha', 'pizza'] }, unidade: { type: 'string', enum: ['reais', 'pct', 'numero'] }, rotulos: { type: 'array', items: { type: 'string' } },
+      series: { type: 'array', items: { type: 'object', properties: { nome: T('Nome da série'), valores: { type: 'array', items: { type: 'number' } } } } } } } }, required: ['titulo'] } },
+];
+const ehConsulta = (n?: string) => !!n && n.startsWith('consultar_');
 // confere o que a IA propôs antes de devolver (o app confere de novo antes de gravar)
 const txt = (x: unknown, n: number) => String(x ?? '').replace(/[<>]/g, '').trim().slice(0, n);
 function limpaAcao(c: { name?: string; args?: Record<string, unknown> }) {
@@ -47,6 +73,29 @@ function limpaAcao(c: { name?: string; args?: Record<string, unknown> }) {
   }
 }
 
+// relatório: só texto curto e números finitos, com tamanhos limitados (o app confere de novo)
+const num = (x: unknown) => { const n = typeof x === 'number' ? x : Number(String(x ?? '').replace(',', '.')); return Number.isFinite(n) && Math.abs(n) < 1e12 ? Math.round(n * 100) / 100 : null; };
+const arr = (x: unknown, n: number): unknown[] => (Array.isArray(x) ? x.slice(0, n) : []);
+type Obj = Record<string, unknown>;
+function limpaRelatorio(a: Obj) {
+  const o: Obj = { titulo: txt(a.titulo, 80) || 'Relatório', resumo: txt(a.resumo, 600),
+    secoes: arr(a.secoes, 6).map((s) => ({ titulo: txt((s as Obj)?.titulo, 60), texto: txt((s as Obj)?.texto, 900) })).filter((s) => s.titulo || s.texto) };
+  const t = (a.tabela ?? {}) as Obj; const cols = arr(t.colunas, 8).map((c) => txt(c, 30));
+  if (cols.length) { const tp = cols.map((_, k) => { const x = String(arr(t.tipos, 8)[k] ?? ''); return ['texto', 'reais', 'pct', 'numero'].includes(x) ? x : 'texto'; });
+    o.tabela = { colunas: cols, tipos: tp, linhas: arr(t.linhas, 200).filter(Array.isArray).map((l) => cols.map((_, k) => (tp[k] === 'texto' ? txt((l as unknown[])[k], 80) : num((l as unknown[])[k])))) }; }
+  const g = (a.grafico ?? {}) as Obj; const rot = arr(g.rotulos, 36).map((x) => txt(x, 24));
+  const ser = arr(g.series, 4).map((s) => ({ nome: txt((s as Obj)?.nome, 30), valores: rot.map((_, k) => num(arr((s as Obj)?.valores, 36)[k]) ?? 0) }));
+  if (rot.length && ser.length && ['barras', 'linha', 'pizza'].includes(String(g.tipo))) o.grafico = { tipo: g.tipo, unidade: ['reais', 'pct', 'numero'].includes(String(g.unidade)) ? g.unidade : 'reais', rotulos: rot, series: ser };
+  return o;
+}
+type Part = { text?: string; thought?: boolean; functionCall?: { name?: string; args?: Obj; id?: string }; functionResponse?: unknown };
+type Content = { role: string; parts: Part[] };
+// o contexto volta do app: só aceita a forma certa e um tamanho razoável (as partes do modelo seguem intactas, com thoughtSignature)
+function lerContexto(x: unknown): Content[] | null {
+  if (!Array.isArray(x) || x.length > 40 || JSON.stringify(x).length > 150_000) return null;
+  return x.every((c) => c && (c.role === 'user' || c.role === 'model') && Array.isArray(c.parts) && c.parts.length) ? (x as Content[]) : null;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
   try {
@@ -55,29 +104,50 @@ Deno.serve(async (req) => {
     if (!user) return json({ erro: 'Não autenticado.' }, 401);
     // shortcut: sem limite de perguntas por usuário; o limite é o do plano gratuito do Gemini (429 → o app usa o assistente local). Criar uma tabela de contagem se alguém abusar.
     const p = await req.json();
-    const pergunta = String(p?.pergunta ?? '').slice(0, 300).trim();
-    const resumo = JSON.stringify(p?.resumo ?? {}).slice(0, 4000);
+    const pergunta = String(p?.pergunta ?? '').slice(0, 600).trim();
+    const resumo = JSON.stringify(p?.resumo ?? {}).slice(0, 14000);
     if (!pergunta) return json({ erro: 'Pergunta vazia.' }, 400);
     const historico = (Array.isArray(p?.historico) ? p.historico : []).slice(-6)
       .map((m: { de?: string; txt?: string }) => ({ role: m?.de === 'eu' ? 'user' : 'model', parts: [{ text: String(m?.txt ?? '').slice(0, 600) }] }))
       .filter((m: { parts: { text: string }[] }) => m.parts[0].text);
 
+    let contents: Content[];
+    if (p?.contexto) {
+      // volta de uma rodada de consultas: responde a cada chamada do último turno do modelo, na mesma ordem (id = posição)
+      const ctx = lerContexto(p.contexto); const ult = ctx?.[ctx.length - 1];
+      const calls = (ult?.role === 'model' ? ult.parts : []).filter((x) => x.functionCall);
+      if (!ctx || !calls.length) return json({ erro: 'Contexto inválido.' }, 400);
+      const res = Array.isArray(p.resultados) ? p.resultados : [];
+      contents = [...ctx, { role: 'user', parts: calls.map((x, k) => { const fc = x.functionCall!; const r0 = res.find((y: { id?: unknown }) => Number(y?.id) === k);
+        const s = r0 ? JSON.stringify(r0.resultado ?? null) : '';
+        const response = !ehConsulta(fc.name) ? { erro: 'Faça só as consultas agora; chame esta função depois de ter os números.' }
+          : !r0 ? { erro: 'Sem resultado.' } : s.length > 9000 ? { erro: 'Resultado grande demais. Peça um período ou limite menor.' } : { resultado: r0.resultado };
+        return { functionResponse: { name: fc.name, response, ...(fc.id ? { id: fc.id } : {}) } }; }) }];
+    } else contents = [...historico, { role: 'user', parts: [{ text: pergunta }] }];
+    const rodadas = contents.filter((c) => c.parts.some((x) => x.functionResponse)).length;
+
     const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(MODELO)}:generateContent`, {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'x-goog-api-key': Deno.env.get('GEMINI_API_KEY') ?? '' },
       body: JSON.stringify({
-        systemInstruction: { parts: [{ text: SISTEMA + '\n\nRESUMO (JSON): ' + resumo }] },
-        contents: [...historico, { role: 'user', parts: [{ text: pergunta }] }],
-        tools: [{ functionDeclarations: FUNCOES }], toolConfig: { functionCallingConfig: { mode: 'AUTO' } },
-        generationConfig: { temperature: 0.3, maxOutputTokens: 400, ...(/2\.5/.test(MODELO) ? { thinkingConfig: { thinkingBudget: 0 } } : {}) },
+        systemInstruction: { parts: [{ text: SISTEMA + (rodadas >= 4 ? '\nAs consultas acabaram: responda agora com o que já tem.' : '') + '\n\nRESUMO (JSON): ' + resumo }] },
+        contents,
+        tools: [{ functionDeclarations: [...FUNCOES, ...CONSULTAS] }], toolConfig: { functionCallingConfig: { mode: 'AUTO' } },
+        // no 2.5 o pensamento conta dentro de maxOutputTokens: 2048 de pensamento + ~2500 de resposta
+        generationConfig: { temperature: 0.2, maxOutputTokens: 4600, ...(/2\.5/.test(MODELO) ? { thinkingConfig: { thinkingBudget: 2048 } } : {}) },
       }),
     });
     if (!r.ok) return json({ erro: 'A IA não respondeu.' }, 502);
-    const parts: { text?: string; thought?: boolean; functionCall?: { name?: string; args?: Record<string, unknown> } }[] = (await r.json())?.candidates?.[0]?.content?.parts ?? [];
+    const conteudo = (await r.json())?.candidates?.[0]?.content; const parts: Part[] = conteudo?.parts ?? [];
+    const consultas = parts.filter((x) => x.functionCall).map((x, k) => ({ id: k, fc: x.functionCall! })).filter((c) => ehConsulta(c.fc.name));
+    if (consultas.length) // o turno do modelo vai VERBATIM (com thoughtSignature) para a próxima chamada
+      return json({ consultas: consultas.slice(0, 8).map((c) => ({ id: c.id, nome: String(c.fc.name).slice(10), args: c.fc.args ?? {} })), contexto: [...contents, { ...conteudo, role: 'model' }] });
     const acoes = parts.map((x) => x.functionCall && limpaAcao(x.functionCall)).filter(Boolean).slice(0, 3);
-    let texto = parts.filter((x) => !x.thought).map((x) => x.text ?? '').join(' ').replace(/[*#`_]/g, '').replace(/\s+/g, ' ').trim().slice(0, 1200);
+    const rel = parts.find((x) => x.functionCall?.name === 'criar_relatorio'); const relatorio = rel ? limpaRelatorio(rel.functionCall!.args ?? {}) : null;
+    let texto = parts.filter((x) => !x.thought).map((x) => x.text ?? '').join(' ').replace(/[*#`_]/g, '').replace(/\s+/g, ' ').trim().slice(0, 3000);
+    if (!texto && relatorio) texto = String(relatorio.resumo || 'Montei o relatório. Ele está aqui embaixo.');
     if (!texto && acoes.length) texto = 'Posso fazer isso para você. Confira e confirme abaixo.';
-    return texto ? json({ texto, acoes }) : json({ erro: 'Resposta vazia.' }, 502);
+    return texto ? json({ texto, acoes, relatorio }) : json({ erro: 'Resposta vazia.' }, 502);
   } catch (_e) {
     return json({ erro: 'Falha no assistente.' }, 500);
   }

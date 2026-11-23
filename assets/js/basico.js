@@ -1417,7 +1417,7 @@ function basTelaCarteira() {
     <div class="card bas-ct-al">${corpo}</div>${cls.filter((c) => c.valor > 0.005).map((c, k) => { const l = vivos.filter((i) => (i.a.classe || '') === (c.classe || ''));
       return `<div class="card bas-ct-al bas-ct-so" data-ctw-lista="${k}" hidden><ul class="bas-ct-cl bas-ct-top">${l.map((i) => linhaAt(i, false)).join('')}</ul></div>`; }).join('')}` : basCard(basVazio('Sua carteira aparece aqui quando você registrar o primeiro investimento.'));
   return `<div class="bas-pg bas-pg-ctw"><div class="bas-gt-bg bas-pt-bg bas-ctw-bg">
-    <header class="bas-pv2-h"><button class="bell bas-cal-b" data-act="bas-voltar" aria-label="Voltar">${I_VOLTA}</button><b>Minha carteira</b><span class="bas-noite-r">${olhoHtml()}</span></header>
+    <header class="bas-pv2-h"><button class="bell bas-cal-b" data-act="bas-voltar" aria-label="Voltar">${I_VOLTA}</button><b>Minha carteira</b><span class="bas-noite-r"><button class="bell bas-cal-b" ${basIr('periodo')} aria-label="Período: ${esc(basJanRot())}, ${S.year}" title="Trocar o período">${I_CAL}</button>${olhoHtml()}</span></header>
     ${basCtwHtml(cls, total, comAlvo, its)}
   </div><div class="bas-gt-folha">
     ${its.length ? `<div class="bas-pg-per bas-gt-acoes"><button class="bas-circ bas-en-bt" ${basIr('alvos')}><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".8"/></svg><span>Alvos</span></button><button class="bas-inv-pl" ${basIr('aportar')}>${I.plus}<span>Onde investir</span></button></div>` : ''}
@@ -2006,10 +2006,11 @@ function basTelaRetro(o) {
   const maior = pg.reduce((a, e) => (!a || +e.valor > +a.valor ? e : a), null);
   // investido: os aportes reais dos últimos meses (negativo = resgate), com a linha do zero
   const apS = []; for (let k = Math.max(0, m - 5); k <= m; k++) apS.push([cap(MES[k]), k === m ? apM : aporte(k)]);
-  const mxP = Math.max(0, ...apS.map((x) => x[1])), mxN = Math.max(0, ...apS.map((x) => -x[1])); const totA = mxP + mxN || 1; const zeroY = mxN ? (190 * mxP) / totA : 190;
+  const mxP = Math.max(0, ...apS.map((x) => x[1])), mxN = Math.max(0, ...apS.map((x) => -x[1])); const totA = mxP + mxN || 1; const HB = Math.round(Math.min(400, Math.max(190, innerHeight * 0.42))); const zeroY = mxN ? (HB * mxP) / totA : HB;
   // patrimônio: últimos 6 meses
   const serie = [], rot = []; for (let k = Math.max(0, m - 5); k <= m; k++) { serie.push(+C.patrimonio[k] || 0); rot.push(cap(MES[k])); } if (m < 5) { serie.unshift(+C.patrimonioBase || 0); rot.unshift('Início'); }
-  const mn = Math.min(...serie), mx = Math.max(...serie), rg = mx - mn || 1; const pts = serie.map((v, k) => [10 + (k * 280) / Math.max(1, serie.length - 1), 140 - ((v - mn) / rg) * 104]);
+  const GH = Math.round(Math.min(360, Math.max(160, (300 * innerHeight * 0.42) / Math.max(1, innerWidth)))); // gráfico ocupa ~42% da altura da tela
+  const mn = Math.min(...serie), mx = Math.max(...serie), rg = mx - mn || 1; const pts = serie.map((v, k) => [10 + (k * 280) / Math.max(1, serie.length - 1), GH - 20 - ((v - mn) / rg) * (GH - 56)]);
   const lin = basCurva(pts); const ult = pts[pts.length - 1];
   const cont = (v, fmt) => (oculto() ? `<b class="bas-rt-n">${basCent(v)}</b>` : `<b class="bas-rt-n" style="--len:${(fmt === 'pct' ? pct(v) : brl(v)).length}" data-cont="${(+v || 0).toFixed(2)}" data-fmt="${fmt || 'brl'}">${fmt === 'pct' ? '0%' : brl(0)}</b>`);
   const ordem = [1, 0, 2].filter((k) => top[k]); const fim = top.length ? top[0][1] : 1;
@@ -2032,10 +2033,10 @@ function basTelaRetro(o) {
       : ['guarda', 'verde', '', `<small>Ficou com você</small>${anel(guardP)}${cont(guardP, 'pct')}<p>${ent > 0 ? `Sobraram <em>${brl0(sob)}</em> do que entrou.` : 'Anote as entradas para ver quanto guardou.'}</p>`],
     ['invest', resg ? 'alerta' : 'azul', '', `<small>${resg ? 'Resgatado no mês' : 'Investido'}</small>${cont(Math.abs(apM))}<p>${resg ? `Você tirou <em>${brl0(-apM)}</em> dos investimentos.` : apM > 0.5 ? (n > 0 ? `Sua sequência está em <em>${n} ${n === 1 ? 'mês' : 'meses'}</em> seguidos.` : 'Um aporte por mês começa uma sequência.') : 'Nenhum aporte neste mês.'}</p>
       ${resg || apM <= 0.5 ? `<p class="rt-dica2">${resg ? 'Se foi planejado, tudo certo. Se não, tente repor aos poucos nos próximos meses.' : 'Dica: um aporte pequeno, todo mês, já começa uma sequência.'}</p>` : ''}
-      <div class="rt-esc" style="--z:${zeroY.toFixed(0)}px">${mxN ? '<u></u>' : ''}${apS.map(([r, v], k) => { const hh = Math.max(4, (190 * Math.abs(v)) / totA); return `<div class="rt-col"><i class="${v > 0.5 ? 'on' : v < -0.5 ? 'neg' : 'nada'}${k === apS.length - 1 ? ' atual' : ''}" style="--k:${k};top:${(v >= 0 ? zeroY - hh : zeroY).toFixed(0)}px;height:${hh.toFixed(0)}px"></i><span>${r}</span></div>`; }).join('')}</div>`],
+      <div class="rt-esc" style="--z:${zeroY.toFixed(0)}px;--hb:${HB}px">${mxN ? '<u></u>' : ''}${apS.map(([r, v], k) => { const hh = Math.max(4, (HB * Math.abs(v)) / totA); return `<div class="rt-col"><i class="${v > 0.5 ? 'on' : v < -0.5 ? 'neg' : 'nada'}${k === apS.length - 1 ? ' atual' : ''}" style="--k:${k};top:${(v >= 0 ? zeroY - hh : zeroY).toFixed(0)}px;height:${hh.toFixed(0)}px"></i><span>${r}</span></div>`; }).join('')}</div>`],
     ['patri', 'noite', '', `<small>Seu patrimônio</small>${cont(C.patrimonio[m])}<span class="rt-delta ${dp >= 0 ? 'up' : 'dn'}">${Math.abs(dp) >= 1 ? `${dp > 0 ? '▲' : '▼'} ${brl0(Math.abs(dp))} no mês` : 'Estável no mês'}</span>${caiu ? '<p class="rt-dica2">Oscilações fazem parte. O que conta é a tendência dos próximos meses.</p>' : ''}
-      <div class="rt-gw${caiu ? ' dn' : ''}" data-p="${esc(JSON.stringify(pts.map((p) => [+p[0].toFixed(1), +p[1].toFixed(1)])))}"><svg class="rt-graf" viewBox="0 0 300 160"><defs><linearGradient id="rtA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${caiu ? '#FF8A9A' : '#8FB0FF'}" stop-opacity=".5"/><stop offset="1" stop-color="${caiu ? '#FF8A9A' : '#8FB0FF'}" stop-opacity="0"/></linearGradient></defs>
-      ${[36, 72, 108, 144].map((y) => `<line x1="0" x2="300" y1="${y}" y2="${y}"/>`).join('')}<path class="ar" d="${lin} L${ult[0].toFixed(1)} 160 L${pts[0][0].toFixed(1)} 160 Z"/><path class="ln" pathLength="1" d="${lin}"/><circle class="pt" cx="${ult[0].toFixed(1)}" cy="${ult[1].toFixed(1)}" r="7"/></svg>
+      <div class="rt-gw${caiu ? ' dn' : ''}" data-p="${esc(JSON.stringify(pts.map((p) => [+p[0].toFixed(1), +p[1].toFixed(1)])))}"><svg class="rt-graf" viewBox="0 0 300 ${GH}"><defs><linearGradient id="rtA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${caiu ? '#FF8A9A' : '#8FB0FF'}" stop-opacity=".5"/><stop offset="1" stop-color="${caiu ? '#FF8A9A' : '#8FB0FF'}" stop-opacity="0"/></linearGradient></defs>
+      ${[.22, .45, .68, .9].map((f) => Math.round(f * GH)).map((y) => `<line x1="0" x2="300" y1="${y}" y2="${y}"/>`).join('')}<path class="ar" d="${lin} L${ult[0].toFixed(1)} ${GH} L${pts[0][0].toFixed(1)} ${GH} Z"/><path class="ln" pathLength="1" d="${lin}"/><circle class="pt" cx="${ult[0].toFixed(1)}" cy="${ult[1].toFixed(1)}" r="7"/></svg>
       <div class="rt-gm">${rot.map((r) => `<span>${r}</span>`).join('')}</div></div>`],
     ...(g ? [['sonho', 'azul', '', `<div class="rt-sonho o3" data-tipo="${esc(obj3dDe(g))}"><i class="rt-orb"></i><i class="rt-halo"></i>${Array.from({ length: 5 }, (_, k) => `<i class="rt-est" style="--k:${k}"></i>`).join('')}<div class="rt-o3">${obj3dHtml(obj3dDe(g))}</div><img src="assets/img/o3/${esc(obj3dDe(g))}.png?v=2" alt=""><span class="bas-rt-si">${objIcone(g, 0)}</span></div>
       <small>Seu sonho</small><h3 class="rt-h">${basRtKt(esc(objNomeDe(g)))}</h3><div class="bas-rt-sb"><i style="--p:${Math.min(1, g.progresso || 0).toFixed(3)}"></i></div><p><em>${pct(g.progresso || 0)}</em> do caminho${g.falta > 0 ? ` · faltam ${brl0(g.falta)}` : ' · chegou lá!'}</p>`]] : []),
@@ -2165,7 +2166,7 @@ function basRtAto(w, s, em) {
       em(5000, () => { basRtOlhaEl(w, q('.rt-dica2')); basRtExp(w, 'sim'); });
     }
   } else if (k === 'patri') {
-    const gw = q('.rt-gw'); if (!gw) return; const c = basRtCaixa(w, gw); const sv = gw.querySelector('svg'); const sx = sv.clientWidth / 300, sy = sv.clientHeight / 160;
+    const gw = q('.rt-gw'); if (!gw) return; const c = basRtCaixa(w, gw); const sv = gw.querySelector('svg'); const sx = sv.clientWidth / 300, sy = sv.clientHeight / sv.viewBox.baseVal.height;
     const P = JSON.parse(gw.dataset.p || '[]').map((p) => [c[0] + p[0] * sx, c[1] + p[1] * sy - 26, 0.45]); if (!P.length) return; const sobe = !gw.classList.contains('dn');
     vai([[P[0][0], P[0][1] - 140, 0.45]], 600, { passos: 2 });
     em(650, () => { vai([P[0]], 350, { passos: 0, ease: 'cubic-bezier(.5,0,.9,.6)' }); });
@@ -2623,7 +2624,7 @@ function basVozLigar() {
     const ws = [...t.querySelectorAll('.w')]; const acende = (c) => ws.forEach((x) => x.classList.toggle('lido', +x.dataset.c <= c));
     if (typeof vozNeuralFalar === 'function' && vozNeuralFalar(oculto() ? txt.replace(/R\$\s?•+/g, 'um valor escondido') : txt, { acende, est, pausa, cif, w })) return;
     if (!fala) { acende(1e9); est('parado', 'Toque no Cifrão para continuar'); return; }
-    fala.cancel(); const u = new SpeechSynthesisUtterance(oculto() ? txt.replace(/R\$\s?•+/g, 'um valor escondido') : txt); const v = basVozEscolhida(); if (v) u.voice = v; u.lang = 'pt-BR'; u.rate = 1.03; u.pitch = 1.12;
+    fala.cancel(); const u = new SpeechSynthesisUtterance((typeof vozNDizer === 'function' ? vozNDizer : String)(oculto() ? txt.replace(/R\$\s?•+/g, 'um valor escondido') : txt)); const v = basVozEscolhida(); if (v) u.voice = v; u.lang = 'pt-BR'; u.rate = 1.03; u.pitch = 1.12;
     let viuLimite = false; let tm = 0; let n = 0;
     u.onboundary = (e) => { viuLimite = true; acende(e.charIndex); if (++n % 6 === 0) cif('sim'); };
     u.onstart = () => { est('falando', 'Falando…'); pausa.disabled = false;
@@ -2633,9 +2634,9 @@ function basVozLigar() {
     fala.speak(u); };
   const pergunta = (q) => { est('pensando', 'Pensando…'); t.innerHTML = `<span class="eu">${esc(q)}</span>`; cta.innerHTML = ''; num.hidden = true; cif('pensando');
     const st = iaEstado(); if (st.pend) { est('parado', 'Ainda pensando na anterior. Tente de novo.'); return; } iaEnviar(q); const t0 = Date.now();
-    const espera = () => { if (!w.isConnected) return; if (st.pend && Date.now() - t0 < 20000) { setTimeout(espera, 120); return; }
+    const espera = () => { if (!w.isConnected) return; if (st.pend && Date.now() - t0 < 60000) { setTimeout(espera, 120); return; }
       const i = st.msgs.length - 1; const m = st.msgs[i]; if (!m || m.de !== 'ia') { est('parado', 'Não consegui responder. Tente de novo.'); return; }
-      const tmp = document.createElement('div'); tmp.innerHTML = iaMsgHtml(m, i); const txt = (tmp.querySelector('p') ? tmp.querySelector('p').textContent : '').replace(/\s+/g, ' ').trim(); const bt = m.acoes ? null : tmp.querySelector('button');
+      const tmp = document.createElement('div'); tmp.innerHTML = iaMsgHtml(m, i); const txt = (tmp.querySelector('p') ? tmp.querySelector('p').textContent : '').replace(/\s+/g, ' ').trim(); const bt = m.acoes ? null : tmp.querySelector('button:not([data-act^="iar-"])');
       mostra(txt); cta.innerHTML = bt ? bt.outerHTML : ''; if (typeof vozVisual === 'function') vozVisual(w, m, i); cif('animado'); falar(txt); };
     espera(); };
   const ouvir = () => {
