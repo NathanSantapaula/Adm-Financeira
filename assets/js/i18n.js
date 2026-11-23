@@ -4,7 +4,8 @@
    shortcut: a lista de textos foi colhida das telas do modo demonstração; textos novos entram rodando a coleta de novo e traduzindo. */
 'use strict';
 const IDIOMAS = [['pt', 'Português (Brasil)'], ['en', 'English'], ['es', 'Español'], ['fr', 'Français'], ['de', 'Deutsch'], ['it', 'Italiano'], ['nl', 'Nederlands'],
-  ['ru', 'Русский'], ['zh', '中文 (简体)'], ['ja', '日本語'], ['ko', '한국어'], ['hi', 'हिन्दी'], ['ar', 'العربية']];
+  ['ru', 'Русский'], ['zh', '中文 (简体)'], ['ja', '日本語'], ['ko', '한국어'], ['hi', 'हिन्दी'], ['ar', 'العربية']]
+  .filter((x) => ['pt', 'en', 'es'].includes(x[0])); // shortcut: só os idiomas já traduzidos aparecem; incluir o código quando o assets/i18n/<código>.json ficar pronto
 const OLA = { pt: 'Olá', en: 'Hello', es: 'Hola', fr: 'Bonjour', de: 'Hallo', it: 'Ciao', nl: 'Hallo', ru: 'Привет', zh: '你好', ja: 'こんにちは', ko: '안녕하세요', hi: 'नमस्ते', ar: 'مرحبًا' };
 const idiomaAtual = () => { try { const v = localStorage.getItem('fp:idioma'); return IDIOMAS.some((x) => x[0] === v) ? v : 'pt'; } catch (e) { return 'pt'; } };
 const idiomaNome = (cod, em) => { try { return new Intl.DisplayNames([em || idiomaAtual()], { type: 'language' }).of(cod === 'zh' ? 'zh-Hans' : cod === 'pt' ? 'pt-BR' : cod); } catch (e) { return cod; } };
