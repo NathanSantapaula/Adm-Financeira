@@ -163,3 +163,16 @@ function vozVisual(w, m, i) {
 }
 // depois de confirmar ou cancelar uma ação, o cartão da conversa por voz se atualiza
 function vozVisualRefaz() { const w = document.querySelector('.bas-voz'); const m = w && VOZV.i >= 0 && iaEstado().msgs[VOZV.i]; if (m) vozVisual(w, m, VOZV.i); }
+// a voz natural ainda está carregando: espera até 25 s (o Cifrão fica "pensando") em vez de cair na voz robótica do aparelho
+function vozNeuralAguardar(depois, est) {
+  if (!vozNLigada() || VOZN.estado !== 'baixando') return false;
+  const t0 = Date.now(); est('pensando', 'Preparando a voz do Cifrão…');
+  const olha = () => { if (VOZN.estado === 'baixando' && Date.now() - t0 < 25000) { setTimeout(olha, 200); return; } depois(); };
+  setTimeout(olha, 200); return true;
+}
+// voz já baixada antes: prepara em segundo plano logo depois que o app abre, assim a primeira fala já sai com ela
+setTimeout(() => {
+  try { if (!window.caches || !vozNLigada() || VOZN.estado !== 'nada') return;
+    caches.open('cifrao-voz-v1').then((c) => c.match('https://huggingface.co/rhasspy/piper-voices/resolve/main/pt/pt_BR/faber/medium/pt_BR-faber-medium.onnx'))
+      .then((r) => { if (r && VOZN.estado === 'nada') vozNeuralPreparar(); }).catch(() => {}); } catch (e) { /* sem Cache */ }
+}, 4000);
