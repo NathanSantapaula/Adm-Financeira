@@ -135,8 +135,9 @@ body[data-ui="basico"] :is(.bas-iax-voz, .bas-iax-env) svg { width: 22px; height
 @media (prefers-reduced-motion: reduce) { body[data-ui="basico"] .bas-iax-mic.on { animation: none; } }
 /* aviso (toast) escondido: o iPhone ainda pintava o desfoque dele com opacidade 0 (o bloco fosco embaixo da barra da IA) */
 body .toast:not(.on) { visibility: hidden; -webkit-backdrop-filter: none; backdrop-filter: none; transition: opacity 180ms ease, transform 180ms ease, visibility 0s linear 200ms; }
-/* abertura no modo claro: o mesmo vidro do modo noturno (translúcido, desfoque, aro de luz) no ano, no olho e no "Ao vivo" */
+/* abertura no modo claro: o mesmo vidro do modo noturno (translúcido levemente azul, desfoque, aro de luz e borda fina) no ano, no olho e no "Ao vivo" */
 :root[data-theme="light"] body:is([data-ui="basico"], [data-ui="completo"]) .ab :is(.ab-ano, .ab-olho, .ab-vivo) { border: 0 !important;
-  background: linear-gradient(155deg, rgba(255, 255, 255, .55), rgba(255, 255, 255, .18) 45%, rgba(255, 255, 255, .08) 65%, rgba(255, 255, 255, .3)) !important;
-  -webkit-backdrop-filter: blur(18px) saturate(190%); backdrop-filter: blur(18px) saturate(190%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .95), inset 0 -1px 0 rgba(255, 255, 255, .35), inset 0 0 0 1px rgba(255, 255, 255, .55), inset 0 0 18px rgba(255, 255, 255, .25), 0 10px 26px -16px rgba(30, 50, 140, .35) !important; }
+  background: linear-gradient(155deg, rgba(255, 255, 255, .5), rgba(225, 233, 255, .16) 42%, rgba(200, 215, 255, .1) 62%, rgba(255, 255, 255, .34)) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(200%); backdrop-filter: blur(20px) saturate(200%);
+  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 1), inset 0 -1px 0 rgba(40, 70, 180, .1), inset 1px 0 0 rgba(255, 255, 255, .6), inset -1px 0 0 rgba(255, 255, 255, .4),
+    inset 0 0 22px rgba(120, 150, 255, .12), 0 0 0 .5px rgba(30, 50, 140, .16), 0 14px 30px -18px rgba(30, 50, 140, .4) !important; }
