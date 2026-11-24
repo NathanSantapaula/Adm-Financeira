@@ -73,7 +73,7 @@
   const FIM = 0.82; let ar = null;
   const vib = (ms) => { if (typeof basVibra === 'function') basVibra(ms); };
   const max = (w) => { const b = w.querySelector('.bas-desl-b'); return Math.max(1, w.clientWidth - b.offsetWidth - 2 * b.offsetLeft); };
-  const pos = (w, x) => { w.style.setProperty('--max', max(w) + 'px'); w.style.setProperty('--x', x.toFixed(1) + 'px'); w.style.setProperty('--p', Math.max(0, Math.min(1, x / max(w))).toFixed(3)); };
+  const pos = (w, x) => { w.style.setProperty('--dmax', max(w) + 'px'); w.style.setProperty('--dx', x.toFixed(1) + 'px'); w.style.setProperty('--dp', Math.max(0, Math.min(1, x / max(w))).toFixed(3)); };
   const mola = (w, x) => { w.classList.add('mola'); pos(w, x); clearTimeout(w._t); w._t = setTimeout(() => w.classList.remove('mola'), 560); };
   const volta = (w, erro) => { w.classList.remove('feito', 'puxa'); mola(w, 0); if (erro) { w.classList.remove('treme'); void w.offsetWidth; w.classList.add('treme'); vib(30); } };
   const confirma = (w) => {
