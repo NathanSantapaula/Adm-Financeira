@@ -133,3 +133,5 @@ body[data-ui="basico"] :is(.bas-iax-voz, .bas-iax-env) { width: 44px; height: 44
 body[data-ui="basico"] :is(.bas-iax-voz, .bas-iax-env) svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .bas-iax-f:has([name="q"]:placeholder-shown) .bas-iax-env, .bas-iax-f:not(:has([name="q"]:placeholder-shown)) .bas-iax-voz { display: none !important; }
 @media (prefers-reduced-motion: reduce) { body[data-ui="basico"] .bas-iax-mic.on { animation: none; } }
+/* aviso (toast) escondido: o iPhone ainda pintava o desfoque dele com opacidade 0 (o bloco fosco embaixo da barra da IA) */
+body .toast:not(.on) { visibility: hidden; -webkit-backdrop-filter: none; backdrop-filter: none; transition: opacity 180ms ease, transform 180ms ease, visibility 0s linear 200ms; }
